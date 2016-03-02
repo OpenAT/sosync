@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="General.vb" />
     <Compile Include="Main.vb" />
+    <Compile Include="msSQLServer.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -98,6 +99,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="pgSQLServer.vb" />
+    <Compile Include="sosyncSchema.vb" />
+    <Compile Include="sosyncSchemaModel.vb" />
+    <Compile Include="sosyncSchemaModelField.vb" />
     <Compile Include="sosyncState.vb" />
   </ItemGroup>
   <ItemGroup>
