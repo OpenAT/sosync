@@ -78,7 +78,10 @@
     Public Sub New()
 
         Me.executing_directory = System.IO.Directory.GetCurrentDirectory()
+        'original:
         Me.instance = (New System.IO.DirectoryInfo(Me.executing_directory)).Parent.Name
+        'für debug:
+        Me.instance = "ahch"
 
         If Me.is_main_process Then
             file_create_or_replace(get_state_full_file_name(Me.process_id.ToString()))

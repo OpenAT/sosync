@@ -23,9 +23,9 @@
             Exit Sub
         End If
 
-        'andere blöcke
+
 sync_block:
-        sync_work()
+        sync_work(state)
 
         If state.update Then
             state.runagain = False
@@ -46,39 +46,41 @@ sync_block:
 
     End Sub
 
-    Private Sub sync_work()
-        System.Threading.Thread.Sleep(1000 * 10)
-    End Sub
+    Private Sub sync_work(state As sosyncState)
 
-End Module
+        Dim config = (New IniParser.FileIniDataParser()).ReadFile(String.Format("{0}\sosync.ini", state.executing_directory))
 
-Module ConfigFileParser
+        Dim studio_mssql_pw As String = config.Sections("studio")("studio_mssql_pw")
+        Dim online_admin_pw As String = config.Sections("online")("online_admin_pw")
+        Dim online_pgsql_pw As String = config.Sections("online")("online_pgsql_pw")
 
-End Module
-
-Public Class ExecuteArgs
+        schema_check(state, online_pgsql_pw)
 
 
-    Public Property windows_user As String
-    Public Property windows_user_pw As String
-    Public Property odoo_user As String
-    Public Property odoo_user_pw As String
-    Public Property postgres_user As String
-    Public Property postgres_user_pw As String
 
-    Public Property postgres_connection_string As String
 
-    Public Property mssql_connection_string As String
+        'getestet, funktioniert!:
+        'Using s As New dadi_impersonation.ImpersonationScope("hgh@datadialog.net", "lefkos")
 
-    Public Property odoo_api_url As String
+        '    Dim cmd As New System.Data.SqlClient.SqlCommand("select system_user", New SqlClient.SqlConnection("Data Source=dadisql;Initial Catalog=AG_AIWWF;Integrated Security=True"))
 
-    Public Sub New()
+        '    cmd.Connection.Open()
+        '    Dim res = cmd.ExecuteScalar()
+        '    cmd.Connection.Close()
+
+        'End Using
 
     End Sub
 
+    Private Sub schema_check(state As sosyncState, online_pgsql_pw As String)
+
+        Dim pgHost As New pgSQLServer(state.instance, online_pgsql_pw)
 
 
-End Class
+
+    End Sub
+
+End Module
 
 
 Public Class hooks
