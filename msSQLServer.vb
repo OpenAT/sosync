@@ -6,6 +6,11 @@
     Public Sub New(instance As String, pw As String)
         Me._instance = instance
         Me._pw = pw
+
+        If Not try_connect() Then
+            Throw New msSQLServerNotAvailableException()
+        End If
+
     End Sub
 
 
@@ -23,7 +28,46 @@
 
     End Function
 
+    Private _use_fallback_connection_string As Boolean = False
 
+    Private Function try_connect() As Boolean
+
+        Dim conn As New SqlClient.SqlConnection(get_connection_string(Me._instance))
+
+        Try
+
+            conn.Open()
+            conn.Close()
+
+            Return True
+
+        Catch ex As Exception
+
+            log.write_line("error connecting to connection_string, trying to use fallback_connection_string. error details: " & ex.ToString())
+
+            conn.ConnectionString = get_fallback_connection_string(Me._instance)
+
+            Try
+
+                conn.Open()
+                conn.Close()
+
+                Me._use_fallback_connection_string = True
+
+                Return True
+
+            Catch ex2 As Exception
+
+                log.write_line("error connecting to database. neither connection_string nor fallback_conneciton_string didn't work. error details: " & ex2.ToString())
+
+                Return False
+
+            End Try
+
+
+        End Try
+
+    End Function
 
 
     Private Shared Function get_connection_string(instance As String) As String
@@ -54,8 +98,6 @@
 
         End Try
 
-
-
     End Function
 
     Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog={1};Integrated Security=True"
@@ -68,4 +110,10 @@
     Private Const dadi_upn_prototype As String = "{0}@datadialog.net"
 
     Private Const char_dot As String = "."
+End Class
+
+
+Public Class msSQLServerNotAvailableException
+    Inherits Exception
+
 End Class
