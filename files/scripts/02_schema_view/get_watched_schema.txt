@@ -1,0 +1,28 @@
+create or replace view sosync_get_watched_schema
+as
+select 
+     t.event_object_table TableName
+    ,c.column_name FieldName
+    ,t.event_object_schema pgSQLSchemaName
+from information_schema.triggers t
+inner join information_schema.columns c
+    on c.table_schema = 'public'
+   and c.table_name = t.event_object_table
+    --magic: action_condition must match column_name or id is the column name
+   and ( 
+        --use '.',' ' and ')' as identifier-terminator
+        action_condition like '%.' || c.column_name || ')%'
+        or
+        action_condition like '%.' || c.column_name || ' %'
+        or
+        (c.column_name = 'id'
+         and
+         c.ordinal_position = 1
+         and
+         c.is_nullable = 'NO'
+         and
+         c.data_type = 'integer'
+        )
+       )
+       
+where t.event_manipulation = 'UPDATE'
