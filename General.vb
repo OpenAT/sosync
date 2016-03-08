@@ -35,4 +35,8 @@
 
     End Function
 
+    Public Class d(Of TKey, TValue)
+        Inherits Dictionary(Of TKey, TValue)
+    End Class
+
 End Module
