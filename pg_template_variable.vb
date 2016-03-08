@@ -3,11 +3,10 @@
     Public Property name As String
     Public Property prefix As String
     Public Property representation As String
-    Public Property substitution As String
 
-    Private Sub substitute(variable_value As String)
-        Me.substitution = Me.prefix & variable_value
-    End Sub
+    Public Function substitute(variable_value As String) As String
+        Return If(String.IsNullOrEmpty(variable_value), "", Me.prefix & variable_value)
+    End Function
 
     'Public Shared Sub substitute_variables(variables As List(Of variable), table As String, fields As List(Of SyncDefinition), odooUserID As Integer, notification_channel As String)
     '    Dim id_fields = get_id_columns(fields)
