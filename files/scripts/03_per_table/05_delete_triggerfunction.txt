@@ -1,8 +1,8 @@
-CREATE OR REPLACE FUNCTION odooSync_triggerfunction_delete_#{table_name}() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION sosync_triggerfunction_delete_#{table_name}() RETURNS trigger AS $$
         DECLARE
         BEGIN
 
-                INSERT INTO odooSync_sync_table(odoo_id#{id2_sync_table_field:, }, table_name, creation, operation)
+                INSERT INTO sosync_sync_table(odoo_id#{id2_sync_table_field:, }, table_name, creation, operation)
                 SELECT old.#{id_field_name}#{id2_field_name:, old.}, '#{table_name}', now(), 'd';
 
 		NOTIFY #{notification_channel};

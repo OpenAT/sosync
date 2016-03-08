@@ -3,7 +3,7 @@ variables available:
 #{id_field_name} /*name of the first id column (pk) of the table*/
 #{id2_field_name} /*name of the second id column (pk); empty ('') if there is none*/
 #{table_name} /*name of the current table*/
-#{odooUserID} /*user id of odooSync User on odoo, comes from table odooSync.dbo.PostgreSQLServer*/
+#{odooUserID} /*user id of sosync User on odoo*/
 #{fields_distinction} /*string for compare only watched fileds in update trigger (new.xy is distinct from old.xy or new.zz is distinct from old.zz .....)*/
 #{notification_channel} /*the name of the notification chanel used to notify the sync controller about changes in direction otf(=odoo to frst)*/
 

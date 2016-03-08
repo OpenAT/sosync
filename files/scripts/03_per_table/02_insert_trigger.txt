@@ -1,4 +1,4 @@
- DROP TRIGGER IF EXISTS odooSync_trigger_insert_#{table_name} on public.#{table_name};
- CREATE TRIGGER odooSync_trigger_insert_#{table_name}  AFTER INSERT
+ DROP TRIGGER IF EXISTS sosync_trigger_insert_#{table_name} on public.#{table_name};
+ CREATE TRIGGER sosync_trigger_insert_#{table_name}  AFTER INSERT
         ON public.#{table_name} FOR EACH ROW
-        EXECUTE PROCEDURE odooSync_triggerfunction_insert_#{table_name} ();
+        EXECUTE PROCEDURE sosync_triggerfunction_insert_#{table_name} ();
