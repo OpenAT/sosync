@@ -1,0 +1,7 @@
+DROP TRIGGER IF EXISTS sosync_trigger_update_#{table_name} on public.#{table_name};
+CREATE TRIGGER sosync_trigger_update_#{table_name} AFTER UPDATE
+        ON public.#{table_name} FOR EACH ROW
+        WHEN (     
+#{fields_distinction}
+		)
+        EXECUTE PROCEDURE sosync_triggerfunction_update_#{table_name}();
