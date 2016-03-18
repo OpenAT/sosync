@@ -10,9 +10,9 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyTitle("sosync")>
 <Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("")>
+<Assembly: AssemblyCompany("datadialog.net")>
 <Assembly: AssemblyProduct("sosync")>
-<Assembly: AssemblyCopyright("Copyright ©  2016")>
+<Assembly: AssemblyCopyright("Copyright ©  2016 datadialog.net DaDi EDV GesmbH")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>

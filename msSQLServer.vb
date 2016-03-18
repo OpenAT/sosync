@@ -6,64 +6,69 @@
     Public Sub New(instance As String, pw As String)
         Me._instance = instance
         Me._pw = pw
-
-        If Not try_connect() Then
-            Throw New msSQLServerNotAvailableException()
-        End If
-
     End Sub
 
+    Public Function get_Schema() As Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
+        Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
-    Public Function get_Schema() As sosyncSchema
-
-        Dim res As New sosyncSchema()
-        res.Models = New List(Of sosyncSchemaModel)
 
         Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext()
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            For Each item In db.ft_sosyncSchema_get()
+                If Not res.ContainsKey(item.TableName) Then
+                    res.Add(item.TableName, New Dictionary(Of String, List(Of String)))
+
+                    res(item.TableName).Add("online_model_name", New List(Of String))
+                    res(item.TableName)("online_model_name").Add(item.online_model_name)
+
+                    res(item.TableName).Add("online_model_rel_name", New List(Of String))
+                    If Not String.IsNullOrEmpty(item.online_model_rel_field_name) Then
+                        res(item.TableName)("online_model_rel_name").Add(item.online_model_rel_field_name)
+                    End If
+
+
+                    res(item.TableName).Add("id_fields", New List(Of String))
+                    res(item.TableName).Add("fields", New List(Of String))
+
+                End If
+
+                If item.FieldName = "id" OrElse item.TableName.EndsWith("_rel") Then
+                    res(item.TableName)("id_fields").Add(item.FieldName)
+                End If
+
+                If item.FieldName <> "id" Then
+                    res(item.TableName)("fields").Add(item.FieldName)
+                End If
+
+            Next
 
         End Using
 
+        Return res
+
     End Function
 
-    Private _use_fallback_connection_string As Boolean = False
 
-    Private Function try_connect() As Boolean
+    Public Function try_connect() As Boolean
 
         Dim conn As New SqlClient.SqlConnection(get_connection_string(Me._instance))
 
         Try
-
-            conn.Open()
-            conn.Close()
+            Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+                conn.Open()
+                conn.Close()
+            End Using
 
             Return True
 
         Catch ex As Exception
 
-            log.write_line("error connecting to connection_string, trying to use fallback_connection_string. error details: " & ex.ToString())
+            log.write_line(String.Format("error connecting to pgsql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, conn.ConnectionString), log.Level.Error)
 
-            conn.ConnectionString = get_fallback_connection_string(Me._instance)
-
-            Try
-
-                conn.Open()
-                conn.Close()
-
-                Me._use_fallback_connection_string = True
-
-                Return True
-
-            Catch ex2 As Exception
-
-                log.write_line("error connecting to database. neither connection_string nor fallback_conneciton_string didn't work. error details: " & ex2.ToString())
-
-                Return False
-
-            End Try
-
+            Return False
 
         End Try
 
@@ -78,27 +83,360 @@
 
     End Function
 
-    Private Shared Function get_fallback_connection_string(instance As String) As String
+    Public Function request_ID(schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), table_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Integer?
 
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            Dim pk_fields = schema(table_name)("id_fields")
+
+            Dim where_clause As String = ""
+
+            If pk_fields.Count = 1 Then
+                where_clause = String.Format("where {0} = '{1}'", pk_fields(0), odoo_id)
+            ElseIf pk_fields.Count = 2 Then
+                where_clause = String.Format("where {0} = '{1}' and {2} = '{3}'", pk_fields(0), odoo_id, pk_fields(1), odoo_id2.Value)
+            End If
+
+            Dim command As String = String.Format("select top 1 {0}ID from odoo.{0} {1}", table_name, where_clause)
+
+            Return db.ExecuteQuery(Of Integer?)(command).FirstOrDefault()
+
+        End Using
+
+    End Function
+
+    Public Function insert_sync_record(record As Dictionary(Of String, Object)) As Boolean
+
+        Dim command_sql As String = "insert into odoo.sync_table (Direction, Tabelle, Operation, ID, odoo_id, odoo_id2, Anlagedatum) values (@direction, @table_name, @operation, @id, @odoo_id, @odoo_id2, @creation)"
         Try
 
-            Dim dnsIP = System.Net.Dns.GetHostEntry(dadi_dns_server_name)
+            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim dnsClient As New DNS.Client.DnsClient(dnsIP.AddressList(0))
+                Dim db As New mdbDataContext(get_connection_string(Me._instance))
 
-            Dim response = dnsClient.Resolve(String.Format(fallback_connection_string_cname_dns_source_prototype, instance), DNS.Protocol.RecordType.CNAME)
+                Dim command As New SqlClient.SqlCommand(command_sql, db.Connection())
 
-            Dim db_name As String = CType(response.AnswerRecords(0), DNS.Protocol.ResourceRecords.CanonicalNameResourceRecord).CanonicalDomainName.ToString().Split(char_dot)(0)
+                For Each param In record
+                    command.Parameters.AddWithValue(String.Format("@{0}", param.Key), param.Value)
+                Next
 
-            Return String.Format(connection_string_prototype, instance, db_name)
+                command.ExecuteNonQuery()
+
+            End Using
 
         Catch ex As Exception
 
-            Return msSQLServer.get_connection_string(instance)
+            log.write_line(String.Format("error inserting sync_table_record. error details:{1}{0}", ex.ToString(), Environment.NewLine), log.Level.Error)
+
+            Return False
 
         End Try
 
+        Return True
+
     End Function
+
+    Public Function get_sync_work() As List(Of sync_table_record)
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim command As String = "select * from odoo.sync_table where SyncStart is null order by Anlagedatum"
+
+            Return db.ExecuteQuery(Of sync_table_record)(command).ToList()
+
+        End Using
+
+    End Function
+
+    Public Sub save_sync_table_record(record As sync_table_record)
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            Dim command As String =
+"UPDATE [odoo].[sync_table]
+   SET [SyncStart] = @SyncStart
+      ,[SyncEnde] = @SyncEnde
+      ,[SyncResult] = @SyncResult
+      ,[SyncMessage] = @SyncMessage
+ WHERE sync_tableID = @sync_tableID"
+
+            Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+
+            cmd.Parameters.AddWithValue("@SyncStart", record.SyncStart)
+            cmd.Parameters.AddWithValue("@SyncEnde", record.SyncEnde)
+            cmd.Parameters.AddWithValue("@SyncResult", record.SyncResult)
+            cmd.Parameters.AddWithValue("@SyncMessage", record.SyncMessage)
+            cmd.Parameters.AddWithValue("@sync_tableID", record.sync_tableID)
+
+            db.Connection.Open()
+
+            cmd.ExecuteNonQuery()
+
+            db.Connection.Close()
+
+        End Using
+
+    End Sub
+
+
+    Public Sub work_insert(insert As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+
+        insert.SyncStart = Now
+
+        Try
+            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+                'using etc.
+                Dim data = pgSQLHost.get_data(insert, schema)
+
+                If data.Count = 0 Then
+                    insert.SyncEnde = Now
+                    insert.SyncResult = True
+                    insert.SyncMessage = "no data available at insert - the record may be already deleted in odoo"
+                    Me.save_sync_table_record(insert)
+                    Return
+                End If
+
+                Dim command As String = String.Format(
+    "           insert into odoo.{0}({1}, TriggerFlag) 
+                values ({2}, 0) 
+                declare @newID int = scope_identity() 
+                if exists(select * 
+                          from sys.objects o 
+                          inner join sys.schemas s 
+                              on o.schema_id = s.schema_id 
+                          where s.name = 'odoo' 
+                          and o.name = 'stp_{0}_inserted' 
+                          and o.type = 'P')
+                    begin
+                        exec osoo.stp_{0}_inserted @newID
+                    end",
+                          insert.Tabelle,
+                          String.Join(", ", schema(insert.Tabelle)("fields").ToArray()),
+                         String.Join(", ", (From el In schema(insert.Tabelle)("fields") Select String.Format("@{0}", el)).ToArray())
+    )
+
+                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+
+
+                For Each item In data
+                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                    cmd.Parameters.Add(param)
+                Next
+
+                cmd.ExecuteNonQuery()
+            End Using
+
+        Catch ex As Exception
+
+            insert.SyncEnde = Now
+            insert.SyncResult = False
+            insert.SyncMessage = ex.ToString()
+
+            Me.save_sync_table_record(insert)
+
+            Return
+
+        End Try
+
+        insert.SyncEnde = Now
+        insert.SyncResult = True
+        Me.save_sync_table_record(insert)
+
+    End Sub
+    Public Sub work_update(update As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+
+        update.SyncStart = Now
+
+        If update.Tabelle.EndsWith("_rel") Then
+            update.SyncEnde = Now
+            update.SyncResult = False
+            update.SyncMessage = "_rel-records cannot be updated!"
+            Me.save_sync_table_record(update)
+            Return
+        End If
+
+        Try
+            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+                'using etc.
+                Dim data = pgSQLHost.get_data(update, schema)
+
+                If data.Count = 0 Then
+                    update.SyncEnde = Now
+                    update.SyncResult = True
+                    update.SyncMessage = "no data available at update - the record may be already deleted in odoo"
+                    Me.save_sync_table_record(update)
+                    Return
+                End If
+
+
+                Dim command As String = String.Format(
+    "           update odoo.{0}
+                set %columns%, TriggerFlag = 0
+                where {1} = {2}
+                if exists(select * 
+                          from sys.objects o 
+                          inner join sys.schemas s 
+                              on o.schema_id = s.schema_id 
+                          where s.name = 'odoo' 
+                          and o.name = 'stp_{0}_updated' 
+                          and o.type = 'P')
+                    begin
+                        declare @{0}ID int = (select top 1 {0}ID from odoo.{0} where {1} = {2})
+                        exec odoo.stp_{0}_updated @{0}ID
+                    end",
+                        update.Tabelle,
+                        schema(update.Tabelle)("id_fields")(0),
+                        update.odoo_id)
+
+                Dim columns As New List(Of String)
+
+                For Each field In schema(update.Tabelle)("fields")
+                    columns.Add(String.Format("{1} = @{1}{0}", Environment.NewLine))
+                Next
+
+                command = command.Replace("%columns%", String.Join(", ", columns.ToArray()))
+
+                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+
+
+                For Each item In data
+                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                    cmd.Parameters.Add(param)
+                Next
+                db.Connection.Open()
+                cmd.ExecuteNonQuery()
+                db.Connection.Close()
+
+            End Using
+
+        Catch ex As Exception
+
+            update.SyncEnde = Now
+            update.SyncResult = False
+            update.SyncMessage = ex.ToString()
+
+            Me.save_sync_table_record(update)
+
+            Return
+
+        End Try
+
+        update.SyncEnde = Now
+        update.SyncResult = True
+        Me.save_sync_table_record(update)
+
+    End Sub
+
+    Public Sub work_delete(delete As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+
+        delete.SyncStart = Now
+
+        Try
+            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+                Dim command As String = String.Format(
+    "    
+                if exists(select * 
+                          from sys.objects o 
+                          inner join sys.schemas s 
+                              on o.schema_id = s.schema_id 
+                          where s.name = 'odoo' 
+                          and o.name = 'stp_{0}_deleting' 
+                          and o.type = 'P')
+                    begin
+                        declare @{0}ID int = (select top 1 {0}ID from odoo.{0} where {1} = {2} {3})
+                        exec odoo.stp_{0}_deleting @{0}ID
+                    end
+                update odoo.{0}
+                set TriggerFlagDelete = 0
+                where {1} = {2} {3}
+                delete from odoo.{0}
+                where {1} = {2} {3}
+    
+    ",
+                        delete.Tabelle,
+                        schema(delete.Tabelle)("id_fields")(0),
+                        delete.odoo_id,
+                        If(schema(delete.Tabelle)("id_fields").Count > 1, String.Format("and {0} = {1}", schema(delete.Tabelle)("id_fields")(1), delete.odoo_id2.Value), ""))
+
+                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+
+                db.Connection.Open()
+                cmd.ExecuteNonQuery()
+                db.Connection.Close()
+
+            End Using
+
+        Catch ex As Exception
+
+            delete.SyncEnde = Now
+            delete.SyncResult = False
+            delete.SyncMessage = ex.ToString()
+
+            Me.save_sync_table_record(delete)
+
+            Return
+
+        End Try
+
+        delete.SyncEnde = Now
+        delete.SyncResult = True
+        Me.save_sync_table_record(delete)
+
+    End Sub
+
+    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
+
+        Dim data As New Dictionary(Of String, Object)
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            Dim command As String = String.Format("select {0} from {1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
+
+            Dim where_clause As String = String.Format("where {0} = {1}", schema(item.Tabelle)("id_fields")(0), item.odoo_id)
+
+            If item.odoo_id2.HasValue Then
+                where_clause &= String.Format(" and {0} = {1}", schema(item.Tabelle)("id_fields")(1), item.odoo_id2)
+            End If
+
+            Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+
+            db.Connection.Open()
+            Dim r = cmd.ExecuteReader()
+
+
+            If r.Read() Then
+
+                For i As Integer = 0 To r.FieldCount - 1
+                    data.Add(r.GetName(i), r(i))
+                Next
+
+            End If
+
+            r.Close()
+
+            db.Connection.Close()
+
+
+        End Using
+
+        Return data
+
+    End Function
+
 
     Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog={1};Integrated Security=True"
     Private Const db_name_prototype As String = "MDB_{0}"
@@ -112,8 +450,18 @@
     Private Const char_dot As String = "."
 End Class
 
-
-Public Class msSQLServerNotAvailableException
-    Inherits Exception
-
+Public Class sync_table_record
+    Public Property sync_tableID As Integer
+    Public Property Direction As Boolean
+    Public Property Tabelle As String
+    Public Property Operation As String
+    Public Property ID As Integer
+    Public Property odoo_id As Integer?
+    Public Property odoo_id2 As Integer?
+    Public Property Anlagedatum As DateTime?
+    Public Property SyncStart As DateTime?
+    Public Property SyncEnde As DateTime?
+    Public Property SyncResult As Boolean?
+    Public Property SyncMessage As String
 End Class
+

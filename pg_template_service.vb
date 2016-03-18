@@ -32,7 +32,7 @@ Public Class pg_template_service
 
                 Dim template_file_info As New System.IO.FileInfo(template_file)
 
-                section_dic.Add(template_file_info.Name.Replace(".pgt", ""), New pg_template(System.IO.File.ReadAllText(template_file)))
+                section_dic.Add(template_file_info.Name, New pg_template(System.IO.File.ReadAllText(template_file)))
 
             Next
 
@@ -42,9 +42,11 @@ Public Class pg_template_service
 
     Public Function render(template As pg_template, table As String, fields As List(Of String), id_fields As List(Of String)) As String
 
+        Dim substitutions As New Dictionary(Of String, String)
+
+
         For Each variable In template.variables2
 
-            Dim substitutions As New Dictionary(Of String, String)
 
             Select Case variable.Key
                 Case "id2_sync_table_field"
@@ -58,6 +60,8 @@ Public Class pg_template_service
                 Case "id2_field_name"
                     If id_fields.Count = 2 Then
                         substitutions.Add(variable.Value.representation, id_fields.Item(1))
+                    Else
+                        substitutions.Add(variable.Value.representation, variable.Value.substitute(""))
                     End If
                 Case "table_name"
                     substitutions.Add(variable.Value.representation, table)
@@ -70,6 +74,8 @@ Public Class pg_template_service
             End Select
 
         Next
+
+        Return template.substitute(substitutions)
 
     End Function
 

@@ -1,9 +1,8 @@
+create or replace view sosync_get_watched_schema
+as
 select 
-
      t.event_object_table TableName
     ,c.column_name FieldName
-    ,t.event_object_schema pgSQLSchemaName
-
 from information_schema.triggers t
 right join information_schema.columns c
     on c.table_schema = 'public'
@@ -24,5 +23,9 @@ right join information_schema.columns c
          c.data_type = 'integer'
         )
        )
-
+       
+       
 where t.event_manipulation = 'UPDATE'
+
+
+order by t.event_object_table, c.ordinal_position

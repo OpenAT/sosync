@@ -34,8 +34,8 @@ Partial Public Class mdbDataContext
   #End Region
 	
 	Public Sub New()
-		MyBase.New(Global.sosync.My.MySettings.Default.MDB_ASBLConnectionString, mappingSource)
-		OnCreated
+        MyBase.New("", mappingSource)
+        OnCreated()
 	End Sub
 	
 	Public Sub New(ByVal connection As String)
@@ -73,6 +73,8 @@ Partial Public Class ft_sosyncSchema_getResult
 	Private _msSQLSchemaName As String
 	
 	Private _online_model_name As Object
+	
+	Private _online_model_rel_field_name As Object
 	
 	Public Sub New()
 		MyBase.New
@@ -122,6 +124,18 @@ Partial Public Class ft_sosyncSchema_getResult
 		Set
 			If (Object.Equals(Me._online_model_name, value) = false) Then
 				Me._online_model_name = value
+			End If
+		End Set
+	End Property
+	
+	<Global.System.Data.Linq.Mapping.ColumnAttribute(Storage:="_online_model_rel_field_name", DbType:="Variant", UpdateCheck:=UpdateCheck.Never)>  _
+	Public Property online_model_rel_field_name() As Object
+		Get
+			Return Me._online_model_rel_field_name
+		End Get
+		Set
+			If (Object.Equals(Me._online_model_rel_field_name, value) = false) Then
+				Me._online_model_rel_field_name = value
 			End If
 		End Set
 	End Property

@@ -11,4 +11,4 @@ CREATE OR REPLACE FUNCTION sosync_triggerfunction_insert_#{table_name}() RETURNS
 
                 RETURN NULL;
         END;
-$$ LANGUAGE plpgsql;s
+$$ LANGUAGE plpgsql;

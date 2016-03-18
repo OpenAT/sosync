@@ -1,6 +1,6 @@
 ﻿Public Class pg_template
 
-    Private _content As String
+    Public ReadOnly Property content As String
 
     Public Sub New(template_content As String)
         Me._content = template_content
@@ -11,9 +11,13 @@
 
     Public ReadOnly Property variables2 As Dictionary(Of String, pg_template_variable)
         Get
-            Return Me._variables.ToDictionary(Of String)(Function(x As pg_template_variable)
-                                                             Return x.name
-                                                         End Function)
+            Dim ret As New Dictionary(Of String, pg_template_variable)
+            For Each item In Me.variables
+                If Not ret.ContainsKey(item.name) Then
+                    ret.Add(item.name, item)
+                End If
+            Next
+            Return ret
         End Get
     End Property
 

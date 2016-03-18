@@ -21,20 +21,23 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>sosync.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>None</DebugType>
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>sosync.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup>
     <OptionExplicit>On</OptionExplicit>
@@ -49,16 +52,20 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CookComputing.XmlRpcV2, Version=3.0.0.0, Culture=neutral, PublicKeyToken=a7d6e17aa302004d, processorArchitecture=MSIL">
+      <HintPath>packages\xmlrpcnet.3.0.0.266\lib\net20\CookComputing.XmlRpcV2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="dadi-impersonation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\dadi-impersonation.1.0.0.0\lib\net40\dadi-impersonation.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DNS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\DNS.1.2.2\lib\net40\DNS.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="INIFileParser, Version=2.2.4.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>packages\ini-parser.2.2.4\lib\net20\INIFileParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Npgsql, Version=3.0.5.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
@@ -86,6 +93,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="General.vb" />
+    <Compile Include="hooks.vb" />
+    <Compile Include="log.vb" />
     <Compile Include="Main.vb" />
     <Compile Include="mdb.designer.vb">
       <AutoGen>True</AutoGen>
@@ -108,13 +117,47 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="odooXMLRPCWrapper.vb" />
     <Compile Include="pgSQLServer.vb" />
-    <Compile Include="sosyncSchema.vb" />
-    <Compile Include="sosyncSchemaModel.vb" />
-    <Compile Include="sosyncSchemaModelField.vb" />
+    <Compile Include="pg_template.vb" />
+    <Compile Include="pg_template_service.vb" />
+    <Compile Include="pg_template_variable.vb" />
     <Compile Include="sosyncState.vb" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="files\scripts\01_sync_table\sync_table.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\02_schema_view\get_watched_schema.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\01_insert_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\02_insert_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\03_update_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\04_update_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\05_delete_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\03_per_table\06_delete_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\51_init_sync\insert.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\51_init_sync\update.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\99_drops\drop_triggers.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="mdb.dbml.layout">
       <DependentUpon>mdb.dbml</DependentUpon>
     </None>
@@ -124,6 +167,9 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <None Include="sosync.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -145,6 +191,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="files\scripts\03_per_table\README.txt" />
+    <Content Include="webhook.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
