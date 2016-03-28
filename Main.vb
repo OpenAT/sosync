@@ -134,10 +134,22 @@ end_block:
 
             For Each record In pgSQLHost.get_unfetched_sync_records()
 
-                record.Add("@direction", True)
-                record.Add("@id", If(msSQLHost.request_ID(schema, record("table_name"), record("odoo_id"), record("odoo_id2")), DBNull.Value))
+                Dim record_copy = New Dictionary(Of String, Object)(record)
 
-                msSQLHost.insert_sync_record(record)
+                Dim id_2 As Integer? = Nothing
+                If Not record_copy("odoo_id2") Is DBNull.Value Then
+                    id_2 = record_copy("odoo_id2")
+                End If
+
+                record_copy.Add("direction", True)
+
+                record_copy.Remove("id")
+
+                record_copy.Add("id", msSQLHost.request_ID(schema, record("table_name"), record("odoo_id"), id_2))
+
+                msSQLHost.insert_sync_record(record_copy)
+
+                pgSQLHost.mark_sync_record_as_fetched(record) 'take original "record", not copy (where id is overwritten!)
 
             Next
 
@@ -159,8 +171,8 @@ end_block:
         Dim sync_table_template = templates.templates("01_sync_table")("sync_table.pgt")
         Dim schema_view_template = templates.templates("02_schema_view")("get_watched_schema.pgt")
         Dim drop_triggers_template = templates.templates("99_drops")("drop_triggers.pgt")
-        Dim init_sync_update_tamplate = templates.templates("51_init_sync")("update.pgt")
-        Dim init_sync_insert_tamplate = templates.templates("51_init_sync")("insert.pgt")
+        Dim init_sync_update_template = templates.templates("51_init_sync")("update.pgt")
+        Dim init_sync_insert_template = templates.templates("51_init_sync")("insert.pgt")
 
         If Not pgSQLHost.execute(sync_table_template.content) Then Return False
         If Not pgSQLHost.execute(schema_view_template.content) Then Return False
@@ -244,7 +256,7 @@ end_block:
 
             Dim table = update.Key
 
-            Dim cmd = templates.render(init_sync_update_tamplate, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+            Dim cmd = templates.render(init_sync_update_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
 
             If Not pgSQLHost.execute(cmd) Then Return False
 
@@ -254,7 +266,7 @@ end_block:
 
             Dim table = insert.Key
 
-            Dim cmd = templates.render(init_sync_insert_tamplate, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+            Dim cmd = templates.render(init_sync_insert_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
 
             If Not pgSQLHost.execute(cmd) Then Return False
 

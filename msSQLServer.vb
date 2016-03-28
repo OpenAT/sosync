@@ -83,7 +83,7 @@
 
     End Function
 
-    Public Function request_ID(schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), table_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Integer?
+    Public Function request_ID(schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), table_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Integer
 
         Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
@@ -99,9 +99,9 @@
                 where_clause = String.Format("where {0} = '{1}' and {2} = '{3}'", pk_fields(0), odoo_id, pk_fields(1), odoo_id2.Value)
             End If
 
-            Dim command As String = String.Format("select top 1 {0}ID from odoo.{0} {1}", table_name, where_clause)
+            Dim command As String = String.Format("select top 1 isnull({0}ID, 0) from odoo.{0} {1}", table_name, where_clause)
 
-            Return db.ExecuteQuery(Of Integer?)(command).FirstOrDefault()
+            Return db.ExecuteQuery(Of Integer)(command).FirstOrDefault()
 
         End Using
 
@@ -122,7 +122,9 @@
                     command.Parameters.AddWithValue(String.Format("@{0}", param.Key), param.Value)
                 Next
 
+                db.Connection.Open()
                 command.ExecuteNonQuery()
+                db.Connection.Close()
 
             End Using
 
@@ -170,7 +172,7 @@
             cmd.Parameters.AddWithValue("@SyncStart", record.SyncStart)
             cmd.Parameters.AddWithValue("@SyncEnde", record.SyncEnde)
             cmd.Parameters.AddWithValue("@SyncResult", record.SyncResult)
-            cmd.Parameters.AddWithValue("@SyncMessage", record.SyncMessage)
+            cmd.Parameters.AddWithValue("@SyncMessage", If(record.SyncMessage, DBNull.Value))
             cmd.Parameters.AddWithValue("@sync_tableID", record.sync_tableID)
 
             db.Connection.Open()
@@ -215,7 +217,7 @@
                           and o.name = 'stp_{0}_inserted' 
                           and o.type = 'P')
                     begin
-                        exec osoo.stp_{0}_inserted @newID
+                        exec odoo.stp_{0}_inserted @newID
                     end",
                           insert.Tabelle,
                           String.Join(", ", schema(insert.Tabelle)("fields").ToArray()),
@@ -230,7 +232,10 @@
                     cmd.Parameters.Add(param)
                 Next
 
+                db.Connection.Open()
                 cmd.ExecuteNonQuery()
+                db.Connection.Close()
+
             End Using
 
         Catch ex As Exception
@@ -438,7 +443,9 @@
     End Function
 
 
-    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog={1};Integrated Security=True"
+    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog=MDB_AAHS;Integrated Security=True"
+    '    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog={1};Integrated Security=True"
+
     Private Const db_name_prototype As String = "MDB_{0}"
 
     Private Const fallback_connection_string_cname_dns_source_prototype As String = "mdb.mssql.{0}.datadialog.net"

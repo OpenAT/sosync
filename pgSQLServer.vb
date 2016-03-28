@@ -116,7 +116,7 @@ Public Class pgSQLServer
 
         Dim result As New List(Of Dictionary(Of String, Object))
 
-        Dim command As New Npgsql.NpgsqlCommand("select id, table_name, odoo_id, odoo_id2, operation, creation from odoosync_sync_table where fetched is null or fetched = 0 order by creation;", Me._connection)
+        Dim command As New Npgsql.NpgsqlCommand("select id, table_name, odoo_id, odoo_id2, operation, creation from sosync_sync_table where fetched is null or fetched = 0 order by creation;", Me._connection)
 
         Me._connection.Open()
 
@@ -140,10 +140,24 @@ Public Class pgSQLServer
 
     End Function
 
+    Public Sub mark_sync_record_as_fetched(record As Dictionary(Of String, Object))
+
+        Dim command As String = String.Format("update sosync_sync_table set fetched = 1 where id = {0}", record("id"))
+
+        Dim cmd As New NpgsqlCommand(command, Me._connection)
+
+        cmd.Connection.Open()
+
+        cmd.ExecuteNonQuery()
+
+        cmd.Connection.Close()
+
+    End Sub
+
     Public Function get_uid() As Integer
 
         'todo set to sosync_user_name, meanwhile admin
-        Dim command As String = String.Format("select top 1 id from res_users where login = {0}", "admin")
+        Dim command As String = String.Format("select id from res_users where login = '{0}' limit 1", "admin")
 
         Dim cmd As New NpgsqlCommand(command, Me._connection)
 
@@ -173,7 +187,7 @@ Public Class pgSQLServer
             where_clause &= String.Format(" and {0} = {1}", schema(item.Tabelle)("id_fields")(1), item.odoo_id2)
         End If
 
-        Dim cmd As New Npgsql.NpgsqlCommand(command, Me._connection)
+        Dim cmd As New Npgsql.NpgsqlCommand(String.Format("{0} {1}", command, where_clause), Me._connection)
 
         Dim data As New Dictionary(Of String, Object)
 
