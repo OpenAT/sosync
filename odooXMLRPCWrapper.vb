@@ -14,7 +14,7 @@ Public Class odooXMLRPCWrapper
 
         CType(proxy, IXmlRpcProxy).Url = String.Format("http://{0}.datadialog.net/xmlrpc/2/object", instance)
 
-        Me.db = db
+        Me.db = instance
         Me.uid = uid
         Me.password = password
         Me.msSQLHost = msSQLHost

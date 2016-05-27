@@ -60,6 +60,10 @@
       <HintPath>packages\dadi-impersonation.1.0.0.0\lib\net40\dadi-impersonation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="dadi-webhook, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\dadi-webhook.3.0.0.0\lib\net40\dadi-webhook.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="INIFileParser, Version=2.2.4.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>packages\ini-parser.2.2.4\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
@@ -167,9 +171,6 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="sosync.ini">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -194,9 +195,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="files\scripts\03_per_table\README.txt" />
-    <Content Include="webhook.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="webhook.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
