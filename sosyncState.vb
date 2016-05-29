@@ -78,6 +78,7 @@
     Public Sub New()
 
         Me.executing_directory = System.IO.Directory.GetCurrentDirectory()
+        log.write_line("working_dir = " & Me.executing_directory, log.Level.Info)
         'original:
         Me.instance = (New System.IO.DirectoryInfo(Me.executing_directory)).Parent.Name
         'für debug:
