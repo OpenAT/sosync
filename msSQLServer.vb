@@ -305,7 +305,7 @@
                 Dim columns As New List(Of String)
 
                 For Each field In schema(update.Tabelle)("fields")
-                    columns.Add(String.Format("{1} = @{1}{0}", Environment.NewLine))
+                    columns.Add(String.Format("{1} = @{1}{0}", Environment.NewLine, field))
                 Next
 
                 command = command.Replace("%columns%", String.Join(", ", columns.ToArray()))
