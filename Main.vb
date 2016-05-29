@@ -1,6 +1,10 @@
-﻿Module Main
+﻿Imports System.Net.Security
+Imports System.Security.Cryptography.X509Certificates
+
+Module Main
 
     Sub Main()
+
 
         Dim state As New sosyncState()
         Dim hooks As New hooks()
@@ -79,6 +83,7 @@ end_block:
 
 
     End Sub
+
 
     Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
 
@@ -164,7 +169,7 @@ end_block:
         End Try
 
     End Function
-   Private Function schema_check(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, odoo_user_id As Integer, instance As String, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
+    Private Function schema_check(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, odoo_user_id As Integer, instance As String, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
 
         Dim templates As New pg_template_service(".\files\scripts", odoo_user_id, instance)
 

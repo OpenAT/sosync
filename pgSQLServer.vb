@@ -16,8 +16,10 @@ Public Class pgSQLServer
     Private _connection As NpgsqlConnection
 
     Private Sub initialize_connection()
-
-        Me._connection = New NpgsqlConnection(New NpgsqlConnectionStringBuilder(pgSQLServer.get_connection_string(Me._instance, Me._password)))
+        Dim b = New NpgsqlConnectionStringBuilder(pgSQLServer.get_connection_string(Me._instance, Me._password))
+        'b.SslMode = SslMode.Prefer
+        b.TrustServerCertificate = True
+        Me._connection = New NpgsqlConnection(b)
 
     End Sub
 
@@ -29,7 +31,7 @@ Public Class pgSQLServer
             Return True
         Catch ex As Exception
 
-            log.write_line(String.Format("error connecting to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, Me._connection.ConnectionString), log.Level.Error)
+            log.write_line(String.Format("error connecting to pgsql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, Me._connection.ConnectionString), log.Level.Error)
 
             Return False
         End Try
@@ -102,7 +104,7 @@ Public Class pgSQLServer
         Dim password As String = pw
         Dim database As String = instance
 
-        Return String.Format("Server={0};Port={1};User ID={2};Password={3};Database={4};",
+        Return String.Format("Server={0};Port={1};User ID={2};Password={3};Database={4};SSL Mode=Prefer",
                              host,
                              port,
                              user,
