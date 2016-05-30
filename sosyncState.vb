@@ -42,6 +42,9 @@
     Public ReadOnly Property is_main_process As Boolean
         Get
 
+            Dim u As Integer = 3
+            Dim a = u * 3
+
             Dim current_main_process_id As Integer? = get_main_process_id(Me.executing_directory)
 
             If current_main_process_id.HasValue Then
