@@ -181,7 +181,11 @@ Public Class pgSQLServer
 
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
 
-        Dim command As String = String.Format("select {0} from {1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
+        Dim l = schema(item.Tabelle)("fields").ToList()
+
+        l.Add(schema(item.Tabelle)("id_fields")(0))
+
+        Dim command As String = String.Format("select {0} from {1} ", String.Join(", ", l.ToArray()), item.Tabelle)
 
         Dim where_clause As String = String.Format("where {0} = {1}", schema(item.Tabelle)("id_fields")(0), item.odoo_id)
 

@@ -220,8 +220,8 @@
                         exec odoo.stp_{0}_inserted @newID
                     end",
                           insert.Tabelle,
-                          String.Join(", ", schema(insert.Tabelle)("fields").ToArray()),
-                         String.Join(", ", (From el In schema(insert.Tabelle)("fields") Select String.Format("@{0}", el)).ToArray())
+                          String.Join(", ", data.Keys.ToArray()),
+                         String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray())
     )
 
                 Dim cmd As New SqlClient.SqlCommand(command, db.Connection)

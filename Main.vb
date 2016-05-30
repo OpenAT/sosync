@@ -103,30 +103,30 @@ end_block:
 
                     End Select
                 Case False 'studio to online
-                    If record.Tabelle.EndsWith("_rel") Then
-                        Select Case record.Operation
-                            Case "i"
-                                api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
-                            Case "u"
-                                'no update implemented (not needed)
-                            Case "d"
-                                api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
+                    'If record.Tabelle.EndsWith("_rel") Then
+                    '    Select Case record.Operation
+                    '        Case "i"
+                    '            api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
+                    '        Case "u"
+                    '            'no update implemented (not needed)
+                    '        Case "d"
+                    '            api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
 
-                        End Select
-                    Else
-                        Select Case record.Operation
-                            Case "i"
-                                api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema)))
+                    '    End Select
+                    'Else
+                    '    Select Case record.Operation
+                    '        Case "i"
+                    '            api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema))) FALSCH (nicht pgsql, oder?)
 
-                            Case "u"
-                                api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema)))
+                    '        Case "u"
+                    '            api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema)))
 
-                            Case "d"
-                                api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema)))
+                    '        Case "d"
+                    '            api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(pgSQLHost.get_data(record, schema)))
 
-                        End Select
+                    '    End Select
 
-                    End If
+                    'End If
             End Select
 
         Next
@@ -135,10 +135,14 @@ end_block:
 
     Private Function fetch_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
 
-        Try
+        ' Try
 
-            For Each record In pgSQLHost.get_unfetched_sync_records()
+        Dim l = pgSQLHost.get_unfetched_sync_records()
 
+
+
+        For Each record In l
+            Try
                 Dim record_copy = New Dictionary(Of String, Object)(record)
 
                 Dim id_2 As Integer? = Nothing
@@ -156,17 +160,22 @@ end_block:
 
                 pgSQLHost.mark_sync_record_as_fetched(record) 'take original "record", not copy (where id is overwritten!)
 
-            Next
 
-            Return True
+            Catch ex As Exception
+                log.write_line(String.Format("error fetching records. error details:{0}{1}", Environment.NewLine, ex.ToString()), log.Level.Error)
 
-        Catch ex As Exception
+                Return False
 
-            log.write_line(String.Format("error fetching records. error details:{0}{1}", Environment.NewLine, ex.ToString()), log.Level.Error)
 
-            Return False
+            End Try
 
-        End Try
+        Next
+
+        Return True
+
+        'Catch ex As Exception
+
+        'End Try
 
     End Function
     Private Function schema_check(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, odoo_user_id As Integer, instance As String, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
