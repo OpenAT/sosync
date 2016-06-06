@@ -443,7 +443,7 @@
     End Function
 
 
-    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog=MDB_AAHS;Integrated Security=True"
+    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog=MDB_{0};Integrated Security=True"
     '    Private Const connection_string_prototype As String = "Data Source=mssql.{0}.datadialog.net;Initial Catalog={1};Integrated Security=True"
 
     Private Const db_name_prototype As String = "MDB_{0}"

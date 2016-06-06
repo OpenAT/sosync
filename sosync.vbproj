@@ -195,7 +195,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="files\scripts\03_per_table\README.txt" />
-    <Content Include="webhook.exe" />
+    <Content Include="webhook.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
