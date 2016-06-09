@@ -35,6 +35,7 @@ sync_block:
         Dim studio_pw As String = config.Sections("studio")("studio_pw")
         Dim online_admin_pw As String = config.Sections("online")("online_admin_pw")
         Dim online_pgsql_pw As String = config.Sections("online")("online_pgsql_pw")
+        Dim online_sosync_pw As String = config.Sections("online")("online_sosync_pw")
 
         Dim pgSQLHost As New pgSQLServer(state.instance, online_pgsql_pw)
         Dim msSQLHost As New msSQLServer(state.instance, studio_pw)
@@ -58,7 +59,7 @@ sync_block:
             GoTo end_block
         End If
 
-        Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_admin_pw, msSQLHost)
+        Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
         sync_work(pgSQLHost, msSQLHost, api, schema)
 
@@ -184,24 +185,38 @@ end_block:
 
         Dim sync_table_template = templates.templates("01_sync_table")("sync_table.pgt")
         Dim schema_view_template = templates.templates("02_schema_view")("get_watched_schema.pgt")
+        Dim sosync_current_odoo_user_id_template = templates.templates("02_sosync_current_odoo_user_id")("sosync_current_odoo_user_id.pgt")
         Dim drop_triggers_template = templates.templates("99_drops")("drop_triggers.pgt")
         Dim init_sync_update_template = templates.templates("51_init_sync")("update.pgt")
         Dim init_sync_insert_template = templates.templates("51_init_sync")("insert.pgt")
 
         If Not pgSQLHost.execute(sync_table_template.content) Then Return False
         If Not pgSQLHost.execute(schema_view_template.content) Then Return False
+        If Not pgSQLHost.execute(sosync_current_odoo_user_id_template.content) Then Return False
 
         Dim origin_schema = schema
         Dim watched_schema = pgSQLHost.get_watched_schema()
+        Dim current_odoo_id As Integer? = pgSQLHost.get_current_odoo_user_id()
 
         Dim initial_syncs As New Dictionary(Of String, String)
 
         Dim renew_triggers As New List(Of String)
         Dim remove_triggers As New List(Of String)
 
+        Dim renew_all_triggers As Boolean = False
+
+        If current_odoo_id.HasValue AndAlso current_odoo_id <> odoo_user_id Then
+            renew_all_triggers = True
+        End If
+
         For Each table In origin_schema
 
-            If Not watched_schema.ContainsKey(table.Key) Then
+            If renew_all_triggers Then
+
+                initial_syncs.Add(table.Key, "u")
+                renew_triggers.Add(table.Key)
+
+            ElseIf Not watched_schema.ContainsKey(table.Key) Then
 
                 initial_syncs.Add(table.Key, "i")
                 renew_triggers.Add(table.Key)
@@ -214,6 +229,7 @@ end_block:
 
                         initial_syncs.Add(table.Key, "u")
                         renew_triggers.Add(table.Key)
+                        Exit For
 
                     End If
 
@@ -237,6 +253,7 @@ end_block:
                     If Not origin_schema(table.Key)("fields").Contains(field) Then
 
                         renew_triggers.Add(table.Key)
+                        Exit For
 
                     End If
 

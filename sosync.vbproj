@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\sosync\</OutputPath>
+    <OutputPath>bin\sosync\care\</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
@@ -130,6 +130,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="files\scripts\01_sync_table\sync_table.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\02_sosync_current_odoo_user_id\sosync_current_odoo_user_id.pgt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="files\scripts\02_schema_view\get_watched_schema.pgt">

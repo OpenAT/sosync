@@ -159,7 +159,7 @@ Public Class pgSQLServer
     Public Function get_uid() As Integer
 
         'todo set to sosync_user_name, meanwhile admin
-        Dim command As String = String.Format("select id from res_users where login = '{0}' limit 1", "admin")
+        Dim command As String = String.Format("select id from res_users where login = '{0}' limit 1", "sosync")
 
         Dim cmd As New NpgsqlCommand(command, Me._connection)
 
@@ -173,6 +173,26 @@ Public Class pgSQLServer
             Return result.Value
         Else
             Return 0
+        End If
+
+    End Function
+    Public Function get_current_odoo_user_id() As Integer?
+
+        'todo set to sosync_user_name, meanwhile admin
+        Dim command As String = String.Format("select sosync_current_odoo_user_id from sosync_current_odoo_user_id limit 1")
+
+        Dim cmd As New NpgsqlCommand(command, Me._connection)
+
+        cmd.Connection.Open()
+
+        Dim result As String = cmd.ExecuteScalar()
+
+        cmd.Connection.Close()
+
+        If String.IsNullOrEmpty(result) OrElse Not Information.IsNumeric(result) Then
+            Return Nothing
+        Else
+            Return Integer.Parse(result)
         End If
 
     End Function
