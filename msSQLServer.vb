@@ -409,15 +409,10 @@
 
             Dim db As New mdbDataContext(get_connection_string(Me._instance))
 
-            Dim command As String = String.Format("select {0} from {1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
+            Dim command As String = String.Format("select {0} from odoo.{1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
 
-            Dim where_clause As String = String.Format("where {0} = {1}", schema(item.Tabelle)("id_fields")(0), item.odoo_id)
-
-            If item.odoo_id2.HasValue Then
-                where_clause &= String.Format(" and {0} = {1}", schema(item.Tabelle)("id_fields")(1), item.odoo_id2)
-            End If
-
-            Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+            Dim where_clause As String = String.Format("where ID = {0}",item.ID)
+            Dim cmd As New SqlClient.SqlCommand(command & where_clause, db.Connection)
 
             db.Connection.Open()
             Dim r = cmd.ExecuteReader()
