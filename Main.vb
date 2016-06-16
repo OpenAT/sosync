@@ -120,10 +120,10 @@ end_block:
                                 api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
 
                             Case "u"
-                                api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+                                api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
 
                             Case "d"
-                                api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+                                api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
 
                         End Select
 
