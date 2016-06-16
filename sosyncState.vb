@@ -3,6 +3,7 @@
     Private Const runagain_filename As String = "runagain"
     Private Const update_filename As String = "update"
     Private Const runlock_filename As String = "runlock"
+    Private Const pause_filename As String = "pause"
 
     Public Property executing_directory As String
     Public Property instance As String
@@ -29,6 +30,14 @@
         End Get
         Set(value As Boolean)
             Me.save_state(value, runlock_filename)
+        End Set
+    End Property
+    Public Property pause As Boolean
+        Get
+            Return get_state(pause_filename)
+        End Get
+        Set(value As Boolean)
+            Me.save_state(value, pause_filename)
         End Set
     End Property
 

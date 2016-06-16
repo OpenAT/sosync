@@ -9,6 +9,10 @@ Module Main
         Dim state As New sosyncState()
         Dim hooks As New hooks()
 
+        If state.pause Then
+            Exit Sub
+        End If
+
         If state.runlock Then
             If state.update Then
                 state.unlink_main_process()
