@@ -52,6 +52,32 @@
     End Function
 
 
+    Public Sub save_new_odoo_id(record As sync_table_record, new_odoo_id As Integer)
+
+
+        Try
+
+            Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+
+                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+                Dim command As String =
+                    String.Format("update odoo.{0} set id = {1} where MDBID = {2}", record.Tabelle, new_odoo_id, record.ID)
+
+                db.ExecuteCommand(command)
+
+            End Using
+
+
+        Catch ex As Exception
+
+            log.write_line(String.Format("error saving new odoo_id to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, get_connection_string(Me._instance)), log.Level.Error)
+
+        End Try
+
+    End Sub
+
     Public Function try_connect() As Boolean
 
         Dim conn As New SqlClient.SqlConnection(get_connection_string(Me._instance))
