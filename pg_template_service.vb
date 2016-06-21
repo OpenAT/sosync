@@ -56,10 +56,10 @@ Public Class pg_template_service
                         substitutions.Add(variable.Value.representation, variable.Value.substitute(""))
                     End If
                 Case "id_field_name"
-                    substitutions.Add(variable.Value.representation, id_fields.Item(0))
+                    substitutions.Add(variable.Value.representation, variable.Value.substitute(id_fields.Item(0)))
                 Case "id2_field_name"
                     If id_fields.Count = 2 Then
-                        substitutions.Add(variable.Value.representation, id_fields.Item(1))
+                        substitutions.Add(variable.Value.representation, variable.Value.substitute(id_fields.Item(1)))
                     Else
                         substitutions.Add(variable.Value.representation, variable.Value.substitute(""))
                     End If
