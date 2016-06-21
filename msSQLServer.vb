@@ -17,22 +17,27 @@
 
             Dim db As New mdbDataContext(get_connection_string(Me._instance))
 
-            For Each item In db.ft_sosyncSchema_get()
+            Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
+
+            For Each item In schema
                 If Not res.ContainsKey(item.TableName) Then
                     res.Add(item.TableName, New Dictionary(Of String, List(Of String)))
 
                     res(item.TableName).Add("online_model_name", New List(Of String))
                     res(item.TableName)("online_model_name").Add(item.online_model_name)
 
-                    res(item.TableName).Add("online_model_rel_name", New List(Of String))
-                    If Not String.IsNullOrEmpty(item.online_model_rel_field_name) Then
-                        res(item.TableName)("online_model_rel_name").Add(item.online_model_rel_field_name)
-                    End If
-
+                    res(item.TableName).Add("online_model_rel_ids", New List(Of String))
+                    res(item.TableName).Add("online_model_rel_fields", New List(Of String))
 
                     res(item.TableName).Add("id_fields", New List(Of String))
                     res(item.TableName).Add("fields", New List(Of String))
 
+
+                End If
+
+                If item.TableName.EndsWith("_rel") Then
+                    res(item.TableName)("online_model_rel_ids").Add(item.FieldName)
+                    res(item.TableName)("online_model_rel_fields").Add(item.online_model_rel_field_name)
                 End If
 
                 If item.FieldName = "id" OrElse item.TableName.EndsWith("_rel") Then
@@ -55,6 +60,8 @@
     Public Sub save_new_odoo_id(record As sync_table_record, new_odoo_id As Integer)
 
 
+        Dim command As String = ""
+
         Try
 
             Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
@@ -62,8 +69,12 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
 
-                Dim command As String =
-                    String.Format("update odoo.{0} set id = {1} where MDBID = {2}", record.Tabelle, new_odoo_id, record.ID)
+                command =
+                    String.Format("update odoo.{0} set id = {1}, TriggerFlag = 0 where {0}ID = {2}", record.Tabelle, new_odoo_id, record.ID)
+
+                db.ExecuteCommand(command)
+
+                command = String.Format("update odoo.sync_table set odoo_id = {0} where Tabelle = '{1}' and ID = {2}", new_odoo_id, record.Tabelle, record.ID)
 
                 db.ExecuteCommand(command)
 
@@ -72,7 +83,7 @@
 
         Catch ex As Exception
 
-            log.write_line(String.Format("error saving new odoo_id to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, get_connection_string(Me._instance)), log.Level.Error)
+            log.write_line(String.Format("error saving new odoo_id to mssql server({2}). error details:{1}{0}{1}{1}command:{1}{3}", ex.ToString(), Environment.NewLine, get_connection_string(Me._instance), command), log.Level.Error)
 
         End Try
 
@@ -437,7 +448,7 @@
 
             Dim command As String = String.Format("select {0} from odoo.{1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
 
-            Dim where_clause As String = String.Format("where ID = {0}",item.ID)
+            Dim where_clause As String = String.Format("where {1}ID = {0}", item.ID, item.Tabelle)
             Dim cmd As New SqlClient.SqlCommand(command & where_clause, db.Connection)
 
             db.Connection.Open()

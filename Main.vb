@@ -109,23 +109,34 @@ end_block:
                     End Select
                 Case False 'studio to online
                     If record.Tabelle.EndsWith("_rel") Then
+
+                        Dim ix_id As Integer = schema(record.Tabelle)("online_model_rel_fields").IndexOf("id")
+
+                        Dim ix_link As Integer = If(ix_id = 0, 1, 0)
+
                         Select Case record.Operation
                             Case "i"
-                                api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
+
+                                api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+
                             Case "u"
                                 'no update implemented (not needed)
                             Case "d"
-                                api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_field_name")(0), record.odoo_id.Value, record.odoo_id2.Value)
+
+                                api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
 
                         End Select
                     Else
                         Select Case record.Operation
                             Case "i"
+
+
                                 Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
 
                                 If new_id.HasValue Then
                                     msSQLHost.save_new_odoo_id(record, new_id.Value)
                                 End If
+
 
                             Case "u"
                                 api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))

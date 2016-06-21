@@ -151,16 +151,18 @@ Public Class odooXMLRPCWrapper
     Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, String)) As Integer?
 
 
+        record.SyncStart = Now
+
+        Dim ret As Integer? = Nothing
+
         Try
 
             record.SyncStart = Now
 
             Dim retVal = proxy.execute_kw(db, uid, password, model_name, "create", create_args(data))
 
-            If retVal.GetType() Is GetType(Integer) Then
-                Return retVal
-            Else
-                Return Nothing
+            If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
+                ret = retVal
             End If
 
             record.SyncEnde = Now
@@ -176,7 +178,7 @@ Public Class odooXMLRPCWrapper
 
         End Try
 
-
+        Return ret
 
     End Function
 
