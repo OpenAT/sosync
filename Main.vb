@@ -53,10 +53,12 @@ sync_block:
 
         Dim schema = msSQLHost.get_Schema()
 
-        If Not schema_check(pgSQLHost, msSQLHost, odoo_user_id, state.instance, schema) Then
+        If Not schema_check(pgSQLHost, msSQLHost, odoo_user_id, state.instance, schema, state.force_trigger_renew) Then
             log.write_line("syncer exit - schema check not successful", log.Level.Error)
             GoTo end_block
         End If
+
+        state.force_trigger_renew = False
 
         If Not fetch_work(pgSQLHost, msSQLHost, schema) Then
             log.write_line("syncer exit - fetch work not successful", log.Level.Error)
@@ -180,6 +182,26 @@ end_block:
 
                 pgSQLHost.mark_sync_record_as_fetched(record) 'take original "record", not copy (where id is overwritten!)
 
+                If record("table_name").ToString().EndsWith("_rel") Then
+
+                    Dim start As Date = Now
+
+                    If msSQLHost.sync_record_exists(record("table_name"), record("odoo_id"), record("odoo_id2"), False, record("operation")) Then
+
+                        Dim rec As New sync_table_record()
+
+                        rec.sync_tableID = record_copy("sync_tableID")
+
+                        rec.SyncStart = start
+                        rec.SyncEnde = Now
+                        rec.SyncMessage = "rel table insert double direction case"
+                        rec.SyncResult = True
+
+                        msSQLHost.save_sync_table_record(rec)
+
+                    End If
+
+                End If
 
             Catch ex As Exception
                 log.write_line(String.Format("error fetching records. error details:{0}{1}", Environment.NewLine, ex.ToString()), log.Level.Error)
@@ -198,7 +220,7 @@ end_block:
         'End Try
 
     End Function
-    Private Function schema_check(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, odoo_user_id As Integer, instance As String, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
+    Private Function schema_check(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, odoo_user_id As Integer, instance As String, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), force_trigger_renew As Boolean) As Boolean
 
         Dim templates As New pg_template_service(".\files\scripts", odoo_user_id, instance)
 
@@ -222,7 +244,7 @@ end_block:
         Dim renew_triggers As New List(Of String)
         Dim remove_triggers As New List(Of String)
 
-        Dim renew_all_triggers As Boolean = False
+        Dim renew_all_triggers As Boolean = force_trigger_renew
 
         If current_odoo_id.HasValue AndAlso current_odoo_id <> odoo_user_id Then
             renew_all_triggers = True
@@ -284,13 +306,27 @@ end_block:
 
         For Each table In renew_triggers
 
-            For Each template In templates.templates("03_per_table")
+            If table.EndsWith("_rel") Then
 
-                Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+                For Each template In templates.templates("04_per_rel_table")
 
-                If Not pgSQLHost.execute(cmd) Then Return False
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
 
-            Next
+                    If Not pgSQLHost.execute(cmd) Then Return False
+
+                Next
+
+            Else
+
+                For Each template In templates.templates("03_per_table")
+
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+
+                    If Not pgSQLHost.execute(cmd) Then Return False
+
+                Next
+
+            End If
 
         Next
 

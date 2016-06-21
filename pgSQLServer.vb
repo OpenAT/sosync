@@ -203,7 +203,10 @@ Public Class pgSQLServer
 
         Dim l = schema(item.Tabelle)("fields").ToList()
 
-        l.Add(schema(item.Tabelle)("id_fields")(0))
+        If Not l.Contains(schema(item.Tabelle)("id_fields")(0)) Then
+            l.Add(schema(item.Tabelle)("id_fields")(0))
+        End If
+
 
         Dim command As String = String.Format("select {0} from {1} ", String.Join(", ", l.ToArray()), item.Tabelle)
 

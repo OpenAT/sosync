@@ -8,6 +8,38 @@
         Me._pw = pw
     End Sub
 
+
+    Public Function sync_record_exists(table_name As String, odoo_id As Integer, odoo_id2 As Integer, direction As Boolean, operation As String) As Boolean
+
+        Dim ret As Boolean = False
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            Dim question As String = String.Format(
+            "select 
+                 case when count(*) > 0 then cast(1 as bit) else cast(0 as bit) end result 
+             from odoo.sync_table t 
+             where t.Tabelle = '{0}'
+               and t.odoo_id = {1}
+               and t.odoo_id2 = {2}
+               and t.Direction = {3}
+               and t.Operation = '{4}'",
+            table_name,
+            odoo_id,
+            odoo_id2,
+            If(direction, "1", "0"),
+            operation)
+
+            ret = If(db.ExecuteQuery(Of Boolean?)(question).FirstOrDefault(), False)
+
+        End Using
+
+        Return ret
+
+    End Function
+
     Public Function get_Schema() As Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
         Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
@@ -146,7 +178,7 @@
 
     Public Function insert_sync_record(record As Dictionary(Of String, Object)) As Boolean
 
-        Dim command_sql As String = "insert into odoo.sync_table (Direction, Tabelle, Operation, ID, odoo_id, odoo_id2, Anlagedatum) values (@direction, @table_name, @operation, @id, @odoo_id, @odoo_id2, @creation)"
+        Dim command_sql As String = "insert into odoo.sync_table (Direction, Tabelle, Operation, ID, odoo_id, odoo_id2, Anlagedatum) values (@direction, @table_name, @operation, @id, @odoo_id, @odoo_id2, @creation) set @sync_tableID = scope_identity()"
         Try
 
             Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
@@ -159,9 +191,15 @@
                     command.Parameters.AddWithValue(String.Format("@{0}", param.Key), param.Value)
                 Next
 
+                Dim new_id = command.Parameters.Add("@sync_tableID", SqlDbType.Int)
+
+                new_id.Direction = ParameterDirection.Output
+
                 db.Connection.Open()
                 command.ExecuteNonQuery()
                 db.Connection.Close()
+
+                record.Add("sync_tableID", new_id.Value)
 
             End Using
 

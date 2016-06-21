@@ -156,6 +156,24 @@
     <None Include="files\scripts\03_per_table\06_delete_trigger.pgt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="files\scripts\04_per_rel_table\01_insert_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\04_per_rel_table\02_insert_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\04_per_rel_table\03_update_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\04_per_rel_table\04_update_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\04_per_rel_table\05_delete_triggerfunction.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="files\scripts\04_per_rel_table\06_delete_trigger.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="files\scripts\51_init_sync\insert.pgt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -176,7 +194,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="mdb.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
       <LastGenOutput>mdb.designer.vb</LastGenOutput>

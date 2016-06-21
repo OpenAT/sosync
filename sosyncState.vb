@@ -4,6 +4,7 @@
     Private Const update_filename As String = "update"
     Private Const runlock_filename As String = "runlock"
     Private Const pause_filename As String = "pause"
+    Private Const force_trigger_renew_filename As String = "force_trigger_renew"
 
     Public Property executing_directory As String
     Public Property instance As String
@@ -38,6 +39,14 @@
         End Get
         Set(value As Boolean)
             Me.save_state(value, pause_filename)
+        End Set
+    End Property
+    Public Property force_trigger_renew As Boolean
+        Get
+            Return get_state(force_trigger_renew_filename)
+        End Get
+        Set(value As Boolean)
+            Me.save_state(value, force_trigger_renew_filename)
         End Set
     End Property
 
