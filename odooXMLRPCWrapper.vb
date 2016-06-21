@@ -115,7 +115,7 @@ Public Class odooXMLRPCWrapper
 
             Dim field_array(1) As Object
             Dim field_struct(3) As Object
-            field_struct(0) = 2
+            field_struct(0) = 3
             field_struct(1) = odoo_id2
             field_struct(2) = 0
             field_array(0) = field_struct
