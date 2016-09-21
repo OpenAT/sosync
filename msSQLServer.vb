@@ -135,7 +135,7 @@
 
         Catch ex As Exception
 
-            log.write_line(String.Format("error connecting to pgsql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, conn.ConnectionString), log.Level.Error)
+            log.write_line(String.Format("error connecting to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, conn.ConnectionString), log.Level.Error)
 
             Return False
 
