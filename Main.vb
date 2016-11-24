@@ -316,6 +316,19 @@ end_block:
 
                 Next
 
+            ElseIf table = "ir_translation" Then
+
+                For Each template In templates.templates("05_per_wo_write_uid_table")
+
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+
+                    If Not pgSQLHost.execute(cmd) Then Return False
+
+                Next
+
+
+
+
             Else
 
                 For Each template In templates.templates("03_per_table")
