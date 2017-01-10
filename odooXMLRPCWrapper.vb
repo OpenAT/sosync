@@ -271,7 +271,8 @@ Public Class odooXMLRPCWrapper
 
                     End If
                 End If
-
+            ElseIf val_raw.GetType Is GetType(Object()) Then
+                val_raw = CType(val_raw, Object())(0)
             End If
 
             res.Add(field, val_raw)

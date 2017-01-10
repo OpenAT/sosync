@@ -3,7 +3,7 @@ Imports System.Security.Cryptography.X509Certificates
 
 Module Main
 
-    Sub Main_TEST()
+    Sub Main2()
 
         Dim state As New sosyncState()
         Dim config = (New IniParser.FileIniDataParser()).ReadFile(String.Format("{0}\sosync.ini", state.executing_directory))
