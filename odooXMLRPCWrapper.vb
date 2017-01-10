@@ -19,13 +19,18 @@ Public Class odooXMLRPCWrapper
         Me.password = password
         Me.msSQLHost = msSQLHost
 
+
     End Sub
     Public Shared Function create_json_serialized_data(data As Dictionary(Of String, Object)) As Dictionary(Of String, String)
 
         Dim result As New Dictionary(Of String, String)
 
         For Each item In data
-            result.Add(item.Key, serialize_json(item.Value))
+            Dim value = item.Value
+            If value.GetType() Is GetType(Date) Then
+                value = CType(value, Date).ToUniversalTime()
+            End If
+            result.Add(item.Key, serialize_json(value))
         Next
 
         Return result
@@ -228,6 +233,54 @@ Public Class odooXMLRPCWrapper
 
     End Sub
 
+    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
+
+        Dim l = schema(item.Tabelle)("fields").ToList()
+
+        If Not l.Contains(schema(item.Tabelle)("id_fields")(0)) Then
+            l.Add(schema(item.Tabelle)("id_fields")(0))
+        End If
+
+        Dim id = item.odoo_id.Value
+
+        Dim online_model_name = schema(item.Tabelle)("online_model_name")(0)
+
+        Dim context As New XmlRpcStruct
+        context.Add("lang", "de_DE")
+
+        Dim context_super As New XmlRpcStruct()
+        context_super.Add("context", context)
+
+
+        Dim record As XmlRpcStruct = proxy.execute_kw_with_context(db, uid, password, online_model_name, "read", New Object() {id}, context_super)
+
+        Dim res As New Dictionary(Of String, Object)
+
+        For Each field In l
+
+            Dim val_raw = record(field)
+
+            If val_raw.GetType() Is GetType(String) Then
+                Dim value As String = val_raw
+
+                If value.Length = "XXXX-XX-XX XX:XX:XX".Length Then
+                    If System.Text.RegularExpressions.Regex.IsMatch(value, "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}") Then
+                        Dim provider As System.Globalization.CultureInfo = System.Globalization.CultureInfo.InvariantCulture
+                        Dim format As String = "yyyy-MM-dd HH:mm:ss"
+                        val_raw = Date.ParseExact(val_raw, format, provider).ToLocalTime()
+
+                    End If
+                End If
+
+            End If
+
+            res.Add(field, val_raw)
+        Next
+
+        Return res
+
+    End Function
+
     Private Function create_args(data As Dictionary(Of String, String), ParamArray additionalArgs() As Object) As Object()
 
         Dim xml_args As New XmlRpcStruct()
@@ -264,6 +317,9 @@ Public Class odooXMLRPCWrapper
 
         <XmlRpcMethod("execute_kw")>
         Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object()) As Object
+
+        <XmlRpcMethod("execute_kw")>
+        Function execute_kw_with_context(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object(), additional As XmlRpcStruct) As Object
 
     End Interface
 

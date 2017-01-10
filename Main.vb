@@ -3,6 +3,38 @@ Imports System.Security.Cryptography.X509Certificates
 
 Module Main
 
+    Sub Main_TEST()
+
+        Dim state As New sosyncState()
+        Dim config = (New IniParser.FileIniDataParser()).ReadFile(String.Format("{0}\sosync.ini", state.executing_directory))
+
+        Dim studio_pw As String = config.Sections("studio")("studio_pw")
+        Dim online_admin_pw As String = config.Sections("online")("online_admin_pw")
+        Dim online_pgsql_pw As String = config.Sections("online")("online_pgsql_pw")
+        Dim online_sosync_pw As String = config.Sections("online")("online_sosync_pw")
+        Dim pgSQLHost As New pgSQLServer(state.instance, online_pgsql_pw)
+        Dim msSQLHost As New msSQLServer(state.instance, studio_pw)
+
+        If Not pgSQLHost.try_connect() OrElse Not msSQLHost.try_connect() Then
+            log.write_line("syncer exit - couldn't connect to all db-servers", log.Level.Error)
+
+        End If
+
+
+        Dim schema = msSQLHost.get_Schema()
+
+        Dim odoo_user_id As Integer = pgSQLHost.get_uid()
+
+        Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
+
+        Dim r As New sync_table_record()
+        r.Tabelle = "product_template"
+        r.odoo_id = 8
+
+        Dim rec = api.get_data(r, schema)
+
+    End Sub
+
     Sub Main()
 
 
@@ -102,11 +134,11 @@ end_block:
                 Case True 'online to studio
                     Select Case record.Operation
                         Case "i"
-                            msSQLHost.work_insert(record, pgSQLHost, schema)
+                            msSQLHost.work_insert(record, api, schema)
                         Case "u"
-                            msSQLHost.work_update(record, pgSQLHost, schema)
+                            msSQLHost.work_update(record, api, schema)
                         Case "d"
-                            msSQLHost.work_delete(record, pgSQLHost, schema)
+                            msSQLHost.work_delete(record, api, schema)
 
                     End Select
                 Case False 'studio to online

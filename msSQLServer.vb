@@ -261,7 +261,7 @@
     End Sub
 
 
-    Public Sub work_insert(insert As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
 
         insert.SyncStart = Now
 
@@ -270,7 +270,7 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
                 'using etc.
-                Dim data = pgSQLHost.get_data(insert, schema)
+                Dim data = api.get_data(insert, schema)
 
                 If data.Count = 0 Then
                     insert.SyncEnde = Now
@@ -330,7 +330,7 @@
         Me.save_sync_table_record(insert)
 
     End Sub
-    Public Sub work_update(update As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Public Sub work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
 
         update.SyncStart = Now
 
@@ -347,7 +347,7 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
                 'using etc.
-                Dim data = pgSQLHost.get_data(update, schema)
+                Dim data = api.get_data(update, schema)
 
                 If data.Count = 0 Then
                     update.SyncEnde = Now
@@ -416,7 +416,7 @@
 
     End Sub
 
-    Public Sub work_delete(delete As sync_table_record, pgSQLHost As pgSQLServer, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Public Sub work_delete(delete As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
 
         delete.SyncStart = Now
 
