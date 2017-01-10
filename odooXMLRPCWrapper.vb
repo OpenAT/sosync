@@ -95,7 +95,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", args)
+            proxy.execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -135,7 +135,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", args)
+            proxy.execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -164,7 +164,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            Dim retVal = proxy.execute_kw(db, uid, password, model_name, "create", create_args(data))
+            Dim retVal = proxy.execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
 
             If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
                 ret = retVal
@@ -193,7 +193,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", create_args(data, id))
+            proxy.execute_kw(db, uid, password, model_name, "write", create_args(data, id), get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -216,7 +216,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, id))
+            proxy.execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, id), get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -233,6 +233,18 @@ Public Class odooXMLRPCWrapper
 
     End Sub
 
+    Private Function get_de_de_locale() As XmlRpcStruct
+
+        Dim context As New XmlRpcStruct
+        context.Add("lang", "de_DE")
+
+        Dim context_super As New XmlRpcStruct()
+        context_super.Add("context", context)
+
+        Return context_super
+
+    End Function
+
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
 
         Dim l = schema(item.Tabelle)("fields").ToList()
@@ -245,14 +257,8 @@ Public Class odooXMLRPCWrapper
 
         Dim online_model_name = schema(item.Tabelle)("online_model_name")(0)
 
-        Dim context As New XmlRpcStruct
-        context.Add("lang", "de_DE")
 
-        Dim context_super As New XmlRpcStruct()
-        context_super.Add("context", context)
-
-
-        Dim record As XmlRpcStruct = proxy.execute_kw_with_context(db, uid, password, online_model_name, "read", New Object() {id}, context_super)
+        Dim record As XmlRpcStruct = proxy.execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
 
         Dim res As New Dictionary(Of String, Object)
 
@@ -316,11 +322,11 @@ Public Class odooXMLRPCWrapper
 
     Public Interface odooRPC
 
-        <XmlRpcMethod("execute_kw")>
-        Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object()) As Object
+        '<XmlRpcMethod("execute_kw")>
+        'Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object()) As Object
 
         <XmlRpcMethod("execute_kw")>
-        Function execute_kw_with_context(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object(), additional As XmlRpcStruct) As Object
+        Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object(), additional As XmlRpcStruct) As Object
 
     End Interface
 
