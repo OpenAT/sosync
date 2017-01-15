@@ -417,7 +417,7 @@ end_block:
 
         Next
 
-        For Each resync In (From el In initial_syncs Where el.Value = "u")
+        For Each resync In (From el In initial_syncs Where el.Value = "r")
 
             Dim table = resync.Key
 
