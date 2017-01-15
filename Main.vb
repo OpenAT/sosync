@@ -130,58 +130,75 @@ end_block:
 
         For Each record In work
 
-            Select Case record.Direction
-                Case True 'online to studio
-                    Select Case record.Operation
-                        Case "i"
-                            msSQLHost.work_insert(record, api, schema)
-                        Case "u"
-                            msSQLHost.work_update(record, api, schema)
-                        Case "d"
-                            msSQLHost.work_delete(record, api, schema)
+            Dim done As Boolean = False
 
-                    End Select
-                Case False 'studio to online
-                    If record.Tabelle.EndsWith("_rel") Then
+            If Not schema.ContainsKey(record.Tabelle) Then
 
-                        Dim ix_id As Integer = schema(record.Tabelle)("online_model_rel_fields").IndexOf("id")
+                record.SyncEnde = Now
+                record.SyncResult = True
+                record.SyncMessage = String.Format("{0} is not synced anymore (not in schema)", record.Tabelle)
+                msSQLHost.save_sync_table_record(record)
 
-                        Dim ix_link As Integer = If(ix_id = 0, 1, 0)
+                done = True
 
+            End If
+
+            If Not done Then
+
+                Select Case record.Direction
+                    Case True 'online to studio
                         Select Case record.Operation
                             Case "i"
-
-                                api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
-
+                                msSQLHost.work_insert(record, api, schema)
                             Case "u"
+                                msSQLHost.work_update(record, api, schema)
+                            Case "d"
+                                msSQLHost.work_delete(record, api, schema)
+
+                        End Select
+                    Case False 'studio to online
+                        If record.Tabelle.EndsWith("_rel") Then
+
+                            Dim ix_id As Integer = schema(record.Tabelle)("online_model_rel_fields").IndexOf("id")
+
+                            Dim ix_link As Integer = If(ix_id = 0, 1, 0)
+
+                            Select Case record.Operation
+                                Case "i"
+
+                                    api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+
+                                Case "u"
                                 'no update implemented (not needed)
-                            Case "d"
+                                Case "d"
 
-                                api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+                                    api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
 
-                        End Select
-                    Else
-                        Select Case record.Operation
-                            Case "i"
-
-
-                                Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
-
-                                If new_id.HasValue Then
-                                    msSQLHost.save_new_odoo_id(record, new_id.Value)
-                                End If
+                            End Select
+                        Else
+                            Select Case record.Operation
+                                Case "i"
 
 
-                            Case "u"
-                                api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
 
-                            Case "d"
-                                api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
+                                    If new_id.HasValue Then
+                                        msSQLHost.save_new_odoo_id(record, new_id.Value)
+                                    End If
 
-                        End Select
 
-                    End If
-            End Select
+                                Case "u"
+                                    api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+
+                                Case "d"
+                                    api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
+
+                            End Select
+
+                        End If
+                End Select
+
+            End If
 
         Next
 
@@ -260,8 +277,9 @@ end_block:
         Dim schema_view_template = templates.templates("02_schema_view")("get_watched_schema.pgt")
         Dim sosync_current_odoo_user_id_template = templates.templates("02_sosync_current_odoo_user_id")("sosync_current_odoo_user_id.pgt")
         Dim drop_triggers_template = templates.templates("99_drops")("drop_triggers.pgt")
-        Dim init_sync_update_template = templates.templates("51_init_sync")("update.pgt")
+        'Dim init_sync_update_template = templates.templates("51_init_sync")("update.pgt")
         Dim init_sync_insert_template = templates.templates("51_init_sync")("insert.pgt")
+        Dim init_sync_resync_template = templates.templates("51_init_sync")("resync.pgt")
 
         If Not pgSQLHost.execute(sync_table_template.content) Then Return False
         If Not pgSQLHost.execute(schema_view_template.content) Then Return False
@@ -286,12 +304,22 @@ end_block:
 
             If renew_all_triggers Then
 
-                initial_syncs.Add(table.Key, "u")
+                If table.Key.ToLower().EndsWith("_rel") Then 'only insert
+                    initial_syncs.Add(table.Key, "i")
+                Else
+                    initial_syncs.Add(table.Key, "r") 'resync!
+                End If
+
                 renew_triggers.Add(table.Key)
 
             ElseIf Not watched_schema.ContainsKey(table.Key) Then
 
-                initial_syncs.Add(table.Key, "i")
+                If table.Key.ToLower().EndsWith("_rel") Then 'only insert
+                    initial_syncs.Add(table.Key, "i")
+                Else
+                    initial_syncs.Add(table.Key, "r") 'resync!
+                End If
+
                 renew_triggers.Add(table.Key)
 
             Else
@@ -300,7 +328,13 @@ end_block:
 
                     If Not watched_schema(table.Key)("fields").Contains(field) Then
 
-                        initial_syncs.Add(table.Key, "u")
+
+                        If table.Key.ToLower().EndsWith("_rel") Then 'only insert
+                            initial_syncs.Add(table.Key, "i")
+                        Else
+                            initial_syncs.Add(table.Key, "r") 'resync!
+                        End If
+
                         renew_triggers.Add(table.Key)
                         Exit For
 
@@ -383,15 +417,25 @@ end_block:
 
         Next
 
-        For Each update In (From el In initial_syncs Where el.Value = "u")
+        For Each resync In (From el In initial_syncs Where el.Value = "u")
 
-            Dim table = update.Key
+            Dim table = resync.Key
 
-            Dim cmd = templates.render(init_sync_update_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+            Dim cmd = templates.render(init_sync_resync_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
 
             If Not pgSQLHost.execute(cmd) Then Return False
 
         Next
+
+        'For Each update In (From el In initial_syncs Where el.Value = "u")
+
+        '    Dim table = update.Key
+
+        '    Dim cmd = templates.render(init_sync_update_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+
+        '    If Not pgSQLHost.execute(cmd) Then Return False
+
+        'Next
 
         For Each insert In (From el In initial_syncs Where el.Value = "i")
 

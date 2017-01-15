@@ -280,6 +280,49 @@
                     Return
                 End If
 
+                If insert.Tabelle.ToLower().EndsWith("_rel") Then
+                    Dim rel_record_exists_script As String = String.Format(
+"
+                    if exists(select
+                                *
+                                from odoo.{0}
+                                where {1} = {2}
+                                  and {3} = {4})
+                        begin
+                            select cast(1 as bit)
+                        end
+                    else
+                        begin
+                            select cast(0 as bit)
+                        end",
+                            insert.Tabelle,
+                            data.Keys(0),
+                            String.Format("@{0}", data.Keys(0)),
+                            data.Keys(1),
+                            String.Format("@{0}", data.Keys(1)))
+
+
+                    Dim rel_record_exists_cmd As New SqlClient.SqlCommand(rel_record_exists_script, db.Connection)
+
+                    For Each item In data
+                        Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                        rel_record_exists_cmd.Parameters.Add(param)
+                    Next
+
+                    db.Connection.Open()
+                    Dim rel_rec_exists As Boolean = rel_record_exists_cmd.ExecuteScalar()
+                    db.Connection.Close()
+
+                    If rel_rec_exists Then
+                        insert.SyncEnde = Now
+                        insert.SyncResult = True
+                        insert.SyncMessage = "rel_record already in db"
+                        Me.save_sync_table_record(insert)
+                        Return
+                    End If
+
+                End If
+
                 Dim command As String = String.Format(
     "           insert into odoo.{0}({1}, TriggerFlag) 
                 values ({2}, 0) 
