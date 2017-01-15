@@ -212,7 +212,9 @@
     <None Include="files\scripts\51_init_sync\insert.pgt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="files\scripts\51_init_sync\resync.pgt" />
+    <None Include="files\scripts\51_init_sync\resync.pgt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="files\scripts\51_init_sync\update.pgt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
