@@ -22,16 +22,17 @@ Module Main
 
 
         Dim schema = msSQLHost.get_Schema()
+        Dim field_types = msSQLHost.get_Schema_fieldTypes()
 
         Dim odoo_user_id As Integer = pgSQLHost.get_uid()
 
         Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
         Dim r As New sync_table_record()
-        r.Tabelle = "product_template"
-        r.odoo_id = 8
+        r.Tabelle = "res_partner"
+        r.odoo_id = 6
 
-        Dim rec = api.get_data(r, schema)
+        Dim rec = api.get_data(r, schema, field_types)
 
     End Sub
 
@@ -84,6 +85,7 @@ sync_block:
         Dim odoo_user_id As Integer = pgSQLHost.get_uid()
 
         Dim schema = msSQLHost.get_Schema()
+        Dim field_types = msSQLHost.get_Schema_fieldTypes()
 
         If Not schema_check(pgSQLHost, msSQLHost, odoo_user_id, state.instance, schema, state.force_trigger_renew) Then
             log.write_line("syncer exit - schema check not successful", log.Level.Error)
@@ -99,7 +101,7 @@ sync_block:
 
         Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
-        sync_work(pgSQLHost, msSQLHost, api, schema)
+        sync_work(pgSQLHost, msSQLHost, api, schema, field_types)
 
 
 end_block:
@@ -124,7 +126,7 @@ end_block:
     End Sub
 
 
-    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
 
         Dim work = msSQLHost.get_sync_work()
 
@@ -149,9 +151,9 @@ end_block:
                     Case True 'online to studio
                         Select Case record.Operation
                             Case "i"
-                                msSQLHost.work_insert(record, api, schema)
+                                msSQLHost.work_insert(record, api, schema, field_types)
                             Case "u"
-                                msSQLHost.work_update(record, api, schema)
+                                msSQLHost.work_update(record, api, schema, field_types)
                             Case "d"
                                 msSQLHost.work_delete(record, api, schema)
 

@@ -245,7 +245,7 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
+    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Dictionary(Of String, Object)
 
         Dim l = schema(item.Tabelle)("fields").ToList()
 
@@ -265,6 +265,14 @@ Public Class odooXMLRPCWrapper
         For Each field In l
 
             Dim val_raw = record(field)
+
+            If field_types(item.Tabelle)(field) <> "bit" Then
+                If val_raw.GetType() Is GetType(Boolean) AndAlso Not CType(val_raw, Boolean) Then
+                    val_raw = DBNull.Value
+                End If
+
+            End If
+
 
             If val_raw.GetType() Is GetType(String) Then
                 Dim value As String = val_raw

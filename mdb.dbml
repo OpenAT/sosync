@@ -7,6 +7,7 @@
       <Column Name="msSQLSchemaName" Type="System.String" DbType="NVarChar(128) NOT NULL" CanBeNull="false" />
       <Column Name="online_model_name" Type="System.Object" DbType="Variant" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="online_model_rel_field_name" Type="System.Object" DbType="Variant" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="datatype" Type="System.String" DbType="NVarChar(128) NOT NULL" CanBeNull="false" />
     </ElementType>
   </Function>
 </Database>

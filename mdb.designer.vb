@@ -34,8 +34,8 @@ Partial Public Class mdbDataContext
   #End Region
 	
 	Public Sub New()
-        MyBase.New("", mappingSource)
-        OnCreated()
+		MyBase.New(Global.sosync.My.MySettings.Default.MDB_ASBLConnectionString, mappingSource)
+		OnCreated
 	End Sub
 	
 	Public Sub New(ByVal connection As String)
@@ -75,6 +75,8 @@ Partial Public Class ft_sosyncSchema_getResult
 	Private _online_model_name As Object
 	
 	Private _online_model_rel_field_name As Object
+	
+	Private _datatype As String
 	
 	Public Sub New()
 		MyBase.New
@@ -136,6 +138,18 @@ Partial Public Class ft_sosyncSchema_getResult
 		Set
 			If (Object.Equals(Me._online_model_rel_field_name, value) = false) Then
 				Me._online_model_rel_field_name = value
+			End If
+		End Set
+	End Property
+	
+	<Global.System.Data.Linq.Mapping.ColumnAttribute(Storage:="_datatype", DbType:="NVarChar(128) NOT NULL", CanBeNull:=false)>  _
+	Public Property datatype() As String
+		Get
+			Return Me._datatype
+		End Get
+		Set
+			If (String.Equals(Me._datatype, value) = false) Then
+				Me._datatype = value
 			End If
 		End Set
 	End Property

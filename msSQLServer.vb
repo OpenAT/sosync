@@ -40,6 +40,36 @@
 
     End Function
 
+    Public Function get_Schema_fieldTypes() As Dictionary(Of String, Dictionary(Of String, String))
+
+        Dim res As New Dictionary(Of String, Dictionary(Of String, String))
+
+
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+
+            Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
+
+            For Each item In schema
+
+                If Not res.ContainsKey(item.TableName) Then
+
+                    res.Add(item.TableName, New Dictionary(Of String, String))
+
+                End If
+
+                res(item.TableName).Add(item.FieldName, item.datatype)
+
+            Next
+
+        End Using
+
+        Return res
+
+    End Function
+
     Public Function get_Schema() As Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
         Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
@@ -261,7 +291,7 @@
     End Sub
 
 
-    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
 
         insert.SyncStart = Now
 
@@ -270,7 +300,7 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
                 'using etc.
-                Dim data = api.get_data(insert, schema)
+                Dim data = api.get_data(insert, schema, field_types)
 
                 If data.Count = 0 Then
                     insert.SyncEnde = Now
@@ -373,7 +403,7 @@
         Me.save_sync_table_record(insert)
 
     End Sub
-    Public Sub work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    Public Sub work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
 
         update.SyncStart = Now
 
@@ -390,7 +420,7 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
                 'using etc.
-                Dim data = api.get_data(update, schema)
+                Dim data = api.get_data(update, schema, field_types)
 
                 If data.Count = 0 Then
                     update.SyncEnde = Now
