@@ -28,12 +28,17 @@ Module Main
 
         Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
+        'schema("res_partner")("fields").Remove("birthdate_web")
+
         Dim r As New sync_table_record()
+        r.sync_tableID = 112714
+        r.Direction = False
         r.Tabelle = "res_partner"
-        r.odoo_id = 6
-
-        Dim rec = api.get_data(r, schema, field_types)
-
+        r.Operation = "u"
+        r.ID = 985
+        r.odoo_id = 752
+        r.odoo_id2 = Nothing
+        api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
     End Sub
 
     Sub Main()
@@ -182,7 +187,7 @@ end_block:
                                 Case "i"
 
 
-                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema))
 
                                     If new_id.HasValue Then
                                         msSQLHost.save_new_odoo_id(record, new_id.Value)
@@ -190,7 +195,7 @@ end_block:
 
 
                                 Case "u"
-                                    api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, odooXMLRPCWrapper.create_json_serialized_data(msSQLHost.get_data(record, schema)))
+                                    api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, msSQLHost.get_data(record, schema))
 
                                 Case "d"
                                     api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)

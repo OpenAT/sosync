@@ -21,45 +21,45 @@ Public Class odooXMLRPCWrapper
 
 
     End Sub
-    Public Shared Function create_json_serialized_data(data As Dictionary(Of String, Object)) As Dictionary(Of String, String)
+    'Public Shared Function create_json_serialized_data(data As Dictionary(Of String, Object)) As Dictionary(Of String, String)
 
-        Dim result As New Dictionary(Of String, String)
+    '    Dim result As New Dictionary(Of String, String)
 
-        For Each item In data
-            Dim value = item.Value
-            If value.GetType() Is GetType(Date) Then
-                value = CType(value, Date).ToUniversalTime()
-            End If
-            result.Add(item.Key, serialize_json(value))
-        Next
+    '    For Each item In data
+    '        Dim value = item.Value
+    '        If value.GetType() Is GetType(Date) Then
+    '            value = CType(value, Date).ToUniversalTime()
+    '        End If
+    '        result.Add(item.Key, serialize_json(value))
+    '    Next
 
-        Return result
+    '    Return result
 
-    End Function
+    'End Function
 
-    Private Shared Function serialize_json(value As Object) As String
+    'Private Shared Function serialize_json(value As Object) As String
 
-        If value Is Nothing OrElse value Is DBNull.Value Then
-            Return ""
-        End If
+    '    If value Is Nothing OrElse value Is DBNull.Value Then
+    '        Return "null"
+    '    End If
 
-        Dim s As New Newtonsoft.Json.JsonSerializer()
-        Dim sb As New System.Text.StringBuilder()
-        Dim wr As New System.IO.StringWriter(sb)
-        Dim w As New Newtonsoft.Json.JsonTextWriter(wr)
-        s.Serialize(w, value)
+    '    Dim s As New Newtonsoft.Json.JsonSerializer()
+    '    Dim sb As New System.Text.StringBuilder()
+    '    Dim wr As New System.IO.StringWriter(sb)
+    '    Dim w As New Newtonsoft.Json.JsonTextWriter(wr)
+    '    s.Serialize(w, value)
 
-        Dim retVal = sb.ToString()
+    '    Dim retVal = sb.ToString()
 
-        w.Close()
+    '    w.Close()
 
-        If retVal.EndsWith("""") AndAlso retVal.StartsWith("""") Then
-            retVal = retVal.Substring(1, retVal.Length - 2)
-        End If
+    '    If retVal.EndsWith("""") AndAlso retVal.StartsWith("""") Then
+    '        retVal = retVal.Substring(1, retVal.Length - 2)
+    '    End If
 
-        Return retVal
+    '    Return retVal
 
-    End Function
+    'End Function
 
     Public Sub insert_object_rel(record As sync_table_record, model_name As String, field_name As String, odoo_id As Integer, odoo_id2 As Integer?)
 
@@ -153,7 +153,7 @@ Public Class odooXMLRPCWrapper
 
     End Sub
 
-    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, String)) As Integer?
+    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object)) As Integer?
 
 
         record.SyncStart = Now
@@ -187,7 +187,7 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Public Sub update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, String))
+    Public Sub update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object))
 
         Try
 
@@ -296,12 +296,23 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Private Function create_args(data As Dictionary(Of String, String), ParamArray additionalArgs() As Object) As Object()
+    Private Function create_args(data As Dictionary(Of String, Object), ParamArray additionalArgs() As Object) As Object()
 
         Dim xml_args As New XmlRpcStruct()
         If data IsNot Nothing Then
             For Each item In data
-                xml_args.Add(item.Key, item.Value)
+
+                Dim value As Object = If(item.Value Is DBNull.Value, Nothing, item.Value)
+
+                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso item.Key <> "birthdate_web" Then
+                    value = CType(value, Date).ToUniversalTime()
+                End If
+
+                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso item.Key = "birthdate_web" Then
+                    value = CType(value, Date).ToString("dd.MM.yyyy")
+                End If
+
+                xml_args.Add(item.Key, value)
             Next
 
         End If
