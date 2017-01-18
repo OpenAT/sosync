@@ -187,11 +187,11 @@ end_block:
                                 Case "i"
 
 
-                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema))
+                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema), msSQLHost)
 
-                                    If new_id.HasValue Then
-                                        msSQLHost.save_new_odoo_id(record, new_id.Value)
-                                    End If
+                                    'If new_id.HasValue Then
+                                    '    msSQLHost.save_new_odoo_id(record, new_id.Value)
+                                    'End If
 
 
                                 Case "u"

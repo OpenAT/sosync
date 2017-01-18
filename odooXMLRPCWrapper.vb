@@ -153,7 +153,7 @@ Public Class odooXMLRPCWrapper
 
     End Sub
 
-    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object)) As Integer?
+    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer) As Integer?
 
 
         record.SyncStart = Now
@@ -168,6 +168,10 @@ Public Class odooXMLRPCWrapper
 
             If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
                 ret = retVal
+            End If
+
+            If ret.HasValue() Then
+                msSQLHost.save_new_odoo_id(record, ret.Value)
             End If
 
             record.SyncEnde = Now
