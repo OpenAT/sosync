@@ -302,17 +302,22 @@ Public Class odooXMLRPCWrapper
 
     Private Function create_args(data As Dictionary(Of String, Object), ParamArray additionalArgs() As Object) As Object()
 
+        'TODO: hier nur provisorisch gelöst, muss noch schön programmiert werden:
+        Dim date_list As New List(Of String)
+        date_list.Add("birthdate_web")
+        date_list.Add("expiration_date")
+
         Dim xml_args As New XmlRpcStruct()
         If data IsNot Nothing Then
             For Each item In data
 
                 Dim value As Object = If(item.Value Is DBNull.Value, Nothing, item.Value)
 
-                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso item.Key <> "birthdate_web" Then
+                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso Not date_list.Contains(item.Key) Then
                     value = CType(value, Date).ToUniversalTime()
                 End If
 
-                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso item.Key = "birthdate_web" Then
+                If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso date_list.Contains(item.Key) Then
                     value = CType(value, Date).ToString("dd.MM.yyyy")
                 End If
 
