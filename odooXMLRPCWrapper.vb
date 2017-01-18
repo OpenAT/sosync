@@ -270,7 +270,7 @@ Public Class odooXMLRPCWrapper
 
             Dim val_raw = record(field)
 
-            If field_types(item.Tabelle)(field) <> "bit" Then
+            If field_types.ContainsKey(item.Tabelle) AndAlso field_types(item.Tabelle)(field) <> "bit" Then
                 If val_raw.GetType() Is GetType(Boolean) AndAlso Not CType(val_raw, Boolean) Then
                     val_raw = DBNull.Value
                 End If
