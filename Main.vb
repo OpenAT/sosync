@@ -31,14 +31,15 @@ Module Main
         'schema("res_partner")("fields").Remove("birthdate_web")
 
         Dim r As New sync_table_record()
-        r.sync_tableID = 112714
-        r.Direction = False
-        r.Tabelle = "res_partner"
-        r.Operation = "u"
-        r.ID = 985
-        r.odoo_id = 752
-        r.odoo_id2 = Nothing
-        api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
+        r.sync_tableID = 23076
+        r.Direction = True
+        r.Tabelle = "product_payment_interval_product_template_rel"
+        r.Operation = "i"
+        r.ID = 0
+        r.odoo_id = 3
+        r.odoo_id2 = 3
+        'api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
+        msSQLHost.work_insert(r, api, schema, field_types, pgSQLHost)
     End Sub
 
     Sub Main()
@@ -156,7 +157,7 @@ end_block:
                     Case True 'online to studio
                         Select Case record.Operation
                             Case "i"
-                                msSQLHost.work_insert(record, api, schema, field_types)
+                                msSQLHost.work_insert(record, api, schema, field_types, pgSQLHost)
                             Case "u"
                                 msSQLHost.work_update(record, api, schema, field_types)
                             Case "d"

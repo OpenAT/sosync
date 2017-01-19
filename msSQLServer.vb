@@ -291,7 +291,7 @@
     End Sub
 
 
-    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
+    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), pgSQLHost As pgSQLServer)
 
         insert.SyncStart = Now
 
@@ -300,7 +300,15 @@
 
                 Dim db As New mdbDataContext(get_connection_string(Me._instance))
                 'using etc.
-                Dim data = api.get_data(insert, schema, field_types)
+
+                Dim data As Dictionary(Of String, Object) = Nothing
+
+                If insert.Tabelle.ToLower().EndsWith("_rel") Then
+                    data = pgSQLHost.get_data(insert, schema)
+                Else
+                    data = api.get_data(insert, schema, field_types)
+                End If
+
 
                 If data.Count = 0 Then
                     insert.SyncEnde = Now
