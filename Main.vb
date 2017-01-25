@@ -31,15 +31,16 @@ Module Main
         'schema("res_partner")("fields").Remove("birthdate_web")
 
         Dim r As New sync_table_record()
-        r.sync_tableID = 23076
+        r.sync_tableID = 97174
         r.Direction = True
-        r.Tabelle = "product_payment_interval_product_template_rel"
-        r.Operation = "i"
-        r.ID = 0
-        r.odoo_id = 3
-        r.odoo_id2 = 3
+        r.Tabelle = "res_partner"
+        r.Operation = "u"
+        r.ID = 844
+        r.odoo_id = 2373
+        r.odoo_id2 = Nothing
         'api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
-        msSQLHost.work_insert(r, api, schema, field_types, pgSQLHost)
+        'msSQLHost.work_insert(r, api, schema, field_types, pgSQLHost)
+        msSQLHost.work_update(r, api, schema, field_types)
     End Sub
 
     Sub Main()

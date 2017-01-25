@@ -289,6 +289,16 @@ Public Class odooXMLRPCWrapper
 
                     End If
                 End If
+
+                If field_types(item.Tabelle)(field) = "datetime" AndAlso value.Length = "YYYY-MM-DD".Length Then
+                    If System.Text.RegularExpressions.Regex.IsMatch(value, "\d{4}-\d{2}-\d{2}") Then
+                        Dim provider As System.Globalization.CultureInfo = System.Globalization.CultureInfo.InvariantCulture
+                        Dim format As String = "yyyy-MM-dd"
+                        val_raw = Date.ParseExact(val_raw, format, provider).ToLocalTime()
+
+                    End If
+                End If
+
             ElseIf val_raw.GetType Is GetType(Object()) Then
                 val_raw = CType(val_raw, Object())(0)
             End If
