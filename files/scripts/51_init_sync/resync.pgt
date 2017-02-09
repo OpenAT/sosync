@@ -2,10 +2,18 @@
 SELECT #{id_field_name}#{id2_field_name:, }, '#{table_name}', now()
 	, case when #{id_field_name} in
 		(
-		select distinct 
+		select 
 			 odoo_id
 		from sosync_sync_table t
 		where t.table_name = '#{table_name}'
 		  and t.operation = 'i'
-		) then 'u' else 'i' end
+		) 
+		or #{id_field_name} in
+		(
+		select  
+			 #{id_field_name}
+		from #{table_name} b
+		where b.create_uid = #{odooUserID}
+		)
+		then 'u' else 'i' end
 FROM #{table_name};

@@ -18,6 +18,7 @@ Public Class pgSQLServer
     Private Sub initialize_connection()
         Dim b = New NpgsqlConnectionStringBuilder(pgSQLServer.get_connection_string(Me._instance, Me._password))
         'b.SslMode = SslMode.Prefer
+        b.CommandTimeout = 10 * 60
         b.TrustServerCertificate = True
         Me._connection = New NpgsqlConnection(b)
 

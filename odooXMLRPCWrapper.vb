@@ -197,7 +197,9 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", create_args(data, id), get_de_de_locale())
+            Dim data_call = create_args(data, id)
+
+            proxy.execute_kw(db, uid, password, model_name, "write", data_call, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -324,7 +326,7 @@ Public Class odooXMLRPCWrapper
                 Dim value As Object = If(item.Value Is DBNull.Value, Nothing, item.Value)
 
                 If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso Not date_list.Contains(item.Key) Then
-                    value = CType(value, Date).ToUniversalTime()
+                    value = CType(value, Date).ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ssZ")
                 End If
 
                 If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso date_list.Contains(item.Key) Then
