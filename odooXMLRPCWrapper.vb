@@ -45,7 +45,7 @@ Public Class odooXMLRPCWrapper
 
             Try
 
-                result = int_execute_kw(db, uid, password, model_name, method_name, args, additional)
+                result = proxy.execute_kw(db, uid, password, model_name, method_name, args, additional)
                 success = True
 
             Catch ex As System.Net.WebException
