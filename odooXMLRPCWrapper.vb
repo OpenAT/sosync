@@ -258,9 +258,9 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            Dim data_call = create_args(data, id)
+            Dim call_data = create_args(data, id)
 
-            int_execute_kw(db, uid, password, model_name, "write", data_call, get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "write", call_data, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -402,6 +402,10 @@ Public Class odooXMLRPCWrapper
 
                 If value IsNot Nothing AndAlso value.GetType() Is GetType(Date) AndAlso date_list.Contains(item.Key) Then
                     value = CType(value, Date).ToString("dd.MM.yyyy")
+                End If
+
+                If value IsNot Nothing AndAlso value.GetType() Is GetType(Decimal) Then
+                    value = CType(value, Decimal).ToString("G").Replace(",", ".")
                 End If
 
                 xml_args.Add(item.Key, value)

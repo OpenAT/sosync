@@ -143,6 +143,8 @@ end_block:
 
         For Each record In work
 
+            msSQLHost.get_new_ids(record)
+
             Dim result As Boolean = False
             Dim done As Boolean = False
 

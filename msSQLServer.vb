@@ -258,6 +258,25 @@
 
     End Function
 
+    Public Sub get_new_ids(record As sync_table_record)
+
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+
+            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim command As String = String.Format("select * from odoo.sync_table where sync_tableID = {0}", record.sync_tableID.ToString())
+
+            Dim res = db.ExecuteQuery(Of sync_table_record)(command).FirstOrDefault()
+
+            If res IsNot Nothing Then
+                record.ID = res.ID
+                record.odoo_id = res.odoo_id
+                record.odoo_id2 = res.odoo_id2
+            End If
+
+        End Using
+
+    End Sub
+
     Public Sub save_sync_table_record(record As sync_table_record)
 
         Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
