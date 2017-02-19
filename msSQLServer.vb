@@ -402,7 +402,7 @@
 
             'Me.save_sync_table_record(insert)
 
-            Logging.log("odoo-api", ex.ToString)
+            Logging.log("mssql", ex.ToString)
             Return False
 
         End Try
@@ -553,7 +553,7 @@
 
             'Me.save_sync_table_record(delete)
 
-            Logging.log("odoo-api", ex.ToString)
+            Logging.log("mssql", ex.ToString)
             Return False
         End Try
 
