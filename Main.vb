@@ -231,7 +231,6 @@ end_block:
 
             If Not result Then
 
-                state.runagain = True
                 Exit For
 
             End If
