@@ -291,7 +291,7 @@
     End Sub
 
 
-    Public Sub work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), pgSQLHost As pgSQLServer)
+    Public Function work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), pgSQLHost As pgSQLServer) As Boolean
 
         insert.SyncStart = Now
 
@@ -315,7 +315,7 @@
                     insert.SyncResult = True
                     insert.SyncMessage = "no data available at insert - the record may be already deleted in odoo"
                     Me.save_sync_table_record(insert)
-                    Return
+                    Return True
                 End If
 
                 If insert.Tabelle.ToLower().EndsWith("_rel") Then
@@ -356,7 +356,7 @@
                         insert.SyncResult = True
                         insert.SyncMessage = "rel_record already in db"
                         Me.save_sync_table_record(insert)
-                        Return
+                        Return True
                     End If
 
                 End If
@@ -396,13 +396,14 @@
 
         Catch ex As Exception
 
-            insert.SyncEnde = Now
-            insert.SyncResult = False
-            insert.SyncMessage = ex.ToString()
+            'insert.SyncEnde = Now
+            'insert.#SyncResult = False
+            'insert.SyncMessage = ex.ToString()
 
-            Me.save_sync_table_record(insert)
+            'Me.save_sync_table_record(insert)
 
-            Return
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
@@ -410,17 +411,19 @@
         insert.SyncResult = True
         Me.save_sync_table_record(insert)
 
-    End Sub
-    Public Sub work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
+        Return True
+
+    End Function
+    Public Function work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Boolean
 
         update.SyncStart = Now
 
         If update.Tabelle.EndsWith("_rel") Then
             update.SyncEnde = Now
-            update.SyncResult = False
+            update.SyncResult = True
             update.SyncMessage = "_rel-records cannot be updated!"
             Me.save_sync_table_record(update)
-            Return
+            Return True
         End If
 
         Try
@@ -435,7 +438,7 @@
                     update.SyncResult = True
                     update.SyncMessage = "no data available at update - the record may be already deleted in odoo"
                     Me.save_sync_table_record(update)
-                    Return
+                    Return True
                 End If
 
 
@@ -481,13 +484,14 @@
 
         Catch ex As Exception
 
-            update.SyncEnde = Now
-            update.SyncResult = False
-            update.SyncMessage = ex.ToString()
+            'update.SyncEnde = Now
+            'update.#SyncResult = False
+            'update.SyncMessage = ex.ToString()
 
-            Me.save_sync_table_record(update)
+            'Me.save_sync_table_record(update)
 
-            Return
+            Logging.log("mssql", ex.ToString)
+            Return False
 
         End Try
 
@@ -495,9 +499,11 @@
         update.SyncResult = True
         Me.save_sync_table_record(update)
 
-    End Sub
+        Return True
 
-    Public Sub work_delete(delete As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    End Function
+
+    Public Function work_delete(delete As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Boolean
 
         delete.SyncStart = Now
 
@@ -541,21 +547,23 @@
 
         Catch ex As Exception
 
-            delete.SyncEnde = Now
-            delete.SyncResult = False
-            delete.SyncMessage = ex.ToString()
+            'delete.SyncEnde = Now
+            'delete.#SyncResult = False
+            'delete.SyncMessage = ex.ToString()
 
-            Me.save_sync_table_record(delete)
+            'Me.save_sync_table_record(delete)
 
-            Return
-
+            Logging.log("odoo-api", ex.ToString)
+            Return False
         End Try
 
         delete.SyncEnde = Now
         delete.SyncResult = True
         Me.save_sync_table_record(delete)
 
-    End Sub
+        Return True
+
+    End Function
 
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
 

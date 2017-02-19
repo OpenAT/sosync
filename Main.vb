@@ -8,6 +8,8 @@ Module Main
         Dim state As New sosyncState()
         Dim config = (New IniParser.FileIniDataParser()).ReadFile(String.Format("{0}\sosync.ini", state.executing_directory))
 
+        Logging.init(state.instance)
+
         Dim studio_pw As String = config.Sections("studio")("studio_pw")
         Dim online_admin_pw As String = config.Sections("online")("online_admin_pw")
         Dim online_pgsql_pw As String = config.Sections("online")("online_pgsql_pw")
@@ -48,6 +50,8 @@ Module Main
 
         Dim state As New sosyncState()
         Dim hooks As New hooks()
+
+        Logging.init(state.instance)
 
         If state.pause Then
             Exit Sub
@@ -108,7 +112,7 @@ sync_block:
 
         Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
-        sync_work(pgSQLHost, msSQLHost, api, schema, field_types)
+        sync_work(pgSQLHost, msSQLHost, api, schema, field_types, state)
 
 
 end_block:
@@ -133,13 +137,17 @@ end_block:
     End Sub
 
 
-    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)))
+    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), state As sosyncState)
 
         Dim work = msSQLHost.get_sync_work()
 
         For Each record In work
 
+            Dim result As Boolean = False
             Dim done As Boolean = False
+
+            record.SyncStart = Now
+
 
             If Not schema.ContainsKey(record.Tabelle) Then
 
@@ -148,64 +156,83 @@ end_block:
                 record.SyncMessage = String.Format("{0} is not synced anymore (not in schema)", record.Tabelle)
                 msSQLHost.save_sync_table_record(record)
 
+                result = True
                 done = True
 
             End If
 
             If Not done Then
 
-                Select Case record.Direction
-                    Case True 'online to studio
-                        Select Case record.Operation
-                            Case "i"
-                                msSQLHost.work_insert(record, api, schema, field_types, pgSQLHost)
-                            Case "u"
-                                msSQLHost.work_update(record, api, schema, field_types)
-                            Case "d"
-                                msSQLHost.work_delete(record, api, schema)
+                Try
 
-                        End Select
-                    Case False 'studio to online
-                        If record.Tabelle.EndsWith("_rel") Then
 
-                            Dim ix_id As Integer = schema(record.Tabelle)("online_model_rel_fields").IndexOf("id")
 
-                            Dim ix_link As Integer = If(ix_id = 0, 1, 0)
-
+                    Select Case record.Direction
+                        Case True 'online to studio
                             Select Case record.Operation
                                 Case "i"
-
-                                    api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
-
+                                    result = msSQLHost.work_insert(record, api, schema, field_types, pgSQLHost)
                                 Case "u"
-                                'no update implemented (not needed)
+                                    result = msSQLHost.work_update(record, api, schema, field_types)
                                 Case "d"
-
-                                    api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+                                    result = msSQLHost.work_delete(record, api, schema)
 
                             End Select
-                        Else
-                            Select Case record.Operation
-                                Case "i"
+                        Case False 'studio to online
+                            If record.Tabelle.EndsWith("_rel") Then
+
+                                Dim ix_id As Integer = schema(record.Tabelle)("online_model_rel_fields").IndexOf("id")
+
+                                Dim ix_link As Integer = If(ix_id = 0, 1, 0)
+
+                                Select Case record.Operation
+                                    Case "i"
+
+                                        result = api.insert_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+
+                                    Case "u"
+                                'no update implemented (not needed)
+                                    Case "d"
+
+                                        result = api.delete_object_rel(record, schema(record.Tabelle)("online_model_name")(0), schema(record.Tabelle)("online_model_rel_fields")(ix_link), If(ix_id = 0, record.odoo_id.Value, record.odoo_id2.Value), If(ix_link = 1, record.odoo_id2.Value, record.odoo_id))
+
+                                End Select
+                            Else
+                                Select Case record.Operation
+                                    Case "i"
 
 
-                                    Dim new_id = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema), msSQLHost)
+                                        result = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema), msSQLHost)
 
                                     'If new_id.HasValue Then
                                     '    msSQLHost.save_new_odoo_id(record, new_id.Value)
                                     'End If
 
 
-                                Case "u"
-                                    api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, msSQLHost.get_data(record, schema))
+                                    Case "u"
+                                        result = api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, msSQLHost.get_data(record, schema))
 
-                                Case "d"
-                                    api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
+                                    Case "d"
+                                        result = api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
 
-                            End Select
+                                End Select
 
-                        End If
-                End Select
+                            End If
+                    End Select
+
+                Catch ex As Exception
+
+                    Logging.log("sync-work", ex.ToString())
+                    result = False
+
+                End Try
+
+            End If
+
+            If Not result Then
+
+                state.runagain = True
+                Exit For
 
             End If
 

@@ -21,6 +21,58 @@ Public Class odooXMLRPCWrapper
 
 
     End Sub
+
+    Private Function int_execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object(), additional As XmlRpcStruct) As Object
+
+        Dim retry_max_retry_count As Integer = 3
+        Dim retry_init_time As Integer = 100
+        Dim retry_time_power As Integer = 10
+        'daraus ergeben sich folgende daten:
+        'properier normale ausführung
+        'gut --> alles ok
+        'nicht gut -->
+        '   probiere 3 mal nochmal 
+        '       1.  100 ms ( 0,1 sek)= 100 * (10^0) warten, dann ausführen
+        '       2. 1000 ms ( 1,0 sek)= 100 * (10^1) warten, dann ausführen
+        '       3.10000 ms (10,0 sek)= 100 * (10^2) warten, dann ausführen
+
+        Dim success As Boolean = False
+        Dim retry_count As Integer = 0
+
+        Dim result As Object = Nothing
+
+        While retry_count <= retry_max_retry_count AndAlso Not success
+
+            Try
+
+                result = int_execute_kw(db, uid, password, model_name, method_name, args, additional)
+                success = True
+
+            Catch ex As System.Net.WebException
+
+                Logging.log("odoo-api", ex.ToString(), True)
+
+                If retry_count < retry_max_retry_count Then
+
+                    Dim retry_wait_time As Integer = retry_init_time * (retry_time_power ^ retry_count)
+                    System.Threading.Thread.Sleep(retry_wait_time)
+
+                End If
+
+                retry_count += 1
+
+            End Try
+
+        End While
+
+        If Not success Then
+            Throw New Exception("error trying to execute_kw, for error details see log.Log table. (look for warnings!)")
+        Else
+            Return result
+        End If
+
+    End Function
+
     'Public Shared Function create_json_serialized_data(data As Dictionary(Of String, Object)) As Dictionary(Of String, String)
 
     '    Dim result As New Dictionary(Of String, String)
@@ -61,7 +113,7 @@ Public Class odooXMLRPCWrapper
 
     'End Function
 
-    Public Sub insert_object_rel(record As sync_table_record, model_name As String, field_name As String, odoo_id As Integer, odoo_id2 As Integer?)
+    Public Function insert_object_rel(record As sync_table_record, model_name As String, field_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Boolean
 
         '#general syntax for many2many field
         '$many2many_field = array(
@@ -95,7 +147,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -103,18 +155,21 @@ Public Class odooXMLRPCWrapper
 
         Catch ex As Exception
 
-            record.SyncEnde = Now
-            record.SyncResult = False
-            record.SyncMessage = ex.ToString()
-            msSQLHost.save_sync_table_record(record)
+            'record.SyncEnde = Now
+            'record.#SyncResult = False
+            'record.SyncMessage = ex.ToString()
+            'msSQLHost.save_sync_table_record(record)
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
+        Return True
 
+    End Function
 
-    End Sub
-
-    Public Sub delete_object_rel(record As sync_table_record, model_name As String, field_name As String, odoo_id As Integer, odoo_id2 As Integer?)
+    Public Function delete_object_rel(record As sync_table_record, model_name As String, field_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Boolean
 
         Try
 
@@ -135,7 +190,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "write", args, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -143,17 +198,20 @@ Public Class odooXMLRPCWrapper
 
         Catch ex As Exception
 
-            record.SyncEnde = Now
-            record.SyncResult = False
-            record.SyncMessage = ex.ToString()
-            msSQLHost.save_sync_table_record(record)
+            'record.SyncEnde = Now
+            'record.#SyncResult = False
+            'record.SyncMessage = ex.ToString()
+            'msSQLHost.save_sync_table_record(record)
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
+        Return True
+    End Function
 
-    End Sub
-
-    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer) As Integer?
+    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer) As Boolean
 
 
         record.SyncStart = Now
@@ -164,7 +222,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            Dim retVal = proxy.execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
+            Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
 
             If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
                 ret = retVal
@@ -180,18 +238,21 @@ Public Class odooXMLRPCWrapper
 
         Catch ex As Exception
 
-            record.SyncEnde = Now
-            record.SyncResult = False
-            record.SyncMessage = ex.ToString()
-            msSQLHost.save_sync_table_record(record)
+            'record.SyncEnde = Now
+            'record.#SyncResult = False
+            'record.SyncMessage = ex.ToString()
+            'msSQLHost.save_sync_table_record(record)
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
-        Return ret
+        Return True
 
     End Function
 
-    Public Sub update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object))
+    Public Function update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object)) As Boolean
 
         Try
 
@@ -199,7 +260,7 @@ Public Class odooXMLRPCWrapper
 
             Dim data_call = create_args(data, id)
 
-            proxy.execute_kw(db, uid, password, model_name, "write", data_call, get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "write", data_call, get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -207,22 +268,27 @@ Public Class odooXMLRPCWrapper
 
         Catch ex As Exception
 
-            record.SyncEnde = Now
-            record.SyncResult = False
-            record.SyncMessage = ex.ToString()
-            msSQLHost.save_sync_table_record(record)
+            'record.SyncEnde = Now
+            'record.#SyncResult = False
+            'record.SyncMessage = ex.ToString()
+            'msSQLHost.save_sync_table_record(record)
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
-    End Sub
+        Return True
 
-    Public Sub delete_object(record As sync_table_record, model_name As String, id As Integer)
+    End Function
+
+    Public Function delete_object(record As sync_table_record, model_name As String, id As Integer) As Boolean
 
         Try
 
             record.SyncStart = Now
 
-            proxy.execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, id), get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, id), get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -230,14 +296,19 @@ Public Class odooXMLRPCWrapper
 
         Catch ex As Exception
 
-            record.SyncEnde = Now
-            record.SyncResult = False
-            record.SyncMessage = ex.ToString()
-            msSQLHost.save_sync_table_record(record)
+            'record.SyncEnde = Now
+            'record.#SyncResult = False
+            'record.SyncMessage = ex.ToString()
+            'msSQLHost.save_sync_table_record(record)
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
 
         End Try
 
-    End Sub
+        Return True
+
+    End Function
 
     Private Function get_de_de_locale() As XmlRpcStruct
 
@@ -264,7 +335,7 @@ Public Class odooXMLRPCWrapper
         Dim online_model_name = schema(item.Tabelle)("online_model_name")(0)
 
 
-        Dim record As XmlRpcStruct = proxy.execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
+        Dim record As XmlRpcStruct = int_execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
 
         Dim res As New Dictionary(Of String, Object)
 

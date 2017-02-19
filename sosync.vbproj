@@ -35,7 +35,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\kino\</OutputPath>
+    <OutputPath>bin\Debug\pfot\</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
@@ -77,6 +77,10 @@
       <HintPath>packages\dadi-impersonation.1.0.0.0\lib\net40\dadi-impersonation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="dadi-logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\dadi-logging.2.0.0.0\lib\net45\dadi-logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="dadi-webhook, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\dadi-webhook.3.0.0.0\lib\net40\dadi-webhook.dll</HintPath>
       <Private>True</Private>
@@ -116,6 +120,7 @@
     <Compile Include="General.vb" />
     <Compile Include="hooks.vb" />
     <Compile Include="log.vb" />
+    <Compile Include="Logging.vb" />
     <Compile Include="Main.vb" />
     <Compile Include="mdb.designer.vb">
       <AutoGen>True</AutoGen>
