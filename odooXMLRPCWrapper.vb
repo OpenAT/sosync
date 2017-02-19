@@ -324,6 +324,8 @@ Public Class odooXMLRPCWrapper
 
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Dictionary(Of String, Object)
 
+        Dim res As New Dictionary(Of String, Object)
+
         Dim l = schema(item.Tabelle)("fields").ToList()
 
         If Not l.Contains(schema(item.Tabelle)("id_fields")(0)) Then
@@ -334,10 +336,14 @@ Public Class odooXMLRPCWrapper
 
         Dim online_model_name = schema(item.Tabelle)("online_model_name")(0)
 
+        Dim loader = int_execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
 
-        Dim record As XmlRpcStruct = int_execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
+        If loader.GetType() Is GetType(Boolean) AndAlso CType(loader, Boolean) = False Then
+            Return res
+        End If
 
-        Dim res As New Dictionary(Of String, Object)
+        Dim record As XmlRpcStruct = loader
+
 
         For Each field In l
 
@@ -374,6 +380,10 @@ Public Class odooXMLRPCWrapper
 
             ElseIf val_raw.GetType Is GetType(Object()) Then
                 val_raw = CType(val_raw, Object())(0)
+
+            ElseIf val_raw.GetType() Is GetType(Double) Then
+                Dim max_sql_money_val As Decimal = 922337203685477
+                val_raw = If(CType(val_raw, Double) <= max_sql_money_val, CType(val_raw, Decimal), max_sql_money_val)
             End If
 
             res.Add(field, val_raw)
