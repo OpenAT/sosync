@@ -380,8 +380,45 @@
 
                 End If
 
-                Dim command As String = String.Format(
-    "           insert into odoo.{0}({1}, TriggerFlag) 
+                'neue abfrage: wenn record bereits geinserted, dann syncresult = true, message = 'record already inserted'
+
+                Dim record_exists_stm As String =
+                    String.Format(
+    "
+                if exists(select
+                                *
+                                from odoo.{0}
+                                where {1} = {2})
+                        begin
+                            select cast(1 as bit)
+                        end
+                    else
+                        begin
+                            select cast(0 as bit)
+                        end
+                ",
+                    insert.Tabelle,
+                    schema(insert.Tabelle)("id_fields")(0),
+                    String.Format("@{0}", schema(insert.Tabelle)("id_fields")(0)))
+
+
+                Dim record_exists_cmd As New SqlClient.SqlCommand(record_exists_stm, db.Connection)
+
+                Dim id_param As New SqlClient.SqlParameter(String.Format("@{0}", schema(insert.Tabelle)("id_fields")(0)), data(schema(insert.Tabelle)("id_fields")(0)))
+
+                record_exists_cmd.Parameters.Add(id_param)
+
+                db.Connection.Open()
+                Dim record_exists As Boolean = record_exists_cmd.ExecuteScalar()
+                db.Connection.Close()
+
+                If record_exists Then
+                    insert.SyncMessage = "record already inserted"
+                Else
+
+
+                    Dim command As String = String.Format(
+        "           insert into odoo.{0}({1}, TriggerFlag) 
                 values ({2}, 0) 
                 declare @newID int = scope_identity() 
                 if exists(select * 
@@ -394,22 +431,25 @@
                     begin
                         exec odoo.stp_{0}_inserted @newID
                     end",
-                          insert.Tabelle,
-                          String.Join(", ", data.Keys.ToArray()),
-                         String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray())
-    )
+                              insert.Tabelle,
+                              String.Join(", ", data.Keys.ToArray()),
+                             String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray())
+        )
 
-                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+                    Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
 
-                For Each item In data
-                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
-                    cmd.Parameters.Add(param)
-                Next
+                    For Each item In data
+                        Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                        cmd.Parameters.Add(param)
+                    Next
 
-                db.Connection.Open()
-                cmd.ExecuteNonQuery()
-                db.Connection.Close()
+                    db.Connection.Open()
+                    cmd.ExecuteNonQuery()
+                    db.Connection.Close()
+
+                End If
+
 
             End Using
 
