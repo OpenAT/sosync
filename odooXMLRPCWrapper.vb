@@ -222,14 +222,22 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
+            If record.odoo_id.HasValue Then 'bereits nach online gesynced, sync_Table record falsch (zb. durch deadlock nicht geupdated)
 
-            If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
-                ret = retVal
-            End If
+                record.SyncMessage = "record already inserted"
 
-            If ret.HasValue() Then
-                msSQLHost.save_new_odoo_id(record, ret.Value)
+            Else
+
+                Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
+
+                If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
+                    ret = retVal
+                End If
+
+                If ret.HasValue() Then
+                    msSQLHost.save_new_odoo_id(record, ret.Value)
+                End If
+
             End If
 
             record.SyncEnde = Now
