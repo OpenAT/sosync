@@ -88,7 +88,7 @@ Public Class pg_template_service
         For Each field In fields
             counter += 1
 
-            Dim line As String = String.Format("old.{0} IS DISTINCT FROM new.{0}", field)
+            Dim line As String = String.Format("old.""{0}"" IS DISTINCT FROM new.""{0}""", field)
             If counter > 1 Then
                 line = String.Format("or {0}", line)
             End If
