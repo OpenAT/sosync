@@ -1,6 +1,6 @@
 ﻿INSERT INTO sosync_sync_table(odoo_id#{id2_sync_table_field:, }, table_name, creation, operation)
 SELECT #{id_field_name}#{id2_field_name:, }, '#{table_name}', now()
-	, case when #{id_field_name} in
+	, case when write_uid = #{odooUserID} or #{id_field_name} in
 		(
 		select 
 			 odoo_id
@@ -8,12 +8,5 @@ SELECT #{id_field_name}#{id2_field_name:, }, '#{table_name}', now()
 		where t.table_name = '#{table_name}'
 		  and t.operation = 'i'
 		) 
-		or #{id_field_name} in
-		(
-		select  
-			 #{id_field_name}
-		from #{table_name} b
-		where b.create_uid = #{odooUserID}
-		)
 		then 'u' else 'i' end
 FROM #{table_name};
