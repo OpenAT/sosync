@@ -2,10 +2,19 @@
 
     Private _instance As String
     Private _pw As String
+    Private _conn As SqlClient.SqlConnection
 
     Public Sub New(instance As String, pw As String)
         Me._instance = instance
         Me._pw = pw
+        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            Me._conn = New SqlClient.SqlConnection(get_connection_string(Me._instance))
+        End Using
+    End Sub
+
+    Public Sub New(conn As SqlClient.SqlConnection)
+        Me._conn = conn
+
     End Sub
 
 
@@ -13,11 +22,11 @@
 
         Dim ret As Boolean = False
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        'Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim question As String = String.Format(
+        Dim question As String = String.Format(
             "select 
                  case when count(*) > 0 then cast(1 as bit) else cast(0 as bit) end result 
              from odoo.sync_table t 
@@ -32,9 +41,9 @@
             If(direction, "1", "0"),
             operation)
 
-            ret = If(db.ExecuteQuery(Of Boolean?)(question).FirstOrDefault(), False)
+        ret = If(db.ExecuteQuery(Of Boolean?)(question).FirstOrDefault(), False)
 
-        End Using
+        'End Using
 
         Return ret
 
@@ -46,11 +55,11 @@
 
 
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        '  Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
+        Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
 
             For Each item In schema
 
@@ -64,7 +73,7 @@
 
             Next
 
-        End Using
+        ' End Using
 
         Return res
 
@@ -75,11 +84,11 @@
         Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
+        Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
 
             For Each item In schema
                 If Not res.ContainsKey(item.TableName) Then
@@ -112,7 +121,7 @@
 
             Next
 
-        End Using
+        'End Using
 
         Return res
 
@@ -126,12 +135,12 @@
 
         Try
 
-            Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            '  Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
 
-                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-                command =
+            command =
                     String.Format("update odoo.{0} set id = {1}, TriggerFlag = 0 where {0}ID = {2}", record.Tabelle, new_odoo_id, record.ID)
 
                 db.ExecuteCommand(command)
@@ -140,7 +149,7 @@
 
                 db.ExecuteCommand(command)
 
-            End Using
+            '  End Using
 
 
         Catch ex As Exception
@@ -153,19 +162,19 @@
 
     Public Function try_connect() As Boolean
 
-        Dim conn As New SqlClient.SqlConnection(get_connection_string(Me._instance))
+        ' Dim conn As New SqlClient.SqlConnection(Me._conn) 'get_connection_string(Me._instance))
 
         Try
-            Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
-                conn.Open()
-                conn.Close()
-            End Using
+            ' Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            Me._conn.Open()
+            Me._conn.Close()
+            'End Using
 
             Return True
 
         Catch ex As Exception
 
-            log.write_line(String.Format("error connecting to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, conn.ConnectionString), log.Level.Error)
+            log.write_line(String.Format("error connecting to mssql server({2}). error details:{1}{0}", ex.ToString(), Environment.NewLine, Me._conn.ConnectionString), log.Level.Error)
 
             Return False
 
@@ -184,11 +193,11 @@
 
     Public Function request_ID(schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), table_name As String, odoo_id As Integer, odoo_id2 As Integer?) As Integer
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim pk_fields = schema(table_name)("id_fields")
+        Dim pk_fields = schema(table_name)("id_fields")
 
             Dim where_clause As String = ""
 
@@ -202,7 +211,7 @@
 
             Return db.ExecuteQuery(Of Integer)(command).FirstOrDefault()
 
-        End Using
+        ' End Using
 
     End Function
 
@@ -211,11 +220,11 @@
         Dim command_sql As String = "insert into odoo.sync_table (Direction, Tabelle, Operation, ID, odoo_id, odoo_id2, Anlagedatum) values (@direction, @table_name, @operation, @id, @odoo_id, @odoo_id2, @creation) set @sync_tableID = scope_identity()"
         Try
 
-            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            '   Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-                Dim command As New SqlClient.SqlCommand(command_sql, db.Connection())
+            Dim command As New SqlClient.SqlCommand(command_sql, db.Connection())
 
                 For Each param In record
                     command.Parameters.AddWithValue(String.Format("@{0}", param.Key), param.Value)
@@ -231,7 +240,7 @@
 
                 record.Add("sync_tableID", new_id.Value)
 
-            End Using
+            ' End Using
 
         Catch ex As Exception
 
@@ -247,23 +256,23 @@
 
     Public Function get_sync_work() As List(Of sync_table_record)
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
-            Dim command As String = "select * from odoo.sync_table where SyncStart is null order by Anlagedatum"
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
+        Dim command As String = "select * from odoo.sync_table where SyncStart is null order by Anlagedatum"
 
             Return db.ExecuteQuery(Of sync_table_record)(command).ToList()
 
-        End Using
+        ' End Using
 
     End Function
 
     Public Sub get_new_ids(record As sync_table_record)
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
-            Dim command As String = String.Format("select * from odoo.sync_table where sync_tableID = {0}", record.sync_tableID.ToString())
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
+        Dim command As String = String.Format("select * from odoo.sync_table where sync_tableID = {0}", record.sync_tableID.ToString())
 
             Dim res = db.ExecuteQuery(Of sync_table_record)(command).FirstOrDefault()
 
@@ -273,17 +282,17 @@
                 record.odoo_id2 = res.odoo_id2
             End If
 
-        End Using
+        '  End Using
 
     End Sub
 
     Public Sub save_sync_table_record(record As sync_table_record)
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        '   Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim command As String =
+        Dim command As String =
 "UPDATE [odoo].[sync_table]
    SET [SyncStart] = @SyncStart
       ,[SyncEnde] = @SyncEnde
@@ -305,7 +314,7 @@
 
             db.Connection.Close()
 
-        End Using
+        '   End Using
 
     End Sub
 
@@ -315,12 +324,12 @@
         insert.SyncStart = Now
 
         Try
-            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-                Dim db As New mdbDataContext(get_connection_string(Me._instance))
-                'using etc.
+            Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
+            'using etc.
 
-                Dim data As Dictionary(Of String, Object) = Nothing
+            Dim data As Dictionary(Of String, Object) = Nothing
 
                 If insert.Tabelle.ToLower().EndsWith("_rel") Then
                     data = pgSQLHost.get_data(insert, schema)
@@ -451,7 +460,7 @@
                 End If
 
 
-            End Using
+            '  End Using
 
         Catch ex As Exception
 
@@ -486,9 +495,9 @@
         End If
 
         Try
-            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            'Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
                 'using etc.
                 Dim data = api.get_data(update, schema, field_types)
 
@@ -539,7 +548,7 @@
                 cmd.ExecuteNonQuery()
                 db.Connection.Close()
 
-            End Using
+            ' End Using
 
         Catch ex As Exception
 
@@ -567,11 +576,11 @@
         delete.SyncStart = Now
 
         Try
-            Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+            '   Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-                Dim db As New mdbDataContext(get_connection_string(Me._instance))
+            Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-                Dim command As String = String.Format(
+            Dim command As String = String.Format(
     "    
                 if exists(select * 
                           from sys.objects o 
@@ -602,7 +611,7 @@
                 cmd.ExecuteNonQuery()
                 db.Connection.Close()
 
-            End Using
+            '  End Using
 
         Catch ex As Exception
 
@@ -628,11 +637,11 @@
 
         Dim data As New Dictionary(Of String, Object)
 
-        Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
+        '  Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
-            Dim db As New mdbDataContext(get_connection_string(Me._instance))
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
 
-            Dim command As String = String.Format("select {0} from odoo.{1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
+        Dim command As String = String.Format("select {0} from odoo.{1} ", String.Join(", ", schema(item.Tabelle)("fields").ToArray()), item.Tabelle)
 
             Dim where_clause As String = String.Format("where {1}ID = {0}", item.ID, item.Tabelle)
             Dim cmd As New SqlClient.SqlCommand(command & where_clause, db.Connection)
@@ -654,7 +663,7 @@
             db.Connection.Close()
 
 
-        End Using
+        ' End Using
 
         Return data
 

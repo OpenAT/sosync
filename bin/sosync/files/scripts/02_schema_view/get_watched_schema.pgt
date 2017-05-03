@@ -10,9 +10,9 @@ right join information_schema.columns c
     --magic: action_condition must match column_name or id is the column name
    and ( 
         --use '.',' ' and ')' as identifier-terminator
-        action_condition like '%.' || c.column_name || ')%'
+        replace(action_condition,'"','') like '%.' || c.column_name || ')%'
         or
-        action_condition like '%.' || c.column_name || ' %'
+        replace(action_condition,'"','') like '%.' || c.column_name || ' %'
         or
         (c.column_name = 'id'
          and
