@@ -241,11 +241,11 @@
 
                 new_id.Direction = ParameterDirection.Output
 
-                db.Connection.Open()
-                command.ExecuteNonQuery()
-                db.Connection.Close()
+            'db.Connection.Open()
+            command.ExecuteNonQuery()
+            'db.Connection.Close()
 
-                record.Add("sync_tableID", new_id.Value)
+            record.Add("sync_tableID", new_id.Value)
 
             ' End Using
 
@@ -315,11 +315,11 @@
             cmd.Parameters.AddWithValue("@SyncMessage", If(record.SyncMessage, DBNull.Value))
             cmd.Parameters.AddWithValue("@sync_tableID", record.sync_tableID)
 
-            db.Connection.Open()
+        'db.Connection.Open()
 
-            cmd.ExecuteNonQuery()
+        cmd.ExecuteNonQuery()
 
-            db.Connection.Close()
+        '    db.Connection.Close()
 
         '   End Using
 
@@ -382,11 +382,11 @@
                         rel_record_exists_cmd.Parameters.Add(param)
                     Next
 
-                    db.Connection.Open()
-                    Dim rel_rec_exists As Boolean = rel_record_exists_cmd.ExecuteScalar()
-                    db.Connection.Close()
+                ' db.Connection.Open()
+                Dim rel_rec_exists As Boolean = rel_record_exists_cmd.ExecuteScalar()
+                '    db.Connection.Close()
 
-                    If rel_rec_exists Then
+                If rel_rec_exists Then
                         insert.SyncEnde = Now
                         insert.SyncResult = True
                         insert.SyncMessage = "rel_record already in db"
@@ -424,11 +424,11 @@
 
                 record_exists_cmd.Parameters.Add(id_param)
 
-                db.Connection.Open()
-                Dim record_exists As Boolean = record_exists_cmd.ExecuteScalar()
-                db.Connection.Close()
+            'db.Connection.Open()
+            Dim record_exists As Boolean = record_exists_cmd.ExecuteScalar()
+            'db.Connection.Close()
 
-                If record_exists Then
+            If record_exists Then
                     insert.SyncMessage = "record already inserted"
                 Else
 
@@ -460,11 +460,11 @@
                         cmd.Parameters.Add(param)
                     Next
 
-                    db.Connection.Open()
-                    cmd.ExecuteNonQuery()
-                    db.Connection.Close()
+                'db.Connection.Open()
+                cmd.ExecuteNonQuery()
+                'db.Connection.Close()
 
-                End If
+            End If
 
 
             '  End Using
@@ -551,9 +551,9 @@
                     Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
                     cmd.Parameters.Add(param)
                 Next
-                db.Connection.Open()
-                cmd.ExecuteNonQuery()
-                db.Connection.Close()
+            'db.Connection.Open()
+            cmd.ExecuteNonQuery()
+            'db.Connection.Close()
 
             ' End Using
 
@@ -614,9 +614,9 @@
 
                 Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
-                db.Connection.Open()
-                cmd.ExecuteNonQuery()
-                db.Connection.Close()
+            'db.Connection.Open()
+            cmd.ExecuteNonQuery()
+            ' db.Connection.Close()
 
             '  End Using
 
@@ -653,8 +653,8 @@
             Dim where_clause As String = String.Format("where {1}ID = {0}", item.ID, item.Tabelle)
             Dim cmd As New SqlClient.SqlCommand(command & where_clause, db.Connection)
 
-            db.Connection.Open()
-            Dim r = cmd.ExecuteReader()
+        'db.Connection.Open()
+        Dim r = cmd.ExecuteReader()
 
 
             If r.Read() Then
@@ -667,7 +667,7 @@
 
             r.Close()
 
-            db.Connection.Close()
+        'db.Connection.Close()
 
 
         ' End Using
