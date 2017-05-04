@@ -17,32 +17,34 @@ Module Main
         Dim pgSQLHost As New pgSQLServer(state.instance, online_pgsql_pw)
         Dim msSQLHost As New msSQLServer(state.instance, studio_pw)
 
-        If Not pgSQLHost.try_connect() OrElse Not msSQLHost.try_connect() Then
-            log.write_line("syncer exit - couldn't connect to all db-servers", log.Level.Error)
+        msSQLHost.try_connect()
 
-        End If
+        'If Not pgSQLHost.try_connect() OrElse Not msSQLHost.try_connect() Then
+        '    log.write_line("syncer exit - couldn't connect to all db-servers", log.Level.Error)
+
+        'End If
 
 
-        Dim schema = msSQLHost.get_Schema()
-        Dim field_types = msSQLHost.get_Schema_fieldTypes()
+        'Dim schema = msSQLHost.get_Schema()
+        'Dim field_types = msSQLHost.get_Schema_fieldTypes()
 
-        Dim odoo_user_id As Integer = pgSQLHost.get_uid()
+        'Dim odoo_user_id As Integer = pgSQLHost.get_uid()
 
-        Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
+        'Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
-        'schema("res_partner")("fields").Remove("birthdate_web")
+        ''schema("res_partner")("fields").Remove("birthdate_web")
 
-        Dim r As New sync_table_record()
-        r.sync_tableID = 97174
-        r.Direction = True
-        r.Tabelle = "res_partner"
-        r.Operation = "u"
-        r.ID = 844
-        r.odoo_id = 2373
-        r.odoo_id2 = Nothing
-        'api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
-        'msSQLHost.work_insert(r, api, schema, field_types, pgSQLHost)
-        msSQLHost.work_update(r, api, schema, field_types)
+        'Dim r As New sync_table_record()
+        'r.sync_tableID = 97174
+        'r.Direction = True
+        'r.Tabelle = "res_partner"
+        'r.Operation = "u"
+        'r.ID = 844
+        'r.odoo_id = 2373
+        'r.odoo_id2 = Nothing
+        ''api.update_object(r, schema(r.Tabelle)("online_model_name")(0), r.odoo_id, msSQLHost.get_data(r, schema))
+        ''msSQLHost.work_insert(r, api, schema, field_types, pgSQLHost)
+        'msSQLHost.work_update(r, api, schema, field_types)
     End Sub
 
     Sub Main()

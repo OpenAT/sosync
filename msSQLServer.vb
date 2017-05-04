@@ -9,6 +9,7 @@
         Me._pw = pw
         Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
             Me._conn = New SqlClient.SqlConnection(get_connection_string(Me._instance))
+            Me._conn.Open()
         End Using
     End Sub
 
@@ -166,11 +167,17 @@
 
         Try
             ' Using s As New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
-            Me._conn.Open()
-            Me._conn.Close()
+            'Me._conn.Open()
+            'Me._conn.Close()
             'End Using
 
-            Return True
+            Dim cmd As String = "select system_user"
+
+            Dim res = (New mdbDataContext(Me._conn)).ExecuteQuery(Of String)(cmd).FirstOrDefault()
+
+
+
+            Return res.EndsWith(Me._instance)
 
         Catch ex As Exception
 
