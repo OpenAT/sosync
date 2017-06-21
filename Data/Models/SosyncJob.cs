@@ -27,7 +27,7 @@ namespace WebSosync.Data.Models
         /// <summary>
         /// The sync job ID in the source system.
         /// </summary>
-        public int ID { get; set; }
+        public int Job_ID { get; set; }
 
         public DateTime Date { get; set; }
         public DateTime? Start { get; set; }
@@ -43,7 +43,7 @@ namespace WebSosync.Data.Models
         /// </summary>
         public string Error_Code { get; set; }
 
-        public int? Parent_ID { get; set; }
+        public int? Parent_Job_ID { get; set; }
         public DateTime? Child_Start { get; set; }
         public DateTime? Child_End { get; set; }
 
@@ -68,6 +68,8 @@ namespace WebSosync.Data.Models
         public DateTime? Target_Request_Start { get; set; }
         public DateTime? Target_Request_End { get; set; }
         public string Target_Request_Answer { get; set; }
+
+        public DateTime? job_fetched { get; set; }
         public int Run_Counter { get; set; }
 
         public IList<SosyncJob> Children { get; set; }
@@ -75,7 +77,8 @@ namespace WebSosync.Data.Models
 
         #region Interface ITree<SosyncJob> implementation
         // Other two interface members matched already
-        public int? ParentID => this.Parent_ID;
+        public int ID => this.Job_ID;
+        public int? ParentID => this.Parent_Job_ID;
         #endregion
     }
 }
