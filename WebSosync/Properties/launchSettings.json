@@ -18,7 +18,7 @@
     },
     "WebSosync": {
       "commandName": "Project",
-      "commandLineArgs": "--instance dadi",
+      "commandLineArgs": "--instance debug",
       "launchBrowser": true,
       "launchUrl": "state",
       "environmentVariables": {

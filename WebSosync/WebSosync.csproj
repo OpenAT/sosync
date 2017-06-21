@@ -38,5 +38,10 @@
     <ProjectReference Include="..\Data\Data.csproj" />
     <ProjectReference Include="..\Syncer\Syncer.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="debug_sosync.ini">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

@@ -33,7 +33,12 @@ namespace WebSosync
 
             // Build the INI path and filename, depending on the instance name
             var iniFile = $"{tempConfig["instance"]}_sosync.ini";
-            var iniConfig = Path.Combine(Path.DirectorySeparatorChar.ToString(), "etc", "sosync", iniFile);
+
+            // This would be the default location for linux 
+            //var iniConfig = Path.Combine(Path.DirectorySeparatorChar.ToString(), "etc", "sosync", iniFile);
+
+            // But in our case, expect the INI file inside the app folder
+            var iniConfig = iniFile;
 
             // In development mode on windows, expect the INI file to be within the app directory
             if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -78,13 +83,13 @@ namespace WebSosync
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ILogger<Startup> log)
         {
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))
                 .AddDebug();
 
-            var logPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync");
+            var logPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync", Configuration["instance"]);
 
             // In development mode on windows, save the log file within the app directory
             if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -92,8 +97,11 @@ namespace WebSosync
                 logPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             }
 
-            if (Directory.Exists(logPath))
+            try
             {
+                if (!Directory.Exists(logPath))
+                    Directory.CreateDirectory(logPath);
+
                 var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
                 LogEventLevel lvl;
                 Enum.TryParse<LogEventLevel>(Configuration["Logging:LogLevel:Default"], out lvl);
@@ -104,9 +112,10 @@ namespace WebSosync
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());
             }
-            else
+            catch (IOException ex)
             {
-                throw new DirectoryNotFoundException($"The logging directory \"{logPath}\" was not found.");
+                // If the log path or log file could not be created, ignore the error.
+                log.LogWarning(ex.ToString());
             }
 
             if (env.IsDevelopment())
