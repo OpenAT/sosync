@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using Serilog;
 using Serilog.Events;
-using WebSosync.Helpers;
 
 namespace WebSosync
 {
@@ -98,6 +97,8 @@ namespace WebSosync
                 logPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             }
 
+            var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
+
             try
             {
                 if (!Directory.Exists(logPath))
@@ -119,18 +120,18 @@ namespace WebSosync
                     .WriteTo.File(path: logFile, outputTemplate: "{Timestamp:o} [{Level}] {Message}{NewLine}{Exception}");
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());
+
+                log.LogInformation($"Logging to: {logFile}");
             }
             catch (UnauthorizedAccessException ex)
             {
                 // Ignore permission errors, but log to console
-                ConsoleHelper.WriteColorLine(ConsoleColor.Yellow, ex.ToString());
-                Console.WriteLine(ex.ToString());
+                log.LogWarning(ex.ToString());
             }
             catch (IOException ex)
             {
                 // Ignore IO errors, but log to console
-                ConsoleHelper.WriteColorLine(ConsoleColor.Yellow, ex.ToString());
-                Console.WriteLine(ex.ToString());
+                log.LogWarning(ex.ToString());
             }
 
             if (env.IsDevelopment())
