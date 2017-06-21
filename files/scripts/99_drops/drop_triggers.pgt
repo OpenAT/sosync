@@ -1,6 +1,0 @@
-drop trigger sosync_trigger_insert_#{table_name} on #{table_name}; 
-drop function sosync_triggerfunction_insert_#{table_name}();
-drop trigger sosync_trigger_update_#{table_name} on #{table_name}; 
-drop function sosync_triggerfunction_update_#{table_name}();
-drop trigger sosync_trigger_delete_#{table_name} on #{table_name}; 
-drop function sosync_triggerfunction_delete_#{table_name}();

@@ -1,4 +1,0 @@
-DROP TRIGGER IF EXISTS sosync_trigger_delete_#{table_name} on public.#{table_name};
- CREATE TRIGGER sosync_trigger_delete_#{table_name} AFTER DELETE
-        ON public.#{table_name} FOR EACH ROW
-        EXECUTE PROCEDURE sosync_triggerfunction_delete_#{table_name}();

@@ -1,3 +1,0 @@
-INSERT INTO sosync_sync_table(odoo_id#{id2_sync_table_field:, }, table_name, creation, operation)
-SELECT #{id_field_name}#{id2_field_name:, }, '#{table_name}', now(), 'i'
-FROM #{table_name};
