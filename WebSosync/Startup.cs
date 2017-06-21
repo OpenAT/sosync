@@ -109,10 +109,10 @@ namespace WebSosync
                 // Ignore permission errors when checking log directoy
             }
 
+            var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
+
             try
             {
-                var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
-
                 // If log file is not found, try to create a new one in order to provoke
                 // an exception
                 if (!File.Exists(logFile))
@@ -129,15 +129,15 @@ namespace WebSosync
 
                 log.LogInformation($"Logging to: {logFile}");
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
                 // Ignore permission errors, but log to console
-                log.LogWarning(ex.ToString());
+                log.LogWarning($"Cannot log to \"{logFile}\": Access denied.");
             }
             catch (IOException ex)
             {
                 // Ignore IO errors, but log to console
-                log.LogWarning(ex.ToString());
+                log.LogWarning(ex.Message);
             }
 
             if (env.IsDevelopment())
