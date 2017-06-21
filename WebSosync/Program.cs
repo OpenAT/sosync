@@ -33,6 +33,7 @@ namespace WebSosync
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
             log.LogInformation($"Running on {osNameAndVersion}");
+            log.LogInformation($"Instance name: {config["instance"]}");
 
             log.LogInformation($"Setting up database");
             using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
