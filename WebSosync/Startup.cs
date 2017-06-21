@@ -112,6 +112,12 @@ namespace WebSosync
             try
             {
                 var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
+
+                // If log file is not found, try to create a new one in order to provoke
+                // an exception
+                if (!File.Exists(logFile))
+                    File.Create(logFile);
+
                 LogEventLevel lvl;
                 Enum.TryParse<LogEventLevel>(Configuration["Logging:LogLevel:Default"], out lvl);
 
