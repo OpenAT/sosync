@@ -66,14 +66,14 @@ namespace WebSosync.Data.Properties {
         ///	-- roots
         ///	select *
         ///	from sync_table
-        ///	where parent_id is null and state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///	where parent_job_id is null and state in (&apos;new&apos;, &apos;inprogress&apos;)
         ///
         ///	union all
         ///	
         ///	-- children
         ///	select child.*
         ///	from sync_table as child
-        ///	inner join sync_table parent on child.parent_id = parent.id
+        ///	inner join sync_table parent on child.parent_job_id = parent.job_id
         ///)
         ///select * from children;.
         /// </summary>
