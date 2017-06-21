@@ -11,21 +11,29 @@ namespace WebSosync.Data
 {
     public class DataService : IDisposable
     {
-        private NpgsqlConnection _con;
-
+        #region Constructors
         public DataService(string conStr)
         {
             _con = new NpgsqlConnection(conStr);
             _con.Open();
         }
+        #endregion
+
+        #region Methods
+        public void Setup()
+        {
+            _con.Execute(Resources.ResourceManager.GetString("SetupDatabase_SCRIPT"));
+        }
 
         public List<SosyncJob> GetSyncJobs()
         {
-            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString("OopenSyncJob_SELECT")).AsList();
+            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString("GetAllOpenSyncJob_SELECT")).AsList();
 
             return result;
         }
+        #endregion
 
+        #region IDisposable implementation
         public void Dispose()
         {
             try
@@ -41,5 +49,10 @@ namespace WebSosync.Data
                 _con.Dispose();
             }
         }
+        #endregion
+
+        #region Members
+        private NpgsqlConnection _con;
+        #endregion
     }
 }

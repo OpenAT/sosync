@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="OopenSyncJob_SELECT" xml:space="preserve">
+  <data name="GetAllOpenSyncJob_SELECT" xml:space="preserve">
     <value>with recursive children as (
 	-- roots
 	select *
@@ -132,5 +132,36 @@
 	inner join sync_table parent on child.parent_id = parent.id
 )
 select * from children;</value>
+  </data>
+  <data name="SetupDatabase_SCRIPT" xml:space="preserve">
+    <value>CREATE TABLE IF NOT EXISTS sync_table
+(
+  sosyncid serial NOT NULL,
+  job_id integer,
+  date timestamp without time zone NOT NULL,
+  start timestamp without time zone,
+  "end" timestamp without time zone,
+  state text NOT NULL,
+  error_code text,
+  parent_job_id integer,
+  child_start timestamp without time zone,
+  child_end timestamp without time zone,
+  source_system text NOT NULL,
+  source_model text NOT NULL,
+  source_record_id integer NOT NULL,
+  target_system text,
+  target_model text,
+  target_record_id integer,
+  source_data text,
+  target_request text,
+  target_request_start timestamp without time zone,
+  target_request_end timestamp without time zone,
+  target_request_answer text,
+  run_count integer NOT NULL default 0,
+  CONSTRAINT synctable_primary_key PRIMARY KEY (sosyncid)
+)
+WITH (
+  OIDS=FALSE
+);</value>
   </data>
 </root>

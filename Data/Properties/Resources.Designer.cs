@@ -77,9 +77,34 @@ namespace WebSosync.Data.Properties {
         ///)
         ///select * from children;.
         /// </summary>
-        internal static string OopenSyncJob_SELECT {
+        internal static string GetAllOpenSyncJob_SELECT {
             get {
-                return ResourceManager.GetString("OopenSyncJob_SELECT", resourceCulture);
+                return ResourceManager.GetString("GetAllOpenSyncJob_SELECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
+        ///(
+        ///  sosyncid serial NOT NULL,
+        ///  job_id integer,
+        ///  date timestamp without time zone NOT NULL,
+        ///  start timestamp without time zone,
+        ///  &quot;end&quot; timestamp without time zone,
+        ///  state text NOT NULL,
+        ///  error_code text,
+        ///  parent_job_id integer,
+        ///  child_start timestamp without time zone,
+        ///  child_end timestamp without time zone,
+        ///  source_system text NOT NULL,
+        ///  source_model text NOT NULL,
+        ///  source_record_id integer NOT NULL,
+        ///  target_system text,
+        ///  target_model text, [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string SetupDatabase_SCRIPT {
+            get {
+                return ResourceManager.GetString("SetupDatabase_SCRIPT", resourceCulture);
             }
         }
     }

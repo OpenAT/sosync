@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using WebSosync.Data;
 using WebSosync.Data.Extensions;
+using WebSosync.Data.Helpers;
 
 namespace Syncer
 {
@@ -21,7 +22,10 @@ namespace Syncer
         #region Methods
         public void Synchronize()
         {
-            using (var db = new DataService($"Host=localhost;Username=postgres;Password=asdf22;Database=postgres"))
+            using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
+                _config["instance"],
+                _config["sosync_user"],
+                _config["sosync_pass"])))
             {
                 var jobs = db.GetSyncJobs().ToTree();
 

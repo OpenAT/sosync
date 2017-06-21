@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using Serilog;
 using Serilog.Events;
+using WebSosync.Helpers;
 
 namespace WebSosync
 {
@@ -83,7 +84,7 @@ namespace WebSosync
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ILogger<Startup> log)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))
@@ -101,7 +102,14 @@ namespace WebSosync
             {
                 if (!Directory.Exists(logPath))
                     Directory.CreateDirectory(logPath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Ignore permission errors when checking log directoy
+            }
 
+            try
+            {
                 var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
                 LogEventLevel lvl;
                 Enum.TryParse<LogEventLevel>(Configuration["Logging:LogLevel:Default"], out lvl);
@@ -112,10 +120,17 @@ namespace WebSosync
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Ignore permission errors, but log to console
+                ConsoleHelper.WriteColorLine(ConsoleColor.Yellow, ex.ToString());
+                Console.WriteLine(ex.ToString());
+            }
             catch (IOException ex)
             {
-                // If the log path or log file could not be created, ignore the error.
-                log.LogWarning(ex.ToString());
+                // Ignore IO errors, but log to console
+                ConsoleHelper.WriteColorLine(ConsoleColor.Yellow, ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
 
             if (env.IsDevelopment())
