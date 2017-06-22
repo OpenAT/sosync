@@ -32,7 +32,7 @@ namespace WebSosync
                 throw new ArgumentException("Parameter \"instance\" required. Use --instance ****");
 
             // Build the INI path and filename, depending on the instance name
-            var iniFile = $"{tempConfig["instance"]}_sosync.ini55";
+            var iniFile = $"{tempConfig["instance"]}_sosync.ini";
 
             string iniConfig;
 
