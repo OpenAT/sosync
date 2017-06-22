@@ -9,6 +9,7 @@ using WebSosync.Enumerations;
 using Microsoft.Extensions.Configuration;
 using WebSosync.Data;
 using WebSosync.Data.Helpers;
+using System;
 
 namespace WebSosync
 {
@@ -35,7 +36,45 @@ namespace WebSosync
             log.LogInformation($"Running on {osNameAndVersion}");
             log.LogInformation($"Instance name: {config["instance"]}");
 
+            SetupDb(config, log);
+
+            // Handle he linux sigterm signal
+            AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
+
+            // Start the webserver
+            host.Run(svc.Token);
+        }
+
+        /// <summary>
+        /// Handles the linux "sigterm" signal, to gracefully terminate.
+        /// </summary>
+        /// <param name="ioc">The dependency injection container.</param>
+        /// <param name="log">The logger that should be used for logging.</param>
+        /// <param name="svc">The host service to request termination.</param>
+        private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
+        {
+            IBackgroundJob job = (IBackgroundJob)ioc.GetService(typeof(IBackgroundJob));
+            log.LogInformation($"Process termination requested (job status: {job.Status})");
+            job.ShutdownPending = true;
+
+            // As logn the job status isn't stopped or error, keep requesting to stop it
+            while (job.Status != ServiceState.Stopped && job.Status != ServiceState.Error)
+            {
+                log.LogInformation("Asking job to stop");
+                job.Stop();
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            // The job terminated cleanly, graceful exit by requesting the host thread to shut down
+            log.LogInformation($"Exiting gracefully.");
+
+            svc.RequestShutdown();
+        }
+
+        private static void SetupDb(IConfiguration config, ILogger<Program> log)
+        {
             log.LogInformation($"Setting up database");
+
             using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
                 config["instance"],
                 config["sosync_user"],
@@ -43,29 +82,6 @@ namespace WebSosync
             {
                 db.Setup();
             }
-
-            // Handle he linux sigterm signal
-            AssemblyLoadContext.Default.Unloading += (obj) =>
-            {
-                IBackgroundJob job = (IBackgroundJob)host.Services.GetService(typeof(IBackgroundJob));
-                log.LogInformation($"Process termination requested (job status: {job.Status})");
-                job.ShutdownPending = true;
-
-                // As logn the job status isn't stopped or error, keep requesting to stop it
-                while (job.Status != ServiceState.Stopped && job.Status != ServiceState.Error)
-                {
-                    log.LogInformation("Asking job to stop");
-                    job.Stop();
-                    System.Threading.Thread.Sleep(1000);
-                }
-
-                // The job terminated cleanly, graceful exit by requesting the host thread to shut down
-                log.LogInformation($"Exiting gracefully.");
-                svc.RequestShutdown();
-            };
-
-            // Start the webserver
-            host.Run(svc.Token);
         }
         #endregion
 
