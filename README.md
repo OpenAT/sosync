@@ -46,8 +46,6 @@ Logging:IncludeScopes=false
 
 # Log levels: None, Trace, Debug, Information, Warning, Error, Critical
 Logging:LogLevel:Default=Information
-Logging:LogLevel:System=Information
-Logging:LogLevel:Microsoft=Information
 
 sosync_user=theuser
 sosync_pass=thepass
