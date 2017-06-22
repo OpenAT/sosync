@@ -2,6 +2,7 @@
 Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Online (FSO)**.
 
 ## Architecture
+### Overview
 - **sosync** is an *ASP.NET Core* Application, written in *C#*
 - It is supposed to run as a linux service
 - It runs a self contained *Kestrel* webserver to provite a *REST*ful API
