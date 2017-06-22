@@ -38,7 +38,7 @@ namespace WebSosync
 
             // In development, on windows, expect the INI file in the project folder
             // In production, expect the INI file inside the app folder
-            if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (env.IsDevelopment())
                 iniConfig = Path.Combine(env.ContentRootPath, iniFile);
             else
                 iniConfig = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), iniFile);
@@ -55,6 +55,7 @@ namespace WebSosync
 
             Configuration = builder.Build();
 
+            Configuration["IniFileName"] = iniConfig;
             try
             {
                 Configuration["IniFilePresent"] = File.Exists(iniConfig).ToString();
