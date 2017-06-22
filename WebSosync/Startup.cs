@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using Serilog;
 using Serilog.Events;
+using WebSosync.Helpers;
 
 namespace WebSosync
 {
@@ -23,25 +24,8 @@ namespace WebSosync
         /// <param name="env">Provides access to the hosting environment.</param>
         public Startup(IHostingEnvironment env)
         {
-            // Build separate configuration from command line
-            var tempConfig = new ConfigurationBuilder()
-                .AddCommandLine(Program.Args)
-                .Build();
-
-            if (string.IsNullOrEmpty(tempConfig["instance"]))
-                throw new ArgumentException("Parameter \"instance\" required. Use --instance ****");
-
             // Build the INI path and filename, depending on the instance name
-            var iniFile = $"{tempConfig["instance"]}_sosync.ini";
-
-            string iniConfig;
-
-            // In development, on windows, expect the INI file in the project folder
-            // In production, expect the INI file inside the app folder
-            if (env.IsDevelopment())
-                iniConfig = Path.Combine(env.ContentRootPath, iniFile);
-            else
-                iniConfig = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), iniFile);
+            var iniFile = ConfigurationHelper.GetIniFile(Program.Args);
             
             // Now load all configurations in this priority list, include the command line again, to enable
             // overriding configuration settings via command line
@@ -49,16 +33,16 @@ namespace WebSosync
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddIniFile(iniConfig, optional: true)
+                .AddIniFile(iniFile, optional: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(Program.Args);
 
             Configuration = builder.Build();
 
-            Configuration["IniFileName"] = iniConfig;
+            Configuration["IniFileName"] = iniFile;
             try
             {
-                Configuration["IniFilePresent"] = File.Exists(iniConfig).ToString();
+                Configuration["IniFilePresent"] = File.Exists(iniFile).ToString();
             }
             catch (Exception)
             {
@@ -90,6 +74,9 @@ namespace WebSosync
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))
                 .AddDebug();
+
+            if (string.IsNullOrEmpty(Configuration["instance"]))
+                return;
 
             var logPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync", Configuration["instance"]);
 
