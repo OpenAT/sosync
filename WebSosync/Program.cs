@@ -32,10 +32,8 @@ namespace WebSosync
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                //.UseIISIntegration()
-                .UseStartup<Startup>()
-                //.UseApplicationInsights()
                 .UseConfiguration(cmdLineConfig)
+                .UseStartup<Startup>()
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
