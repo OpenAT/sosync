@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/WebSosync/bin/Debug/netcoreapp1.1/sosync.dll",
-            "args": [],
+            "args": ["--instance=debug", "--server.urls=http://localhost:5050"],
             "cwd": "${workspaceRoot}/WebSosync",
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart",
