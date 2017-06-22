@@ -25,14 +25,9 @@ namespace WebSosync
             var osNameAndVersion = RuntimeInformation.OSDescription;
             bool forceQuit = false;
 
-            var cmdLineConfig = new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .Build();
-
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseConfiguration(cmdLineConfig)
                 .UseStartup<Startup>()
                 .Build();
 
@@ -42,7 +37,7 @@ namespace WebSosync
 
             if (!bool.Parse(config["IniFilePresent"]))
             {
-                log.LogError("Configuration INI missing.");
+                log.LogError($"Configuration \"{config["IniFileName"]}\" missing.");
                 forceQuit = true;
             }
 
