@@ -11,14 +11,13 @@
 *.userprefs
 
 # Build results
-[Dd]ebug/
+*/[Bb]in/[Dd]ebug/
 [Dd]ebugPublic/
-[Rr]elease/
+*/[Bb]in/[Rr]elease/
 [Rr]eleases/
 x64/
 x86/
 bld/
-[Bb]in/
 [Oo]bj/
 [Ll]og/
 
@@ -52,7 +51,7 @@ artifacts/
 *.meta
 *.obj
 *.pch
-*.pdb
+# *.pdb
 *.pgc
 *.pgd
 *.rsp
