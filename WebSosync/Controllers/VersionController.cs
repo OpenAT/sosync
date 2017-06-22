@@ -29,7 +29,8 @@ namespace WebSosync.Controllers
                 FileName = "git",
                 Arguments = "rev-parse HEAD",
                 UseShellExecute = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             try
@@ -40,6 +41,9 @@ namespace WebSosync.Controllers
                 using (var proc = Process.Start(startInfo))
                 {
                     result = proc.StandardOutput.ReadToEnd();
+                    
+                    if (string.IsNullOrEmpty(result))
+                        result = proc.StandardError.ReadToEnd();
                 }
                 
                 // If an error was returned instead of a commit id log it & return bad request
