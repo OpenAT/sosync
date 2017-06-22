@@ -78,25 +78,17 @@ namespace WebSosync
             if (string.IsNullOrEmpty(Configuration["instance"]))
                 return;
 
-            var logPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync", Configuration["instance"]);
+            var logPathBase = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync");
+            var logPath = Path.Combine(logPathBase, Configuration["instance"]);
 
             // In development mode on windows, save the log file within the app directory
             if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 logPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            }
 
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
 
-            try
-            {
-                if (!Directory.Exists(logPath))
-                    Directory.CreateDirectory(logPath);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Ignore permission errors when checking log directoy
-            }
+            DirectoryHelper.EnsureExistance(logPathBase, log);
+            DirectoryHelper.EnsureExistance(logPath, log);
 
             var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
 
