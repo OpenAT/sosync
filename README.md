@@ -10,7 +10,7 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - The background thread processes the sync jobs. There is a maximum of one background thread at any given time.
 
 ### The API
-Depending on the "Accept" header, most routes return either a **json** object with the fields **state** and **stateDescription**, or an **XML** object with the elements **State** and **StateDescription** (pay attention to upper and lower case).
+Depending on the "**Accept**" header, most routes return either a **json** object with the fields **state** and **stateDescription**, or an **XML** object with the elements **State** and **StateDescription** (be aware of the difference in letter case between XML and json).
 - **/state** returns the current state of the background thread
   - 0: Stopped - background thread is idle
   - 1: Running - ongoing synchronization
