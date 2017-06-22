@@ -105,14 +105,18 @@ namespace WebSosync
                 // If log file is not found, try to create a new one in order to provoke
                 // an exception
                 if (!File.Exists(logFile))
-                    File.Create(logFile);
+                    File.Create(logFile).Dispose();
 
-                LogEventLevel lvl;
-                Enum.TryParse<LogEventLevel>(Configuration["Logging:LogLevel:Default"], out lvl);
+                LogLevel configLogLvl;
+                Enum.TryParse<LogLevel>(Configuration["Logging:LogLevel:Default"], out configLogLvl);
+                LogEventLevel lvl = LogHelper.ConvertLevel(configLogLvl);
 
                 LoggerConfiguration logConfig = new LoggerConfiguration()
                     .MinimumLevel.Is(lvl)
-                    .WriteTo.File(path: logFile, outputTemplate: "{Timestamp:o} [{Level}] {Message}{NewLine}{Exception}");
+                    .WriteTo.File(
+                        path: logFile,
+                        outputTemplate: "{Timestamp:o} [{Level}] {Message}{NewLine}{Exception}"
+                        );
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());
 
