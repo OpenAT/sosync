@@ -20,7 +20,9 @@ namespace WebSosync
         public static void Main(string[] args)
         {
             Args = args;
+
             var osNameAndVersion = RuntimeInformation.OSDescription;
+            bool forceQuit = false;
 
             var host = new WebHostBuilder()
                 .UseKestrel()
@@ -34,6 +36,12 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
+            if (!bool.Parse(config["IniFilePresent"]))
+            {
+                log.LogError("Configuration INI missing.");
+                forceQuit = true;
+            }
+
             log.LogInformation($"Running on {osNameAndVersion}");
             log.LogInformation($"Instance name: {config["instance"]}");
 
@@ -45,14 +53,15 @@ namespace WebSosync
             {
                 // Log the exception and exit the program
                 log.LogError(ex.Message);
-                return;
+                forceQuit = true;
             }
 
             // Handle he linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
 
-            // Start the webserver
-            host.Run(svc.Token);
+            // Start the webserver if there is no forced quit
+            if (!forceQuit)
+                host.Run(svc.Token);
         }
 
         /// <summary>

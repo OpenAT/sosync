@@ -32,19 +32,16 @@ namespace WebSosync
                 throw new ArgumentException("Parameter \"instance\" required. Use --instance ****");
 
             // Build the INI path and filename, depending on the instance name
-            var iniFile = $"{tempConfig["instance"]}_sosync.ini";
+            var iniFile = $"{tempConfig["instance"]}_sosync.ini55";
 
-            // This would be the default location for linux 
-            //var iniConfig = Path.Combine(Path.DirectorySeparatorChar.ToString(), "etc", "sosync", iniFile);
+            string iniConfig;
 
-            // But in our case, expect the INI file inside the app folder
-            var iniConfig = iniFile;
-
-            // In development mode on windows, expect the INI file to be within the app directory
+            // In development, on windows, expect the INI file in the project folder
+            // In production, expect the INI file inside the app folder
             if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 iniConfig = Path.Combine(env.ContentRootPath, iniFile);
-            }
+            else
+                iniConfig = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), iniFile);
             
             // Now load all configurations in this priority list, include the command line again, to enable
             // overriding configuration settings via command line
@@ -52,11 +49,20 @@ namespace WebSosync
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddIniFile(iniConfig, optional: false)
+                .AddIniFile(iniConfig, optional: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(Program.Args);
 
             Configuration = builder.Build();
+
+            try
+            {
+                Configuration["IniFilePresent"] = File.Exists(iniConfig).ToString();
+            }
+            catch (Exception)
+            {
+                Configuration["IniFilePresent"] = false.ToString();
+            }
         }
 
         /// <summary>
