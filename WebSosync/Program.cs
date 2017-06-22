@@ -49,7 +49,7 @@ namespace WebSosync
         /// Handles the linux "sigterm" signal, to gracefully terminate.
         /// </summary>
         /// <param name="ioc">The dependency injection container.</param>
-        /// <param name="log">The logger that should be used for logging.</param>
+        /// <param name="log">The logger to be used for logging.</param>
         /// <param name="svc">The host service to request termination.</param>
         private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
         {
@@ -71,6 +71,11 @@ namespace WebSosync
             svc.RequestShutdown();
         }
 
+        /// <summary>
+        /// Connects to the database and tries to create the sync table.
+        /// </summary>
+        /// <param name="config">The configuration to be used to read the database connection details.</param>
+        /// <param name="log">The Logger to be used foir logging.</param>
         private static void SetupDb(IConfiguration config, ILogger<Program> log)
         {
             log.LogInformation($"Setting up database");
