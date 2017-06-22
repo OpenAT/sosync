@@ -3,7 +3,8 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 
 ## Architecture
 - **sosync** is an *ASP.NET Core* Application, written in *C#*
-- It runs a *Kestrel* webserver to provite a *REST*ful API
+- It is supposed to run as a linux service
+- It runs a self contained *Kestrel* webserver to provite a *REST*ful API
 - The API is used to
   - start and stop a single background thread
   - add new sync jobs
@@ -29,4 +30,34 @@ Source: [https://www.microsoft.com/net/core#linuxubuntu](url) (includes instruct
 dotnet restore
 dotnet publish -c Release -o destination_path
 ```
+
+### Additional requirements
+Before the service can be started, ensure the following (replace **dadi** with the actual instance name):
+- In the application directory create an INI file, **dadi_sosync.ini**
+- Setup a pgSQL database
+  - Setup DNS for the server
+  - Create a database for the instance, e.g.: **dadi**
+  - create a user for the database with create table permissions
+- Optional: Create the directory **/var/log/sosync/dadi**, ensure the user running the service for this instance has access to (and only to) it's instance folder.
+
+#### Example INI file:
+```
+Logging:IncludeScopes=false
+
+# Log levels: None, Trace, Debug, Information, Warning, Error, Critical
+Logging:LogLevel:Default=Information
+Logging:LogLevel:System=Information
+Logging:LogLevel:Microsoft=Information
+
+sosync_user=theuser
+sosync_pass=thepass
+```
+
+### Running the application
+Change the working directory to the application directory. After that the following command can be used to start and run the application:
+```
+dotnet sosync.dll --instance dadi --server.urls="http://localhost:5000"
+```
+- Replace **dadi** with the proper instance name.
+- Replace the URL with the proper server name and port
 
