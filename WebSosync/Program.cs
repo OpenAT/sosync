@@ -40,6 +40,9 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
+            // Handle he linux sigterm signal
+            AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
+
             if (string.IsNullOrEmpty(config["instance"]))
             {
                 log.LogError("Parameter \"--instance\" required.");
@@ -75,12 +78,16 @@ namespace WebSosync
                 forceQuit = true;
             }
 
-            // Handle he linux sigterm signal
-            AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
-
-            // Start the webserver if there is no forced quit
-            if (!forceQuit)
-                host.Run(svc.Token);
+            try
+            {
+                // Start the webserver if there is no forced quit
+                if (!forceQuit)
+                    host.Run(svc.Token);
+            }
+            catch (IOException ex)
+            {
+                log.LogCritical(ex.Message);
+            }
         }
 
         /// <summary>
