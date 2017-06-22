@@ -11,9 +11,20 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 
 ### The API
 - **/state** returns the current state of the background thread
+  - 0: Stopped - background thread is idle
+  - 1: Running - ongoing synchronization
+  - 2: RunningRestartRequested - ongoing synchronization. A restart is scheduled
+  - 3: Stopping - background thread will finish the current job, then stop
+  - 4: Error - The last execution of the background thread caused an error
 - **/state/start** starts the background thread. Subsequent calls set a restart flag
+  - 0: AlreadyRunningRestartRequested - background thread already running. A restart was requested
+  - 1: Started - background thread was started
+  - 2: ShutdownInProgress - cannot start the background thread. The service is shutting down
 - **/state/stop** gracefully stops the background thread. Subsequent calls have no effect
-- **/version** returns the full git commit id as a string
+  - 0: StopAlreadyRequested - the background has already received a stop request
+  - 1: StopRequested - the background thread was asked to stop
+
+- **/version** returns the full length git commit id as a string
 
 ## Setup
 ### .NET Core SDK on Ubuntu 14.04 trusty:
