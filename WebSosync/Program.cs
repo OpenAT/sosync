@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using WebSosync.Data;
 using WebSosync.Data.Helpers;
 using System;
+using Npgsql;
 
 namespace WebSosync
 {
@@ -36,7 +37,16 @@ namespace WebSosync
             log.LogInformation($"Running on {osNameAndVersion}");
             log.LogInformation($"Instance name: {config["instance"]}");
 
-            SetupDb(config, log);
+            try
+            {
+                SetupDb(config, log);
+            }
+            catch (PostgresException ex)
+            {
+                // Log the exception and exit the program
+                log.LogError(ex.Message);
+                return;
+            }
 
             // Handle he linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
