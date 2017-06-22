@@ -66,6 +66,7 @@ Before the service can be started, ensure the following (replace **dadi** with t
 Logging:IncludeScopes=false
 
 # Log levels: None, Trace, Debug, Information, Warning, Error, Critical
+# Recommended: Information or Warning
 Logging:LogLevel:Default=Information
 
 sosync_user=theuser
