@@ -54,7 +54,7 @@ namespace WebSosync
 
             try
             {
-                if (!string.IsNullOrEmpty(config["instance"]))
+                if (!forceQuit && !string.IsNullOrEmpty(config["instance"]))
                 {
                     log.LogInformation($"Running on {osNameAndVersion}");
                     log.LogInformation($"Instance name: {config["instance"]}");
