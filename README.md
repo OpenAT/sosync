@@ -28,7 +28,7 @@ Source: [https://www.microsoft.com/net/core#linuxubuntu](url) (includes instruct
 
 ```
 dotnet restore
-dotnet publish -c Release -o destination_path
+dotnet publish -c Release -o ./../bin/Publish
 ```
 
 ### Additional requirements
