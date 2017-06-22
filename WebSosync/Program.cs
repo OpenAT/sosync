@@ -25,9 +25,14 @@ namespace WebSosync
             var osNameAndVersion = RuntimeInformation.OSDescription;
             bool forceQuit = false;
 
+            var kestrelConfig = new ConfigurationBuilder()
+                .AddCommandLine(Program.Args)
+                .Build();
+
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseConfiguration(kestrelConfig)
                 .UseStartup<Startup>()
                 .Build();
 
@@ -35,18 +40,27 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
-            if (!bool.Parse(config["IniFilePresent"]))
+            if (string.IsNullOrEmpty(config["instance"]))
+            {
+                log.LogError("Parameter \"--instance\" required.");
+                forceQuit = true;
+            }
+
+            if (!string.IsNullOrEmpty(config["instance"]) && config["IniFilePresent"] != null && !bool.Parse(config["IniFilePresent"]))
             {
                 log.LogError($"Configuration \"{config["IniFileName"]}\" missing.");
                 forceQuit = true;
             }
 
-            log.LogInformation($"Running on {osNameAndVersion}");
-            log.LogInformation($"Instance name: {config["instance"]}");
-
             try
             {
-                SetupDb(config, log);
+                if (!string.IsNullOrEmpty(config["instance"]))
+                {
+                    log.LogInformation($"Running on {osNameAndVersion}");
+                    log.LogInformation($"Instance name: {config["instance"]}");
+
+                    SetupDb(config, log);
+                }
             }
             catch (PostgresException ex)
             {
