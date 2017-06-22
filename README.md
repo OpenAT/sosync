@@ -5,10 +5,14 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - **sosync** is an *ASP.NET Core* Application, written in *C#*
 - It is supposed to run as a linux service
 - It runs a self contained *Kestrel* webserver to provite a *REST*ful API
-- The API is used to
-  - start and stop a single background thread
-  - add new sync jobs
-- The background thread processes the sync jobs
+- The API returns strings for simple results, and XML or json for complex results (set desired "Accept" header)
+- The background thread processes the sync jobs. There is a maximum of one background thread at any given time.
+
+### The API
+- **/state** returns the current state of the background thread
+- **/state/start** starts the background thread. Subsequent calls set a restart flag
+- **/state/stop** gracefully stops the background thread. Subsequent calls have no effect
+- **/version** returns the full git commit id as a string
 
 ## Setup
 ### .NET Core SDK on Ubuntu 14.04 trusty:
