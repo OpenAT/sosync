@@ -57,11 +57,6 @@ namespace WebSosync
                 .AddCommandLine(Program.Args);
 
             Configuration = builder.Build();
-
-            //foreach(var conf in Configuration.AsEnumerable())
-            //{
-            //    Console.WriteLine($"{conf.Key}\t\t=\t\t{conf.Value}");
-            //}
         }
 
         /// <summary>
