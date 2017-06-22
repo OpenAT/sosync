@@ -30,6 +30,9 @@ Source: [https://www.microsoft.com/net/core#linuxubuntu](url) (includes instruct
 dotnet restore
 dotnet publish -c Release -o ./../bin/Publish
 ```
+While developing:
+- In Visual Studio use the publish command, the directory is pre-configured
+- In Linux you can use the shell script **publish.sh**
 
 ### Additional requirements
 Before the service can be started, ensure the following (replace **dadi** with the actual instance name):
