@@ -25,12 +25,17 @@ namespace WebSosync
             var osNameAndVersion = RuntimeInformation.OSDescription;
             bool forceQuit = false;
 
+            var cmdLineConfig = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .Build();
+
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 //.UseIISIntegration()
                 .UseStartup<Startup>()
                 //.UseApplicationInsights()
+                .UseConfiguration(cmdLineConfig)
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
