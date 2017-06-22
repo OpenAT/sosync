@@ -11,6 +11,7 @@ using WebSosync.Data;
 using WebSosync.Data.Helpers;
 using System;
 using Npgsql;
+using System.Net.Sockets;
 
 namespace WebSosync
 {
@@ -53,6 +54,12 @@ namespace WebSosync
             {
                 // Log the exception and exit the program
                 log.LogError(ex.Message);
+                forceQuit = true;
+            }
+            catch (SocketException)
+            {
+                // Log the exception and exit the program
+                log.LogError("Could not connect to pgSQL server.");
                 forceQuit = true;
             }
 
