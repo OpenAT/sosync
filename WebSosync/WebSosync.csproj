@@ -40,7 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="debug_sosync.ini">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
