@@ -10,6 +10,6 @@ namespace WebSosync.Data.Constants
     public static class ResourceNames
     {
         public const string SetupDatabaseScript = "SetupDatabase_SCRIPT";
-        public const string GetAllOpenSyncJobsSELECT = "GetAllOpenSyncJobs_SELECT";
+        public const string GetAllOpenSyncJobsSelect = "GetAllOpenSyncJobs_SELECT";
     }
 }
