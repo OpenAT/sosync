@@ -12,6 +12,9 @@ using WebSosync.Data.Helpers;
 using System;
 using Npgsql;
 using System.Net.Sockets;
+using System.Collections.Generic;
+using WebSosync.Models;
+using System.Reflection;
 
 namespace WebSosync
 {
@@ -20,6 +23,28 @@ namespace WebSosync
         #region Members
         public static string[] Args { get; private set; }
         public static string ConfigurationINI { get; private set; }
+        public static Dictionary<string, string> SwitchMappings { get; private set; }
+        #endregion
+
+        #region Class initializers
+        static Program()
+        {
+            SwitchMappings = new Dictionary<string, string>();
+
+            // Short switch for configuration parameter
+            SwitchMappings.Add("-c", "conf");
+
+            // All the properties of the sosync configuration class are
+            // valid command line switches. But in order to skip the
+            // section-notation a switch map is defined for each property
+            var properties = typeof(SosyncConfiguration).GetProperties();
+
+            foreach (var prop in properties)
+            {
+                var propName = prop.Name.ToLower();
+                SwitchMappings.Add($"--{propName}", $"sosync:{propName}");
+            }
+        }
         #endregion
 
         #region Methods
@@ -31,17 +56,21 @@ namespace WebSosync
             bool forceQuit = false;
 
             var parameters = new ConfigurationBuilder()
-                .AddCommandLine(Program.Args)
+                .AddCommandLine(Program.Args, Program.SwitchMappings)
                 .Build();
 
-            // Get the INI name for configuration
+            // Conf is the only hard-coded parameter, since it is
+            // required to specify the configuration INI file
             Program.ConfigurationINI = parameters["conf"];
-            if (string.IsNullOrEmpty(Program.ConfigurationINI))
-                Program.ConfigurationINI = parameters["c"];
 
             // Without the configuarion INI, print message and quit.
+            // Logging is not possible at this point, hence the console
+            // Message.
             if (string.IsNullOrEmpty(Program.ConfigurationINI))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("Fail: ");
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine("Parameter \"--conf\" required.");
                 return;
             }
@@ -51,7 +80,7 @@ namespace WebSosync
             // overrides INI configuration
             var kestrelConfig = new ConfigurationBuilder()
                 .AddIniFile(Program.ConfigurationINI)
-                .AddCommandLine(Program.Args)
+                .AddCommandLine(Program.Args, Program.SwitchMappings)
                 .Build();
 
             var host = new WebHostBuilder()

@@ -29,7 +29,7 @@ namespace WebSosync
             // Minimal configuration: a command line parameter
             // specifying the INI
             var minConfig = new ConfigurationBuilder()
-                .AddCommandLine(Program.Args)
+                .AddCommandLine(Program.Args, Program.SwitchMappings)
                 .Build();
             
             // Now load all configurations in this priority list, include the command line again, to enable
@@ -40,9 +40,14 @@ namespace WebSosync
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddIniFile(Program.ConfigurationINI, optional: true)
                 .AddEnvironmentVariables()
-                .AddCommandLine(Program.Args);
+                .AddCommandLine(Program.Args, Program.SwitchMappings);
 
             Configuration = builder.Build();
+
+            // Map the logging configuration to all use sosync:log_level
+            Configuration["Logging:LogLevel:Default"] = Configuration["sosync:log_level"];
+            Configuration["Logging:LogLevel:System"] = Configuration["sosync:log_level"];
+            Configuration["Logging:LogLevel:Microsoft"] = Configuration["sosync:log_level"];
         }
 
         /// <summary>
