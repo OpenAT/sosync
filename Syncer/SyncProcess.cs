@@ -23,12 +23,7 @@ namespace Syncer
         #region Methods
         public void Synchronize()
         {
-            using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
-                _config.DB_Host,
-                _config.DB_Port,
-                _config.DB_Name,
-                _config.DB_User,
-                _config.DB_User_PW)))
+            using (var db = new DataService(_config))
             {
                 var jobs = db.GetSyncJobs().ToTree();
 

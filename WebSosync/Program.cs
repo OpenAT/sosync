@@ -171,12 +171,7 @@ namespace WebSosync
         {
             log.LogInformation($"Setting up database");
 
-            using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
-                config.DB_Host,
-                config.DB_Port,
-                config.DB_Name,
-                config.DB_User,
-                config.DB_User_PW)))
+            using (var db = new DataService(config))
             {
                 db.Setup();
             }

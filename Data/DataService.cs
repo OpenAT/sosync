@@ -6,15 +6,22 @@ using System.Text;
 using WebSosync.Data.Models;
 using WebSosync.Data.Properties;
 using Dapper;
+using WebSosync.Data.Helpers;
 
 namespace WebSosync.Data
 {
     public class DataService : IDisposable
     {
         #region Constructors
-        public DataService(string conStr)
+        public DataService(SosyncConfiguration config)
         {
-            _con = new NpgsqlConnection(conStr);
+            _con = new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
+                config.DB_Host,
+                config.DB_Port,
+                config.DB_Name,
+                config.DB_User,
+                config.DB_User_PW));
+
             _con.Open();
         }
         #endregion
