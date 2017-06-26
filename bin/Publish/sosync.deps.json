@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v1.1",
-    "signature": "936b0a22fd747f17d2449c68cb419ccba23999ca"
+    "signature": "dbea4b6389698db510d87cbeddd88155ccb00f86"
   },
   "compilationOptions": {
     "defines": [
@@ -23,6 +23,7 @@
     ".NETCoreApp,Version=v1.1": {
       "sosync/1.0.0": {
         "dependencies": {
+          "AutoMapper": "6.1.0",
           "Microsoft.ApplicationInsights.AspNetCore": "2.0.1",
           "Microsoft.AspNetCore": "1.1.2",
           "Microsoft.AspNetCore.Diagnostics": "1.1.2",
@@ -42,6 +43,34 @@
         },
         "compile": {
           "sosync.dll": {}
+        }
+      },
+      "automapper/6.1.0": {
+        "dependencies": {
+          "Microsoft.CSharp": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Collections.Concurrent": "4.3.0",
+          "System.Collections.Specialized": "4.3.0",
+          "System.ComponentModel.TypeConverter": "4.3.0",
+          "System.Diagnostics.Debug": "4.3.0",
+          "System.Dynamic.Runtime": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Linq": "4.3.0",
+          "System.Linq.Expressions": "4.3.0",
+          "System.Linq.Queryable": "4.3.0",
+          "System.Reflection": "4.3.0",
+          "System.Reflection.Extensions": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Text.RegularExpressions": "4.3.0",
+          "System.Threading": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/AutoMapper.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.3/AutoMapper.dll": {}
         }
       },
       "dapper/1.50.2": {
@@ -3458,6 +3487,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "automapper/6.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ru/p4rBwLH2CGSdlk0Bj6UZQeFpgIDT3sQNL5EEaVhrAT1qNd4SUEOjSzFRBAZbIgIHhifrZ9MbR5BMWgP1vsQ==",
+      "path": "automapper/6.1.0",
+      "hashPath": "automapper.6.1.0.nupkg.sha512"
     },
     "dapper/1.50.2": {
       "type": "package",
