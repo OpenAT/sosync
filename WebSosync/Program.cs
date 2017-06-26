@@ -40,7 +40,7 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
-            // Handle he linux sigterm signal
+            // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
 
             if (string.IsNullOrEmpty(config["instance"]))
