@@ -13,6 +13,10 @@ namespace WebSosync.Data.Models
         public string Source_System { get; set; }
         public string Source_Model { get; set; }
         public string Source_Record_ID { get; set; }
+
+        /// <summary>
+        /// The actual job creation date. Use UTC time.
+        /// </summary>
         public DateTime Job_Date { get; set; }
     }
 }
