@@ -1,16 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Syncer;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSosync.Controllers;
-using WebSosync.Interfaces;
-using WebSosync.Enumerations;
-using Syncer;
-using Microsoft.Extensions.Configuration;
 using WebSosync.Data.Models;
-using Microsoft.Extensions.Options;
+using WebSosync.Enumerations;
+using WebSosync.Interfaces;
 
 namespace WebSosync
 {
@@ -21,11 +16,11 @@ namespace WebSosync
         /// Creates a new instance of the <see cref="BackgroundJob"/> class.
         /// </summary>
         /// <param name="logger">The logger used for logging.</param>
-        public BackgroundJob(ILogger<BackgroundJob> logger, IOptions<SosyncOptions> configuration)
+        public BackgroundJob(ILogger<BackgroundJob> logger, SosyncOptions config)
         {
             _log = logger;
             _lockObj = new object();
-            _config = configuration.Value;
+            _config = config;
 
             Status = ServiceState.Stopped;
         }

@@ -1,22 +1,19 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Npgsql;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using WebSosync.Interfaces;
-using WebSosync.Enumerations;
-using Microsoft.Extensions.Configuration;
 using WebSosync.Data;
-using WebSosync.Data.Helpers;
-using System;
-using Npgsql;
-using System.Net.Sockets;
-using System.Collections.Generic;
-using WebSosync.Models;
-using System.Reflection;
-using Microsoft.Extensions.Options;
 using WebSosync.Data.Models;
+using WebSosync.Enumerations;
+using WebSosync.Interfaces;
 
 namespace WebSosync
 {
@@ -96,7 +93,7 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
-            var sosyncConfig = ((IOptions<SosyncOptions>)host.Services.GetService(typeof(IOptions<SosyncOptions>))).Value;
+            var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
             
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);

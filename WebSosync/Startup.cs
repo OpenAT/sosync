@@ -4,17 +4,14 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using WebSosync.Interfaces;
-using System.Runtime.InteropServices;
-using System.Reflection;
 using Serilog;
 using Serilog.Events;
-using WebSosync.Helpers;
-using WebSosync.Models;
-using Microsoft.Extensions.Options;
+using System;
+using System.IO;
 using WebSosync.Data.Models;
+using WebSosync.Extensions;
+using WebSosync.Helpers;
+using WebSosync.Interfaces;
 
 namespace WebSosync
 {
@@ -57,8 +54,7 @@ namespace WebSosync
         /// <param name="services">The service collection used to add new services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();
-            services.Configure<SosyncOptions>(Configuration.GetSection("sosync"));
+            services.ConfigurePoco<SosyncOptions>(Configuration.GetSection("sosync"));
 
             // Add framework services.
             services.AddMvc(options =>
@@ -77,7 +73,7 @@ namespace WebSosync
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider svc)
         {
-            var sosyncConfig = svc.GetService<IOptions<SosyncOptions>>().Value;
+            var sosyncConfig = svc.GetService<SosyncOptions>();
 
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))

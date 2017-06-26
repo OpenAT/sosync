@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WebSosync.Data.Models;
 
 namespace WebSosync.Controllers
@@ -16,9 +11,9 @@ namespace WebSosync.Controllers
         #endregion
         
         #region Constructors
-        public JobController(IOptions<SosyncOptions> config)
+        public JobController(SosyncOptions config)
         {
-            _config = config.Value;
+            _config = config;
         }
         #endregion
 
