@@ -14,6 +14,7 @@ using Serilog.Events;
 using WebSosync.Helpers;
 using WebSosync.Models;
 using Microsoft.Extensions.Options;
+using WebSosync.Data.Models;
 
 namespace WebSosync
 {
@@ -74,14 +75,14 @@ namespace WebSosync
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider svc)
         {
-            var sosyncConfig = svc.GetService<IOptions<SosyncConfiguration>>();
+            var sosyncConfig = svc.GetService<IOptions<SosyncConfiguration>>().Value;
 
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))
                 .AddDebug();
 
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
-            var logFile = Path.GetFullPath(sosyncConfig.Value.Log_File);
+            var logFile = Path.GetFullPath(sosyncConfig.Log_File);
 
             try
             {
@@ -92,7 +93,7 @@ namespace WebSosync
                     File.Create(logFile).Dispose();
 
                 LogLevel configLogLvl;
-                Enum.TryParse<LogLevel>(sosyncConfig.Value.Log_Level, out configLogLvl);
+                Enum.TryParse<LogLevel>(sosyncConfig.Log_Level, out configLogLvl);
                 LogEventLevel lvl = LogHelper.ConvertLevel(configLogLvl);
 
                 LoggerConfiguration logConfig = new LoggerConfiguration()

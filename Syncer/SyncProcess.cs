@@ -6,13 +6,14 @@ using System.Threading;
 using WebSosync.Data;
 using WebSosync.Data.Extensions;
 using WebSosync.Data.Helpers;
+using WebSosync.Data.Models;
 
 namespace Syncer
 {
     public class SyncProcess
     {
         #region Constructors
-        public SyncProcess(CancellationToken cancelToken, IConfiguration configuration)
+        public SyncProcess(CancellationToken cancelToken, SosyncConfiguration configuration)
         {
             _cancelToken = cancelToken;
             _config = configuration;
@@ -23,9 +24,11 @@ namespace Syncer
         public void Synchronize()
         {
             using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
-                _config["instance"],
-                _config["sosync_user"],
-                _config["sosync_pass"])))
+                _config.DB_Host,
+                _config.DB_Port,
+                _config.DB_Name,
+                _config.DB_User,
+                _config.DB_User_PW)))
             {
                 var jobs = db.GetSyncJobs().ToTree();
 
@@ -39,7 +42,7 @@ namespace Syncer
 
         #region Members
         private CancellationToken _cancelToken;
-        private IConfiguration _config;
+        private SosyncConfiguration _config;
         #endregion
     }
 }

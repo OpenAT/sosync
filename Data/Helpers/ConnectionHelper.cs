@@ -7,10 +7,9 @@ namespace WebSosync.Data.Helpers
 {
     public static class ConnectionHelper
     {
-        public static string GetPostgresConnectionString(string instance, string user, string pass)
+        public static string GetPostgresConnectionString(string host, int port, string database, string user, string pass)
         {
-#warning TODO: Replace localhost with instance-DNS URL
-            return $"Host=localhost;Username={user};Password={pass};Database={instance}";
+            return $"Host={host};Port={port};Database={database};Username={user};Password={pass};";
         }
     }
 }

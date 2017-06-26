@@ -9,6 +9,8 @@ using WebSosync.Interfaces;
 using WebSosync.Enumerations;
 using Syncer;
 using Microsoft.Extensions.Configuration;
+using WebSosync.Data.Models;
+using Microsoft.Extensions.Options;
 
 namespace WebSosync
 {
@@ -19,11 +21,11 @@ namespace WebSosync
         /// Creates a new instance of the <see cref="BackgroundJob"/> class.
         /// </summary>
         /// <param name="logger">The logger used for logging.</param>
-        public BackgroundJob(ILogger<BackgroundJob> logger, IConfiguration configuration)
+        public BackgroundJob(ILogger<BackgroundJob> logger, IOptions<SosyncConfiguration> configuration)
         {
             _log = logger;
             _lockObj = new object();
-            _config = configuration;
+            _config = configuration.Value;
 
             Status = ServiceState.Stopped;
         }
@@ -176,7 +178,7 @@ namespace WebSosync
         private CancellationToken _token;
         private bool _restartOnFinish;
         private ILogger<BackgroundJob> _log;
-        private IConfiguration _config;
+        private SosyncConfiguration _config;
         #endregion
     }
 }

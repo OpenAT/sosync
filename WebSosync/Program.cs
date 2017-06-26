@@ -15,6 +15,8 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using WebSosync.Models;
 using System.Reflection;
+using Microsoft.Extensions.Options;
+using WebSosync.Data.Models;
 
 namespace WebSosync
 {
@@ -94,17 +96,19 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
+            var sosyncConfig = ((IOptions<SosyncConfiguration>)host.Services.GetService(typeof(IOptions<SosyncConfiguration>))).Value;
+            
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
 
             try
             {
-                if (!forceQuit && !string.IsNullOrEmpty(config["instance"]))
+                if (!forceQuit && !string.IsNullOrEmpty(sosyncConfig.Instance))
                 {
                     log.LogInformation($"Running on {osNameAndVersion}");
-                    log.LogInformation($"Instance name: {config["instance"]}");
+                    log.LogInformation($"Instance name: {sosyncConfig.Instance}");
 
-                    SetupDb(config, log);
+                    SetupDb(sosyncConfig, log);
                 }
             }
             catch (PostgresException ex)
@@ -163,14 +167,16 @@ namespace WebSosync
         /// </summary>
         /// <param name="config">The configuration to be used to read the database connection details.</param>
         /// <param name="log">The Logger to be used foir logging.</param>
-        private static void SetupDb(IConfiguration config, ILogger<Program> log)
+        private static void SetupDb(SosyncConfiguration config, ILogger<Program> log)
         {
             log.LogInformation($"Setting up database");
 
             using (var db = new DataService(ConnectionHelper.GetPostgresConnectionString(
-                config["instance"],
-                config["sosync_user"],
-                config["sosync_pass"])))
+                config.DB_Host,
+                config.DB_Port,
+                config.DB_Name,
+                config.DB_User,
+                config.DB_User_PW)))
             {
                 db.Setup();
             }
