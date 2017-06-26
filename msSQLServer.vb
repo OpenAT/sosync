@@ -433,10 +433,9 @@
                 Else
 
 
-                    Dim command As String = String.Format(
+                Dim command As String = String.Format(
         "           insert into odoo.{0}({1}, TriggerFlag) 
                 values ({2}, 0) 
-                declare @newID int = scope_identity() 
                 if exists(select * 
                           from sys.objects o 
                           inner join sys.schemas s 
@@ -445,14 +444,17 @@
                           and o.name = 'stp_{0}_inserted' 
                           and o.type = 'P')
                     begin
+                        declare @newID int = (select top 1 {0}ID from odoo.{0} where {3} = {4}) 
                         exec odoo.stp_{0}_inserted @newID
                     end",
                               insert.Tabelle,
                               String.Join(", ", data.Keys.ToArray()),
-                             String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray())
+                             String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray(),
+                        schema(insert.Tabelle)("id_fields")(0),
+                        insert.odoo_id)
         )
 
-                    Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
 
                     For Each item In data
