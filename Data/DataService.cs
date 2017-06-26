@@ -7,6 +7,7 @@ using WebSosync.Data.Models;
 using WebSosync.Data.Properties;
 using Dapper;
 using WebSosync.Data.Helpers;
+using WebSosync.Data.Constants;
 
 namespace WebSosync.Data
 {
@@ -29,12 +30,12 @@ namespace WebSosync.Data
         #region Methods
         public void Setup()
         {
-            _con.Execute(Resources.ResourceManager.GetString("SetupDatabase_SCRIPT"));
+            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript));
         }
 
         public List<SosyncJob> GetSyncJobs()
         {
-            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString("GetAllOpenSyncJob_SELECT")).AsList();
+            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSELECT)).AsList();
 
             return result;
         }

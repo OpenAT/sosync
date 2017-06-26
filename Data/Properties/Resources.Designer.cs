@@ -77,9 +77,9 @@ namespace WebSosync.Data.Properties {
         ///)
         ///select * from children;.
         /// </summary>
-        internal static string GetAllOpenSyncJob_SELECT {
+        internal static string GetAllOpenSyncJobs_SELECT {
             get {
-                return ResourceManager.GetString("GetAllOpenSyncJob_SELECT", resourceCulture);
+                return ResourceManager.GetString("GetAllOpenSyncJobs_SELECT", resourceCulture);
             }
         }
         
