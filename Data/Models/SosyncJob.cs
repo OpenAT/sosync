@@ -70,7 +70,7 @@ namespace WebSosync.Data.Models
         public string Target_Request_Answer { get; set; }
 
         public DateTime? job_fetched { get; set; }
-        public int Run_Counter { get; set; }
+        public int Run_Count { get; set; }
 
         public IList<SosyncJob> Children { get; set; }
         #endregion
