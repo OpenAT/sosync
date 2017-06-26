@@ -13,7 +13,7 @@ namespace Syncer
     public class SyncProcess
     {
         #region Constructors
-        public SyncProcess(CancellationToken cancelToken, SosyncConfiguration configuration)
+        public SyncProcess(CancellationToken cancelToken, SosyncOptions configuration)
         {
             _cancelToken = cancelToken;
             _config = configuration;
@@ -37,7 +37,7 @@ namespace Syncer
 
         #region Members
         private CancellationToken _cancelToken;
-        private SosyncConfiguration _config;
+        private SosyncOptions _config;
         #endregion
     }
 }

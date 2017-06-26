@@ -12,11 +12,11 @@ namespace WebSosync.Controllers
     public class JobController
     {
         #region Members
-        private SosyncConfiguration _config;
+        private SosyncOptions _config;
         #endregion
         
         #region Constructors
-        public JobController(IOptions<SosyncConfiguration> config)
+        public JobController(IOptions<SosyncOptions> config)
         {
             _config = config.Value;
         }

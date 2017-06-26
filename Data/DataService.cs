@@ -13,7 +13,7 @@ namespace WebSosync.Data
     public class DataService : IDisposable
     {
         #region Constructors
-        public DataService(SosyncConfiguration config)
+        public DataService(SosyncOptions config)
         {
             _con = new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
                 config.DB_Host,

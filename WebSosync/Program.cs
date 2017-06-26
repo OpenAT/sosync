@@ -39,7 +39,7 @@ namespace WebSosync
             // All the properties of the sosync configuration class are
             // valid command line switches. But in order to skip the
             // section-notation a switch map is defined for each property
-            var properties = typeof(SosyncConfiguration).GetProperties();
+            var properties = typeof(SosyncOptions).GetProperties();
 
             foreach (var prop in properties)
             {
@@ -96,7 +96,7 @@ namespace WebSosync
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
-            var sosyncConfig = ((IOptions<SosyncConfiguration>)host.Services.GetService(typeof(IOptions<SosyncConfiguration>))).Value;
+            var sosyncConfig = ((IOptions<SosyncOptions>)host.Services.GetService(typeof(IOptions<SosyncOptions>))).Value;
             
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
@@ -167,7 +167,7 @@ namespace WebSosync
         /// </summary>
         /// <param name="config">The configuration to be used to read the database connection details.</param>
         /// <param name="log">The Logger to be used foir logging.</param>
-        private static void SetupDb(SosyncConfiguration config, ILogger<Program> log)
+        private static void SetupDb(SosyncOptions config, ILogger<Program> log)
         {
             log.LogInformation($"Setting up database");
 

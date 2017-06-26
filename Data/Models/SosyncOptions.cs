@@ -3,7 +3,7 @@ namespace WebSosync.Data.Models
     /// <summary>
     /// Represents the possible configuration options for sosync.
     /// </summary>
-    public class SosyncConfiguration
+    public class SosyncOptions
     {
         /// <summary>
         /// Port for Kestrel webserver.

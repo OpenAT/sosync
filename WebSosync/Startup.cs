@@ -58,7 +58,7 @@ namespace WebSosync
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            services.Configure<SosyncConfiguration>(Configuration.GetSection("sosync"));
+            services.Configure<SosyncOptions>(Configuration.GetSection("sosync"));
 
             // Add framework services.
             services.AddMvc(options =>
@@ -70,12 +70,14 @@ namespace WebSosync
             services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IBackgroundJob, BackgroundJob>();
             services.AddSingleton<IConfiguration>(Configuration);
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider svc)
         {
-            var sosyncConfig = svc.GetService<IOptions<SosyncConfiguration>>().Value;
+            var sosyncConfig = svc.GetService<IOptions<SosyncOptions>>().Value;
 
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))

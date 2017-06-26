@@ -21,7 +21,7 @@ namespace WebSosync
         /// Creates a new instance of the <see cref="BackgroundJob"/> class.
         /// </summary>
         /// <param name="logger">The logger used for logging.</param>
-        public BackgroundJob(ILogger<BackgroundJob> logger, IOptions<SosyncConfiguration> configuration)
+        public BackgroundJob(ILogger<BackgroundJob> logger, IOptions<SosyncOptions> configuration)
         {
             _log = logger;
             _lockObj = new object();
@@ -178,7 +178,7 @@ namespace WebSosync
         private CancellationToken _token;
         private bool _restartOnFinish;
         private ILogger<BackgroundJob> _log;
-        private SosyncConfiguration _config;
+        private SosyncOptions _config;
         #endregion
     }
 }
