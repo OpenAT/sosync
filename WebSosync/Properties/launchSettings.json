@@ -18,7 +18,7 @@
     },
     "WebSosync": {
       "commandName": "Project",
-      "commandLineArgs": "--instance debug",
+      "commandLineArgs": "--conf debug_win_sosync.ini",
       "launchBrowser": true,
       "launchUrl": "state",
       "environmentVariables": {

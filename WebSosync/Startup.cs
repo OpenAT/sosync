@@ -52,7 +52,7 @@ namespace WebSosync
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            services.Configure<SosyncConfiguration>(Configuration);
+            services.Configure<SosyncConfiguration>(Configuration.GetSection("sosync"));
 
             // Add framework services.
             services.AddMvc(options =>
