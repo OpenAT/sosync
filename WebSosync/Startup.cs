@@ -81,13 +81,13 @@ namespace WebSosync
             try
             {
                 // If log file is not found, try to create a new one in order to provoke
-                // an exception, right away, in order to log it direclty on startup
+                // an exception right away (so logging errors are logged right at startup)
 
                 if (!File.Exists(logFile))
                     File.Create(logFile).Dispose();
 
                 LogLevel configLogLvl;
-                Enum.TryParse<LogLevel>(Configuration["Logging:LogLevel:Default"], out configLogLvl);
+                Enum.TryParse<LogLevel>(sosyncConfig.Value.Log_Level, out configLogLvl);
                 LogEventLevel lvl = LogHelper.ConvertLevel(configLogLvl);
 
                 LoggerConfiguration logConfig = new LoggerConfiguration()
