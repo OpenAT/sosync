@@ -12,6 +12,8 @@ using System.Reflection;
 using Serilog;
 using Serilog.Events;
 using WebSosync.Helpers;
+using WebSosync.Models;
+using Microsoft.Extensions.Options;
 
 namespace WebSosync
 {
@@ -24,8 +26,11 @@ namespace WebSosync
         /// <param name="env">Provides access to the hosting environment.</param>
         public Startup(IHostingEnvironment env)
         {
-            // Build the INI path and filename, depending on the instance name
-            var iniFile = ConfigurationHelper.GetIniFile(Program.Args);
+            // Minimal configuration: a command line parameter
+            // specifying the INI
+            var minConfig = new ConfigurationBuilder()
+                .AddCommandLine(Program.Args)
+                .Build();
             
             // Now load all configurations in this priority list, include the command line again, to enable
             // overriding configuration settings via command line
@@ -33,21 +38,11 @@ namespace WebSosync
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddIniFile(iniFile, optional: true)
+                .AddIniFile(Program.ConfigurationINI, optional: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(Program.Args);
 
             Configuration = builder.Build();
-
-            Configuration["IniFileName"] = iniFile;
-            try
-            {
-                Configuration["IniFilePresent"] = File.Exists(iniFile).ToString();
-            }
-            catch (Exception)
-            {
-                Configuration["IniFilePresent"] = false.ToString();
-            }
         }
 
         /// <summary>
@@ -56,6 +51,9 @@ namespace WebSosync
         /// <param name="services">The service collection used to add new services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            services.Configure<SosyncConfiguration>(Configuration);
+
             // Add framework services.
             services.AddMvc(options =>
             {
@@ -69,33 +67,22 @@ namespace WebSosync
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider svc)
         {
+            var sosyncConfig = svc.GetService<IOptions<SosyncConfiguration>>();
+
             loggerFactory
                 .AddConsole(Configuration.GetSection("Logging"))
                 .AddDebug();
 
-            if (string.IsNullOrEmpty(Configuration["instance"]))
-                return;
-
-            var logPathBase = Path.Combine(Path.DirectorySeparatorChar.ToString(), "var", "log", "sosync");
-            var logPath = Path.Combine(logPathBase, Configuration["instance"]);
-
-            // In development mode on windows, save the log file within the app directory
-            if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                logPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
-
-            DirectoryHelper.EnsureExistance(logPathBase, log);
-            DirectoryHelper.EnsureExistance(logPath, log);
-
-            var logFile = Path.Combine(logPath, $"{Configuration["instance"]}.log");
+            var logFile = sosyncConfig.Value.Log_File;
 
             try
             {
                 // If log file is not found, try to create a new one in order to provoke
-                // an exception
+                // an exception, right away, in order to log it direclty on startup
+
                 if (!File.Exists(logFile))
                     File.Create(logFile).Dispose();
 

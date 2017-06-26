@@ -17,6 +17,11 @@ namespace WebSosync
 {
     public class Program
     {
+        #region Members
+        public static string[] Args { get; private set; }
+        public static string ConfigurationINI { get; private set; }
+        #endregion
+
         #region Methods
         public static void Main(string[] args)
         {
@@ -25,15 +30,35 @@ namespace WebSosync
             var osNameAndVersion = RuntimeInformation.OSDescription;
             bool forceQuit = false;
 
+            var parameters = new ConfigurationBuilder()
+                .AddCommandLine(Program.Args)
+                .Build();
+
+            // Get the INI name for configuration
+            Program.ConfigurationINI = parameters["conf"];
+            if (string.IsNullOrEmpty(Program.ConfigurationINI))
+                Program.ConfigurationINI = parameters["c"];
+
+            // Without the configuarion INI, print message and quit.
+            if (string.IsNullOrEmpty(Program.ConfigurationINI))
+            {
+                Console.WriteLine("Parameter \"--conf\" required.");
+                return;
+            }
+
+            // Now load the actual configuration from the INI file.
+            // The command line is added, because command line
+            // overrides INI configuration
             var kestrelConfig = new ConfigurationBuilder()
+                .AddIniFile(Program.ConfigurationINI)
                 .AddCommandLine(Program.Args)
                 .Build();
 
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseConfiguration(kestrelConfig)
                 .UseStartup<Startup>()
+                .UseUrls($"http://localhost:{kestrelConfig["sosync:port"]}")
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
@@ -42,18 +67,6 @@ namespace WebSosync
 
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
-
-            if (string.IsNullOrEmpty(config["instance"]))
-            {
-                log.LogError("Parameter \"--instance\" required.");
-                forceQuit = true;
-            }
-
-            if (!string.IsNullOrEmpty(config["instance"]) && config["IniFilePresent"] != null && !bool.Parse(config["IniFilePresent"]))
-            {
-                log.LogError($"Configuration \"{config["IniFileName"]}\" missing.");
-                forceQuit = true;
-            }
 
             try
             {
@@ -133,10 +146,6 @@ namespace WebSosync
                 db.Setup();
             }
         }
-        #endregion
-
-        #region Members
-        public static string[] Args { get; private set; }
         #endregion
     }
 }
