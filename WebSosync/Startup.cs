@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +47,16 @@ namespace WebSosync
             Configuration["Logging:LogLevel:Default"] = Configuration["sosync:log_level"];
             Configuration["Logging:LogLevel:System"] = Configuration["sosync:log_level"];
             Configuration["Logging:LogLevel:Microsoft"] = Configuration["sosync:log_level"];
+
+            ConfigureMappings();
+        }
+
+        private void ConfigureMappings()
+        {
+            Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<SyncJobDto, SosyncJob>();
+            });
         }
 
         /// <summary>

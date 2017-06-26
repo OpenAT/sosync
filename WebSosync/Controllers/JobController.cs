@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using WebSosync.Data;
 using WebSosync.Data.Models;
 
 namespace WebSosync.Controllers
@@ -18,11 +21,31 @@ namespace WebSosync.Controllers
         #endregion
 
         #region Methods
-        [HttpPut()]
-        public IActionResult Put()
+        [HttpGet()]
+        public IActionResult Get(SyncJobDto jobDto)
         {
-#warning TODO: Implement me
-            return new BadRequestObjectResult("Not implemented yet!");
+            try
+            {
+                using (var db = new DataService(_config))
+                {
+                    // Map the transfer object to a new sync job object
+                    var job = Mapper.Map<SyncJobDto, SosyncJob>(jobDto);
+
+                    // Defaults
+                    job.State = SosyncState.New;
+                    job.Fetched = DateTime.Now.ToUniversalTime();
+
+                    db.CreateSyncJob(job);
+                }
+
+                // Just return empty OK result
+                return new OkResult();
+            }
+            catch (Exception ex)
+            {
+                // Return error without stack trace
+                return new BadRequestObjectResult(ex.Message);
+            }
         }
         #endregion
     }
