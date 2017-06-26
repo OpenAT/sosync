@@ -14,6 +14,11 @@ namespace WebSosync.Data
     public class DataService : IDisposable
     {
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of the <see cref="DataService"/> class. Takes <see cref="SosyncOptions"/>
+        /// to initialize the database connection.
+        /// </summary>
+        /// <param name="config">The settings for the database connection.</param>
         public DataService(SosyncOptions config)
         {
             _con = new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
@@ -28,20 +33,29 @@ namespace WebSosync.Data
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Runs the database creation script on the database.
+        /// </summary>
         public void Setup()
         {
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript));
         }
 
+        /// <summary>
+        /// Reads all open SyncJobs from the database.
+        /// </summary>
+        /// <returns></returns>
         public List<SosyncJob> GetSyncJobs()
         {
             var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSELECT)).AsList();
-
             return result;
         }
         #endregion
 
         #region IDisposable implementation
+        /// <summary>
+        /// Closes the database connection and disposes the connection.
+        /// </summary>
         public void Dispose()
         {
             try
