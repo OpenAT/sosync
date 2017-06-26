@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using WebSosync.Data.Interfaces;
 
 namespace WebSosync.Data.Models
 {
-    public class SosyncJob : ITree<SosyncJob>
+    public class SosyncJob
     {
         #region Constructors
         public SosyncJob()
@@ -20,16 +19,12 @@ namespace WebSosync.Data.Models
 
         #region Properties
         /// <summary>
-        /// The sync job ID for sosync.
-        /// </summary>
-        public int SosyncID { get; set; }
-
-        /// <summary>
         /// The sync job ID in the source system.
         /// </summary>
         public int Job_ID { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime Job_Date { get; set; }
+        public DateTime? Fetched { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
 
@@ -69,16 +64,9 @@ namespace WebSosync.Data.Models
         public DateTime? Target_Request_End { get; set; }
         public string Target_Request_Answer { get; set; }
 
-        public DateTime? job_fetched { get; set; }
         public int Run_Count { get; set; }
 
         public IList<SosyncJob> Children { get; set; }
-        #endregion
-
-        #region Interface ITree<SosyncJob> implementation
-        // Other two interface members matched already
-        public int ID => this.Job_ID;
-        public int? ParentID => this.Parent_Job_ID;
         #endregion
     }
 }
