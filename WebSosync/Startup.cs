@@ -76,7 +76,7 @@ namespace WebSosync
                 .AddDebug();
 
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
-            var logFile = sosyncConfig.Value.Log_File;
+            var logFile = Path.GetFullPath(sosyncConfig.Value.Log_File);
 
             try
             {
