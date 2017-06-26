@@ -10,6 +10,8 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+sosync.ini
+
 # Build results
 */[Bb]in/[Dd]ebug/
 [Dd]ebugPublic/
