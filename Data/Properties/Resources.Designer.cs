@@ -86,9 +86,9 @@ namespace WebSosync.Data.Properties {
         /// <summary>
         ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
         ///(
-        ///  sosyncid serial NOT NULL,
-        ///  job_id integer,
-        ///  date timestamp without time zone NOT NULL,
+        ///  job_id serial,
+        ///  job_date timestamp without time zone NOT NULL,
+        ///  fetched timestamp without time zone,
         ///  start timestamp without time zone,
         ///  &quot;end&quot; timestamp without time zone,
         ///  state text NOT NULL,
@@ -100,7 +100,7 @@ namespace WebSosync.Data.Properties {
         ///  source_model text NOT NULL,
         ///  source_record_id integer NOT NULL,
         ///  target_system text,
-        ///  target_model text, [rest of string was truncated]&quot;;.
+        ///  targ [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetupDatabase_SCRIPT {
             get {

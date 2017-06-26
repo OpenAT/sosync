@@ -136,9 +136,9 @@ select * from children;</value>
   <data name="SetupDatabase_SCRIPT" xml:space="preserve">
     <value>CREATE TABLE IF NOT EXISTS sync_table
 (
-  sosyncid serial NOT NULL,
-  job_id integer,
-  date timestamp without time zone NOT NULL,
+  job_id serial,
+  job_date timestamp without time zone NOT NULL,
+  fetched timestamp without time zone,
   start timestamp without time zone,
   "end" timestamp without time zone,
   state text NOT NULL,
@@ -158,7 +158,7 @@ select * from children;</value>
   target_request_end timestamp without time zone,
   target_request_answer text,
   run_count integer NOT NULL default 0,
-  CONSTRAINT synctable_primary_key PRIMARY KEY (sosyncid)
+  CONSTRAINT synctable_primary_key PRIMARY KEY (job_id)
 )
 WITH (
   OIDS=FALSE
