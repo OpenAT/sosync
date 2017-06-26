@@ -1,4 +1,4 @@
-namespace WebSosync.Models
+namespace WebSosync.Data.Models
 {
     /// <summary>
     /// Represents the possible configuration options for sosync.
