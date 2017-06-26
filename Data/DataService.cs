@@ -8,11 +8,39 @@ using WebSosync.Data.Properties;
 using Dapper;
 using WebSosync.Data.Helpers;
 using WebSosync.Data.Constants;
+using System.Reflection;
+using System.Linq;
 
 namespace WebSosync.Data
 {
     public class DataService : IDisposable
     {
+        #region Members
+        private static string SQL_CreatJob;
+
+        private NpgsqlConnection _con;
+        #endregion
+
+        #region Class initializers
+        /// <summary>
+        /// Class initializer. Prepares the sync job insert statement.
+        /// </summary>
+        static DataService()
+        {
+            // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
+            var excludedColumns = new string[] { "job_id", "children" };
+
+            var properties = typeof(SosyncJob).GetProperties()
+                .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
+
+            // Generate the insert statement with the property names.
+            // If the lower case property name equals "end", it needs
+            // to be enclosed in double quotes, otherwise pgSQL will
+            // interprete it as key word and throw an excption
+            SQL_CreatJob = $"insert into sync_table (\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()))}\n) values (\n\t{string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"))}\n)";
+        }
+        #endregion
+
         #region Constructors
         /// <summary>
         /// Creates a new instance of the <see cref="DataService"/> class. Takes <see cref="SosyncOptions"/>
@@ -47,8 +75,19 @@ namespace WebSosync.Data
         /// <returns></returns>
         public List<SosyncJob> GetSyncJobs()
         {
-            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSELECT)).AsList();
+            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
             return result;
+        }
+
+        /// <summary>
+        /// Creates a new sync job in the database.
+        /// </summary>
+        /// <param name="job">The sync job to be created.</param>
+        public void CreateSyncJob(SosyncJob job)
+        {
+            // The insert statement is dynamically created as a static value in the class initializer,
+            // hence it is not read from resources
+            _con.Execute(DataService.SQL_CreatJob, job);
         }
         #endregion
 
@@ -71,10 +110,6 @@ namespace WebSosync.Data
                 _con.Dispose();
             }
         }
-        #endregion
-
-        #region Members
-        private NpgsqlConnection _con;
         #endregion
     }
 }
