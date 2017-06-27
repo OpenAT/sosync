@@ -41,13 +41,20 @@ namespace WebSosync
                     _token = _tokenSource.Token;
 
                     _task = new Task(DoWork, _token);
+                    _task.ContinueWith(OnFinished);
+                    _task.Start();
+
+                    RestartOnFinish = false;
+                    Status = ServiceState.Running;
                 }
-
-                _task.ContinueWith(OnFinished);
-                _task.Start();
-
-                RestartOnFinish = false;
-                Status = ServiceState.Running;
+                else
+                {
+                    if (!ShutdownPending)
+                    {
+                        RestartOnFinish = true;
+                        Status = ServiceState.RunningRestartRequested;
+                    }
+                }
             }
         }
 
