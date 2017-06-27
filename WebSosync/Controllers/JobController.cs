@@ -28,7 +28,7 @@ namespace WebSosync.Controllers
         {
             try
             {
-                // Map the transfer object to a new sync job object
+                // Create a full SyncJob object from the transfer object
                 var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
 
                 // Defaults
