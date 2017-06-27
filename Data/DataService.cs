@@ -17,6 +17,7 @@ namespace WebSosync.Data
     {
         #region Members
         private static string SQL_CreatJob;
+        private static string SQL_UpdateJob;
 
         private NpgsqlConnection _con;
         #endregion
@@ -33,11 +34,13 @@ namespace WebSosync.Data
             var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
 
-            // Generate the insert statement with the property names.
-            // If the lower case property name equals "end", it needs
-            // to be enclosed in double quotes, otherwise pgSQL will
-            // interprete it as key word and throw an excption
+            // Generate the insert statement
+            //   insert into sync_table (prop1, prop2, ...) values (@prop1, @prop2, ...)
             SQL_CreatJob = $"insert into sync_table (\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()))}\n) values (\n\t{string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"))}\n)";
+
+            // Update statement
+            //   update sync_table set prop1 = @prop1, prop2 = @prop2, ... where job_id = @job_id
+            SQL_UpdateJob = $"update sync_table set\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\" = @end" : $"{x.Name.ToLower()} = @{x.Name.ToLower()}"))}\nwhere job_id = @job_id)";
         }
         #endregion
 
@@ -83,11 +86,20 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateSyncJob(SyncJob job)
+        public void CreateJob(SyncJob job)
         {
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
             _con.Execute(DataService.SQL_CreatJob, job);
+        }
+
+        /// <summary>
+        /// Updates the sync in the database.
+        /// </summary>
+        /// <param name="job">The sync job to be updated.</param>
+        public void UpdateJob(SyncJob job)
+        {
+            _con.Execute(DataService.SQL_UpdateJob, job);
         }
         #endregion
 

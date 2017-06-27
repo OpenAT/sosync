@@ -35,7 +35,7 @@ namespace WebSosync.Controllers
                     job.State = SosyncState.New;
                     job.Fetched = DateTime.Now.ToUniversalTime();
 
-                    db.CreateSyncJob(job);
+                    db.CreateJob(job);
                 }
 
                 // Just return empty OK result
