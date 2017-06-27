@@ -25,7 +25,7 @@ namespace Syncer
         {
             using (var db = new DataService(_config))
             {
-                var jobs = db.GetSyncJobs().ToTree(
+                var jobs = db.GetJobs().ToTree(
                     x => x.Job_ID,
                     x => x.Parent_Job_ID,
                     x => x.Children);
