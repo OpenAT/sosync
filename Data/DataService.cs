@@ -30,7 +30,7 @@ namespace WebSosync.Data
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
             var excludedColumns = new string[] { "job_id", "children" };
 
-            var properties = typeof(SosyncJob).GetProperties()
+            var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
 
             // Generate the insert statement with the property names.
@@ -73,9 +73,9 @@ namespace WebSosync.Data
         /// Reads all open SyncJobs from the database.
         /// </summary>
         /// <returns></returns>
-        public List<SosyncJob> GetSyncJobs()
+        public List<SyncJob> GetSyncJobs()
         {
-            var result = _con.Query<SosyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
+            var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
             return result;
         }
 
@@ -83,7 +83,7 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateSyncJob(SosyncJob job)
+        public void CreateSyncJob(SyncJob job)
         {
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources

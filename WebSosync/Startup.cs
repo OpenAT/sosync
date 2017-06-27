@@ -55,7 +55,7 @@ namespace WebSosync
         {
             Mapper.Initialize(cfg =>
             {
-                cfg.CreateMap<SyncJobDto, SosyncJob>();
+                cfg.CreateMap<SyncJobDto, SyncJob>();
             });
         }
 

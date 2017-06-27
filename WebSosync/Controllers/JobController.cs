@@ -29,7 +29,7 @@ namespace WebSosync.Controllers
                 using (var db = new DataService(_config))
                 {
                     // Map the transfer object to a new sync job object
-                    var job = Mapper.Map<SyncJobDto, SosyncJob>(jobDto);
+                    var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
 
                     // Defaults
                     job.State = SosyncState.New;

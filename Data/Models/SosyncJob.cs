@@ -4,12 +4,12 @@ using System.Text;
 
 namespace WebSosync.Data.Models
 {
-    public class SosyncJob
+    public class SyncJob
     {
         #region Constructors
-        public SosyncJob()
+        public SyncJob()
         {
-            Children = new List<SosyncJob>();
+            Children = new List<SyncJob>();
         }
         #endregion
 
@@ -66,7 +66,7 @@ namespace WebSosync.Data.Models
 
         public int Run_Count { get; set; }
 
-        public IList<SosyncJob> Children { get; set; }
+        public IList<SyncJob> Children { get; set; }
         #endregion
     }
 }
