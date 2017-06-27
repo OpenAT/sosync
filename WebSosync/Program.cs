@@ -22,6 +22,7 @@ namespace WebSosync
         #region Members
         public static string[] Args { get; private set; }
         public static string ConfigurationINI { get; private set; }
+        public static string LogFile { get; set; }
         public static Dictionary<string, string> SwitchMappings { get; private set; }
         #endregion
 
@@ -94,19 +95,21 @@ namespace WebSosync
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
-            
+
+            log.LogInformation("Sosync service started");
+            log.LogInformation($"Running on {osNameAndVersion}");
+            log.LogInformation($"Instance name: {sosyncConfig.Instance}");
+
+            if (!string.IsNullOrEmpty(Program.LogFile))
+                log.LogInformation($"Logging to: {Program.LogFile}");
+
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
 
             try
             {
                 if (!forceQuit && !string.IsNullOrEmpty(sosyncConfig.Instance))
-                {
-                    log.LogInformation($"Running on {osNameAndVersion}");
-                    log.LogInformation($"Instance name: {sosyncConfig.Instance}");
-
                     SetupDb(sosyncConfig, log);
-                }
             }
             catch (PostgresException ex)
             {
@@ -131,6 +134,8 @@ namespace WebSosync
             {
                 log.LogCritical(ex.Message);
             }
+
+            log.LogInformation("Sosync service ended");
         }
 
         /// <summary>

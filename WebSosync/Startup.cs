@@ -9,6 +9,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
+using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Extensions;
 using WebSosync.Helpers;
@@ -78,7 +79,7 @@ namespace WebSosync
             services.AddSingleton<IBackgroundJob, BackgroundJob>();
             services.AddSingleton<IConfiguration>(Configuration);
 
-
+            services.AddTransient<DataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -107,14 +108,15 @@ namespace WebSosync
 
                 LoggerConfiguration logConfig = new LoggerConfiguration()
                     .MinimumLevel.Is(lvl)
+                    .Enrich.WithEnvironmentUserName()
                     .WriteTo.File(
                         path: logFile,
-                        outputTemplate: "{Timestamp:o} [{Level}] {Message}{NewLine}{Exception}"
+                        outputTemplate: "{Timestamp:o} {EnvironmentUserName} [{Level}] {Message}{NewLine}{Exception}"
                         );
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());
 
-                log.LogInformation($"Logging to: {logFile}");
+                Program.LogFile = logFile;
             }
             catch (UnauthorizedAccessException)
             {
