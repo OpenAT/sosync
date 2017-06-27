@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using WebSosync.Data;
 using WebSosync.Data.Models;
+using WebSosync.Interfaces;
 
 namespace WebSosync.Controllers
 {
@@ -12,12 +13,14 @@ namespace WebSosync.Controllers
     {
         #region Members
         private DataService _db;
+        private IBackgroundJob _job;
         #endregion
         
         #region Constructors
-        public JobController(DataService db)
+        public JobController(DataService db, IBackgroundJob job)
         {
             _db = db;
+            _job = job;
         }
         #endregion
 
@@ -35,7 +38,9 @@ namespace WebSosync.Controllers
                 job.State = SosyncState.New;
                 job.Fetched = DateTime.Now.ToUniversalTime();
 
+                // Create the sync job and start the job thread
                 _db.CreateJob(job);
+                _job.Start();
 
                 // Just return empty OK result
                 return new OkResult();
