@@ -35,35 +35,12 @@ namespace WebSosync.Controllers
         [HttpGet("status")]
         public IActionResult Get()
         {
-            var result = new StateResult()
-            {
-                State = (int)_job.Status,
-                StateDescription = $"{_job.Status.ToString()}"
-            };
-
-            return new OkObjectResult(result);
+            throw new NotImplementedException("This route is not implemented yet.");
         }
-
-        //// GET service/start
-        //[HttpGet]
-        //[Route("start")]
-        //public IActionResult Start()
-        //{
-        //    try
-        //    {
-        //        _job.Start();
-        //        return new OkResult();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _log.LogError(ex.ToString());
-        //        return new BadRequestResult();
-        //    }
-        //}
 
         // service/version
         [HttpGet("version")]
-        [ProducesResponseType(typeof(string), 200)]
+        [Produces(typeof(string))]
         public IActionResult Version()
         {
             var result = "";
