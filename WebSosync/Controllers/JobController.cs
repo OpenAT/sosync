@@ -6,37 +6,36 @@ using WebSosync.Data.Models;
 
 namespace WebSosync.Controllers
 {
+    // job
     [Route("[controller]")]
     public class JobController
     {
         #region Members
-        private SosyncOptions _config;
+        private DataService _db;
         #endregion
         
         #region Constructors
-        public JobController(SosyncOptions config)
+        public JobController(DataService db)
         {
-            _config = config;
+            _db = db;
         }
         #endregion
 
         #region Methods
-        [HttpGet()]
+        // job/create
+        [HttpGet("create")]
         public IActionResult Get(SyncJobDto jobDto)
         {
             try
             {
-                using (var db = new DataService(_config))
-                {
-                    // Map the transfer object to a new sync job object
-                    var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
+                // Map the transfer object to a new sync job object
+                var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
 
-                    // Defaults
-                    job.State = SosyncState.New;
-                    job.Fetched = DateTime.Now.ToUniversalTime();
+                // Defaults
+                job.State = SosyncState.New;
+                job.Fetched = DateTime.Now.ToUniversalTime();
 
-                    db.CreateJob(job);
-                }
+                _db.CreateJob(job);
 
                 // Just return empty OK result
                 return new OkResult();
