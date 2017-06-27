@@ -44,52 +44,22 @@ namespace WebSosync.Controllers
             return new OkObjectResult(result);
         }
 
-        // GET service/start
-        [HttpGet]
-        [Route("start")]
-        public IActionResult Start()
-        {
-            // States + Descriptions
-            // 0: AlreadyRunningRestartRequested
-            // 1: Started
-            // 2: ShutdownInProgress
-
-            StateResult result;
-            
-            // If a shutdown is pending, terminate the request as bad request
-            if (_job.ShutdownPending)
-            {
-                result = new StateResult()
-                {
-                    State = 2,
-                    StateDescription = "ShutdownInProgress"
-                };
-
-                return new BadRequestObjectResult(result);
-            }
-
-            // If no shutdown is pending, handle the request normally
-            bool startedNew = false;
-
-            // If the job is currently stopped or had an error, attempt to start it
-            if (_job.Status == ServiceState.Stopped || _job.Status == ServiceState.Error)
-            {
-                _job.Start();
-                startedNew = true;
-            }
-            else
-            {
-                _job.RestartOnFinish = true;
-            }
-
-            result = new StateResult()
-            {
-                State = startedNew ? 1 : 0,
-                StateDescription = startedNew ? "Started" : "AlreadyRunningRestartRequested"
-            };
-
-            return new OkObjectResult(result);
-        }
+        //// GET service/start
+        //[HttpGet]
+        //[Route("start")]
+        //public IActionResult Start()
+        //{
+        //    try
+        //    {
+        //        _job.Start();
+        //        return new OkResult();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _log.LogError(ex.ToString());
+        //        return new BadRequestResult();
+        //    }
+        //}
 
         // service/version
         [HttpGet("version")]
