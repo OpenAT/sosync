@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Syncer;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSosync.Data.Models;
@@ -74,29 +75,30 @@ namespace WebSosync
             if (_token.IsCancellationRequested)
                 return;
 
-            SyncProcess syncer = new SyncProcess(_token, _config);
-            syncer.Synchronize();
-
-            // This loop simulates the sync process. Replace this with loading and
-            // processing the jobs. Check cancellation token after each completed
-            // job for graceful termination.
-
-            for (int i = 0; i < 5400; i++)
+            try
             {
-                _log.LogInformation($"JOB: running, i = {i}");
+                _log.LogInformation("Job thread: starting sync process");
 
-                System.Threading.Thread.Sleep(2000);
+                Stopwatch s = new Stopwatch();
+                
+                SyncProcess syncer = new SyncProcess(_token, _config);
+                syncer.Cancelling += Syncer_Cancelling;
+                syncer.Synchronize();
 
-                if (_token.IsCancellationRequested)
-                {
-                    Status = ServiceState.Stopping;
+                s.Stop();
 
-                    // Clean up here, if necessary
-
-                    _log.LogInformation("JOB: stopped gracefully.");
-            return;
-                }
+                _log.LogInformation($"Job thread: syncer finished in {s.ElapsedMilliseconds}ms");
             }
+            catch (Exception ex)
+            {
+                _log.LogError($"Job thread: {ex.ToString()}");
+            }
+        }
+
+        private void Syncer_Cancelling(object sender, EventArgs e)
+        {
+            Status = ServiceState.Stopping;
+            _log.LogInformation("Job thread: syncer cancelling gracefully");
         }
 
         /// <summary>

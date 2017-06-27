@@ -12,6 +12,15 @@ namespace Syncer
 {
     public class SyncProcess
     {
+        #region Members
+        private CancellationToken _cancelToken;
+        private SosyncOptions _config;
+        #endregion
+
+        #region Events
+        public event EventHandler Cancelling;
+        #endregion
+
         #region Constructors
         public SyncProcess(CancellationToken cancelToken, SosyncOptions configuration)
         {
@@ -32,15 +41,20 @@ namespace Syncer
 
                 foreach (var job in jobs)
                 {
+                    // Process job here
+                    System.Threading.Thread.Sleep(550);
 
+                    // Stop processing the queue if cancellation was requested
+                    if (_cancelToken.IsCancellationRequested)
+                    {
+                        // Raise the cancelling event
+                        Cancelling?.Invoke(this, EventArgs.Empty);
+
+                        // Clean up here, if necessary
+                    }
                 }
             }
         }
-        #endregion
-
-        #region Members
-        private CancellationToken _cancelToken;
-        private SosyncOptions _config;
         #endregion
     }
 }
