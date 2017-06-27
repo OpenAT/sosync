@@ -27,6 +27,12 @@ Depending on the "**Accept**" header, most routes return either a **json** objec
 
 - **/version** returns the full length git commit id as a string
 
+- **/job** takes **GET** parameters to create a new sync job
+  - job_date, should be a UTC date and time
+  - source_system, **fs** or **fso**
+  - source_model, the model name
+  - source_record_id, the ID in the source system
+
 ## Setup
 ### .NET Core SDK on Ubuntu 14.04 trusty:
 ```
