@@ -1,4 +1,4 @@
-# This directory should always be fully tracked,
+# This directory should never be ignored,
 # as it is the sosync publish folder
 !/bin/[Pb]ublish/
 
