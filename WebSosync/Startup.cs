@@ -14,6 +14,7 @@ using WebSosync.Data.Models;
 using WebSosync.Extensions;
 using WebSosync.Helpers;
 using WebSosync.Interfaces;
+using WebSosync.Models;
 
 namespace WebSosync
 {

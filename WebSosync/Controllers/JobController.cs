@@ -4,6 +4,7 @@ using System;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Interfaces;
+using WebSosync.Models;
 
 namespace WebSosync.Controllers
 {

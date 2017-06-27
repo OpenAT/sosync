@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebSosync.Data.Models
+namespace WebSosync.Models
 {
     /// <summary>
     /// Represents a sync job data transfer object (DTO) to be used
