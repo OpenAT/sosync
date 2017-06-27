@@ -8,6 +8,7 @@ using WebSosync.Enumerations;
 using WebSosync.Interfaces;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using WebSosync.Services;
 
 namespace WebSosync.Controllers
 {
@@ -92,44 +93,20 @@ namespace WebSosync.Controllers
 
         // service/version
         [HttpGet("version")]
+        [ProducesResponseType(typeof(string), 200)]
         public IActionResult Version()
         {
-            // Info to start git, with parameters to query commit id
-            var startInfo = new ProcessStartInfo()
-            {
-                FileName = "git",
-                Arguments = "rev-parse HEAD",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+            var result = "";
 
             try
             {
-                string result = "";
-
-                // Start the git process and read the commit id
-                using (var proc = Process.Start(startInfo))
-                {
-                    result = proc.StandardOutput.ReadToEnd();
-
-                    if (string.IsNullOrEmpty(result))
-                        result = proc.StandardError.ReadToEnd();
-                }
-
-                // If an error was returned instead of a commit id log it & return bad request
-                if (result.ToLower().StartsWith("fatal:"))
-                {
-                    _log.LogError("Failed to get Version. Current directory is no git repository.");
-                    return new BadRequestObjectResult("Could not read version.");
-                }
-
-                // Commit id was retrieved fine, return it
+                var git = new Git();
+                result = git.GetCommitId();
                 return new OkObjectResult(result);
             }
             catch (Exception ex)
             {
-                _log.LogError($"Tried to run \"{startInfo.FileName} {startInfo.Arguments}\"\n{ex.ToString()}");
+                _log.LogError(ex.ToString());
                 return new BadRequestObjectResult("Could not read version.");
             }
         }
