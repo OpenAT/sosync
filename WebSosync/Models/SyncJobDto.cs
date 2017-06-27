@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -12,19 +15,33 @@ namespace WebSosync.Models
     [DataContract(Name = "sync_job")]
     public class SyncJobDto
     {
+        // DataMember for serialization
+        // FromQuery for url parsing
+        // Rest: validation attributes
+
         [DataMember(Name = "source_system")]
-        public string Source_System { get; set; }
+        [FromQuery(Name = "source_system")]
+        [DisplayFormat(ConvertEmptyStringToNull = false)]
+        [Required(AllowEmptyStrings = true, ErrorMessage = "source_system is required.")]
+        public string SourceSystem { get; set; }
 
         [DataMember(Name = "source_model")]
-        public string Source_Model { get; set; }
+        [FromQuery(Name = "source_model")]
+        [DisplayFormat(ConvertEmptyStringToNull = false)]
+        [Required(AllowEmptyStrings = true, ErrorMessage = "source_model is required.")]
+        public string SourceModel { get; set; }
 
         [DataMember(Name = "source_record_id")]
-        public string Source_Record_ID { get; set; }
+        [FromQuery(Name = "source_record_id")]
+        [Range(1, Int32.MaxValue)]
+        public int? SourceRecordID { get; set; }
 
         /// <summary>
         /// The actual job creation date. Use UTC time.
         /// </summary>
         [DataMember(Name = "job_date")]
-        public DateTime Job_Date { get; set; }
+        [FromQuery(Name = "job_date")]
+        [Required]
+        public DateTime? JobDate { get; set; }
     }
 }

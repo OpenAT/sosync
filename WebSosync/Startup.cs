@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
+using System.Runtime.Serialization;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Extensions;
@@ -72,7 +74,11 @@ namespace WebSosync
             // Add framework services.
             services.AddMvc(options =>
             {
+                // Ad output formatters
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+
+                // Add input formatters
+                options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
             });
 
             // Register singleton classes with DI container
