@@ -35,7 +35,7 @@ namespace WebSosync
             // overriding configuration settings via command line
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddIniFile(Program.ConfigurationINI, optional: true)
                 .AddEnvironmentVariables()
