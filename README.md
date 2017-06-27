@@ -34,7 +34,7 @@ Depending on the "**Accept**" header, most routes return either a **json** objec
   - source_record_id, the ID in the source system
 
 ## Setup
-### .NET Core SDK on Ubuntu 14.04 trusty:
+### .NET Core SDK on Ubuntu 14.04 trusty main:
 ```
 sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
@@ -67,23 +67,39 @@ Before the service can be started, ensure the following (replace **dadi** with t
   - create a user for the database with create table permissions
 - Optional: Create the directory **/var/log/sosync/dadi**, ensure the user running the service for this instance has access to (and only to) it's instance folder.
 
-#### Example INI file:
+#### Example INI configuration:
 ```
-Logging:IncludeScopes=false
+[sosync]
+port = 5050
+instance = inst
 
-# Log levels: None, Trace, Debug, Information, Warning, Error, Critical
-# Recommended: Information or Warning
-Logging:LogLevel:Default=Information
+# Database
+db_host = localhost
+db_port = 5432
+db_name = inst
+db_user = theuser1
+db_user_pw = thepass15
 
-sosync_user=theuser
-sosync_pass=thepass
+# Logging
+log_file = /var/log/sosync/inst/inst.log
+log_level = Information
+
+# Fundraising Studio
+studio_mssql_host = mssql.debug.datadialog.net
+studio_sosync_user = theuser2
+studio_sosync_pw = thepass16
+
+# FS-Online
+online_host = debug.datadialog.net
+online_sosync_user = theuser3
+online_sosync_pw = thepass17
 ```
 
 ### Running the application
 Change the working directory to the application directory. After that the following command can be used to start and run the application:
 ```
-dotnet sosync.dll --instance dadi --server.urls="http://localhost:5000"
+dotnet sosync.dll --conf /path/dadi.ini
 ```
-- Replace **dadi** with the proper instance name.
-- Replace the URL with the proper server name and port
-
+- Replace **/path/dadi.ini** with the proper configuration file name
+- All values in the INI can also be specified as parameter
+- Parameters override INI settings
