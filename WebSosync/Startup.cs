@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
 using Syncer;
 using System;
 using System.IO;
-using System.Runtime.Serialization;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -84,7 +82,7 @@ namespace WebSosync
                 options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
             });
 
-            // DI cheat list:
+            // Dependency Injection (DI) cheat list:
             // - AddSingleton 1 instance entire webserver/program
             // - AddScoped creates an instance per web-request
             // - AddTransient creates an instance per service call
