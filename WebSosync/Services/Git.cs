@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace WebSosync.Services
@@ -17,7 +19,8 @@ namespace WebSosync.Services
                 Arguments = "rev-parse HEAD",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                WorkingDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
             };
 
             string result = "";
