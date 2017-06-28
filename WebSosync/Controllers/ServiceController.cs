@@ -18,7 +18,7 @@ namespace WebSosync.Controllers
     public class ServiceController : Controller
     {
         #region Members
-        private IBackgroundJob<SyncWorker> _job;
+        private IBackgroundJob<SyncWorker> _syncWorkerJob;
         private IHostService _hostService;
         private ILogger<ServiceController> _log;
         #endregion
@@ -26,7 +26,7 @@ namespace WebSosync.Controllers
         #region Constructors
         public ServiceController(IBackgroundJob<SyncWorker> background, IHostService hostService, ILogger<ServiceController> logger)
         {
-            _job = background;
+            _syncWorkerJob = background;
             _hostService = hostService;
             _log = logger;
         }
