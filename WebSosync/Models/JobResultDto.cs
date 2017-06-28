@@ -10,7 +10,7 @@ namespace WebSosync.Models
         public int JobID { get; set; }
 
         [DataMember(Name = "error_code")]
-        public JobErrorCode ErrorCode { get; set; }
+        public int ErrorCode { get; set; }
 
         [DataMember(Name = "error_text")]
         public string ErrorText { get; set; }

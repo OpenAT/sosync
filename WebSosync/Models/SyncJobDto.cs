@@ -16,7 +16,8 @@ namespace WebSosync.Models
     public class SyncJobDto
     {
         // DataMember for serialization
-        // FromQuery for url parsing
+        // FromQuery for automatic url parsing
+        // DisplayFormat to prevent conversion of empty strings to null by MVC
         // Rest: validation attributes
 
         [DataMember(Name = "source_system")]
@@ -33,7 +34,8 @@ namespace WebSosync.Models
 
         [DataMember(Name = "source_record_id")]
         [FromQuery(Name = "source_record_id")]
-        [Range(1, Int32.MaxValue)]
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "source_record_id must be greter than 0.")]
         public int? SourceRecordID { get; set; }
 
         /// <summary>

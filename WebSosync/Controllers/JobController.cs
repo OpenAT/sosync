@@ -38,30 +38,26 @@ namespace WebSosync.Controllers
         public IActionResult Get([FromQuery]SyncJobDto jobDto)
         {
             JobResultDto result = new JobResultDto();
-            var resultDetails = new List<string>();
-
-            // If MVC attribute based validation renders the
-            // model invalid, treat that as interface error
-            if (!ModelState.IsValid)
-                result.ErrorCode = JobErrorCode.InterfaceError;
 
             // Add custom errors, aka data errors, to the model state
-            var validator = new JobDtoValidator();
-            var dataErrors = validator.ValidateCreation(jobDto);
-            foreach (var de in dataErrors)
-                ModelState.AddModelError(de.Key, de.Value);
+            var validator = new RequestValidator<SyncJobDto>(Request, ModelState);
 
-            // If there were validation errors, and the error code is still none, set it to data error
-            if (dataErrors.Count > 0 && result.ErrorCode == JobErrorCode.None)
-                result.ErrorCode = JobErrorCode.DataError;
+            validator.AddCustomCheck("source_system", val =>
+            {
+                if (val != "fs" && val != "fso")
+                    return "source_system can only be 'fs' or 'fso'";
 
-            // All validation is done, prepare the result
-            result.ErrorText = result.ErrorCode.ToString();
-            resultDetails.AddRange(ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage));
-            result.ErrorDetail = resultDetails;
+                return "";
+            });
 
+            validator.Validate();
+
+            result.ErrorCode = (int)validator.ErrorCode;
+            result.ErrorText = validator.ErrorCode.ToString();
+            result.ErrorDetail = validator.Errors.Values;
+            
             // Only attempt to store the job, if validation was successful
-            if (result.ErrorCode == JobErrorCode.None)
+            if (validator.ErrorCode == JobErrorCode.None)
             {
                 try
                 {
