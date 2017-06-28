@@ -60,7 +60,7 @@ namespace WebSosync.Controllers
             JobResultDto result = new JobResultDto();
             validator.Configure(Request, ModelState);
 
-            validator.AddCustomCheck("source_system", val =>
+            validator.AddCustomCheck(x => x.SourceSystem, val =>
             {
                 if (val != "fs" && val != "fso")
                     return "source_system can only be 'fs' or 'fso'";

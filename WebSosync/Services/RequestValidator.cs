@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using WebSosync.Enumerations;
@@ -50,8 +51,12 @@ namespace WebSosync.Services
         /// <param name="parameter">Parameter name in the request.</param>
         /// <param name="check">A function that takes the value and returns an error message.</param>
         /// <returns>Returns itself for fluent API.</returns>
-        public RequestValidator<T> AddCustomCheck(string parameter, Func<string, string> check)
+        public RequestValidator<T> AddCustomCheck(Expression<Func<T, object>> propertySelector, Func<string, string> check)
         {
+            var property = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
+
+            string parameter = property.GetCustomAttribute<DataMemberAttribute>().Name;
+
             if (!_customChecks.ContainsKey(parameter))
                 _customChecks.Add(parameter, new List<Func<string, string>>());
 
