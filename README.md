@@ -10,24 +10,10 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - The background thread processes the sync jobs. There is a maximum of one background thread at any given time.
 
 ### The API
-Depending on the "**Accept**" header, most routes return either a **json** object with the fields **state** and **stateDescription**, or an **XML** object with the elements **State** and **StateDescription** (be aware of the difference in letter case between XML and json).
-- **/state** returns the current state of the background thread
-  - 0: Stopped - background thread is idle
-  - 1: Running - ongoing synchronization
-  - 2: RunningRestartRequested - ongoing synchronization. A restart is scheduled
-  - 3: Stopping - background thread will finish the current job, then stop
-  - 4: Error - The last execution of the background thread caused an error
-- **/state/start** starts the background thread. Subsequent calls set a restart flag
-  - 0: AlreadyRunningRestartRequested - background thread already running. A restart was requested
-  - 1: Started - background thread was started
-  - 2: ShutdownInProgress - cannot start the background thread. The service is shutting down
-- **/state/stop** gracefully stops the background thread. Subsequent calls have no effect
-  - 0: StopAlreadyRequested - the background has already received a stop request
-  - 1: StopRequested - the background thread was asked to stop
-
-- **/version** returns the full length git commit id as a string
-
-- **/job** takes **GET** parameters to create a new sync job
+Most routes return either a **json**/**XML** object (depending on the sent "**Accept**" header) or plain text.
+- **/service/status** throws a *NotImplementedException*. Will later return an object with status information.
+- **/service/version** returns the full length git commit id as plain text.
+- **/job/create** takes **GET** parameters to create a new sync job
   - job_date, should be a UTC date and time
   - source_system, **fs** or **fso**
   - source_model, the model name
