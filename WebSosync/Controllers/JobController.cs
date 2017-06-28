@@ -68,12 +68,9 @@ namespace WebSosync.Controllers
                     job.State = SosyncState.New;
                     job.Fetched = DateTime.Now.ToUniversalTime();
 
-                    // Create the sync job and start the job thread
+                    // Create the sync job, get it's ID into the result and start the job thread
                     _db.CreateJob(job);
-
-#warning TODO: Get the ID of the created job and set it to the result here
-                    result.JobID = -1;
-
+                    result.JobID = job.Job_ID;
                     _job.Start();
 
                     // Just return empty OK result
@@ -81,8 +78,16 @@ namespace WebSosync.Controllers
                 }
                 catch (Exception ex)
                 {
+                    result.ErrorCode = (int)JobErrorCode.DataError;
+                    result.ErrorText = JobErrorCode.DataError.ToString();
+
+                    var details = new List<string>(1);
+                    details.Add(ex.Message);
+
+                    result.ErrorDetail = details;
+
                     // Return error without stack trace
-                    return new BadRequestObjectResult(new JobResultDto() { });
+                    return new BadRequestObjectResult(result);
                 }
             }
             else
