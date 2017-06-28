@@ -37,7 +37,12 @@ namespace WebSosync.Controllers
         [HttpGet("status")]
         public IActionResult Get()
         {
-            throw new NotImplementedException("This route is not implemented yet.");
+            var result = new SosyncStatusDto();
+
+            result.JobWorker.Status = (int)_syncWorkerJob.Status;
+            result.JobWorker.StatusText = _syncWorkerJob.Status.ToString();
+
+            return new OkObjectResult(result);
         }
 
         // service/version

@@ -40,7 +40,7 @@ namespace WebSosync.Controllers
         {
             var result = _db.GetJob(id);
 
-#warning It's a bad practice to return internal objects without DTOs, probably discuss later
+#warning TODO: It's a bad practice to return internal objects without DTOs, probably discuss later
             if (result != null)
                 return new OkObjectResult(result);
             else
@@ -55,7 +55,7 @@ namespace WebSosync.Controllers
         [HttpGet("list")]
         public IActionResult GetAll()
         {
-#warning Bad practice and returning everything unpaged... fix some time!
+#warning TODO: Bad practice and returning everything unpaged... fix some time!
             var result = _db.GetJobs(false);
             return new OkObjectResult(result);
         }

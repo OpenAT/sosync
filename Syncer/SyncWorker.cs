@@ -11,43 +11,23 @@ using WebSosync.Data.Models;
 
 namespace Syncer
 {
-    public class SyncWorker : IBackgroundJobWorker
+    public class SyncWorker : WorkerBase
     {
-        #region IBackgroundJobWorker implementation
-        public string Name { get; private set; }
-        public event EventHandler Cancelling;
-
-        /// <summary>
-        /// Sets the specified cancellation token for this worker.
-        /// </summary>
-        /// <param name="token">The token to be used to check for cancellation</param>
-        public void ConfigureCancellation(CancellationToken token)
-        {
-            _cancelToken = token;
-        }
-        #endregion
-
-        #region Members
-        private CancellationToken _cancelToken;
-        private SosyncOptions _config;
-        #endregion
-
         #region Constructors
         /// <summary>
         /// Creates a new instance of the <see cref="SyncWorker"/> class.
         /// </summary>
         /// <param name="options">Options to be used for data connections etc.</param>
         public SyncWorker(SosyncOptions options)
-        {
-            _config = options;
-        }
+            : base(options)
+        { }
         #endregion
 
         #region Methods
         /// <summary>
         /// Starts the syncer.
         /// </summary>
-        public void Start()
+        public override void Start()
         {
 #warning TODO: At some point we want job priority.
             // When that happens, change the datalayer to return a single job hierarchy,
@@ -55,7 +35,7 @@ namespace Syncer
             // job.
 
             IList<SyncJob> jobs = null;
-            using (var db = new DataService(_config))
+            using (var db = new DataService(Configuration))
             {
                 // Get all open jobs and build the job tree in memory
                 jobs = db.GetJobs(true).ToTree(
@@ -71,10 +51,10 @@ namespace Syncer
                 System.Threading.Thread.Sleep(100);
 
                 // Stop processing the queue if cancellation was requested
-                if (_cancelToken.IsCancellationRequested)
+                if (CancellationToken.IsCancellationRequested)
                 {
                     // Raise the cancelling event
-                    Cancelling?.Invoke(this, EventArgs.Empty);
+                    RaiseCancelling();
                     // Clean up here, if necessary
                 }
             }
