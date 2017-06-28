@@ -77,36 +77,20 @@ namespace WebSosync.Controllers
             // Only attempt to store the job, if validation was successful
             if (validator.ErrorCode == JobErrorCode.None)
             {
-                try
-                {
-                    // Create a full SyncJob object from the transfer object
-                    var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
+                // Create a full SyncJob object from the transfer object
+                var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
 
-                    // Defaults
-                    job.State = SosyncState.New;
-                    job.Fetched = DateTime.Now.ToUniversalTime();
+                // Defaults
+                job.State = SosyncState.New;
+                job.Fetched = DateTime.Now.ToUniversalTime();
 
-                    // Create the sync job, get it's ID into the result and start the job thread
-                    _db.CreateJob(job);
-                    result.JobID = job.Job_ID;
-                    _job.Start();
+                // Create the sync job, get it's ID into the result and start the job thread
+                _db.CreateJob(job);
+                result.JobID = job.Job_ID;
+                _job.Start();
 
-                    // Just return empty OK result
-                    return new OkObjectResult(result);
-                }
-                catch (Exception ex)
-                {
-                    result.ErrorCode = (int)JobErrorCode.DataError;
-                    result.ErrorText = JobErrorCode.DataError.ToString();
-
-                    var details = new List<string>(1);
-                    details.Add(ex.Message);
-
-                    result.ErrorDetail = details;
-
-                    // Return error without stack trace
-                    return new BadRequestObjectResult(result);
-                }
+                // Just return empty OK result
+                return new OkObjectResult(result);
             }
             else
             {
