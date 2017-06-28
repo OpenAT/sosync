@@ -9,6 +9,8 @@ using WebSosync.Interfaces;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using WebSosync.Services;
+using WebSosync.Common.Interfaces;
+using Syncer;
 
 namespace WebSosync.Controllers
 {
@@ -16,13 +18,13 @@ namespace WebSosync.Controllers
     public class ServiceController : Controller
     {
         #region Members
-        private IBackgroundJob _job;
+        private IBackgroundJob<SyncWorker> _job;
         private IHostService _hostService;
         private ILogger<ServiceController> _log;
         #endregion
 
         #region Constructors
-        public ServiceController(IBackgroundJob background, IHostService hostService, ILogger<ServiceController> logger)
+        public ServiceController(IBackgroundJob<SyncWorker> background, IHostService hostService, ILogger<ServiceController> logger)
         {
             _job = background;
             _hostService = hostService;

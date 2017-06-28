@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Syncer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,8 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using WebSosync.Common.Enumerations;
+using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
@@ -83,6 +86,7 @@ namespace WebSosync
                 .AddCommandLine(Program.Args, Program.SwitchMappings)
                 .Build();
 
+#warning TODO: Bind on all IP addresses
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -146,12 +150,12 @@ namespace WebSosync
         /// <param name="svc">The host service to request termination.</param>
         private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
         {
-            IBackgroundJob job = (IBackgroundJob)ioc.GetService(typeof(IBackgroundJob));
+            IBackgroundJob<SyncWorker> job = (IBackgroundJob<SyncWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<SyncWorker>));
             log.LogInformation($"Process termination requested (job status: {job.Status})");
             job.ShutdownPending = true;
 
             // As logn the job status isn't stopped or error, keep requesting to stop it
-            while (job.Status != ServiceState.Stopped && job.Status != ServiceState.Error)
+            while (job.Status != BackgoundJobState.Stopped && job.Status != BackgoundJobState.Error)
             {
                 log.LogInformation("Asking job to stop");
                 job.Stop();

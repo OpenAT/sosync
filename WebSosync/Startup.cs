@@ -8,9 +8,11 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
+using Syncer;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Extensions;
@@ -91,11 +93,13 @@ namespace WebSosync
 
             // Register singleton classes with DI container
             services.AddSingleton<IHostService, HostService>();
-            services.AddSingleton<IBackgroundJob, BackgroundJob>();
+            services.AddSingleton<IBackgroundJob<SyncWorker>, BackgroundJob<SyncWorker>>();
             services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddScoped<DataService>();
             services.AddScoped<Git>();
+
+            services.AddTransient<SyncWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

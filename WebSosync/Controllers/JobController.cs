@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using WebSosync.Helpers;
 using WebSosync.Services;
+using WebSosync.Common.Interfaces;
+using Syncer;
 
 namespace WebSosync.Controllers
 {
@@ -21,11 +23,11 @@ namespace WebSosync.Controllers
     {
         #region Members
         private DataService _db;
-        private IBackgroundJob _job;
+        private IBackgroundJob<SyncWorker> _job;
         #endregion
         
         #region Constructors
-        public JobController(DataService db, IBackgroundJob job)
+        public JobController(DataService db, IBackgroundJob<SyncWorker> job)
         {
             _db = db;
             _job = job;

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebSosync.Enumerations
+namespace WebSosync.Common.Enumerations
 {
-    public enum ServiceState
+    public enum BackgoundJobState
     {
         Stopped = 0,
         Running = 1,

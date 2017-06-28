@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSosync", "WebSosync\WebS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{EFC87B68-8F44-4688-AB88-0EF0D6B510CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syncer", "Syncer\Syncer.csproj", "{752AF661-08E3-4D63-8B87-7763587B4D15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Syncer", "Syncer\Syncer.csproj", "{752AF661-08E3-4D63-8B87-7763587B4D15}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{DBAEC19C-ADA9-4763-915B-19D386C9543E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{752AF661-08E3-4D63-8B87-7763587B4D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{752AF661-08E3-4D63-8B87-7763587B4D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{752AF661-08E3-4D63-8B87-7763587B4D15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
