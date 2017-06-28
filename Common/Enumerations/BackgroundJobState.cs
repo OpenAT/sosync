@@ -6,7 +6,7 @@ namespace WebSosync.Common.Enumerations
 {
     public enum BackgoundJobState
     {
-        Stopped = 0,
+        Idle = 0,
         Running = 1,
         RunningRestartRequested = 2,
         Stopping = 3,

@@ -68,7 +68,7 @@ namespace WebSosync
             _lockObj = new object();
             _config = config;
 
-            Status = BackgoundJobState.Stopped;
+            Status = BackgoundJobState.Idle;
         }
         #endregion
 
@@ -172,7 +172,7 @@ namespace WebSosync
                     _task = null;
 
                     // If the task had no exception, the finished state is "stopped", else it's error
-                    Status = previous.Exception == null ? BackgoundJobState.Stopped : BackgoundJobState.Error;
+                    Status = previous.Exception == null ? BackgoundJobState.Idle : BackgoundJobState.Error;
                 }
 
                 // If a restart was requested, immediately start again
