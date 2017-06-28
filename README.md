@@ -6,12 +6,16 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - **sosync** is an *ASP.NET Core* Application, written in *C#*
 - It is supposed to run as a linux service
 - It runs a self contained *Kestrel* webserver to provite a *REST*ful API
+  - By default, localhost and all IPv4 addresses will be listened on
+  - INI configuration should override this behaviour, but that is **not implemented yet**
 - The API returns strings for simple results, and XML or json for complex results (set desired "Accept" header)
 - The background thread processes the sync jobs. There is a maximum of one background thread at any given time.
 
 ### The API
 Most routes return either a **json**/**XML** object (depending on the sent "**Accept**" header) or plain text.
-- **/service/status** throws a *NotImplementedException*. Will later return an object with status information.
+- **/service/status** returns information about all background jobs
+  - job_worker: The thread that handles data synchronization
+  - protocol_worker: The thread that transfers sync jobs to Odoo where they can be viewed
 - **/service/version** returns the full length git commit id as plain text.
 - **/job/create** takes **GET** parameters to create a new sync job
   - job_date, should be a UTC date and time
