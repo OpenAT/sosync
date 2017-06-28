@@ -1,21 +1,19 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.4/",
-    "signature": "2c481a437c55e62ef1ca2cbc0d86ffc4c5e005e1"
+    "signature": "c3fc6a695f5b7705a5bb3406c7a8afd3a0c3d96c"
   },
   "compilationOptions": {},
   "targets": {
     ".NETStandard,Version=v1.4": {},
     ".NETStandard,Version=v1.4/": {
-      "syncer/1.0.0": {
+      "websosync.common/1.0.0": {
         "dependencies": {
-          "Microsoft.Extensions.Configuration": "1.1.2",
           "NETStandard.Library": "1.6.1",
-          "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0"
         },
         "runtime": {
-          "Syncer.dll": {}
+          "WebSosync.Common.dll": {}
         }
       },
       "dapper/1.50.2": {
@@ -41,33 +39,6 @@
         },
         "runtime": {
           "lib/netstandard1.3/Dapper.dll": {}
-        }
-      },
-      "microsoft.extensions.configuration/1.1.2": {
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "1.1.2",
-          "NETStandard.Library": "1.6.1"
-        },
-        "runtime": {
-          "lib/netstandard1.1/Microsoft.Extensions.Configuration.dll": {}
-        }
-      },
-      "microsoft.extensions.configuration.abstractions/1.1.2": {
-        "dependencies": {
-          "Microsoft.Extensions.Primitives": "1.1.1",
-          "NETStandard.Library": "1.6.1"
-        },
-        "runtime": {
-          "lib/netstandard1.0/Microsoft.Extensions.Configuration.Abstractions.dll": {}
-        }
-      },
-      "microsoft.extensions.primitives/1.1.1": {
-        "dependencies": {
-          "NETStandard.Library": "1.6.1",
-          "System.Runtime.CompilerServices.Unsafe": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard1.0/Microsoft.Extensions.Primitives.dll": {}
         }
       },
       "microsoft.netcore.platforms/1.1.0": {},
@@ -776,14 +747,6 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         }
       },
-      "system.runtime.compilerservices.unsafe/4.3.0": {
-        "dependencies": {
-          "System.Runtime": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll": {}
-        }
-      },
       "system.runtime.extensions/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
@@ -1079,15 +1042,6 @@
           "lib/netstandard1.3/System.Xml.XmlDocument.dll": {}
         }
       },
-      "websosync.common/1.0.0": {
-        "dependencies": {
-          "NETStandard.Library": "1.6.1",
-          "WebSosync.Data": "1.0.0"
-        },
-        "runtime": {
-          "WebSosync.Common.dll": {}
-        }
-      },
       "websosync.data/1.0.0": {
         "dependencies": {
           "Dapper": "1.50.2",
@@ -1102,7 +1056,7 @@
     }
   },
   "libraries": {
-    "syncer/1.0.0": {
+    "websosync.common/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1113,27 +1067,6 @@
       "sha512": "sha512-31Ju5VGyNNc66OAsw+SCp1TWPBuyw8ZBdkMG5pSUPChZcy27s2GhVz5B9INP4f25mPqfiJ+mfeHy9JAJyyT+LQ==",
       "path": "dapper/1.50.2",
       "hashPath": "dapper.1.50.2.nupkg.sha512"
-    },
-    "microsoft.extensions.configuration/1.1.2": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-vFYYfcL2B7UueVdiat1HDRKEIYto+SGJN2WWnqCX7JX76eTmSFx+aKRJnJmFre3mFO6xo5jZNXxAOxpsUKt6lQ==",
-      "path": "microsoft.extensions.configuration/1.1.2",
-      "hashPath": "microsoft.extensions.configuration.1.1.2.nupkg.sha512"
-    },
-    "microsoft.extensions.configuration.abstractions/1.1.2": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-hveTDFkmDTepb3yR7DKLMfChyhdtv422osjics+kUS+bUgd5ymQqQv57IWTDsKK+Te0XhuJEYDIvlL5RJptTGQ==",
-      "path": "microsoft.extensions.configuration.abstractions/1.1.2",
-      "hashPath": "microsoft.extensions.configuration.abstractions.1.1.2.nupkg.sha512"
-    },
-    "microsoft.extensions.primitives/1.1.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-Yv2TFgfZz+Exaz2CLdCS8s3Xkml1K8jdL4k8K2V+8vVDiQRWPtxFBFMmHQoKF+3/0/Cuns8ro36J5Vmb92b60w==",
-      "path": "microsoft.extensions.primitives/1.1.1",
-      "hashPath": "microsoft.extensions.primitives.1.1.1.nupkg.sha512"
     },
     "microsoft.netcore.platforms/1.1.0": {
       "type": "package",
@@ -1604,13 +1537,6 @@
       "path": "system.runtime/4.3.0",
       "hashPath": "system.runtime.4.3.0.nupkg.sha512"
     },
-    "system.runtime.compilerservices.unsafe/4.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-GNSsxwYx/1eGDWyMK0lCPNkbkasdEIh2ora9Gk/jh0KSD7fhyzSnKTEGgF/ZaL+c5xC25YwIyInP1XBIGL0qSg==",
-      "path": "system.runtime.compilerservices.unsafe/4.3.0",
-      "hashPath": "system.runtime.compilerservices.unsafe.4.3.0.nupkg.sha512"
-    },
     "system.runtime.extensions/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -1799,11 +1725,6 @@
       "sha512": "sha512-31+6j1DWCX3BpHRa+OQAHJROEE3Vl9BPG2btyPUVcaZiYJhSm4qLSgVk72x5dossX4vLldnWlT2HVqeYGT+7ug==",
       "path": "system.xml.xmldocument/4.0.1",
       "hashPath": "system.xml.xmldocument.4.0.1.nupkg.sha512"
-    },
-    "websosync.common/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     },
     "websosync.data/1.0.0": {
       "type": "project",
