@@ -7,6 +7,8 @@ using Syncer;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -86,12 +88,21 @@ namespace WebSosync
                 .AddCommandLine(Program.Args, Program.SwitchMappings)
                 .Build();
 
-#warning TODO: Bind on all IP addresses
+            var defaultUrls = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                .SelectMany(x => x.GetIPProperties().UnicastAddresses)
+                .Select(x => $"http://{x.Address}:{kestrelConfig["sosync:port"]}")
+                .ToList();
+
+            defaultUrls.Insert(0, $"http://localhost:{kestrelConfig["sosync:port"]}");
+
+#warning TODO: Implement it, so that INI configuration overrides default behaviour
+
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
-                .UseUrls($"http://localhost:{kestrelConfig["sosync:port"]}")
+                .UseUrls(defaultUrls.ToArray())
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
@@ -100,9 +111,10 @@ namespace WebSosync
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
 
-            log.LogInformation("Sosync service started");
-            log.LogInformation($"Running on {osNameAndVersion}");
-            log.LogInformation($"Instance name: {sosyncConfig.Instance}");
+            log.LogInformation(String.Join(" ",
+                $"Sosync started for instance {sosyncConfig.Instance},",
+                $"running on {osNameAndVersion}",
+                $"with end points {string.Join(", ", defaultUrls)}"));
 
             if (!string.IsNullOrEmpty(Program.LogFile))
                 log.LogInformation($"Logging to: {Program.LogFile}");
