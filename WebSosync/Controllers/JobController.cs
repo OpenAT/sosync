@@ -40,7 +40,6 @@ namespace WebSosync.Controllers
         {
             var result = _db.GetJob(id);
 
-            throw new Exception("Beeing a bad dev throwing around exceptions...");
 #warning It's a bad practice to return internal objects without DTOs, probably discuss later
             if (result != null)
                 return new OkObjectResult(result);
@@ -51,6 +50,14 @@ namespace WebSosync.Controllers
                     ErrorText = JobErrorCode.DataError.ToString(),
                     ErrorDetail = new string[] { "Job not found." }
                 });
+        }
+
+        [HttpGet("list")]
+        public IActionResult GetAll()
+        {
+#warning Bad practice and returning everything unpaged... fix some time!
+            var result = _db.GetJobs(false);
+            return new OkObjectResult(result);
         }
 
         // job/create

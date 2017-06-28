@@ -58,7 +58,7 @@ namespace Syncer
             using (var db = new DataService(_config))
             {
                 // Get all open jobs and build the job tree in memory
-                jobs = db.GetJobs().ToTree(
+                jobs = db.GetJobs(true).ToTree(
                     x => x.Job_ID,
                     x => x.Parent_Job_ID,
                     x => x.Children);

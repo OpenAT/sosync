@@ -76,10 +76,18 @@ namespace WebSosync.Data
         /// Reads all open SyncJobs from the database.
         /// </summary>
         /// <returns></returns>
-        public List<SyncJob> GetJobs()
+        public List<SyncJob> GetJobs(bool onlyOpenJobs)
         {
-            var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
-            return result;
+            if (onlyOpenJobs)
+            {
+                var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
+                return result;
+            }
+            else
+            {
+                var result = _con.Query<SyncJob>("select * from sync_table").AsList();
+                return result;
+            }
         }
 
         public SyncJob GetJob(int id)
