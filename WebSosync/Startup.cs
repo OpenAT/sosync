@@ -94,9 +94,8 @@ namespace WebSosync
             services.AddSingleton<IBackgroundJob<SyncWorker>, BackgroundJob<SyncWorker>>();
             services.AddSingleton<IConfiguration>(Configuration);
 
-            services.AddScoped<DataService>();
-            services.AddScoped<Git>();
-
+            services.AddTransient<DataService>();
+            services.AddTransient<Git>();
             services.AddTransient<SyncWorker>();
         }
 
