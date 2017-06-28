@@ -37,6 +37,12 @@ namespace WebSosync.Services
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Adds a custom check for the given parameter to the validator.
+        /// </summary>
+        /// <param name="parameter">Parameter name in the request.</param>
+        /// <param name="check">A function that takes the value and returns an error message.</param>
+        /// <returns>Returns itself for fluent API.</returns>
         public RequestValidator<T> AddCustomCheck(string parameter, Func<string, string> check)
         {
             if (!_customChecks.ContainsKey(parameter))
