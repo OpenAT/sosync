@@ -18,6 +18,8 @@ Most routes return either a **json**/**XML** object (depending on the sent "**Ac
   - source_system, **fs** or **fso**
   - source_model, the model name
   - source_record_id, the ID in the source system
+- **/job/info/{id}** returns the full job row
+- **/job/list** returns the full sync table
 
 ## Setup
 ### .NET Core SDK on Ubuntu 14.04 trusty main:
