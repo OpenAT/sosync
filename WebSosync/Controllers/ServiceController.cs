@@ -41,13 +41,12 @@ namespace WebSosync.Controllers
         // service/version
         [HttpGet("version")]
         [Produces(typeof(string))]
-        public IActionResult Version()
+        public IActionResult Version([FromServices]Git git)
         {
             var result = "";
 
             try
             {
-                var git = new Git();
                 result = git.GetCommitId();
                 return new OkObjectResult(result);
             }

@@ -17,6 +17,7 @@ using WebSosync.Extensions;
 using WebSosync.Helpers;
 using WebSosync.Interfaces;
 using WebSosync.Models;
+using WebSosync.Services;
 
 namespace WebSosync
 {
@@ -81,12 +82,20 @@ namespace WebSosync
                 options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
             });
 
+            // DI cheat list:
+            // - AddSingleton 1 instance entire webserver/program
+            // - AddScoped creates an instance per web-request
+            // - AddTransient creates an instance per service call
+            
+            // What about disposing? DI container takes care of that.
+
             // Register singleton classes with DI container
             services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IBackgroundJob, BackgroundJob>();
             services.AddSingleton<IConfiguration>(Configuration);
 
-            services.AddTransient<DataService>();
+            services.AddScoped<DataService>();
+            services.AddScoped<Git>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
