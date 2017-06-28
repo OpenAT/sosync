@@ -48,14 +48,17 @@ namespace WebSosync.Services
         /// <summary>
         /// Adds a custom check for the given parameter to the validator.
         /// </summary>
-        /// <param name="parameter">Parameter name in the request.</param>
-        /// <param name="check">A function that takes the value and returns an error message.</param>
+        /// <param name="parameter">Expression to retrieve the property.</param>
+        /// <param name="check">The function that handles value checking.</param>
         /// <returns>Returns itself for fluent API.</returns>
         public RequestValidator<T> AddCustomCheck(Expression<Func<T, object>> propertySelector, Func<string, string> check)
         {
+            // Gets the PropertyInfo from the linq-expression, this is to avoid using strings,
+            // and because it enables the use of data contracts
             var property = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
+            var att = property.GetCustomAttribute<DataMemberAttribute>();
 
-            string parameter = property.GetCustomAttribute<DataMemberAttribute>().Name;
+            string parameter = att != null ? att.Name : property.Name;
 
             if (!_customChecks.ContainsKey(parameter))
                 _customChecks.Add(parameter, new List<Func<string, string>>());
