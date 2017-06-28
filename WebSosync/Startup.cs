@@ -70,16 +70,16 @@ namespace WebSosync
         /// <param name="services">The service collection used to add new services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Register the SosyncOptions class as a singleton, configured with
+            // the configuration section "sosync"
             services.ConfigurePoco<SosyncOptions>(Configuration.GetSection("sosync"));
 
             // Add framework services.
             services.AddMvc(options =>
             {
-                // Ad output formatters
-                options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-
-                // Add input formatters
+                // Add input and output formatters
                 options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
+                options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             });
 
             // Dependency Injection (DI) cheat list:
@@ -91,14 +91,28 @@ namespace WebSosync
 
             // Register singleton classes with DI container
             services.AddSingleton<IHostService, HostService>();
-            services.AddSingleton<IBackgroundJob<SyncWorker>, BackgroundJob<SyncWorker>>();
             services.AddSingleton<IConfiguration>(Configuration);
 
+            RegisterBackgroundJob<SyncWorker>(services);
+            RegisterBackgroundJob<ProtocolWorker>(services);
+
+            // Scoped services
             services.AddScoped<RequestValidator<SyncJobDto>>();
 
+            // Transient services
             services.AddTransient<DataService>();
             services.AddTransient<Git>();
-            services.AddTransient<SyncWorker>();
+        }
+
+        /// <summary>
+        /// Registers a background for a class, and the class itself, for use with dependency injection.
+        /// </summary>
+        /// <typeparam name="T">The type that will be used as background job.</typeparam>
+        /// <param name="services">The dependency injection container.</param>
+        private void RegisterBackgroundJob<T>(IServiceCollection services) where T : class, IBackgroundJobWorker
+        {
+            services.AddTransient<T>();
+            services.AddSingleton<IBackgroundJob<T>, BackgroundJob<T>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

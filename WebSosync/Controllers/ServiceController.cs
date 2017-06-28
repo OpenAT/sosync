@@ -19,14 +19,20 @@ namespace WebSosync.Controllers
     {
         #region Members
         private IBackgroundJob<SyncWorker> _syncWorkerJob;
+        private IBackgroundJob<ProtocolWorker> _protocolWorkerJob;
         private IHostService _hostService;
         private ILogger<ServiceController> _log;
         #endregion
 
         #region Constructors
-        public ServiceController(IBackgroundJob<SyncWorker> background, IHostService hostService, ILogger<ServiceController> logger)
+        public ServiceController(
+            IBackgroundJob<SyncWorker> syncWorkerJob,
+            IBackgroundJob<ProtocolWorker> protocolWorkerJob,
+            IHostService hostService,
+            ILogger<ServiceController> logger)
         {
-            _syncWorkerJob = background;
+            _syncWorkerJob = syncWorkerJob;
+            _protocolWorkerJob = protocolWorkerJob;
             _hostService = hostService;
             _log = logger;
         }
@@ -42,7 +48,17 @@ namespace WebSosync.Controllers
             result.JobWorker.Status = (int)_syncWorkerJob.Status;
             result.JobWorker.StatusText = _syncWorkerJob.Status.ToString();
 
+            result.ProtocolWorker.Status = (int)_protocolWorkerJob.Status;
+            result.ProtocolWorker.StatusText = _protocolWorkerJob.Status.ToString();
+
             return new OkObjectResult(result);
+        }
+
+        [HttpGet("protocol")]
+        public IActionResult ProtocolStart()
+        {
+            _protocolWorkerJob.Start();
+            return new OkResult();
         }
 
         // service/version
