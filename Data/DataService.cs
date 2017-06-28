@@ -82,6 +82,12 @@ namespace WebSosync.Data
             return result;
         }
 
+        public SyncJob GetJob(int id)
+        {
+            var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }).SingleOrDefault();
+            return result;
+        }
+
         /// <summary>
         /// Creates a new sync job in the database.
         /// </summary>

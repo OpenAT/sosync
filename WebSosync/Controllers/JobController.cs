@@ -35,6 +35,24 @@ namespace WebSosync.Controllers
         #endregion
 
         #region Methods
+        [HttpGet("info/{id}")]
+        public IActionResult Get([FromRoute]int id)
+        {
+            var result = _db.GetJob(id);
+
+            throw new Exception("Beeing a bad dev throwing around exceptions...");
+#warning It's a bad practice to return internal objects without DTOs, probably discuss later
+            if (result != null)
+                return new OkObjectResult(result);
+            else
+                return new BadRequestObjectResult(new JobResultDto()
+                {
+                    ErrorCode = (int)JobErrorCode.DataError,
+                    ErrorText = JobErrorCode.DataError.ToString(),
+                    ErrorDetail = new string[] { "Job not found." }
+                });
+        }
+
         // job/create
         [HttpGet("create")]
         public IActionResult Get([FromQuery]SyncJobDto jobDto, [FromServices]RequestValidator<SyncJobDto> validator)
