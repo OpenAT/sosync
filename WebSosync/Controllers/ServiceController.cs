@@ -64,7 +64,7 @@ namespace WebSosync.Controllers
         // service/version
         [HttpGet("version")]
         [Produces(typeof(string))]
-        public IActionResult Version([FromServices]Git git)
+        public IActionResult Version([FromServices]GitService git)
         {
             var result = "";
 

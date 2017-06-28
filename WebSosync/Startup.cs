@@ -101,7 +101,7 @@ namespace WebSosync
 
             // Transient services
             services.AddTransient<DataService>();
-            services.AddTransient<Git>();
+            services.AddTransient<GitService>();
         }
 
         /// <summary>

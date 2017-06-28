@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WebSosync.Services
 {
-    public class Git
+    public class GitService
     {
         #region Methods
         public string GetCommitId()
