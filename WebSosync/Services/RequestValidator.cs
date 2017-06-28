@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Runtime.Serialization;
 using WebSosync.Enumerations;
-using WebSosync.Models;
 
 namespace WebSosync.Services
 {
@@ -25,10 +23,8 @@ namespace WebSosync.Services
         #endregion
 
         #region Constructors
-        public RequestValidator(HttpRequest request, ModelStateDictionary modelState)
+        public RequestValidator()
         {
-            _request = request;
-            _modelState = modelState;
             _customChecks = new Dictionary<string, List<Func<string, string>>>();
 
             ErrorCode = JobErrorCode.None;
@@ -37,6 +33,17 @@ namespace WebSosync.Services
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Setup the request and the modelstate for validation.
+        /// </summary>
+        /// <param name="request">The request from the controller.</param>
+        /// <param name="modelState">The modelstate from the controller.</param>
+        public void Configure(HttpRequest request, ModelStateDictionary modelState)
+        {
+            _request = request;
+            _modelState = modelState;
+        }
+
         /// <summary>
         /// Adds a custom check for the given parameter to the validator.
         /// </summary>
@@ -54,6 +61,9 @@ namespace WebSosync.Services
 
         public void Validate()
         {
+            if (_request == null || _modelState == null)
+                throw new InvalidOperationException($"Validation not configured, run {nameof(Configure)} and pass a Request and a ModelState.");
+
             var properties = typeof(T).GetProperties();
 
             foreach (var prop in properties)

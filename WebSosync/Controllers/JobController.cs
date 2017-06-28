@@ -37,12 +37,10 @@ namespace WebSosync.Controllers
         #region Methods
         // job/create
         [HttpGet("create")]
-        public IActionResult Get([FromQuery]SyncJobDto jobDto)
+        public IActionResult Get([FromQuery]SyncJobDto jobDto, [FromServices]RequestValidator<SyncJobDto> validator)
         {
             JobResultDto result = new JobResultDto();
-
-            // Add custom errors, aka data errors, to the model state
-            var validator = new RequestValidator<SyncJobDto>(Request, ModelState);
+            validator.Configure(Request, ModelState);
 
             validator.AddCustomCheck("source_system", val =>
             {
