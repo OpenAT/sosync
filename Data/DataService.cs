@@ -28,6 +28,7 @@ namespace WebSosync.Data
         /// </summary>
         static DataService()
         {
+#warning TODO: Implement timeouts for fail-fast!
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
             var excludedColumns = new string[] { "job_id", "children" };
 
@@ -85,7 +86,8 @@ namespace WebSosync.Data
             }
             else
             {
-                var result = _con.Query<SyncJob>("select * from sync_table").AsList();
+#warning TODO: Remove fixed id from query!
+                var result = _con.Query<SyncJob>("select * from sync_table where job_id = 65").AsList();
                 return result;
             }
         }
