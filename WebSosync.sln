@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSosync", "WebSosync\WebSosync.csproj", "{4507CB8E-422F-4C4F-884C-2849A2209F64}"
 EndProject
@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Syncer", "Syncer\Syncer.csproj", "{752AF661-08E3-4D63-8B87-7763587B4D15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{DBAEC19C-ADA9-4763-915B-19D386C9543E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{DBAEC19C-ADA9-4763-915B-19D386C9543E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlRpc", "XmlRpc\XmlRpc.csproj", "{BCFB99C8-7378-495B-BC4A-2716E5F3D436}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Odoo", "Odoo\Odoo.csproj", "{55A7C8CD-F163-4D18-83AA-36D6042896C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,6 +22,14 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "job_id")]
         public int Job_ID { get; set; }
 
+        [DataMember(Name = "job_fs_id")]
+        [IgnoreDataMember]
+        public int? Job_Fs_ID { get; set; }
+
+        [DataMember(Name = "job_fso_id")]
+        [IgnoreDataMember]
+        public int? Job_Fso_ID { get; set; }
+
         [DataMember(Name = "job_date")]
         public DateTime Job_Date { get; set; }
 
@@ -97,6 +105,7 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "run_count")]
         public int Run_Count { get; set; }
 
+        [IgnoreDataMember]
         public IList<SyncJob> Children { get; set; }
         #endregion
     }
