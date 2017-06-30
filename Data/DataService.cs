@@ -79,6 +79,9 @@ namespace WebSosync.Data
 
             var syncTable = "sync_table";
 
+            // Add column job_fs_id if not exists
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fs_id", "int null"), commandTimeout: _cmdTimeoutSec);
+
             // Add column job_fso_id if not exists
             _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fso_id", "int null"), commandTimeout: _cmdTimeoutSec);
         }
