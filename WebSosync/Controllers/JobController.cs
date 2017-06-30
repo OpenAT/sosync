@@ -105,7 +105,17 @@ namespace WebSosync.Controllers
                     var client = new OdooClient($"http://{config.Online_Host}/xmlrpc/2/", config.Instance);
                     client.Authenticate(config.Online_Sosync_User, config.Online_Sosync_PW);
                     int odooId = client.CreateModel<SyncJob>("sosync.job", job);
-                    _db.UpdateJob(job, x => x.Job_Fso_ID);
+
+                    if (job.Source_System == SosyncSystem.FSOnline)
+                    {
+                        job.Job_Fso_ID = odooId;
+                        _db.UpdateJob(job, x => x.Job_Fso_ID);
+                    }
+                    else
+                    {
+                        job.Job_Fs_ID = odooId;
+                        _db.UpdateJob(job, x => x.Job_Fs_ID);
+                    }
                 }
                 catch (Exception ex)
                 {
