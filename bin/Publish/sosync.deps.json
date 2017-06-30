@@ -1860,6 +1860,7 @@
           "Dapper": "1.50.2",
           "NETStandard.Library": "1.6.1",
           "Npgsql": "3.2.4.1",
+          "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0"
         },
         "runtime": {

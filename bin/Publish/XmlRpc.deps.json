@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.4/",
-    "signature": "e7eb02770fa29325e880827a27bdc52b99494c94"
+    "signature": "03f81835c675ca91af0adf9b350bd6e87882a8a0"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,6 @@
       "xmlrpc/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "1.6.1",
-          "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Dynamic.Runtime": "4.3.0",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
@@ -152,42 +151,6 @@
         },
         "runtime": {
           "lib/netstandard1.3/System.Collections.Concurrent.dll": {}
-        }
-      },
-      "system.componentmodel/4.3.0": {
-        "dependencies": {
-          "System.Runtime": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard1.3/System.ComponentModel.dll": {}
-        }
-      },
-      "system.componentmodel.primitives/4.3.0": {
-        "dependencies": {
-          "System.ComponentModel": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard1.0/System.ComponentModel.Primitives.dll": {}
-        }
-      },
-      "system.componentmodel.typeconverter/4.3.0": {
-        "dependencies": {
-          "System.Collections": "4.3.0",
-          "System.ComponentModel": "4.3.0",
-          "System.ComponentModel.Primitives": "4.3.0",
-          "System.Globalization": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Reflection.Extensions": "4.3.0",
-          "System.Reflection.Primitives": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0",
-          "System.Runtime.Extensions": "4.3.0",
-          "System.Threading": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard1.0/System.ComponentModel.TypeConverter.dll": {}
         }
       },
       "system.console/4.3.0": {
@@ -832,27 +795,6 @@
       "sha512": "sha512-pXnbZA4P2X9FRV6vFL9pIW1YfOAQhEaApvDF20yo27itmbqS1UWd6hQ+b74LhV18taySOq6QuSvPgdsEnBMz0Q==",
       "path": "system.collections.concurrent/4.3.0",
       "hashPath": "system.collections.concurrent.4.3.0.nupkg.sha512"
-    },
-    "system.componentmodel/4.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-30RDt90SKkiRqc1wNekl0s9cz/zfu81pr6dHQkVUKpV2+BROlYRt8BysOFCjw12IzOvs9aNtP+KZn4cNmIBRCQ==",
-      "path": "system.componentmodel/4.3.0",
-      "hashPath": "system.componentmodel.4.3.0.nupkg.sha512"
-    },
-    "system.componentmodel.primitives/4.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-K9e3+P+FCTw8ulL8Bva4yoyokqgPTnxb6jFaE5L8K0MjJvGwHyUT0UUunUuf8gWqHoyuOijpUo/nUJ4kMnP9wQ==",
-      "path": "system.componentmodel.primitives/4.3.0",
-      "hashPath": "system.componentmodel.primitives.4.3.0.nupkg.sha512"
-    },
-    "system.componentmodel.typeconverter/4.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-8sC50y5k7hWrE/E6oWYxc9sGbdEIsquAFctTomkuP0r4pX4VyzwOKO1uuvBXGgC0TapC49lyqFSFG8d1jo+4jw==",
-      "path": "system.componentmodel.typeconverter/4.3.0",
-      "hashPath": "system.componentmodel.typeconverter.4.3.0.nupkg.sha512"
     },
     "system.console/4.3.0": {
       "type": "package",
