@@ -51,7 +51,7 @@ namespace WebSosync.Services
         /// <param name="parameter">Expression to retrieve the property.</param>
         /// <param name="check">The function that handles value checking.</param>
         /// <returns>Returns itself for fluent API.</returns>
-        public RequestValidator<T> AddCustomCheck(Expression<Func<T, object>> propertySelector, Func<string, string> check)
+        public RequestValidator<T> AddCustomCheck<TProp>(Expression<Func<T, TProp>> propertySelector, Func<string, string> check)
         {
             // Gets the PropertyInfo from the linq-expression, this is to avoid using strings,
             // and because it enables the use of data contracts

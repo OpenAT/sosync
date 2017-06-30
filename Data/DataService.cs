@@ -140,10 +140,10 @@ namespace WebSosync.Data
         /// </summary>
         /// <param name="job">The job to be updated.</param>
         /// <param name="propertySelector">The member expression for which field should be updated in the database.</param>
-        public void UpdateJob(SyncJob job, Expression<Func<SyncJob, object>> propertySelector)
+        public void UpdateJob<TProp>(SyncJob job, Expression<Func<SyncJob, TProp>> propertySelector)
         {
             var tblAtt = job.GetType().GetTypeInfo().GetCustomAttribute<DataContractAttribute>();
-            var prop = (PropertyInfo)((MemberExpression)propertySelector.Body).Member;
+            var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
             var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
 
             var tblName = tblAtt == null ? typeof(SyncJob).Name : tblAtt.Name;
