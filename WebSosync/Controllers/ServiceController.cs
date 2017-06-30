@@ -63,15 +63,6 @@ namespace WebSosync.Controllers
             return new OkResult();
         }
 
-        // service/setup - for debugging
-        [HttpGet("setup")]
-        public IActionResult Setup([FromServices]DataService db)
-        {
-            db.Setup();
-
-            return new OkResult();
-        }
-
         // service/version
         [HttpGet("version")]
         [Produces(typeof(string))]
