@@ -20,6 +20,7 @@ namespace WebSosync.Data
         private static string SQL_UpdateJob;
 
         private NpgsqlConnection _con;
+        private int _cmdTimeoutSec = 10;
         #endregion
 
         #region Class initializers
@@ -28,7 +29,6 @@ namespace WebSosync.Data
         /// </summary>
         static DataService()
         {
-#warning TODO: Implement timeouts for fail-fast!
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
             var excludedColumns = new string[] { "job_id", "children" };
 
@@ -70,7 +70,7 @@ namespace WebSosync.Data
         /// </summary>
         public void Setup()
         {
-            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript));
+            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
         }
 
         /// <summary>
@@ -81,20 +81,24 @@ namespace WebSosync.Data
         {
             if (onlyOpenJobs)
             {
-                var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect)).AsList();
+                var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect), commandTimeout: _cmdTimeoutSec).AsList();
                 return result;
             }
             else
             {
-#warning TODO: Remove fixed id from query!
-                var result = _con.Query<SyncJob>("select * from sync_table where job_id = 65").AsList();
+                var result = _con.Query<SyncJob>("select * from sync_table", commandTimeout: _cmdTimeoutSec).AsList();
                 return result;
             }
         }
 
+        /// <summary>
+        /// Get the specified job by its ID.
+        /// </summary>
+        /// <param name="id">ID of the job to fetch.</param>
+        /// <returns></returns>
         public SyncJob GetJob(int id)
         {
-            var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }).SingleOrDefault();
+            var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
             return result;
         }
 
