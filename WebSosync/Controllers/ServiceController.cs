@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using WebSosync.Services;
 using WebSosync.Common.Interfaces;
 using Syncer;
+using WebSosync.Data;
 
 namespace WebSosync.Controllers
 {
@@ -54,11 +55,21 @@ namespace WebSosync.Controllers
             return new OkObjectResult(result);
         }
 
+        // service/protocol
         [HttpGet("protocol")]
         public IActionResult ProtocolStart()
         {
             _protocolWorkerJob.Start();
             return new OkResult();
+        }
+
+        // service/setup - for debugging
+        [HttpGet("setup")]
+        public IActionResult Setup([FromServices]DataService db)
+        {
+            db.Setup();
+
+            return new OkResult()
         }
 
         // service/version
