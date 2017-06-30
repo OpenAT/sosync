@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlRpc", "XmlRpc\XmlRpc.csproj", "{BCFB99C8-7378-495B-BC4A-2716E5F3D436}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Odoo", "Odoo\Odoo.csproj", "{55A7C8CD-F163-4D18-83AA-36D6042896C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Odoo", "Odoo\Odoo.csproj", "{55A7C8CD-F163-4D18-83AA-36D6042896C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
