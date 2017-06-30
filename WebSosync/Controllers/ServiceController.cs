@@ -69,7 +69,7 @@ namespace WebSosync.Controllers
         {
             db.Setup();
 
-            return new OkResult()
+            return new OkResult();
         }
 
         // service/version
