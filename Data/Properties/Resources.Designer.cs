@@ -84,6 +84,23 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DO $$ 
+        ///    BEGIN
+        ///        BEGIN
+        ///            ALTER TABLE {0} ADD COLUMN {1} {2};
+        ///        EXCEPTION
+        ///            WHEN duplicate_column THEN RAISE NOTICE &apos;column {1} already exists in {0}.&apos;;
+        ///        END;
+        ///    END;
+        ///$$.
+        /// </summary>
+        internal static string SetupAddColumn_SCRIPT {
+            get {
+                return ResourceManager.GetString("SetupAddColumn_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
         ///(
         ///  job_id serial,

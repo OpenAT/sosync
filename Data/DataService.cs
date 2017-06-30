@@ -10,6 +10,8 @@ using WebSosync.Data.Helpers;
 using WebSosync.Data.Constants;
 using System.Reflection;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.Serialization;
 
 namespace WebSosync.Data
 {
@@ -70,7 +72,15 @@ namespace WebSosync.Data
         /// </summary>
         public void Setup()
         {
+            // Be mindful of versioning here on the setup!
+
+            // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
+
+            var syncTable = "sync_table";
+
+            // Add column job_fso_id if not exists
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fso_id", "int null"), commandTimeout: _cmdTimeoutSec);
         }
 
         /// <summary>
@@ -119,7 +129,24 @@ namespace WebSosync.Data
         /// <param name="job">The sync job to be updated.</param>
         public void UpdateJob(SyncJob job)
         {
-            _con.Execute(DataService.SQL_UpdateJob, job);
+            _con.Execute(DataService.SQL_UpdateJob, job, commandTimeout: _cmdTimeoutSec);
+        }
+
+        /// <summary>
+        /// Updates only the specified field of the job in the database.
+        /// </summary>
+        /// <param name="job">The job to be updated.</param>
+        /// <param name="propertySelector">The member expression for which field should be updated in the database.</param>
+        public void UpdateJob(SyncJob job, Expression<Func<SyncJob, object>> propertySelector)
+        {
+            var tblAtt = job.GetType().GetTypeInfo().GetCustomAttribute<DataContractAttribute>();
+            var prop = (PropertyInfo)((MemberExpression)propertySelector.Body).Member;
+            var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
+
+            var tblName = tblAtt == null ? typeof(SyncJob).Name : tblAtt.Name;
+            var propName = propAtt == null ? prop.Name : propAtt.Name;
+
+            _con.Execute($"update {tblName} set {propName} = @{propName} where job_id = @job_id", job, commandTimeout: _cmdTimeoutSec);
         }
         #endregion
 

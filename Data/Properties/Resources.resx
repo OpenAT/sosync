@@ -133,6 +133,17 @@
 )
 select * from children;</value>
   </data>
+  <data name="SetupAddColumn_SCRIPT" xml:space="preserve">
+    <value>DO $$ 
+    BEGIN
+        BEGIN
+            ALTER TABLE {0} ADD COLUMN {1} {2};
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column {1} already exists in {0}.';
+        END;
+    END;
+$$</value>
+  </data>
   <data name="SetupDatabase_SCRIPT" xml:space="preserve">
     <value>CREATE TABLE IF NOT EXISTS sync_table
 (

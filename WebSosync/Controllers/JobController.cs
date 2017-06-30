@@ -14,6 +14,8 @@ using WebSosync.Helpers;
 using WebSosync.Services;
 using WebSosync.Common.Interfaces;
 using Syncer;
+using Microsoft.Extensions.Logging;
+using Odoo;
 
 namespace WebSosync.Controllers
 {
@@ -24,11 +26,13 @@ namespace WebSosync.Controllers
         #region Members
         private DataService _db;
         private IBackgroundJob<SyncWorker> _job;
+        private ILogger<JobController> _log;
         #endregion
         
         #region Constructors
-        public JobController(DataService db, IBackgroundJob<SyncWorker> job)
+        public JobController(ILogger<JobController> log, DataService db, IBackgroundJob<SyncWorker> job)
         {
+            _log = log;
             _db = db;
             _job = job;
         }
@@ -62,7 +66,7 @@ namespace WebSosync.Controllers
 
         // job/create
         [HttpGet("create")]
-        public IActionResult Get([FromQuery]SyncJobDto jobDto, [FromServices]RequestValidator<SyncJobDto> validator)
+        public IActionResult Get([FromQuery]SyncJobDto jobDto, [FromServices]SosyncOptions config, [FromServices]RequestValidator<SyncJobDto> validator)
         {
             JobResultDto result = new JobResultDto();
             validator.Configure(Request, ModelState);
@@ -95,6 +99,18 @@ namespace WebSosync.Controllers
                 _db.CreateJob(job);
                 result.JobID = job.Job_ID;
                 _job.Start();
+
+                try
+                {
+                    var client = new OdooClient($"http://{config.Online_Host}/xmlrpc/2/", config.Instance);
+                    client.Authenticate(config.Online_Sosync_User, config.Online_Sosync_PW);
+                    int odooId = client.CreateModel<SyncJob>("sosync.job", job);
+                    _db.UpdateJob(job, x => x.Job_Fso_ID);
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError(ex.ToString());
+                }
 
                 // Just return empty OK result
                 return new OkObjectResult(result);
