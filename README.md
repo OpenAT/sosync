@@ -11,6 +11,16 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - The API returns strings for simple results, and XML or json for complex results (set desired "Accept" header)
 - The background thread processes the sync jobs. There is a maximum of one background thread at any given time.
 
+### Project structure
+- **Common** common interfaces and enumerations
+- **Data** data access layer (sosync only)
+- **Odoo** Odoo API implementation, utilizes the XmlRpc library
+- **Syncer** the actual syncer and **sync flows**
+  - References **Odoo** for FSO access
+  - References **dadi-data** (DaDi-Nuget) for FS access
+- **WebSosync** Kestrel webserver providing the API and housing the syncer
+- **XmlRpc** makeshift XML RPC library
+
 ### The API
 Most routes return either a **json**/**XML** object (depending on the sent "**Accept**" header) or plain text.
 - **/service/status** returns information about all background jobs
