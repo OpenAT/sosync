@@ -69,7 +69,7 @@ namespace Odoo
         public T GetModel<T>(string modelName, int id) where T: class
         {
             // Apparently can't send context to model queries
-            //var context = new { lang = Language };
+            var context = new { lang = Language };
 
             var propertyList = typeof(T)
                 .GetProperties()
@@ -77,7 +77,7 @@ namespace Odoo
                 .Select(x => x.GetCustomAttribute<DataMemberAttribute>()?.Name ?? x.Name)
                 .ToArray();
 
-            var result = (T)_rpcObject.execute_kw<T>(Database, _uid, Password, modelName, "read", new int[] { id }, new { fields = propertyList });
+            var result = (T)_rpcObject.execute_kw<T>(Database, _uid, Password, modelName, "read", new int[] { id }, new { fields = propertyList, context = context });
 
             return result;
         }
