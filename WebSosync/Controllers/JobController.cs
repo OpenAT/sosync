@@ -20,16 +20,19 @@ namespace WebSosync.Controllers
     {
         #region Members
         private DataService _db;
-        private IBackgroundJob<SyncWorker> _job;
+        private IBackgroundJob<SyncWorker> _syncJob;
         private ILogger<JobController> _log;
         #endregion
         
         #region Constructors
-        public JobController(ILogger<JobController> log, DataService db, IBackgroundJob<SyncWorker> job)
+        public JobController(
+            ILogger<JobController> log, 
+            DataService db, 
+            IBackgroundJob<SyncWorker> syncJob)
         {
             _log = log;
             _db = db;
-            _job = job;
+            _syncJob = syncJob;
         }
         #endregion
 
@@ -93,31 +96,26 @@ namespace WebSosync.Controllers
                 // Defaults
                 job.State = SosyncState.New;
                 job.Fetched = DateTime.Now.ToUniversalTime();
+                job.Last_Change = DateTime.Now.ToUniversalTime();
 
                 // Create the sync job, get it's ID into the result and start the job thread
                 _db.CreateJob(job);
                 result.JobID = job.Job_ID;
-                _job.Start();
 
+                // Try to push the job to Odoo
                 try
                 {
                     int odooId = odoo.Client.CreateModel<SyncJob>("sosync.job", job);
-
-                    if (job.Source_System == SosyncSystem.FSOnline)
-                    {
-                        job.Job_Fso_ID = odooId;
-                        _db.UpdateJob(job, x => x.Job_Fso_ID);
-                    }
-                    else
-                    {
-                        job.Job_Fs_ID = odooId;
-                        _db.UpdateJob(job, x => x.Job_Fs_ID);
-                    }
+                    job.Job_Fso_ID = odooId;
+                    _db.UpdateJob(job, x => x.Job_Fso_ID);
                 }
                 catch (Exception ex)
                 {
                     _log.LogError(ex.ToString());
                 }
+
+                // Start the sync background job
+                _syncJob.Start();
 
                 // Just return empty OK result
                 return new OkObjectResult(result);
