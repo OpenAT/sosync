@@ -1,5 +1,7 @@
-﻿using Odoo;
-using System.Xml;
+﻿using dadi_data;
+using Microsoft.Extensions.DependencyInjection;
+using Syncer.Services;
+using System;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -7,25 +9,30 @@ namespace Syncer.Workers
 {
     public class ProtocolWorker : WorkerBase
     {
+        #region Members
+        private IServiceProvider _svc;
+        private OdooService _odoo;
+        #endregion
+
         #region Constructors
-        public ProtocolWorker(SosyncOptions options)
+        public ProtocolWorker(IServiceProvider svc, SosyncOptions options)
             : base(options)
-        { }
+        {
+            _svc = svc;
+            _odoo = _svc.GetService<OdooService>();
+        }
         #endregion
 
         #region Methods
         public override void Start()
         {
-            using (var db = new DataService(Configuration))
+            using (var db = _svc.GetService<DataService>())
             {
-                var jobs = db.GetJobs(false);
+                var job = db.GetJob(79);
 
-                var client = new OdooClient($"http://{Configuration.Online_Host}/xmlrpc/2/", Configuration.Instance);
-                client.Authenticate(Configuration.Online_Sosync_User, Configuration.Online_Sosync_PW);
+                job.State = SosyncState.New;
 
-                //var job = client.GetModel<SyncJob>("sosync.job", 18);
-                //int id = client.CreateModel<SyncJob>("sosync.job", jobs[0]);
-                //jobs[0].Job_Fso_ID = id;
+                _odoo.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
             }
         }
         #endregion
