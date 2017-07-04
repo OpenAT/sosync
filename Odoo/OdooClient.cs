@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
@@ -68,7 +69,6 @@ namespace Odoo
         /// <returns>A new instance of <see cref="T"/>, filled with the returned data.</returns>
         public T GetModel<T>(string modelName, int id) where T: class
         {
-            // Apparently can't send context to model queries
             var context = new { lang = Language };
 
             var propertyList = typeof(T)
@@ -77,7 +77,34 @@ namespace Odoo
                 .Select(x => x.GetCustomAttribute<DataMemberAttribute>()?.Name ?? x.Name)
                 .ToArray();
 
-            var result = (T)_rpcObject.execute_kw<T>(Database, _uid, Password, modelName, "read", new int[] { id }, new { fields = propertyList, context = context });
+            var result = (T)_rpcObject.execute_kw<T>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "read",
+                new int[] { id },
+                new { fields = propertyList, context = context });
+
+            return result;
+        }
+
+        public int[] SearchModelByField<T, TProp>(string modelName, Expression<Func<T, TProp>> propertySelector, TProp value)
+        {
+            var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
+            var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
+            string propName = propAtt == null ? prop.Name : propAtt.Name;
+
+            var context = new { lang = Language };
+
+            var result = _rpcObject.execute_kw<int[]>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "search",
+                new object[] { new object[] { new object[] { propName, "=", value } } },
+                new { context = context });
 
             return result;
         }
@@ -92,7 +119,16 @@ namespace Odoo
         public int CreateModel<T>(string modelName, T model) where T: class
         {
             var context = new { lang = Language };
-            var result = (int)_rpcObject.execute_kw<int>(Database, _uid, Password, modelName, "create", new T[] { model }, new { context = context });
+
+            var result = (int)_rpcObject.execute_kw<int>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "create",
+                new T[] { model },
+                new { context = context });
+
             return result;
         }
 
@@ -105,7 +141,15 @@ namespace Odoo
         public bool UpdateModel<T>(string modelName, T model, int fsoId) where T: class
         {
             var context = new { lang = Language };
-            var result = _rpcObject.execute_kw<int>(Database, _uid, Password, modelName, "write", new object[] { new int[] { fsoId }, model, context });
+
+            var result = _rpcObject.execute_kw<int>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "write",
+                new object[] { new int[] { fsoId }, model, context });
+
             return result != 0;
         }
         #endregion
