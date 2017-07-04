@@ -62,7 +62,7 @@ namespace Odoo
         /// <summary>
         /// Gets the specified model from Odoo.
         /// </summary>
-        /// <typeparam name="T">Type to map the data to.</typeparam>
+        /// <typeparam name="T">Type used for mapping.</typeparam>
         /// <param name="modelName">The Odoo model name for the requested model.</param>
         /// <param name="id">The ID for the requested model.</param>
         /// <returns>A new instance of <see cref="T"/>, filled with the returned data.</returns>
@@ -82,10 +82,31 @@ namespace Odoo
             return result;
         }
 
+        /// <summary>
+        /// Creates the specified model in Odoo.
+        /// </summary>
+        /// <typeparam name="T">Type used for mapping.</typeparam>
+        /// <param name="modelName">The Odoo model name for the model to be created.</param>
+        /// <param name="model">The actual model with the data.</param>
+        /// <returns></returns>
         public int CreateModel<T>(string modelName, T model) where T: class
         {
-            var result = (int)_rpcObject.execute_kw<int>(Database, _uid, Password, modelName, "create", new T[] { model });
+            var context = new { lang = Language };
+            var result = (int)_rpcObject.execute_kw<int>(Database, _uid, Password, modelName, "create", new T[] { model }, new { context = context });
             return result;
+        }
+
+        /// <summary>
+        /// Updates the specified model in Odoo.
+        /// </summary>
+        /// <typeparam name="T">Type used for mapping.</typeparam>
+        /// <param name="modelName">The Odoo model name for the model to be updated.</param>
+        /// <param name="model">The actual model with the data.</param>
+        public bool UpdateModel<T>(string modelName, T model, int fsoId) where T: class
+        {
+            var context = new { lang = Language };
+            var result = _rpcObject.execute_kw<int>(Database, _uid, Password, modelName, "write", new object[] { new int[] { fsoId }, model, context });
+            return result != 0;
         }
         #endregion
 
