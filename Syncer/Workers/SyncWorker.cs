@@ -10,7 +10,7 @@ using WebSosync.Data.Extensions;
 using WebSosync.Data.Helpers;
 using WebSosync.Data.Models;
 
-namespace Syncer
+namespace Syncer.Workers
 {
     /// <summary>
     /// The sync worker represents the background thread, loading and processing jobs.

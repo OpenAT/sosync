@@ -3,7 +3,7 @@ using System.Xml;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
-namespace Syncer
+namespace Syncer.Workers
 {
     public class ProtocolWorker : WorkerBase
     {

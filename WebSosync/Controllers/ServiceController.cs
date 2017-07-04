@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using WebSosync.Models;
-using WebSosync.Enumerations;
-using WebSosync.Interfaces;
-using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using WebSosync.Services;
+using Syncer.Workers;
+using System;
 using WebSosync.Common.Interfaces;
-using Syncer;
-using WebSosync.Data;
+using WebSosync.Interfaces;
+using WebSosync.Models;
+using WebSosync.Services;
 
 namespace WebSosync.Controllers
 {

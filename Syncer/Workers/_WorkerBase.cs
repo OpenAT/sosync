@@ -5,7 +5,7 @@ using System.Threading;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data.Models;
 
-namespace Syncer
+namespace Syncer.Workers
 {
     public abstract class WorkerBase : IBackgroundJobWorker
     {

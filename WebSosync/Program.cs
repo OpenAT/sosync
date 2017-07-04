@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using Syncer;
+using Syncer.Workers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +17,6 @@ using WebSosync.Common.Enumerations;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
-using WebSosync.Enumerations;
 using WebSosync.Interfaces;
 
 namespace WebSosync

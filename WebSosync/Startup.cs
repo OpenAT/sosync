@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using Syncer;
+using Syncer.Workers;
 using System;
 using System.IO;
 using WebSosync.Common.Interfaces;

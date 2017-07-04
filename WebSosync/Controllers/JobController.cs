@@ -1,21 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Odoo;
+using Syncer.Workers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
-using WebSosync.Interfaces;
 using WebSosync.Models;
-using System.Reflection;
-using System.Runtime.Serialization;
-using WebSosync.Helpers;
 using WebSosync.Services;
-using WebSosync.Common.Interfaces;
-using Syncer;
-using Microsoft.Extensions.Logging;
-using Odoo;
 
 namespace WebSosync.Controllers
 {
