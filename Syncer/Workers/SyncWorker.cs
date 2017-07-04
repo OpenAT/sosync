@@ -12,6 +12,9 @@ using WebSosync.Data.Models;
 
 namespace Syncer
 {
+    /// <summary>
+    /// The sync worker represents the background thread, loading and processing jobs.
+    /// </summary>
     public class SyncWorker : WorkerBase
     {
         #region Constructors
