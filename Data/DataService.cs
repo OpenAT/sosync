@@ -94,14 +94,37 @@ namespace WebSosync.Data
         {
             if (onlyOpenJobs)
             {
-                var result = _con.Query<SyncJob>(Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect), commandTimeout: _cmdTimeoutSec).AsList();
+                var result = _con.Query<SyncJob>(
+                    Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect),
+                    commandTimeout: _cmdTimeoutSec)
+                    .AsList();
+
                 return result;
             }
             else
             {
-                var result = _con.Query<SyncJob>("select * from sync_table", commandTimeout: _cmdTimeoutSec).AsList();
+                var result = _con.Query<SyncJob>(
+                    "select * from sync_table",
+                    commandTimeout: _cmdTimeoutSec)
+                    .AsList();
+
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Returns the first unfinished parent job from the sync table and all its children
+        /// in the hierarchy as a flat list.
+        /// </summary>
+        /// <returns></returns>
+        public List<SyncJob> GetFirstOpenJobHierarchy()
+        {
+            var result = _con.Query<SyncJob>(
+                Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren),
+                commandTimeout: _cmdTimeoutSec)
+                .AsList();
+
+            return result;
         }
 
         /// <summary>

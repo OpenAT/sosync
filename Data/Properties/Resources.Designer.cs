@@ -84,6 +84,31 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to with recursive children as (
+        ///	-- roots
+        ///	select * from (
+        ///		select *
+        ///		from sync_table
+        ///		where parent_job_id is null and state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///		limit 1
+        ///	) as first_parent
+        ///
+        ///	union all
+        ///	
+        ///	-- children
+        ///	select child.*
+        ///	from sync_table as child
+        ///	inner join sync_table parent on child.parent_job_id = parent.job_id
+        ///)
+        ///select * from children;.
+        /// </summary>
+        internal static string GetFirstOpenSynJobAndChildren_SELECT {
+            get {
+                return ResourceManager.GetString("GetFirstOpenSynJobAndChildren_SELECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DO $$ 
         ///    BEGIN
         ///        BEGIN

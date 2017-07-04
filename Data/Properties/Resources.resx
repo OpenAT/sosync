@@ -133,6 +133,25 @@
 )
 select * from children;</value>
   </data>
+  <data name="GetFirstOpenSynJobAndChildren_SELECT" xml:space="preserve">
+    <value>with recursive children as (
+	-- roots
+	select * from (
+		select *
+		from sync_table
+		where parent_job_id is null and state in ('new', 'inprogress')
+		limit 1
+	) as first_parent
+
+	union all
+	
+	-- children
+	select child.*
+	from sync_table as child
+	inner join sync_table parent on child.parent_job_id = parent.job_id
+)
+select * from children;</value>
+  </data>
   <data name="SetupAddColumn_SCRIPT" xml:space="preserve">
     <value>DO $$ 
     BEGIN

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using WebSosync.Common.Interfaces;
@@ -34,30 +35,37 @@ namespace Syncer
             // then process that one hierarchy, rince and repeat until there is no open
             // job.
 
-            IList<SyncJob> jobs = null;
             using (var db = new DataService(Configuration))
             {
-                // Get all open jobs and build the job tree in memory
-                jobs = db.GetJobs(true).ToTree(
-                    x => x.Job_ID,
-                    x => x.Parent_Job_ID,
-                    x => x.Children);
-            }
+                // Get the first open job and its hierarchy,
+                // and build the tree in memory
+                var job = GetNextOpenJob(db);
 
-            // Now process all root jobs
-            foreach (var job in jobs)
-            {
-                // Process job here
-                System.Threading.Thread.Sleep(100);
-
-                // Stop processing the queue if cancellation was requested
-                if (CancellationToken.IsCancellationRequested)
+                while (job != null)
                 {
-                    // Raise the cancelling event
-                    RaiseCancelling();
-                    // Clean up here, if necessary
+
+                    // Stop processing the queue if cancellation was requested
+                    if (CancellationToken.IsCancellationRequested)
+                    {
+                        // Raise the cancelling event
+                        RaiseCancelling();
+                        // Clean up here, if necessary
+                    }
+
+                    job = GetNextOpenJob(db);
                 }
             }
+        }
+
+        private SyncJob GetNextOpenJob(DataService db)
+        {
+            var result = db.GetFirstOpenJobHierarchy().ToTree(
+                    x => x.Job_ID,
+                    x => x.Parent_Job_ID,
+                    x => x.Children)
+                    .SingleOrDefault();
+
+            return result;
         }
         #endregion
     }
