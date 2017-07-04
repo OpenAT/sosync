@@ -68,7 +68,7 @@ namespace XmlRpc
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(response.Content.ReadAsStringAsync().Result);
 
-                    result = GetXmlRpcResult(typeArgs[0], doc["methodResponse"]["params"]);
+                    result = GetXmlRpcResult(typeArgs[0], doc["methodResponse"]["params"]["param"]["value"]);
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace XmlRpc
             else if (t.IsArray && (t.GetElementType().GetTypeInfo().IsPrimitive || t.GetElementType() == typeof(string)))
             {
                 // Create and parse primitive type arrays
-                var nodes = e.ChildNodes;
+                var nodes = e["array"].ChildNodes.OfType<XmlNode>().Where(x => !string.IsNullOrEmpty(x.InnerText)).ToList();
                 var arr = Array.CreateInstance(t.GetElementType(), nodes.Count);
 
                 int i = 0;
@@ -158,7 +158,7 @@ namespace XmlRpc
                             name = att.Name;
 
                         XmlElement destElement = null;
-                        foreach (XmlElement childNode in e.FirstChild.FirstChild.FirstChild.ChildNodes)
+                        foreach (XmlNode childNode in e.FirstChild.ChildNodes)
                         {
                             if (childNode.FirstChild.LocalName == "name" && childNode.FirstChild.InnerText == name)
                             {
