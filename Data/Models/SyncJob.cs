@@ -5,6 +5,14 @@ using System.Text;
 
 namespace WebSosync.Data.Models
 {
+    /// <summary>
+    /// Represents a sync job of sosync. The data member attributes
+    /// specify the column names, which are used for the sync_table
+    /// aswell as for fso.
+    /// 
+    /// The ignore data member describe which columns will not b
+    /// transmitted to fso.
+    /// </summary>
     [DataContract(Name = "sync_table")]
     public class SyncJob
     {
@@ -53,6 +61,9 @@ namespace WebSosync.Data.Models
         /// </summary>
         [DataMember(Name = "error_code")]
         public string Error_Code { get; set; }
+
+        [DataMember(Name = "error_text")]
+        public string Error_Text { get; set; }
 
         [DataMember(Name = "parent_job_id")]
         public int? Parent_Job_ID { get; set; }
@@ -104,6 +115,10 @@ namespace WebSosync.Data.Models
 
         [DataMember(Name = "run_count")]
         public int Run_Count { get; set; }
+
+        [DataMember(Name = "last_change")]
+        [IgnoreDataMember]
+        public DateTime? Last_Change { get; set; }
 
         [IgnoreDataMember]
         public IList<SyncJob> Children { get; set; }
