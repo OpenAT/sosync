@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Odoo;
+using Syncer.Services;
 using Syncer.Workers;
 using System;
 using WebSosync.Common.Interfaces;
@@ -60,7 +61,11 @@ namespace WebSosync.Controllers
 
         // job/create
         [HttpGet("create")]
-        public IActionResult Get([FromQuery]SyncJobDto jobDto, [FromServices]SosyncOptions config, [FromServices]RequestValidator<SyncJobDto> validator)
+        public IActionResult Get(
+            [FromQuery]SyncJobDto jobDto,
+            [FromServices]SosyncOptions config,
+            [FromServices]RequestValidator<SyncJobDto> validator,
+            [FromServices]OdooService odoo)
         {
             JobResultDto result = new JobResultDto();
             validator.Configure(Request, ModelState);
@@ -96,9 +101,7 @@ namespace WebSosync.Controllers
 
                 try
                 {
-                    var client = new OdooClient($"http://{config.Online_Host}/xmlrpc/2/", config.Instance);
-                    client.Authenticate(config.Online_Sosync_User, config.Online_Sosync_PW);
-                    int odooId = client.CreateModel<SyncJob>("sosync.job", job);
+                    int odooId = odoo.Client.CreateModel<SyncJob>("sosync.job", job);
 
                     if (job.Source_System == SosyncSystem.FSOnline)
                     {
