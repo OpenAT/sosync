@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Syncer.Services;
 using System;
+using System.Linq;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -26,13 +27,11 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
-            using (var db = _svc.GetService<DataService>())
+            var id = _odoo.Client.SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, 100).SingleOrDefault();
+
+            if (id > 0)
             {
-                var job = db.GetJob(79);
-
-                job.State = SosyncState.New;
-
-                _odoo.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
+                var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
             }
         }
         #endregion
