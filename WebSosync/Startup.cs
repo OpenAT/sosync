@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Syncer.Processors;
+using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.IO;
@@ -102,6 +104,8 @@ namespace WebSosync
             // Transient services
             services.AddTransient<DataService>();
             services.AddTransient<GitService>();
+            services.AddTransient<OdooService>();
+            services.AddTransient<JobProcessor>();
         }
 
         /// <summary>

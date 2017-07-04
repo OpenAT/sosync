@@ -1,13 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Syncer.Processors;
+using Syncer.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Extensions;
-using WebSosync.Data.Helpers;
 using WebSosync.Data.Models;
 
 namespace Syncer.Workers
@@ -17,14 +15,20 @@ namespace Syncer.Workers
     /// </summary>
     public class SyncWorker : WorkerBase
     {
+        #region Members
+        private IServiceProvider _svc;
+        #endregion
+
         #region Constructors
         /// <summary>
         /// Creates a new instance of the <see cref="SyncWorker"/> class.
         /// </summary>
         /// <param name="options">Options to be used for data connections etc.</param>
-        public SyncWorker(SosyncOptions options)
+        public SyncWorker(IServiceProvider svc, SosyncOptions options)
             : base(options)
-        { }
+        {
+            _svc = svc;
+        }
         #endregion
 
         #region Methods
@@ -33,42 +37,39 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
-#warning TODO: At some point we want job priority.
-            // When that happens, change the datalayer to return a single job hierarchy,
-            // then process that one hierarchy, rince and repeat until there is no open
-            // job.
+            // Get only the first open job and its hierarchy,
+            // and build the tree in memory
+            var job = GetNextOpenJob();
 
-            using (var db = new DataService(Configuration))
+            while (job != null)
             {
-                // Get the first open job and its hierarchy,
-                // and build the tree in memory
-                var job = GetNextOpenJob(db);
+                var processor = _svc.GetService<JobProcessor>();
+                processor.Process(job);
 
-                while (job != null)
+                // Stop processing the queue if cancellation was requested
+                if (CancellationToken.IsCancellationRequested)
                 {
-
-                    // Stop processing the queue if cancellation was requested
-                    if (CancellationToken.IsCancellationRequested)
-                    {
-                        // Raise the cancelling event
-                        RaiseCancelling();
-                        // Clean up here, if necessary
-                    }
-
-                    job = GetNextOpenJob(db);
+                    // Raise the cancelling event
+                    RaiseCancelling();
+                    // Clean up here, if necessary
                 }
+
+                job = GetNextOpenJob();
             }
         }
 
-        private SyncJob GetNextOpenJob(DataService db)
+        private SyncJob GetNextOpenJob()
         {
-            var result = db.GetFirstOpenJobHierarchy().ToTree(
-                    x => x.Job_ID,
-                    x => x.Parent_Job_ID,
-                    x => x.Children)
-                    .SingleOrDefault();
+            using (var db = _svc.GetService<DataService>())
+            {
+                var result = db.GetFirstOpenJobHierarchy().ToTree(
+                        x => x.Job_ID,
+                        x => x.Parent_Job_ID,
+                        x => x.Children)
+                        .SingleOrDefault();
 
-            return result;
+                return result;
+            }
         }
         #endregion
     }
