@@ -84,6 +84,12 @@ namespace WebSosync.Data
 
             // Add column job_fso_id if not exists
             _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fso_id", "int null"), commandTimeout: _cmdTimeoutSec);
+
+            // Add column error_text if not exists
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "error_text", "text"), commandTimeout: _cmdTimeoutSec);
+
+            // Add column last_change if not exists
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "last_change", "timestamp without time zone null"), commandTimeout: _cmdTimeoutSec);
         }
 
         /// <summary>

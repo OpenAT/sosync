@@ -149,5 +149,22 @@ namespace WebSosync.Data.Properties {
                 return ResourceManager.GetString("SetupDatabase_SCRIPT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DO $$ 
+        ///    BEGIN
+        ///        BEGIN
+        ///            ALTER TABLE {0} DROP COLUMN {1};
+        ///        EXCEPTION
+        ///            WHEN undefined_column THEN RAISE NOTICE &apos;column {1} does not exist in {0}.&apos;;
+        ///        END;
+        ///    END;
+        ///$$.
+        /// </summary>
+        internal static string SetupDropColumn_SCRIPT {
+            get {
+                return ResourceManager.GetString("SetupDropColumn_SCRIPT", resourceCulture);
+            }
+        }
     }
 }
