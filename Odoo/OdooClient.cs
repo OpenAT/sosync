@@ -23,6 +23,9 @@ namespace Odoo
         public string User { get; set; }
         public string Password { get; set; }
         public string Language { get; set; }
+
+        public string LastRequestRaw { get; private set; }
+        public string LastResponseRaw { get; private set; }
         #endregion
 
         #region Constructors
@@ -58,6 +61,11 @@ namespace Odoo
             {
                 throw new UnauthorizedAccessException("Authentication failed.", ex);
             }
+            finally
+            {
+                LastRequestRaw = _rpcCommon.LastRequest;
+                LastResponseRaw = _rpcCommon.LastRepsonse;
+            }
         }
 
         /// <summary>
@@ -69,44 +77,69 @@ namespace Odoo
         /// <returns>A new instance of <see cref="T"/>, filled with the returned data.</returns>
         public T GetModel<T>(string modelName, int id) where T: class
         {
-            var context = new { lang = Language };
+            try
+            {
+                var context = new { lang = Language };
 
-            var propertyList = typeof(T)
-                .GetProperties()
-                .Where(x => x.GetCustomAttribute<IgnoreDataMemberAttribute>() == null)
-                .Select(x => x.GetCustomAttribute<DataMemberAttribute>()?.Name ?? x.Name)
-                .ToArray();
+                var propertyList = typeof(T)
+                    .GetProperties()
+                    .Where(x => x.GetCustomAttribute<IgnoreDataMemberAttribute>() == null)
+                    .Select(x => x.GetCustomAttribute<DataMemberAttribute>()?.Name ?? x.Name)
+                    .ToArray();
 
-            var result = (T)_rpcObject.execute_kw<T>(
-                Database,
-                _uid,
-                Password,
-                modelName,
-                "read",
-                new int[] { id },
-                new { fields = propertyList, context = context });
+                var result = (T)_rpcObject.execute_kw<T>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "read",
+                    new int[] { id },
+                    new { fields = propertyList, context = context });
 
-            return result;
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
         }
 
+        /// <summary>
+        /// Searches the specified model by a single property.
+        /// </summary>
+        /// <typeparam name="T">The class that represents the model.</typeparam>
+        /// <typeparam name="TProp">The property type to be queried.</typeparam>
+        /// <param name="modelName">The Odoo model name.</param>
+        /// <param name="propertySelector">The property selector for the value.</param>
+        /// <param name="value">The actual value to be queried.</param>
+        /// <returns></returns>
         public int[] SearchModelByField<T, TProp>(string modelName, Expression<Func<T, TProp>> propertySelector, TProp value)
         {
-            var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
-            var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
-            string propName = propAtt == null ? prop.Name : propAtt.Name;
+            try
+            {
+                var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
+                var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
+                string propName = propAtt == null ? prop.Name : propAtt.Name;
 
-            var context = new { lang = Language };
+                var context = new { lang = Language };
 
-            var result = _rpcObject.execute_kw<int[]>(
-                Database,
-                _uid,
-                Password,
-                modelName,
-                "search",
-                new object[] { new object[] { new object[] { propName, "=", value } } },
-                new { context = context });
+                var result = _rpcObject.execute_kw<int[]>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "search",
+                    new object[] { new object[] { new object[] { propName, "=", value } } },
+                    new { context = context });
 
-            return result;
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
         }
 
         /// <summary>
@@ -118,18 +151,26 @@ namespace Odoo
         /// <returns></returns>
         public int CreateModel<T>(string modelName, T model) where T: class
         {
-            var context = new { lang = Language };
+            try
+            {
+                var context = new { lang = Language };
 
-            var result = (int)_rpcObject.execute_kw<int>(
-                Database,
-                _uid,
-                Password,
-                modelName,
-                "create",
-                new T[] { model },
-                new { context = context });
+                var result = (int)_rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "create",
+                    new T[] { model },
+                    new { context = context });
 
-            return result;
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
         }
 
         /// <summary>
@@ -140,20 +181,26 @@ namespace Odoo
         /// <param name="model">The actual model with the data.</param>
         public bool UpdateModel<T>(string modelName, T model, int fsoId) where T: class
         {
-            var context = new { lang = Language };
+            try
+            {
+                var context = new { lang = Language };
 
-            var result = _rpcObject.execute_kw<int>(
-                Database,
-                _uid,
-                Password,
-                modelName,
-                "write",
-                new object[] { new int[] { fsoId }, model, context });
+                var result = _rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "write",
+                    new object[] { new int[] { fsoId }, model, context });
 
-            return result != 0;
+                return result != 0;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
         }
         #endregion
-
-
     }
 }

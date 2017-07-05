@@ -18,6 +18,8 @@ namespace XmlRpc
         public string RequestUri { get; set; }
         public string Address { get; set; }
         public bool DateTimeAsString { get; set; }
+        public string LastRequest { get; set; }
+        public string LastRepsonse { get; set; }
         #endregion
 
         public XmlRpcRawService(string requestUri, string address, bool datetimeAsString)
@@ -59,9 +61,25 @@ namespace XmlRpc
                 if (DateTimeAsString)
                     content.Replace("dateTime.iso8601", "string");
 
-                var response = client
-                    .PostAsync(RequestUri, new StringContent(content.ToString(), Encoding.UTF8, "application/xml"))
-                    .Result;
+                // Set the last request property before executing
+                LastRequest = content.ToString();
+
+                HttpResponseMessage response = null;
+                try
+                {
+#warning TODO: Remove
+                    throw new Exception("Test MKA");
+
+                    response = client
+                        .PostAsync(RequestUri, new StringContent(content.ToString(), Encoding.UTF8, "application/xml"))
+                        .Result;
+                }
+                finally
+                {
+                    // Always set the last response, if there actually is an response
+                    if (response != null)
+                        LastRepsonse = response.Content.ReadAsStringAsync().Result;
+                }
 
                 if (typeArgs.Count > 0)
                 {
