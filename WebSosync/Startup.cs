@@ -94,6 +94,7 @@ namespace WebSosync
             // Register singleton classes with DI container
             services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IConfiguration>(Configuration);
+            services.AddSingleton<FlowService>();
 
             RegisterBackgroundJob<SyncWorker>(services);
             RegisterBackgroundJob<ProtocolWorker>(services);
@@ -105,7 +106,23 @@ namespace WebSosync
             services.AddTransient<DataService>();
             services.AddTransient<GitService>();
             services.AddTransient<OdooService>();
-            services.AddTransient<JobProcessor>();
+
+            // Register all sync flow classes
+            RegisterFlows(services);
+        }
+
+        /// <summary>
+        /// Gets an instance of the <see cref="FlowService"/> class to query all sync flow
+        /// classes, and registers all sync flow classes with dependency injection.
+        /// </summary>
+        /// <param name="services">The service collection used to add new services.</param>
+        private void RegisterFlows(IServiceCollection services)
+        {
+            var svc = services.BuildServiceProvider();
+
+            var flowManager = svc.GetService<FlowService>();
+            foreach (var flowType in flowManager.FlowTypes)
+                services.AddTransient(flowType);
         }
 
         /// <summary>
