@@ -16,7 +16,7 @@ namespace Syncer.Workers
         #endregion
 
         #region Constructors
-        public ProtocolWorker(IServiceProvider svc, SosyncOptions options)
+        public ProtocolWorker(IServiceProvider svc, SosyncOptions options, FlowService flowManager)
             : base(options)
         {
             _svc = svc;
@@ -27,12 +27,12 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
-            var id = _odoo.Client.SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, 100).SingleOrDefault();
+            //var id = _odoo.Client.SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, 100).SingleOrDefault();
 
-            if (id > 0)
-            {
-                var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
-            }
+            //if (id > 0)
+            //{
+            //    var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
+            //}
         }
         #endregion
     }
