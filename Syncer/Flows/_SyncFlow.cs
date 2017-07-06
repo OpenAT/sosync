@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Syncer.Services;
 using System;
+using System.Threading;
 
 namespace Syncer.Flows
 {
@@ -14,6 +15,7 @@ namespace Syncer.Flows
         private IServiceProvider _svc;
         private OdooService _odoo;
         private ILogger<SyncFlow> _log;
+        private CancellationToken _cancelToken;
         #endregion
 
         #region Properties
@@ -30,6 +32,12 @@ namespace Syncer.Flows
         protected OdooService Odoo
         {
             get { return _odoo; }
+        }
+
+        public CancellationToken CancelToken
+        {
+            get { return _cancelToken; }
+            set { _cancelToken = value; }
         }
         #endregion
 
