@@ -37,7 +37,7 @@ namespace Syncer.Workers
             //    var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
             //}
 
-            var f = (SyncFlow)_svc.GetService(_flowManager.GetFlow("res.partner"));
+            var result = _odoo.Client.GetDictionary("res.partner", 1, new string[] { "id", "company_id", "write_date" });
         }
         #endregion
     }

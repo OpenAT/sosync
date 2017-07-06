@@ -105,6 +105,30 @@ namespace Odoo
             }
         }
 
+        public Dictionary<string, object> GetDictionary(string modelName, int id, string[] fields)
+        {
+            try
+            {
+                var context = new { lang = Language };
+
+                var result = (Dictionary<string, object>)_rpcObject.execute_kw<Dictionary<string, object>>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "read",
+                    new int[] { id },
+                    new { fields, context = context });
+
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
+        }
+
         /// <summary>
         /// Searches the specified model by a single property.
         /// </summary>

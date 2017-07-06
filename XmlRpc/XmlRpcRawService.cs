@@ -104,7 +104,30 @@ namespace XmlRpc
 
         private object GetXmlRpcResult(Type t, XmlElement e)
         {
-            if (t.GetTypeInfo().IsPrimitive || t == typeof(string) || (
+            if (t == typeof(Dictionary<string, object>))
+            {
+                var result = new Dictionary<string, object>();
+
+                foreach (XmlNode member in e.FirstChild.ChildNodes)
+                {
+                    if (member["value"].FirstChild.Name == "array")
+                    {
+                        var list = new List<object>();
+
+                        foreach (XmlNode arrEntry in member["value"]["array"]["data"])
+                            list.Add(arrEntry.InnerText);
+
+                        result.Add(member["name"].InnerText, list);
+                    }
+                    else
+                    {
+                        result.Add(member["name"].InnerText, member["value"].InnerText);
+                    }
+                }
+
+                return result;
+            }
+            else if (t.GetTypeInfo().IsPrimitive || t == typeof(string) || (
                 t.GetTypeInfo().IsGenericType
                 && t.GetGenericTypeDefinition() == typeof(Nullable<>)
                 && t.GetGenericArguments().Any(x => x.GetTypeInfo().IsValueType && x.GetTypeInfo().IsPrimitive)
