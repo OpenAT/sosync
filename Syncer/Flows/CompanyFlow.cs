@@ -19,14 +19,14 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
-        {
-            // Has no requirements
-        }
-
         protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
         {
-            // Has no requirements
+            // No requirements
+        }
+
+        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        {
+            // No requirements
         }
         #endregion
     }

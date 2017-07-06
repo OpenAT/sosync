@@ -20,13 +20,17 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
         {
+            // Before a partner can be synced to studio, the
+            // res.company must be synced first
             RequireModel(SosyncSystem.FSOnline, "res.company", 0);
         }
 
-        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
+        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
         {
+            // Before a partner can be synced to online, the
+            // dboxBPKAccount must be synced first
             RequireModel(SosyncSystem.FundraisingStudio, "dboxBPKAccount", 0);
         }
         #endregion

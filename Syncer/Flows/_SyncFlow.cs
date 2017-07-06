@@ -65,6 +65,8 @@ namespace Syncer.Flows
         #region Methods
         /// <summary>
         /// Configure the flow for the sync direction online to studio.
+        /// This configuration can at some point be read from meta data
+        /// from fs online.
         /// </summary>
         /// <param name="job">The sync job.</param>
         protected abstract void ConfigureOnlineToStudio(SyncJob job);
@@ -85,8 +87,9 @@ namespace Syncer.Flows
             try
             {
 
+
                 // 1) Throws and exception, if the run count reaches/exceeds maximum
-                CheckRunCount(job, 5);
+                CheckRunCount(job, 20);
 
                 // 2) Check if child jobs are there, or create them
 
@@ -112,10 +115,9 @@ namespace Syncer.Flows
             }
         }
 
-        protected SyncFlow RequireModel(string system, string model, int id)
+        protected void RequireModel(string system, string model, int id)
         {
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
-            return this;
         }
 
         /// <summary>
