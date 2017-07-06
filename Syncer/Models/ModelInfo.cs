@@ -8,6 +8,11 @@ namespace Syncer.Models
     {
         #region Properties
         /// <summary>
+        /// The ID for the model.
+        /// </summary>
+        public int ID { get; set; }
+
+        /// <summary>
         /// The referenced ID for the model in the foreign system.
         /// </summary>
         public int? ForeignID { get; set; }
@@ -19,8 +24,9 @@ namespace Syncer.Models
         #endregion
 
         #region Constructor
-        public ModelInfo(int? foreignID, DateTime? writeDate)
+        public ModelInfo(int id, int? foreignID, DateTime? writeDate)
         {
+            ID = id;
             ForeignID = foreignID;
             WriteDate = writeDate;
         }
