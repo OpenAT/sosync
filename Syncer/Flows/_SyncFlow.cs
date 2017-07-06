@@ -2,8 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
+using Syncer.Models;
 using Syncer.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using WebSosync.Data;
@@ -21,6 +23,9 @@ namespace Syncer.Flows
         private OdooService _odoo;
         private ILogger<SyncFlow> _log;
         private CancellationToken _cancelToken;
+
+        private List<ChildJobRequest> _requiredChildJobs;
+        private SyncJob _job;
         #endregion
 
         #region Properties
@@ -52,15 +57,34 @@ namespace Syncer.Flows
             _svc = svc;
             _log = _svc.GetService<ILogger<SyncFlow>>();
             _odoo = _svc.GetService<OdooService>();
+
+            _requiredChildJobs = new List<ChildJobRequest>();
         }
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Configure the flow for the sync direction online to studio.
+        /// </summary>
+        /// <param name="job">The sync job.</param>
+        protected abstract void ConfigureOnlineToStudio(SyncJob job);
+
+        /// <summary>
+        /// Configure the flow for the sync direction studio to online.
+        /// </summary>
+        /// <param name="job">The sync job.</param>
+        protected abstract void ConfigureStudioToOnline(SyncJob job);
+
+        /// <summary>
+        /// Starts the data flow.
+        /// </summary>
+        /// <param name="job"></param>
         public void Start(SyncJob job)
         {
             UpdateJobStart(job);
             try
             {
+
                 // 1) Throws and exception, if the run count reaches/exceeds maximum
                 CheckRunCount(job, 5);
 
@@ -88,6 +112,12 @@ namespace Syncer.Flows
             }
         }
 
+        protected SyncFlow RequireModel(string system, string model, int id)
+        {
+            _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
+            return this;
+        }
+
         /// <summary>
         /// Checks the current run_count value of the job against the
         /// specified maximum value. Throws an <see cref="RunCountException"/>
@@ -107,6 +137,8 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobStart(SyncJob job)
         {
+            _log.LogInformation($"Updating job {job.Job_ID}: job start");
+
             using (var db = _svc.GetService<DataService>())
             {
                 job.Job_State = SosyncState.InProgress;
@@ -125,6 +157,8 @@ namespace Syncer.Flows
         /// <param name="job"></param>
         private void UpdateJobSuccess(SyncJob job)
         {
+            _log.LogInformation($"Updating job {job.Job_ID}: job success");
+
             using (var db = _svc.GetService<DataService>())
             {
                 job.Job_State = SosyncState.Done;
@@ -143,6 +177,8 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         private void UpdateJobError(SyncJob job, string errorCode, string errorText)
         {
+            _log.LogInformation($"Updating job {job.Job_ID}: job error");
+
             using (var db = _svc.GetService<DataService>())
             {
                 job.Job_State = SosyncState.Error;
@@ -161,6 +197,8 @@ namespace Syncer.Flows
         /// <param name="job">The job to be synchronized.</param>
         private void UpdateJobFso(SyncJob job)
         {
+            _log.LogInformation($"Synchronizing job {job.Job_ID} to FSOnline");
+
             if (job.Job_Fso_ID.HasValue)
             {
                 // If job_fso_id is already known, just update fso

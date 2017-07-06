@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Syncer.Models;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -13,6 +15,18 @@ namespace Syncer.Flows
         public CompanyFlow(IServiceProvider svc)
             : base(svc)
         {
+        }
+        #endregion
+
+        #region Methods
+        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        {
+            // Has no requirements
+        }
+
+        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
+        {
+            // Has no requirements
         }
         #endregion
     }

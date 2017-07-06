@@ -1,7 +1,10 @@
 ﻿using Syncer.Attributes;
+using Syncer.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using WebSosync.Data;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -13,6 +16,18 @@ namespace Syncer.Flows
         public PartnerFlow(IServiceProvider svc)
             : base(svc)
         {
+        }
+        #endregion
+
+        #region Methods
+        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        {
+            RequireModel(SosyncSystem.FSOnline, "res.company", 0);
+        }
+
+        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
+        {
+            RequireModel(SosyncSystem.FundraisingStudio, "dboxBPKAccount", 0);
         }
         #endregion
     }
