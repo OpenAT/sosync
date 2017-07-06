@@ -19,6 +19,16 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected override DateTime? GetOnlineWriteDate(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override DateTime? GetStudioWriteDate(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
         {
             // No requirements

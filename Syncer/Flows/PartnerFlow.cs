@@ -20,6 +20,24 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected override DateTime? GetOnlineWriteDate(int id)
+        {
+            // return the write with odoo client
+            return null;
+        }
+
+        protected override DateTime? GetStudioWriteDate(int id)
+        {
+            // Read write date of
+            // - Person
+            // - PersonAdresse
+            // - PersonEmail
+            // - ...
+
+            // Return the most recent write date
+            return null;
+        }
+
         protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
         {
             // Before a partner can be synced to studio, the

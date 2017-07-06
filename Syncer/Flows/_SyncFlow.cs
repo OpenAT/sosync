@@ -1,5 +1,4 @@
-﻿using dadi_data;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
 using Syncer.Models;
@@ -25,7 +24,6 @@ namespace Syncer.Flows
         private CancellationToken _cancelToken;
 
         private List<ChildJobRequest> _requiredChildJobs;
-        private SyncJob _job;
         #endregion
 
         #region Properties
@@ -63,6 +61,20 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Get the write date for the model in online.
+        /// </summary>
+        /// <param name="id">The ID for the model.</param>
+        /// <returns></returns>
+        protected abstract DateTime? GetOnlineWriteDate(int id);
+
+        /// <summary>
+        /// Get the write date for the model in studio.
+        /// </summary>
+        /// <param name="id">The ID for the model.</param>
+        /// <returns></returns>
+        protected abstract DateTime? GetStudioWriteDate(int id);
+
         /// <summary>
         /// Configure the flow for the sync direction online to studio.
         /// This configuration can at some point be read from meta data
