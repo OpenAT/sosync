@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -81,13 +83,27 @@ namespace Syncer.Flows
         /// from fs online.
         /// </summary>
         /// <param name="job">The sync job.</param>
-        protected abstract void ConfigureOnlineToStudio(SyncJob job);
+        protected abstract void ConfigureOnlineToStudio(int onlineID);
 
         /// <summary>
         /// Configure the flow for the sync direction studio to online.
         /// </summary>
         /// <param name="job">The sync job.</param>
-        protected abstract void ConfigureStudioToOnline(SyncJob job);
+        protected abstract void ConfigureStudioToOnline(int studioID);
+
+        /// <summary>
+        /// Read the studio model with the given ID and transform it
+        /// to an online model. Ensure transactional behaviour.
+        /// </summary>
+        /// <param name="studioID">The ID of the studio model to be loaded.</param>
+        protected abstract void TransformToOnline(int studioID);
+
+        /// <summary>
+        /// Read the online model with the given ID and transform it
+        /// to a studio model. Ensure transactional behaviour.
+        /// </summary>
+        /// <param name="onlineID">The ID of the online model to be loaded.</param>
+        protected abstract void TransformToStudio(int onlineID);
 
         /// <summary>
         /// Starts the data flow.
@@ -98,26 +114,49 @@ namespace Syncer.Flows
             UpdateJobStart(job);
             try
             {
+                // -----------------------------------------------------------------------
                 // 1) First off, check run count (and eventually throw exception)
+                // -----------------------------------------------------------------------
                 CheckRunCount(job, 20);
 
-                // 2) Now determine the direction and remember for later comparison
-                
+                // -----------------------------------------------------------------------
+                // 2) Determine the sync direction and update the job
+                // -----------------------------------------------------------------------
+                SetSyncSource(job);
 
-                // 3) Process child jobs
-                foreach (var childJob in job.Children)
+                if (string.IsNullOrEmpty(job.Sync_Source_System))
                 {
-                    //Process(childJob);
+                    // If the source system could not be determined,
+                    // the model was up to date in both systems. Close
+                    // the job, and stop this flow
+                    UpdateJobSuccess(job, true);
+                    return;
                 }
 
+                // -----------------------------------------------------------------------
+                // 3) Now check the child jobs
+                // -----------------------------------------------------------------------
+
+                // The child job configuration depends on the sync direction.
+                // The derived sync flow is responsible to provide this
+                // configuration.
+
+                if (job.Sync_Source_System == SosyncSystem.FSOnline)
+                    ConfigureOnlineToStudio(job.Sync_Source_Record_ID.Value);
+                else
+                    ConfigureStudioToOnline(job.Sync_Source_Record_ID.Value);
+
+                // After configuration, we know which child jobs are required.
+                // Now check and set them up accordingly.
+
+
+
+                // -----------------------------------------------------------------------
                 // 4) Read write dates of both models
+                // -----------------------------------------------------------------------
 
 
-
-                //if (_rnd.Next(1, 10) <= 3)
-                //    throw new Exception("Simulated exception with 30% chance.");
-
-                UpdateJobSuccess(job);
+                UpdateJobSuccess(job, false);
             }
             catch (Exception ex)
             {
@@ -143,7 +182,58 @@ namespace Syncer.Flows
                 throw new RunCountException(job.Job_Run_Count, maxRuns);
         }
 
-        private void UpdateJobSource(SyncJob job, string system, string model, int id)
+        /// <summary>
+        /// Reads the write dates and foreign ids for both models (if possible)
+        /// and compares the write dates to determine the sync direction.
+        /// </summary>
+        /// <param name="job">The job to be updated with the sync source.</param>
+        private void SetSyncSource(SyncJob job)
+        {
+            ModelInfo onlineInfo = null;
+            ModelInfo studioInfo = null;
+
+            if (job.Job_Source_System == SosyncSystem.FSOnline)
+            {
+                onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
+
+                if (onlineInfo.ForeignID != null)
+                    studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
+            }
+            else
+            {
+                studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
+
+                if (studioInfo.ForeignID != null)
+                    onlineInfo = GetStudioInfo(studioInfo.ForeignID.Value);
+            }
+
+            if (onlineInfo != null && studioInfo != null)
+            {
+                var toleranceMS = 1000;
+
+                // Both systems already have the model, check write date
+                var diff = onlineInfo.WriteDate.Value - studioInfo.WriteDate.Value;
+                if (Math.Abs(diff.Milliseconds) < toleranceMS)
+                {
+                    // Both models are within tolerance, and considered up to date.
+                    UpdateJobSource(job, "", "", null, "Model up to date.");
+                }
+                else if(diff.Milliseconds < 0)
+                {
+                    // The studio model was newer
+                    var att = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, studioInfo.ID, "");
+                }
+                else
+                {
+                    // The online model was newer
+                    var att = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, onlineInfo.ID, "");
+                }
+            }
+        }
+
+        private void UpdateJobSource(SyncJob job, string system, string model, int? id, string log)
         {
             _log.LogInformation($"Updating job {job.Job_ID}: check source");
 
@@ -152,6 +242,7 @@ namespace Syncer.Flows
                 job.Sync_Source_System = system;
                 job.Sync_Source_Model = model;
                 job.Sync_Source_Record_ID = id;
+                job.Job_Log = log;
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
             }
@@ -182,9 +273,9 @@ namespace Syncer.Flows
         /// done successfully.
         /// </summary>
         /// <param name="job"></param>
-        private void UpdateJobSuccess(SyncJob job)
+        private void UpdateJobSuccess(SyncJob job, bool wasInSync)
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: job success");
+            _log.LogInformation($"Updating job {job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = _svc.GetService<DataService>())
             {

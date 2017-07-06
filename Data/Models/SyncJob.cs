@@ -117,7 +117,7 @@ namespace WebSosync.Data.Models
         public string Sync_Source_Model { get; set; }
 
         [DataMember(Name = "sync_source_record_id")]
-        public int Sync_Source_Record_ID { get; set; }
+        public int? Sync_Source_Record_ID { get; set; }
 
         // Synchronization target
 

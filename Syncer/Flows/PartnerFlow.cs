@@ -22,34 +22,58 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            // return the write with odoo client
+            // Get and return the foreign id and write date for the res.partner
             return null;
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
+            // Read the foreign id from dboPerson
+
             // Read write date of
-            // - Person
-            // - PersonAdresse
-            // - PersonEmail
+            // - dboPerson
+            // - dboPersonAdresse
+            // - dboPersonEmail
             // - ...
 
-            // Return the most recent write date
+            // Return the foreign id and the most recent write date
             return null;
         }
 
-        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
+        protected override void ConfigureOnlineToStudio(int onlineID)
         {
-            // Before a partner can be synced to studio, the
-            // res.company must be synced first
-            RequireModel(SosyncSystem.FSOnline, "res.company", 0);
+            // Since this is a partner flow, onlineID represents the
+            // res.partner id.
+
+            // Use that partner id to get the company id
+            var companyID = 0;
+
+            // Tell the sync flow base, that we require that specific
+            // company
+            RequireModel(SosyncSystem.FSOnline, "res.company", companyID);
         }
 
-        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        protected override void ConfigureStudioToOnline(int studioID)
         {
-            // Before a partner can be synced to online, the
-            // dboxBPKAccount must be synced first
-            RequireModel(SosyncSystem.FundraisingStudio, "dboxBPKAccount", 0);
+            // Since this is a partner flow, onlineID represents the
+            // dboPerson id.
+
+            // Use the person id to get the xBPKAccount id
+            var bpkAccount = 0;
+
+            RequireModel(SosyncSystem.FundraisingStudio, "dboxBPKAccount", bpkAccount);
+        }
+
+        protected override void TransformToOnline(int studioID)
+        {
+            // Load studio model, save it to online
+            throw new NotImplementedException();
+        }
+
+        protected override void TransformToStudio(int onlineID)
+        {
+            // Load online model, save it to studio
+            throw new NotImplementedException();
         }
         #endregion
     }
