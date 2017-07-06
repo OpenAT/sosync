@@ -22,8 +22,12 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            // Get and return the foreign id and write date for the res.partner
-            return null;
+            var dic = Odoo.Client.GetDictionary("res.partner", 1, new string[] { "id", "fs_id", "write_date" });
+
+            if (!string.IsNullOrEmpty((string)dic["fs_id"]))
+                return new ModelInfo(onlineID, int.Parse((string)dic["fs_id"]), DateTime.Parse((string)dic["write_date"]));
+            else
+                return new ModelInfo(onlineID, null, DateTime.Parse((string)dic["write_date"]));
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -37,6 +41,9 @@ namespace Syncer.Flows
             // - ...
 
             // Return the foreign id and the most recent write date
+
+            
+
             return null;
         }
 
