@@ -64,16 +64,16 @@ namespace Syncer.Flows
         /// <summary>
         /// Get the write date for the model in online.
         /// </summary>
-        /// <param name="id">The ID for the model.</param>
+        /// <param name="onlineID">The ID for the model.</param>
         /// <returns></returns>
-        protected abstract DateTime? GetOnlineWriteDate(int id);
+        protected abstract ModelInfo GetOnlineInfo(int onlineID);
 
         /// <summary>
         /// Get the write date for the model in studio.
         /// </summary>
-        /// <param name="id">The ID for the model.</param>
+        /// <param name="studioID">The ID for the model.</param>
         /// <returns></returns>
-        protected abstract DateTime? GetStudioWriteDate(int id);
+        protected abstract ModelInfo GetStudioInfo(int studioID);
 
         /// <summary>
         /// Configure the flow for the sync direction online to studio.
@@ -98,13 +98,11 @@ namespace Syncer.Flows
             UpdateJobStart(job);
             try
             {
-
-
-                // 1) Throws and exception, if the run count reaches/exceeds maximum
+                // 1) First off, check run count (and eventually throw exception)
                 CheckRunCount(job, 20);
 
-                // 2) Check if child jobs are there, or create them
-
+                // 2) Now determine the direction and remember for later comparison
+                
 
                 // 3) Process child jobs
                 foreach (var childJob in job.Children)
@@ -143,6 +141,21 @@ namespace Syncer.Flows
         {
             if (job.Job_Run_Count >= maxRuns)
                 throw new RunCountException(job.Job_Run_Count, maxRuns);
+        }
+
+        private void UpdateJobSource(SyncJob job, string system, string model, int id)
+        {
+            _log.LogInformation($"Updating job {job.Job_ID}: check source");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Sync_Source_System = system;
+                job.Sync_Source_Model = model;
+                job.Sync_Source_Record_ID = id;
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(job);
+            }
+            UpdateJobFso(job);
         }
 
         /// <summary>

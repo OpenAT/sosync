@@ -19,12 +19,12 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override DateTime? GetOnlineWriteDate(int id)
+        protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             throw new NotImplementedException();
         }
 
-        protected override DateTime? GetStudioWriteDate(int id)
+        protected override ModelInfo GetStudioInfo(int studioID)
         {
             throw new NotImplementedException();
         }

@@ -20,13 +20,13 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override DateTime? GetOnlineWriteDate(int id)
+        protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             // return the write with odoo client
             return null;
         }
 
-        protected override DateTime? GetStudioWriteDate(int id)
+        protected override ModelInfo GetStudioInfo(int studioID)
         {
             // Read write date of
             // - Person
