@@ -7,11 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using Syncer.Processors;
+using Syncer.Attributes;
+using Syncer.Exceptions;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.IO;
+using System.Reflection;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -119,10 +121,30 @@ namespace WebSosync
         private void RegisterFlows(IServiceCollection services)
         {
             var svc = services.BuildServiceProvider();
-
             var flowManager = svc.GetService<FlowService>();
+
             foreach (var flowType in flowManager.FlowTypes)
+            {
+                CheckFlowType(flowType);
                 services.AddTransient(flowType);
+            }
+        }
+
+        /// <summary>
+        /// Checks a given type for the two required syncer attributes. If any attribute
+        /// is missing, throw an exception.
+        /// </summary>
+        /// <param name="flowType"></param>
+        private void CheckFlowType(Type flowType)
+        {
+            var attOnline = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+            var attStudio = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+
+            if (attOnline == null)
+                throw new MissingAttributeException(flowType.Name, nameof(OnlineModelAttribute));
+
+            if (attStudio == null)
+                throw new MissingAttributeException(flowType.Name, nameof(StudioModelAttribute));
         }
 
         /// <summary>
