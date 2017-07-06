@@ -66,7 +66,7 @@ namespace WebSosync.Data.Properties {
         ///	-- roots
         ///	select *
         ///	from sync_table
-        ///	where parent_job_id is null and state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///	where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
         ///
         ///	union all
         ///	
@@ -89,7 +89,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sync_table
-        ///		where parent_job_id is null and state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
         ///		limit 1
         ///	) as first_parent
         ///
@@ -128,21 +128,25 @@ namespace WebSosync.Data.Properties {
         /// <summary>
         ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
         ///(
+        /// -- SyncJob
         ///  job_id serial,
-        ///  job_date timestamp without time zone NOT NULL,
-        ///  fetched timestamp without time zone,
-        ///  start timestamp without time zone,
-        ///  &quot;end&quot; timestamp without time zone,
-        ///  state text NOT NULL,
-        ///  error_code text,
-        ///  parent_job_id integer,
-        ///  child_start timestamp without time zone,
-        ///  child_end timestamp without time zone,
-        ///  source_system text NOT NULL,
-        ///  source_model text NOT NULL,
-        ///  source_record_id integer NOT NULL,
-        ///  target_system text,
-        ///  targ [rest of string was truncated]&quot;;.
+        ///  job_date timestamp without time zone not null,
+        ///  
+        ///  -- Sosync only
+        ///  job_fs_id integer,
+        ///  job_fso_id integer,
+        ///  job_last_change timestamp without time zone,
+        ///  
+        ///  -- SyncJob source
+        ///  job_source_system text,
+        ///  job_source_model text,
+        ///  job_source_record_id integer not null,
+        ///  
+        ///  -- SyncJob info
+        ///  job_fetched timestamp without time zone,
+        ///  job_start timestamp without time zone,
+        ///  job_end timestamp without time zone,
+        ///  run [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetupDatabase_SCRIPT {
             get {

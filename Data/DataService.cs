@@ -77,19 +77,36 @@ namespace WebSosync.Data
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
-            var syncTable = "sync_table";
+            // To modify the sync table in production
+            // AddColumnIfNotExists("col_name", "col_type");
+            // DropColumnIfExists("col_name");
+        }
 
-            // Add column job_fs_id if not exists
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fs_id", "int null"), commandTimeout: _cmdTimeoutSec);
+        /// <summary>
+        /// Used for database setup, in case new columns are needed in production.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <param name="dataType">The pgSQL data type.</param>
+        private void AddColumnIfNotExists(string column, string dataType)
+        {
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), "sync_table", column, dataType), commandTimeout: _cmdTimeoutSec);
+        }
 
-            // Add column job_fso_id if not exists
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "job_fso_id", "int null"), commandTimeout: _cmdTimeoutSec);
+        /// <summary>
+        /// Used for database setup, in case a column needs to be dropped from production
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        private void DropColumnIfExists(string column)
+        {
+            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupDropColumnScript), "sync_table", column), commandTimeout: _cmdTimeoutSec);
+        }
 
-            // Add column error_text if not exists
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "error_text", "text"), commandTimeout: _cmdTimeoutSec);
-
-            // Add column last_change if not exists
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), syncTable, "last_change", "timestamp without time zone null"), commandTimeout: _cmdTimeoutSec);
+        /// <summary>
+        /// Drops the sync_table. Never do this in production!
+        /// </summary>
+        private void DestroyDatabase()
+        {
+            _con.Execute("drop table sync_table;", commandTimeout: _cmdTimeoutSec);
         }
 
         /// <summary>

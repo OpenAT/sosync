@@ -122,7 +122,7 @@
 	-- roots
 	select *
 	from sync_table
-	where parent_job_id is null and state in ('new', 'inprogress')
+	where parent_job_id is null and job_state in ('new', 'inprogress')
 
 	union all
 	
@@ -139,7 +139,7 @@ select * from children;</value>
 	select * from (
 		select *
 		from sync_table
-		where parent_job_id is null and state in ('new', 'inprogress')
+		where parent_job_id is null and job_state in ('new', 'inprogress')
 		limit 1
 	) as first_parent
 
@@ -166,32 +166,60 @@ $$</value>
   <data name="SetupDatabase_SCRIPT" xml:space="preserve">
     <value>CREATE TABLE IF NOT EXISTS sync_table
 (
+ -- SyncJob
   job_id serial,
-  job_date timestamp without time zone NOT NULL,
-  fetched timestamp without time zone,
-  start timestamp without time zone,
-  "end" timestamp without time zone,
-  state text NOT NULL,
-  error_code text,
+  job_date timestamp without time zone not null,
+  
+  -- Sosync only
+  job_fs_id integer,
+  job_fso_id integer,
+  job_last_change timestamp without time zone,
+  
+  -- SyncJob source
+  job_source_system text,
+  job_source_model text,
+  job_source_record_id integer not null,
+  
+  -- SyncJob info
+  job_fetched timestamp without time zone,
+  job_start timestamp without time zone,
+  job_end timestamp without time zone,
+  run_count integer not null default 0,
+  job_state text not null,
+  job_error_code text,
+  job_error_error text,
+  job_log text,
+  
+  -- Parent job_child_end
   parent_job_id integer,
-  child_start timestamp without time zone,
-  child_end timestamp without time zone,
-  source_system text NOT NULL,
-  source_model text NOT NULL,
-  source_record_id integer NOT NULL,
-  target_system text,
-  target_model text,
-  target_record_id integer,
-  source_data text,
-  target_request text,
-  target_request_start timestamp without time zone,
-  target_request_end timestamp without time zone,
-  target_request_answer text,
-  run_count integer NOT NULL default 0,
-  CONSTRAINT synctable_primary_key PRIMARY KEY (job_id)
+
+  -- Child jobs processing time
+  job_child_start timestamp without time zone,
+  job_child_end timestamp without time zone,
+  
+  -- Synchronization source
+  sync_source_system text not null,
+  sync_source_model text not null,
+  sync_source_record_id integer not null,
+
+  -- Synchronization target
+  sync_target_system text not null,
+  sync_target_model text not null,
+  sync_target_record_id integer not null,
+  
+  -- Synchronization info
+  sync_source_data text,
+  sync_target_request text,
+  sync_target_answer text,
+
+  -- Synchronization processing time
+  sync_start timestamp without time zone,
+  sync_end timestamp without time zone,
+
+  constraint synctable_primary_key primary key(job_id)
 )
-WITH (
-  OIDS=FALSE
+with (
+  OIDS=false
 );</value>
   </data>
   <data name="SetupDropColumn_SCRIPT" xml:space="preserve">
