@@ -67,9 +67,6 @@ namespace XmlRpc
                 HttpResponseMessage response = null;
                 try
                 {
-#warning TODO: Remove
-                    throw new Exception("Test MKA");
-
                     response = client
                         .PostAsync(RequestUri, new StringContent(content.ToString(), Encoding.UTF8, "application/xml"))
                         .Result;
