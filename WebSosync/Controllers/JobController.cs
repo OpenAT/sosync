@@ -94,9 +94,9 @@ namespace WebSosync.Controllers
                 var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
 
                 // Defaults
-                job.State = SosyncState.New;
-                job.Fetched = DateTime.Now.ToUniversalTime();
-                job.Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_State = SosyncState.New;
+                job.Job_Fetched = DateTime.Now.ToUniversalTime();
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
                 // Create the sync job, get it's ID into the result and start the job thread
                 _db.CreateJob(job);

@@ -78,8 +78,8 @@ namespace Syncer.Processors
         /// <param name="maxRuns">The number of runs upon an exception is raised.</param>
         private void CheckRunCount(SyncJob job, int maxRuns)
         {
-            if (job.Run_Count >= maxRuns)
-                throw new RunCountException(job.Run_Count, maxRuns);
+            if (job.Job_Run_Count >= maxRuns)
+                throw new RunCountException(job.Job_Run_Count, maxRuns);
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace Syncer.Processors
         {
             using (var db = _svc.GetService<DataService>())
             {
-                job.State = SosyncState.InProgress;
-                job.Start = DateTime.Now.ToUniversalTime();
-                job.Run_Count += 1;
-                job.Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_State = SosyncState.InProgress;
+                job.Job_Start = DateTime.Now.ToUniversalTime();
+                job.Job_Run_Count += 1;
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);
@@ -108,9 +108,9 @@ namespace Syncer.Processors
         {
             using (var db = _svc.GetService<DataService>())
             {
-                job.State = SosyncState.Done;
-                job.End = DateTime.Now.ToUniversalTime();
-                job.Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_State = SosyncState.Done;
+                job.Job_End = DateTime.Now.ToUniversalTime();
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);
@@ -126,11 +126,11 @@ namespace Syncer.Processors
         {
             using (var db = _svc.GetService<DataService>())
             {
-                job.State = SosyncState.Error;
-                job.End = DateTime.Now.ToUniversalTime();
-                job.Error_Code = errorCode;
-                job.Error_Text = errorText;
-                job.Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_State = SosyncState.Error;
+                job.Job_End = DateTime.Now.ToUniversalTime();
+                job.Job_Error_Code = errorCode;
+                job.Job_Error_Text = errorText;
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);

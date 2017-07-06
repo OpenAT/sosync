@@ -24,11 +24,7 @@ namespace WebSosync.Data.Models
         #endregion
 
         #region Properties
-        /// <summary>
-        /// The sync job ID in the source system.
-        /// </summary>
-        [DataMember(Name = "job_id")]
-        public int Job_ID { get; set; }
+        // Sosync only
 
         [DataMember(Name = "job_fs_id")]
         [IgnoreDataMember]
@@ -38,90 +34,123 @@ namespace WebSosync.Data.Models
         [IgnoreDataMember]
         public int? Job_Fso_ID { get; set; }
 
+        [DataMember(Name = "job_last_change")]
+        [IgnoreDataMember]
+        public DateTime? Job_Last_Change { get; set; }
+
+        [IgnoreDataMember]
+        public List<SyncJob> Children { get; set; }
+        
+        // SyncJob
+
+        [DataMember(Name = "job_id")]
+        public int Job_ID { get; set; }
+
         [DataMember(Name = "job_date")]
         public DateTime Job_Date { get; set; }
 
-        [DataMember(Name = "fetched")]
-        public DateTime? Fetched { get; set; }
+        // SyncJob source
 
-        [DataMember(Name = "start")]
-        public DateTime? Start { get; set; }
+        [DataMember(Name = "job_source_system")]
+        public string Job_Source_System { get; set; }
 
-        [DataMember(Name = "end")]
-        public DateTime? End { get; set; }
+        [DataMember(Name = "job_source_model")]
+        public string Job_Source_Model { get; set; }
+
+        [DataMember(Name = "job_source_record_id")]
+        public int Job_Source_Record_ID { get; set; }
+
+        // SyncJob info
+
+        [DataMember(Name = "job_fetched")]
+        public DateTime? Job_Fetched { get; set; }
+
+        [DataMember(Name = "job_start")]
+        public DateTime? Job_Start { get; set; }
+
+        [DataMember(Name = "job_end")]
+        public DateTime? Job_End { get; set; }
+
+        [DataMember(Name = "job_run_count")]
+        public int Job_Run_Count { get; set; }
 
         /// <summary>
         /// Use values from <see cref="SosyncState"/> only.
         /// </summary>
-        [DataMember(Name = "state")]
-        public string State { get; set; }
+        [DataMember(Name = "job_state")]
+        public string Job_State { get; set; }
 
         /// <summary>
         /// Use values from <see cref="SosyncError"/> only.
         /// </summary>
-        [DataMember(Name = "error_code")]
-        public string Error_Code { get; set; }
+        [DataMember(Name = "job_error_code")]
+        public string Job_Error_Code { get; set; }
 
-        [DataMember(Name = "error_text")]
-        public string Error_Text { get; set; }
+        [DataMember(Name = "job_error_text")]
+        public string Job_Error_Text { get; set; }
+
+        [DataMember(Name = "job_log")]
+        public string Job_Log { get; set; }
+
+        // Parent job
 
         [DataMember(Name = "parent_job_id")]
         public int? Parent_Job_ID { get; set; }
 
-        [DataMember(Name = "child_start")]
-        public DateTime? Child_Start { get; set; }
+        // Child jobs processing time
 
-        [DataMember(Name = "child_end")]
-        public DateTime? Child_End { get; set; }
+        [DataMember(Name = "child_job_start")]
+        public DateTime? Child_Job_Start { get; set; }
 
-        /// <summary>
-        /// Use values from <see cref="SosyncSystem"/> only.
-        /// </summary>
-        [DataMember(Name = "source_system")]
-        public string Source_System { get; set; }
+        [DataMember(Name = "child_job_end")]
+        public DateTime? Child_Job_End { get; set; }
 
-        [DataMember(Name = "source_model")]
-        public string Source_Model { get; set; }
-
-        [DataMember(Name = "source_record_id")]
-        public int Source_Record_ID { get; set; }
+        // Synchronization source
 
         /// <summary>
         /// Use values from <see cref="SosyncSystem"/> only.
         /// </summary>
-        [DataMember(Name = "target_system")]
-        public string Target_System { get; set; }
+        [DataMember(Name = "sync_source_system")]
+        public string Sync_Source_System { get; set; }
 
-        [DataMember(Name = "target_model")]
-        public string Target_Model { get; set; }
+        [DataMember(Name = "sync_source_model")]
+        public string Sync_Source_Model { get; set; }
 
-        [DataMember(Name = "target_record_id")]
-        public int? Target_Record_ID { get; set; }
+        [DataMember(Name = "sync_source_record_id")]
+        public int Sync_Source_Record_ID { get; set; }
 
-        [DataMember(Name = "source_data")]
-        public string Source_Data { get; set; }
+        // Synchronization target
 
-        [DataMember(Name = "target_request")]
-        public string Target_Request { get; set; }
+        /// <summary>
+        /// Use values from <see cref="SosyncSystem"/> only.
+        /// </summary>
+        [DataMember(Name = "sync_target_system")]
+        public string Sync_Target_System { get; set; }
 
-        [DataMember(Name = "target_request_start")]
-        public DateTime? Target_Request_Start { get; set; }
+        [DataMember(Name = "sync_target_model")]
+        public string Sync_Target_Model { get; set; }
 
-        [DataMember(Name = "target_request_end")]
-        public DateTime? Target_Request_End { get; set; }
+        [DataMember(Name = "sync_target_record_id")]
+        public int? Sync_Target_Record_ID { get; set; }
 
-        [DataMember(Name = "target_request_answer")]
-        public string Target_Request_Answer { get; set; }
+        // Synchronization info
 
-        [DataMember(Name = "run_count")]
-        public int Run_Count { get; set; }
+        [DataMember(Name = "sync_source_data")]
+        public string Sync_Source_Data { get; set; }
 
-        [DataMember(Name = "last_change")]
-        [IgnoreDataMember]
-        public DateTime? Last_Change { get; set; }
+        [DataMember(Name = "sync_target_request")]
+        public string Sync_Target_Request { get; set; }
 
-        [IgnoreDataMember]
-        public IList<SyncJob> Children { get; set; }
+        [DataMember(Name = "sync_target_answer")]
+        public string Sync_Target_Answer{ get; set; }
+
+        // Synchronization processing time
+
+        [DataMember(Name = "sync_start")]
+        public DateTime? Sync_Start { get; set; }
+
+        [DataMember(Name = "sync_end")]
+        public DateTime? Sync_End { get; set; }
         #endregion
     }
 }
