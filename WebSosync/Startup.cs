@@ -125,7 +125,7 @@ namespace WebSosync
 
             foreach (var flowType in flowManager.FlowTypes)
             {
-                CheckFlowType(flowType);
+                CheckFlowAttributes(flowType);
                 services.AddTransient(flowType);
             }
         }
@@ -135,7 +135,7 @@ namespace WebSosync
         /// is missing, throw an exception.
         /// </summary>
         /// <param name="flowType"></param>
-        private void CheckFlowType(Type flowType)
+        private void CheckFlowAttributes(Type flowType)
         {
             var attOnline = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
             var attStudio = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
