@@ -40,7 +40,7 @@ namespace Syncer.Flows
             return null;
         }
 
-        protected override void ConfigureOnlineToStudio(int onlineID)
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
             // Since this is a partner flow, onlineID represents the
             // res.partner id.
@@ -48,12 +48,12 @@ namespace Syncer.Flows
             // Use that partner id to get the company id
             var companyID = 0;
 
-            // Tell the sync flow base, that we require that specific
-            // company
-            RequireModel(SosyncSystem.FSOnline, "res.company", companyID);
+            // Tell the sync flow base, that this partner flow requires
+            // the res.company
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID);
         }
 
-        protected override void ConfigureStudioToOnline(int studioID)
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
             // Since this is a partner flow, onlineID represents the
             // dboPerson id.
@@ -61,7 +61,7 @@ namespace Syncer.Flows
             // Use the person id to get the xBPKAccount id
             var bpkAccount = 0;
 
-            RequireModel(SosyncSystem.FundraisingStudio, "dboxBPKAccount", bpkAccount);
+            RequestChildJob(SosyncSystem.FundraisingStudio, "dboxBPKAccount", bpkAccount);
         }
 
         protected override void TransformToOnline(int studioID)

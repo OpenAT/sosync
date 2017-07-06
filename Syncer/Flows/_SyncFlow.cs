@@ -83,13 +83,13 @@ namespace Syncer.Flows
         /// from fs online.
         /// </summary>
         /// <param name="job">The sync job.</param>
-        protected abstract void ConfigureOnlineToStudio(int onlineID);
+        protected abstract void SetupOnlineToStudioChildJobs(int onlineID);
 
         /// <summary>
         /// Configure the flow for the sync direction studio to online.
         /// </summary>
         /// <param name="job">The sync job.</param>
-        protected abstract void ConfigureStudioToOnline(int studioID);
+        protected abstract void SetupStudioToOnlineChildJobs(int studioID);
 
         /// <summary>
         /// Read the studio model with the given ID and transform it
@@ -137,14 +137,14 @@ namespace Syncer.Flows
                 // 3) Now check the child jobs
                 // -----------------------------------------------------------------------
 
-                // The child job configuration depends on the sync direction.
-                // The derived sync flow is responsible to provide this
-                // configuration.
+                // The derived sync flow is responsible to provide the configuration
+                // for the required child jobs. Though, the sync flow base decides which
+                // direction to get the configuration for. 
 
                 if (job.Sync_Source_System == SosyncSystem.FSOnline)
-                    ConfigureOnlineToStudio(job.Sync_Source_Record_ID.Value);
+                    SetupOnlineToStudioChildJobs(job.Sync_Source_Record_ID.Value);
                 else
-                    ConfigureStudioToOnline(job.Sync_Source_Record_ID.Value);
+                    SetupStudioToOnlineChildJobs(job.Sync_Source_Record_ID.Value);
 
                 // After configuration, we know which child jobs are required.
                 // Now check and set them up accordingly.
@@ -164,7 +164,7 @@ namespace Syncer.Flows
             }
         }
 
-        protected void RequireModel(string system, string model, int id)
+        protected void RequestChildJob(string system, string model, int id)
         {
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
         }

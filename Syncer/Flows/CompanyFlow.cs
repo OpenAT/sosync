@@ -16,9 +16,17 @@ namespace Syncer.Flows
             : base(svc)
         {
         }
-        #endregion
 
-        #region Methods
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             throw new NotImplementedException();
@@ -29,15 +37,18 @@ namespace Syncer.Flows
             throw new NotImplementedException();
         }
 
-        protected override void ConfigureOnlineToStudio(SyncJob sourceJob)
+        protected override void TransformToOnline(int studioID)
         {
-            // No requirements
+            throw new NotImplementedException();
         }
 
-        protected override void ConfigureStudioToOnline(SyncJob sourceJob)
+        protected override void TransformToStudio(int onlineID)
         {
-            // No requirements
+            throw new NotImplementedException();
         }
+        #endregion
+
+        #region Methods
         #endregion
     }
 }
