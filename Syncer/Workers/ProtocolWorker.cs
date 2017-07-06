@@ -1,5 +1,6 @@
 ﻿using dadi_data;
 using Microsoft.Extensions.DependencyInjection;
+using Syncer.Flows;
 using Syncer.Services;
 using System;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Syncer.Workers
         #region Members
         private IServiceProvider _svc;
         private OdooService _odoo;
+        private FlowService _flowManager;
         #endregion
 
         #region Constructors
@@ -21,6 +23,7 @@ namespace Syncer.Workers
         {
             _svc = svc;
             _odoo = _svc.GetService<OdooService>();
+            _flowManager = flowManager;
         }
         #endregion
 
@@ -33,6 +36,8 @@ namespace Syncer.Workers
             //{
             //    var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
             //}
+
+            var f = (SyncFlow)_svc.GetService(_flowManager.GetFlow("res.partner"));
         }
         #endregion
     }
