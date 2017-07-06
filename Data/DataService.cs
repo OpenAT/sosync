@@ -74,6 +74,13 @@ namespace WebSosync.Data
         {
             // Be mindful of versioning here on the setup!
 
+
+#warning REMOVE this in production!
+            // WARNING: Never do this in real production!
+            DestroyDatabase();
+            //----
+
+
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
