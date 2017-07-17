@@ -36,6 +36,12 @@ Public Class odooXMLRPCWrapper
         '       2. 1000 ms ( 1,0 sek)= 100 * (10^1) warten, dann ausführen
         '       3.10000 ms (10,0 sek)= 100 * (10^2) warten, dann ausführen
 
+        Dim cmdid As String = model_name & "." & method_name
+        If Not sw.ContainsKey(cmdid) Then
+            sw.Add(cmdid, New timestop())
+            sw(cmdid).cmdid = cmdid
+        End If
+
         Dim success As Boolean = False
         Dim retry_count As Integer = 0
 
@@ -44,8 +50,10 @@ Public Class odooXMLRPCWrapper
         While retry_count <= retry_max_retry_count AndAlso Not success
 
             Try
-
+                Dim s As DateTime = Now
                 result = proxy.execute_kw(db, uid, password, model_name, method_name, args, additional)
+                Dim e As DateTime = Now
+                stopw(s, e, cmdid)
                 success = True
 
             Catch ex As System.Net.WebException
@@ -260,6 +268,36 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
+    Public Class timestop
+        Public Property cmdid As String
+        Public ReadOnly Property avg_duration As Integer
+            Get
+                Dim counter As Integer = 0
+                Dim sum As Integer
+                For Each item In Me.childs
+                    sum += item.ende.Subtract(item.start).Milliseconds
+                    counter += 1
+                Next
+                Return sum / counter
+            End Get
+        End Property
+        Public Property childs As New List(Of tschild)
+    End Class
+
+    Public Class tschild
+        Public Property start As DateTime
+        Public Property ende As DateTime
+    End Class
+
+    Dim sw As New Dictionary(Of String, timestop)
+
+    Private Sub stopw(start As DateTime, ende As DateTime, cmdid As String)
+        If Not sw.ContainsKey(cmdid) Then
+            sw.Add(cmdid, New timestop())
+            sw(cmdid).cmdid = cmdid
+        End If
+        sw(cmdid).childs.Add(New tschild With {.start = start, .ende = ende})
+    End Sub
     Public Function update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object)) As Boolean
 
         Try
@@ -329,6 +367,20 @@ Public Class odooXMLRPCWrapper
         Return context_super
 
     End Function
+    Private Function get_de_de_locale2(fields As List(Of String)) As XmlRpcStruct
+
+        Dim context As New XmlRpcStruct
+        context.Add("lang", "de_DE")
+
+        Dim context_super As New XmlRpcStruct()
+        context_super.Add("context", context)
+
+        Dim cfields = fields.ToArray()
+        context_super.Add("fields", cfields)
+
+        Return context_super
+
+    End Function
 
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Dictionary(Of String, Object)
 
@@ -344,7 +396,7 @@ Public Class odooXMLRPCWrapper
 
         Dim online_model_name = schema(item.Tabelle)("online_model_name")(0)
 
-        Dim loader = int_execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale())
+        Dim loader = int_execute_kw(db, uid, password, online_model_name, "read", New Object() {id}, get_de_de_locale2(l))
 
         If loader.GetType() Is GetType(Boolean) AndAlso CType(loader, Boolean) = False Then
             Return res

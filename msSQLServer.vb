@@ -242,7 +242,14 @@
                 new_id.Direction = ParameterDirection.Output
 
             'db.Connection.Open()
+            Dim s As DateTime
+            Dim e As DateTime
+            s = Now
             command.ExecuteNonQuery()
+
+            e = Now
+
+            stopw(s, e, 8)
             'db.Connection.Close()
 
             record.Add("sync_tableID", new_id.Value)
@@ -316,8 +323,15 @@
             cmd.Parameters.AddWithValue("@sync_tableID", record.sync_tableID)
 
         'db.Connection.Open()
+        Dim s As DateTime
+        Dim e As DateTime
+        s = Now
+
 
         cmd.ExecuteNonQuery()
+        e = Now
+
+        stopw(s, e, 7)
 
         '    db.Connection.Close()
 
@@ -383,7 +397,14 @@
                     Next
 
                 ' db.Connection.Open()
+                Dim s1 As DateTime
+                Dim e1 As DateTime
+                s1 = Now
+
                 Dim rel_rec_exists As Boolean = rel_record_exists_cmd.ExecuteScalar()
+                e1 = Now
+
+                stopw(s1, e1, 6)
                 '    db.Connection.Close()
 
                 If rel_rec_exists Then
@@ -424,8 +445,15 @@
 
                 record_exists_cmd.Parameters.Add(id_param)
 
-            'db.Connection.Open()
+            'db.Connection.Open()  
+            Dim s As DateTime
+            Dim e As DateTime
+            s = Now
+
             Dim record_exists As Boolean = record_exists_cmd.ExecuteScalar()
+            e = Now
+
+            stopw(s, e, 5)
             'db.Connection.Close()
 
             If record_exists Then
@@ -449,9 +477,9 @@
                     end",
                               insert.Tabelle,
                               String.Join(", ", data.Keys.ToArray()),
-                             String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray(),
+                             String.Join(", ", (From el In data.Keys Select String.Format("@{0}", el)).ToArray()),
                         schema(insert.Tabelle)("id_fields")(0),
-                        insert.odoo_id)
+                        insert.odoo_id
         )
 
                 Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
@@ -461,9 +489,15 @@
                         Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
                         cmd.Parameters.Add(param)
                     Next
-
+                Dim s2 As DateTime
+                Dim e2 As DateTime
+                s2 = Now
                 'db.Connection.Open()
                 cmd.ExecuteNonQuery()
+
+                e2 = Now
+
+                stopw(s2, e2, 4)
                 'db.Connection.Close()
 
             End If
@@ -549,14 +583,23 @@
                 Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
 
-                For Each item In data
-                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
-                    cmd.Parameters.Add(param)
-                Next
+            For Each item In data
+                Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                cmd.Parameters.Add(param)
+            Next
+
+            Dim s As DateTime
+            Dim e As DateTime
+            s = Now
+
+
             'db.Connection.Open()
             cmd.ExecuteNonQuery()
             'db.Connection.Close()
 
+            e = Now
+
+            stopw(s, e, 3)
             ' End Using
 
         Catch ex As Exception
@@ -614,11 +657,17 @@
                         delete.odoo_id,
                         If(schema(delete.Tabelle)("id_fields").Count > 1, String.Format("and {0} = {1}", schema(delete.Tabelle)("id_fields")(1), delete.odoo_id2.Value), ""))
 
-                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
-
+            Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+            Dim s As DateTime
+            Dim e As DateTime
+            s = Now
             'db.Connection.Open()
             cmd.ExecuteNonQuery()
             ' db.Connection.Close()
+
+            e = Now
+
+            stopw(s, e, 2)
 
             '  End Using
 
@@ -642,6 +691,37 @@
 
     End Function
 
+    Public Class timestop
+        Public Property cmdid As Integer
+        Public ReadOnly Property avg_duration As Integer
+            Get
+                Dim counter As Integer = 0
+                Dim sum As Integer
+                For Each item In Me.childs
+                    sum += item.ende.Subtract(item.start).Milliseconds
+                    counter += 1
+                Next
+                Return sum / counter
+            End Get
+        End Property
+        Public Property childs As New List(Of tschild)
+    End Class
+
+    Public Class tschild
+        Public Property start As DateTime
+        Public Property ende As DateTime
+    End Class
+
+    Dim sw As New Dictionary(Of Integer, timestop)
+
+    Private Sub stopw(start As DateTime, ende As DateTime, cmdid As Integer)
+        If Not sw.ContainsKey(cmdid) Then
+            sw.Add(cmdid, New timestop())
+            sw(cmdid).cmdid = cmdid
+        End If
+        sw(cmdid).childs.Add(New tschild With {.start = start, .ende = ende})
+    End Sub
+
     Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String)))) As Dictionary(Of String, Object)
 
         Dim data As New Dictionary(Of String, Object)
@@ -655,6 +735,10 @@
             Dim where_clause As String = String.Format("where {1}ID = {0}", item.ID, item.Tabelle)
             Dim cmd As New SqlClient.SqlCommand(command & where_clause, db.Connection)
 
+        Dim s As DateTime
+        Dim e As DateTime
+        s = Now
+
         'db.Connection.Open()
         Dim r = cmd.ExecuteReader()
 
@@ -667,7 +751,11 @@
 
             End If
 
-            r.Close()
+        r.Close()
+
+        e = Now
+
+        stopw(s, e, 1)
 
         'db.Connection.Close()
 
