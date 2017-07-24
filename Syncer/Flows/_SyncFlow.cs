@@ -22,6 +22,7 @@ namespace Syncer.Flows
         #region Members
         private IServiceProvider _svc;
         private OdooService _odoo;
+        private MdbService _mdb;
         private ILogger<SyncFlow> _log;
         private CancellationToken _cancelToken;
 
@@ -44,6 +45,11 @@ namespace Syncer.Flows
             get { return _odoo; }
         }
 
+        protected MdbService Mdb
+        {
+            get { return _mdb; }
+        }
+
         public CancellationToken CancelToken
         {
             get { return _cancelToken; }
@@ -57,6 +63,7 @@ namespace Syncer.Flows
             _svc = svc;
             _log = _svc.GetService<ILogger<SyncFlow>>();
             _odoo = _svc.GetService<OdooService>();
+            _mdb = _svc.GetService<MdbService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
         }
@@ -122,7 +129,8 @@ namespace Syncer.Flows
                 // -----------------------------------------------------------------------
                 // 2) Determine the sync direction and update the job
                 // -----------------------------------------------------------------------
-                SetSyncSource(job);
+                DateTime? initialWriteDate = null;
+                SetSyncSource(job, out initialWriteDate);
 
                 if (string.IsNullOrEmpty(job.Sync_Source_System))
                 {
@@ -148,14 +156,42 @@ namespace Syncer.Flows
 
                 // After configuration, we know which child jobs are required.
                 // Now check and set them up accordingly.
+                // 1) Ignore finished child jobs
+                // 2) If child job is open --> Skipped?
+                // 3) Create all requested child jobs
+                foreach(ChildJobRequest jobRequest in _requiredChildJobs)
+                {
+                    if (!IsConsistent(job, initialWriteDate))
+                    {
+                        // Job is inconsistent, leave it "in progress" but cancel the flow
+                        return;
+                    }
+
+#warning TODO: bubble up the hierarchy to check for circular references
+                    // 1) Check if any parent job already has
+                    //    syn_source_system, sync_source_model, sync_source_record-id
+
+                    // 2 Create & Process child job
 
 
+                }
+
+                if (!IsConsistent(job, initialWriteDate))
+                {
+                    // Job is inconsistent, leave it "in progress" but cancel the flow
+                    return;
+                }
 
                 // -----------------------------------------------------------------------
-                // 4) Read write dates of both models
+                // 4) Transformation
                 // -----------------------------------------------------------------------
 
+                if (job.Sync_Source_System == SosyncSystem.FSOnline)
+                    TransformToStudio(job.Sync_Source_Record_ID.Value);
+                else
+                    TransformToOnline(job.Sync_Source_Record_ID.Value);
 
+                // Done - update job success
                 UpdateJobSuccess(job, false);
             }
             catch (Exception ex)
@@ -187,7 +223,7 @@ namespace Syncer.Flows
         /// and compares the write dates to determine the sync direction.
         /// </summary>
         /// <param name="job">The job to be updated with the sync source.</param>
-        private void SetSyncSource(SyncJob job)
+        private void SetSyncSource(SyncJob job, out DateTime? writeDate)
         {
             ModelInfo onlineInfo = null;
             ModelInfo studioInfo = null;
@@ -207,30 +243,76 @@ namespace Syncer.Flows
                     onlineInfo = GetStudioInfo(studioInfo.ForeignID.Value);
             }
 
+            writeDate = null;
+
             if (onlineInfo != null && studioInfo != null)
             {
-                var toleranceMS = 1000;
-
                 // Both systems already have the model, check write date
-                var diff = onlineInfo.WriteDate.Value - studioInfo.WriteDate.Value;
-                if (Math.Abs(diff.Milliseconds) < toleranceMS)
+                var diff = GetWriteDateDifference(onlineInfo.WriteDate.Value, studioInfo.WriteDate.Value);
+                if (diff.TotalMilliseconds == 0)
                 {
                     // Both models are within tolerance, and considered up to date.
+                    writeDate = null;
                     UpdateJobSource(job, "", "", null, "Model up to date.");
                 }
-                else if(diff.Milliseconds < 0)
+                else if(diff.TotalMilliseconds < 0)
                 {
                     // The studio model was newer
+                    writeDate = studioInfo.WriteDate;
                     var att = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
                     UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, studioInfo.ID, "");
                 }
                 else
                 {
                     // The online model was newer
+                    writeDate = onlineInfo.WriteDate;
                     var att = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
                     UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, onlineInfo.ID, "");
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks if the specified job is still consistent with the specified
+        /// write date.
+        /// </summary>
+        /// <param name="job">The job to be checked.</param>
+        /// <param name="writeDate">The write date of the job since the last read.</param>
+        /// <returns></returns>
+        private bool IsConsistent(SyncJob job, DateTime? writeDate)
+        {
+            ModelInfo currentInfo = null;
+
+            if (job.Sync_Source_System == SosyncSystem.FSOnline)
+                currentInfo = GetOnlineInfo(job.Sync_Source_Record_ID.Value);
+            else
+                currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
+
+            if (GetWriteDateDifference(writeDate.Value, currentInfo.WriteDate.Value).TotalMilliseconds == 0)
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the difference of two date time fields. If
+        /// the difference is within a certain tolerance, the
+        /// difference is returned as zero.
+        /// </summary>
+        /// <param name="d1">The first time stamp.</param>
+        /// <param name="d2">The second time stamp.</param>
+        /// <returns></returns>
+        private TimeSpan GetWriteDateDifference(DateTime d1, DateTime d2)
+        {
+            var toleranceMS = 1000;
+            var result = d1 - d1;
+
+            // If the difference is within the tolerance,
+            // return zero
+            if (Math.Abs(result.Milliseconds) <= toleranceMS)
+                result = TimeSpan.FromMilliseconds(0);
+
+            return result;
         }
 
         private void UpdateJobSource(SyncJob job, string system, string model, int? id, string log)
@@ -273,6 +355,8 @@ namespace Syncer.Flows
         /// done successfully.
         /// </summary>
         /// <param name="job"></param>
+        /// <param name="wasInSync">Set to true, if the job was
+        /// finished because it was already in sync.</param>
         private void UpdateJobSuccess(SyncJob job, bool wasInSync)
         {
             _log.LogInformation($"Updating job {job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");

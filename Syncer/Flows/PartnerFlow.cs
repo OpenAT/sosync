@@ -1,7 +1,9 @@
-﻿using Syncer.Attributes;
+﻿using dadi_data.Models;
+using Syncer.Attributes;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -32,19 +34,29 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            // Read the foreign id from dboPerson
+            var writeDates = new List<DateTime>(3);
 
-            // Read write date of
-            // - dboPerson
-            // - dboPersonAdresse
-            // - dboPersonEmail
-            // - ...
+            dboPerson person = null;
 
-            // Return the foreign id and the most recent write date
+            using (var personSvc = Mdb.GetDataService<dboPerson>())
+            using (var addressSvc = Mdb.GetDataService<dboPersonAdresse>())
+            using (var emailSvc = Mdb.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = Mdb.GetDataService<dboPersonTelefon>())
+            {
+                person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
+                writeDates.Add(person.write_date);
 
-            
+                var address = addressSvc.Read(new { PersonAdresseID = person.insync_PersonAdresseID }).FirstOrDefault();
+                writeDates.Add(address.write_date);
 
-            return null;
+                var email = emailSvc.Read(new { PersonEmailID = person.insync_PersonEmailID }).FirstOrDefault();
+                writeDates.Add(email.write_date);
+
+                var phone = emailSvc.Read(new { PersonTelefonID = person.insync_PersonTelefonID }).FirstOrDefault();
+                writeDates.Add(phone.write_date);
+            }
+
+            return new ModelInfo(studioID, person.res_partner_id, writeDates.Max());
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
