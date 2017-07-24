@@ -56,7 +56,7 @@ dotnet restore
 dotnet publish -c Release -o ./../bin/Publish
 ```
 While developing:
-- In both Linux and Windows, the shell script **publish.sh** can be used to prpare publish binaries
+- In both Linux and Windows, the shell script **publish.sh** can be used to prepare publish binaries
 - In Visual Studio use the publish command, the directory is pre-configured
 - Don't forget to **push** after publish, the publish binaries are source controlled.
 
