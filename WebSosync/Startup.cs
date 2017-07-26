@@ -148,7 +148,7 @@ namespace WebSosync
                     .Enrich.WithEnvironmentUserName()
                     .WriteTo.File(
                         path: logFile,
-                        outputTemplate: "{Timestamp:o} {EnvironmentUserName} [{Level}] {Message}{NewLine}{Exception}"
+                        outputTemplate: "{Timestamp:o} " + SystemHelper.WhoAmI() + " [{Level}] {Message}{NewLine}{Exception}"
                         );
 
                 loggerFactory.AddSerilog(logConfig.CreateLogger());

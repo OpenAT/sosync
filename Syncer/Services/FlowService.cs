@@ -45,10 +45,7 @@ namespace Syncer.Services
             types.AddRange(GetAllFlowTypes());
             FlowTypes = types.AsReadOnly();
 
-            var svc = _services.BuildServiceProvider();
-            var flowManager = svc.GetService<FlowService>();
-
-            foreach (var flowType in flowManager.FlowTypes)
+            foreach (var flowType in FlowTypes)
             {
                 CheckFlowAttributes(flowType);
                 _services.AddTransient(flowType);
@@ -69,8 +66,6 @@ namespace Syncer.Services
         /// <param name="flowType">The type that is checked to be a correct flow.</param>
         private void CheckFlowAttributes(Type flowType)
         {
-            CheckFlowRegistration();
-
             var attOnline = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
             var attStudio = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
 
@@ -115,8 +110,6 @@ namespace Syncer.Services
         /// <returns></returns>
         private IEnumerable<Type> GetAllFlowTypes()
         {
-            CheckFlowRegistration();
-
             return typeof(SyncFlow)
                 .GetTypeInfo()
                 .Assembly
