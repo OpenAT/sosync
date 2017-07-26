@@ -7,7 +7,7 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
-    [StudioModel(Name = "dboxBPKAccount")]
+    //[StudioModel(Name = "dboxBPKAccount")]
     [OnlineModel(Name = "res.company")]
     public class CompanyFlow : SyncFlow
     {

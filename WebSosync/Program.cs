@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.Collections.Generic;
@@ -136,6 +137,20 @@ namespace WebSosync
             {
                 // Log the exception and exit the program
                 log.LogError("Could not connect to pgSQL server.");
+                forceQuit = true;
+            }
+
+            try
+            {
+                if(!forceQuit)
+                {
+                    var flowSvc = (FlowService)host.Services.GetService(typeof(FlowService));
+                    flowSvc.RegisterFlows();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message);
                 forceQuit = true;
             }
 
