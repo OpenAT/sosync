@@ -73,7 +73,7 @@ namespace WebSosync.Data
         public void Setup()
         {
             // Be mindful of versioning here on the setup!
-            //DestroyDatabase();
+            //DestroySosyncDatabase();
 
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
@@ -105,7 +105,7 @@ namespace WebSosync.Data
         /// <summary>
         /// Drops the sync_table. Never do this in production!
         /// </summary>
-        private void DestroyDatabase()
+        private void DestroySosyncDatabase()
         {
             _con.Execute("drop table sync_table;", commandTimeout: _cmdTimeoutSec);
         }
