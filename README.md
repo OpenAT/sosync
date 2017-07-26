@@ -16,6 +16,7 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 - **Data** data access layer (sosync only)
 - **Odoo** Odoo API implementation, utilizes the XmlRpc library
 - **Syncer** the actual syncer and **sync flows**
+  - Actual sync flows can be found in [Syncer/Flows](https://github.com/OpenAT/sosync/tree/v2/Syncer/Flows)
   - References **Odoo** for FSO access
   - References **dadi-data** (DaDi-Nuget) for FS access
 - **WebSosync** Kestrel webserver providing the API and housing the syncer
@@ -44,7 +45,7 @@ sudo apt-get update
 
 sudo apt-get install dotnet-dev-1.0.4
 ```
-Source: [https://www.microsoft.com/net/core#linuxubuntu](url) (includes instructions for other systems)
+Source: [dotnet core site](https://www.microsoft.com/net/core#linuxubuntu) (includes instructions for other systems)
 
 ### Building the source
 - Download the repository
