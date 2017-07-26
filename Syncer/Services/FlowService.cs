@@ -35,10 +35,10 @@ namespace Syncer.Services
 
         #region Methods
         /// <summary>
-        /// Gets an instance of the <see cref="FlowService"/> class to query all sync flow
-        /// classes, and registers all sync flow classes with dependency injection.
+        /// Searches all flow type classes and registers them with
+        /// dependency injection. Throws an exception if a flow with
+        /// missing attributes is found.
         /// </summary>
-        /// <param name="services">The service collection used to add new services.</param>
         public void RegisterFlows()
         {
             var types = new List<Type>();
@@ -66,7 +66,7 @@ namespace Syncer.Services
         /// Checks a given type for the two required syncer attributes. If any attribute
         /// is missing, throw an exception.
         /// </summary>
-        /// <param name="flowType"></param>
+        /// <param name="flowType">The type that is checked to be a correct flow.</param>
         private void CheckFlowAttributes(Type flowType)
         {
             CheckFlowRegistration();
