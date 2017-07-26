@@ -78,7 +78,7 @@ namespace WebSosync.Data
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
             // To modify the sync table in production
-            // AddColumnIfNotExists("col_name", "col_type");
+            AddColumnIfNotExists("sync_target_data_before_update", "text");
             // DropColumnIfExists("col_name");
         }
 
