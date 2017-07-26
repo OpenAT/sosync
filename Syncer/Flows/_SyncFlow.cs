@@ -129,8 +129,7 @@ namespace Syncer.Flows
                 // -----------------------------------------------------------------------
                 // 2) Determine the sync direction and update the job
                 // -----------------------------------------------------------------------
-                DateTime? initialWriteDate = null;
-                SetSyncSource(job, out initialWriteDate);
+                SetSyncSource(job, out var initialWriteDate);
 
                 if (string.IsNullOrEmpty(job.Sync_Source_System))
                 {
@@ -163,13 +162,14 @@ namespace Syncer.Flows
                 {
                     if (!IsConsistent(job, initialWriteDate))
                     {
-                        // Job is inconsistent, leave it "in progress" but cancel the flow
+                        // Job is inconsistent, cancel the flow and leave it "in progress",
+                        // so it will be restarted later.
                         return;
                     }
 
 #warning TODO: bubble up the hierarchy to check for circular references
                     // 1) Check if any parent job already has
-                    //    syn_source_system, sync_source_model, sync_source_record-id
+                    //    sync_source_system, sync_source_model, sync_source_record-id
 
                     // 2 Create & Process child job
 
@@ -228,6 +228,8 @@ namespace Syncer.Flows
             ModelInfo onlineInfo = null;
             ModelInfo studioInfo = null;
 
+            // First off, get the model info from the system that
+            // initiated the sync job
             if (job.Job_Source_System == SosyncSystem.FSOnline)
             {
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
@@ -245,9 +247,16 @@ namespace Syncer.Flows
 
             writeDate = null;
 
+            // Get the attributes for the model names
+            var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+            var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+
+            // Now update the job information depending on the available
+            // model infos
             if (onlineInfo != null && studioInfo != null)
             {
                 // Both systems already have the model, check write date
+                // and decide source
                 var diff = GetWriteDateDifference(onlineInfo.WriteDate.Value, studioInfo.WriteDate.Value);
                 if (diff.TotalMilliseconds == 0)
                 {
@@ -259,16 +268,31 @@ namespace Syncer.Flows
                 {
                     // The studio model was newer
                     writeDate = studioInfo.WriteDate;
-                    var att = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
-                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, studioInfo.ID, "");
+                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, studioAtt.Name, studioInfo.ID, "");
                 }
                 else
                 {
                     // The online model was newer
                     writeDate = onlineInfo.WriteDate;
-                    var att = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
-                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, att.Name, onlineInfo.ID, "");
+                    UpdateJobSource(job, SosyncSystem.FSOnline, onlineAtt.Name, onlineInfo.ID, "");
                 }
+            }
+            else if (onlineInfo != null && studioInfo == null)
+            {
+                // The online model is not yet in studio
+                writeDate = onlineInfo.WriteDate;
+                UpdateJobSource(job, SosyncSystem.FSOnline, onlineAtt.Name, onlineInfo.ID, "");
+            }
+            else if (onlineInfo == null && studioInfo != null)
+            {
+                // The studio model is not yet in online
+                writeDate = studioInfo.WriteDate;
+                UpdateJobSource(job, SosyncSystem.FundraisingStudio, studioAtt.Name, studioInfo.ID, "");
+            }
+            else
+            {
+                throw new SyncerException(
+                    $"Invalid state, could find {nameof(ModelInfo)} for either system.");
             }
         }
 
