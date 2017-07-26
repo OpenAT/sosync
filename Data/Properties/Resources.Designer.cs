@@ -146,7 +146,7 @@ namespace WebSosync.Data.Properties {
         ///  job_fetched timestamp without time zone,
         ///  job_start timestamp without time zone,
         ///  job_end timestamp without time zone,
-        ///  run [rest of string was truncated]&quot;;.
+        ///  job [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetupDatabase_SCRIPT {
             get {

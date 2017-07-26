@@ -20,23 +20,23 @@ namespace WebSosync.Models
         // DisplayFormat to prevent conversion of empty strings to null by MVC
         // Rest: validation attributes
 
-        [DataMember(Name = "source_system")]
-        [FromQuery(Name = "source_system")]
+        [DataMember(Name = "job_source_system")]
+        [FromQuery(Name = "job_source_system")]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
-        [Required(AllowEmptyStrings = true, ErrorMessage = "source_system is required.")]
-        public string SourceSystem { get; set; }
+        [Required(AllowEmptyStrings = true, ErrorMessage = "job_source_system is required.")]
+        public string JobSourceSystem { get; set; }
 
-        [DataMember(Name = "source_model")]
-        [FromQuery(Name = "source_model")]
+        [DataMember(Name = "job_source_model")]
+        [FromQuery(Name = "job_source_model")]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
-        [Required(AllowEmptyStrings = true, ErrorMessage = "source_model is required.")]
-        public string SourceModel { get; set; }
+        [Required(AllowEmptyStrings = true, ErrorMessage = "job_source_model is required.")]
+        public string JobSourceModel { get; set; }
 
-        [DataMember(Name = "source_record_id")]
-        [FromQuery(Name = "source_record_id")]
+        [DataMember(Name = "job_source_record_id")]
+        [FromQuery(Name = "job_source_record_id")]
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "source_record_id must be greter than 0.")]
-        public int? SourceRecordID { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "job_source_record_id must be greter than 0.")]
+        public int? JobSourceRecordID { get; set; }
 
         /// <summary>
         /// The actual job creation date. Use UTC time.

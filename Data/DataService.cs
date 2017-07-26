@@ -73,12 +73,13 @@ namespace WebSosync.Data
         public void Setup()
         {
             // Be mindful of versioning here on the setup!
+            //DestroyDatabase();
 
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
             // To modify the sync table in production
-            AddColumnIfNotExists("sync_target_data_before_update", "text");
+            // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
         }
 

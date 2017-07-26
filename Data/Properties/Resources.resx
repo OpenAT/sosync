@@ -184,31 +184,32 @@ $$</value>
   job_fetched timestamp without time zone,
   job_start timestamp without time zone,
   job_end timestamp without time zone,
-  run_count integer not null default 0,
+  job_run_count integer not null default 0,
   job_state text not null,
   job_error_code text,
-  job_error_error text,
+  job_error_text text,
   job_log text,
   
   -- Parent job_child_end
   parent_job_id integer,
 
   -- Child jobs processing time
-  job_child_start timestamp without time zone,
-  job_child_end timestamp without time zone,
+  child_job_start timestamp without time zone,
+  child_job_end timestamp without time zone,
   
   -- Synchronization source
-  sync_source_system text not null,
-  sync_source_model text not null,
-  sync_source_record_id integer not null,
+  sync_source_system text,
+  sync_source_model text,
+  sync_source_record_id integer,
 
   -- Synchronization target
-  sync_target_system text not null,
-  sync_target_model text not null,
-  sync_target_record_id integer not null,
+  sync_target_system text,
+  sync_target_model text,
+  sync_target_record_id integer,
   
   -- Synchronization info
   sync_source_data text,
+  sync_target_data_before_update text,
   sync_target_request text,
   sync_target_answer text,
 
