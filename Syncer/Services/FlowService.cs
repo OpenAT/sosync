@@ -13,7 +13,6 @@ namespace Syncer.Services
     public class FlowService
     {
         #region Members
-        private IServiceCollection _services;
         private bool _registered;
         #endregion
 
@@ -25,10 +24,9 @@ namespace Syncer.Services
         #endregion
 
         #region Constructors
-        public FlowService(IServiceCollection services)
+        public FlowService()
         {
             FlowTypes = null;
-            _services = services;
             _registered = false;
         }
         #endregion
@@ -36,20 +34,16 @@ namespace Syncer.Services
         #region Methods
         /// <summary>
         /// Searches all flow type classes and registers them with
-        /// dependency injection. Throws an exception if a flow with
-        /// missing attributes is found.
+        /// dependency injection.
         /// </summary>
-        public void RegisterFlows()
+        public void RegisterFlows(IServiceCollection services)
         {
             var types = new List<Type>();
             types.AddRange(GetAllFlowTypes());
             FlowTypes = types.AsReadOnly();
 
             foreach (var flowType in FlowTypes)
-            {
-                CheckFlowAttributes(flowType);
-                _services.AddTransient(flowType);
-            }
+                services.AddTransient(flowType);
 
             _registered = true;
         }
@@ -60,8 +54,7 @@ namespace Syncer.Services
                 throw new MissingFlowRegistrationException($"Flow classes are not registered. Use {nameof(FlowService)}.{nameof(RegisterFlows)}() at program start.");
         }
         /// <summary>
-        /// Checks a given type for the two required syncer attributes. If any attribute
-        /// is missing, throw an exception.
+        /// Checks a given type for the two required syncer attributes.
         /// </summary>
         /// <param name="flowType">The type that is checked to be a correct flow.</param>
         private void CheckFlowAttributes(Type flowType)
@@ -74,6 +67,15 @@ namespace Syncer.Services
 
             if (attStudio == null)
                 throw new MissingAttributeException(flowType.Name, nameof(StudioModelAttribute));
+        }
+
+        /// <summary>
+        /// Throws an exception if any sync flow is missing one of the two required attributes.
+        /// </summary>
+        public void ThrowOnMissingFlowAttributes()
+        {
+            foreach (var flowType in FlowTypes)
+                CheckFlowAttributes(flowType);
         }
 
         /// <summary>

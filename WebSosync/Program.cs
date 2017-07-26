@@ -145,7 +145,7 @@ namespace WebSosync
                 if(!forceQuit)
                 {
                     var flowSvc = (FlowService)host.Services.GetService(typeof(FlowService));
-                    flowSvc.RegisterFlows();
+                    flowSvc.ThrowOnMissingFlowAttributes();
                 }
             }
             catch (Exception ex)

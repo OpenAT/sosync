@@ -29,6 +29,7 @@ namespace Syncer.Workers
             : base(options)
         {
             _svc = svc;
+            _flowManager = flowManager;
         }
         #endregion
 
