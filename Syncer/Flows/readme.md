@@ -5,7 +5,7 @@ between FSOnline and FS.
 
 - **_SyncFlow.cs** base class for all flows. Uses the [Template Method Pattern](https://en.wikipedia.org/wiki/Template_method_pattern)
   to ensure the basic flow is always the same.
-  - See the **public void Start(SyncJob job)** for the flow logic
+  - See the **public void Start(SyncJob job)** method for the flow logic
 - **CompanyFlow** converts between **res.company** and **xBPKAccount** 
 - **PartnerFlow** converts between **res.partner** and **dbo.Person**, due to model differences, this flow also deals with
   - dbo.PersonAdresse
