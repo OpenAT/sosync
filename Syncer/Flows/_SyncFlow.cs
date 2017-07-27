@@ -119,84 +119,128 @@ namespace Syncer.Flows
         public void Start(SyncJob job)
         {
             UpdateJobStart(job);
+
+            // -----------------------------------------------------------------------
+            // 1) First off, check run count (and eventually throw exception)
+            // -----------------------------------------------------------------------
             try
             {
-                // -----------------------------------------------------------------------
-                // 1) First off, check run count (and eventually throw exception)
-                // -----------------------------------------------------------------------
                 CheckRunCount(job, 20);
+            }
+            catch (Exception ex)
+            {
+                UpdateJobError(job, SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
+            }
 
-                // -----------------------------------------------------------------------
-                // 2) Determine the sync direction and update the job
-                // -----------------------------------------------------------------------
-                SetSyncSource(job, out var initialWriteDate);
+            // -----------------------------------------------------------------------
+            // 2) Determine the sync direction and update the job
+            // -----------------------------------------------------------------------
+            DateTime? initialWriteDate = null;
+            try
+            {
+                SetSyncSource(job, out initialWriteDate);
 
                 if (string.IsNullOrEmpty(job.Sync_Source_System))
                 {
-                    // If the source system could not be determined,
-                    // the model was up to date in both systems. Close
+                    // Model is up to date in both systems. Close
                     // the job, and stop this flow
                     UpdateJobSuccess(job, true);
                     return;
                 }
+            }
+            catch (Exception ex)
+            {
+                UpdateJobError(job, SosyncError.SourceData, $"2) Sync direction:\n{ex.ToString()}");
+            }
 
-                // -----------------------------------------------------------------------
-                // 3) Now check the child jobs
-                // -----------------------------------------------------------------------
+            // -----------------------------------------------------------------------
+            // 3) Now check the child jobs
+            // -----------------------------------------------------------------------
+            try
+            {
+                // The derived sync flows can use RequestChildJob() method to
+                // fill _requiredChildJobs.
 
-                // The derived sync flow is responsible to provide the configuration
-                // for the required child jobs. Though, the sync flow base decides which
-                // direction to get the configuration for. 
+                // This setup is not counted towards child_job_start and child_job_end.
 
                 if (job.Sync_Source_System == SosyncSystem.FSOnline)
                     SetupOnlineToStudioChildJobs(job.Sync_Source_Record_ID.Value);
                 else
                     SetupStudioToOnlineChildJobs(job.Sync_Source_Record_ID.Value);
 
-                // After configuration, we know which child jobs are required.
-                // Now check and set them up accordingly.
+                // Process the requested child jobs:
                 // 1) Ignore finished child jobs
                 // 2) If child job is open --> Skipped?
                 // 3) Create all requested child jobs
-                foreach(ChildJobRequest jobRequest in _requiredChildJobs)
+                try
                 {
-                    if (!IsConsistent(job, initialWriteDate))
+                    // try-finally to ensure the child_job_end date is written.
+                    // Actual errors should still bubble up, NOT be caught here.
+                    UpdateJobChildStart(job);
+
+                    foreach (ChildJobRequest jobRequest in _requiredChildJobs)
                     {
-                        // Job is inconsistent, cancel the flow and leave it "in progress",
-                        // so it will be restarted later.
-                        return;
-                    }
+                        if (!IsConsistent(job, initialWriteDate))
+                        {
+                            // Job is inconsistent, cancel the flow and leave it "in progress",
+                            // so it will be restarted later.
+                            return;
+                        }
 
 #warning TODO: bubble up the hierarchy to check for circular references
-                    // 1) Check if any parent job already has
-                    //    sync_source_system, sync_source_model, sync_source_record-id
+                        // 1) Check if any parent job already has
+                        //    sync_source_system, sync_source_model, sync_source_record-id
 
-                    // 2 Create & Process child job
-
-
+                        // 2 Create & Process child job
+                    }
                 }
-
-                if (!IsConsistent(job, initialWriteDate))
+                finally
                 {
-                    // Job is inconsistent, leave it "in progress" but cancel the flow
-                    return;
+                    // In any case, log the child end at this point
+                    UpdateJobChildEnd(job);
                 }
+            }
+            catch (Exception ex)
+            {
+#warning TODO: Somehow differentiate between child creation and processing errors
+                UpdateJobError(job, SosyncError.SourceData, $"3) Child jobs:\n{ex.ToString()}");
+            }
 
+            try
+            {
                 // -----------------------------------------------------------------------
                 // 4) Transformation
                 // -----------------------------------------------------------------------
+                try
+                {
+                    // try-finally to ensure the sync_end date is written.
+                    // Actual errors should still bubble up, NOT be caught here.
 
-                if (job.Sync_Source_System == SosyncSystem.FSOnline)
-                    TransformToStudio(job.Sync_Source_Record_ID.Value);
-                else
-                    TransformToOnline(job.Sync_Source_Record_ID.Value);
+                    if (!IsConsistent(job, initialWriteDate))
+                    {
+                        // Job is inconsistent, leave it "in progress" but cancel the current flow
+                        return;
+                    }
+
+                    UpdateJobSyncStart(job);
+
+                    if (job.Sync_Source_System == SosyncSystem.FSOnline)
+                        TransformToStudio(job.Sync_Source_Record_ID.Value);
+                    else
+                        TransformToOnline(job.Sync_Source_Record_ID.Value);
+                }
+                finally
+                {
+                    // In any case, log the transformation/sync end at this point
+                    UpdateJobSyncEnd(job);
+                }
 
                 // Done - update job success
                 UpdateJobSuccess(job, false);
             }
             catch (Exception ex)
             {
-                UpdateJobError(job, SosyncError.SourceData, ex.ToString());
+                UpdateJobError(job, SosyncError.SourceData, $"4) Transformation/sync:\n{ex.ToString()}");
             }
         }
 
@@ -346,6 +390,14 @@ namespace Syncer.Flows
             return result;
         }
 
+        /// <summary>
+        /// Updates the sync source data and log field.
+        /// </summary>
+        /// <param name="job">The job to be updated.</param>
+        /// <param name="system">The sync source system.</param>
+        /// <param name="model">The sync source model.</param>
+        /// <param name="id">The sync source ID.</param>
+        /// <param name="log">Information to be logged.</param>
         private void UpdateJobSource(SyncJob job, string system, string model, int? id, string log)
         {
             _log.LogInformation($"Updating job {job.Job_ID}: check source");
@@ -363,6 +415,66 @@ namespace Syncer.Flows
         }
 
         /// <summary>
+        /// Updates the job, indicating that child processing started.
+        /// </summary>
+        /// <param name="job">The job to be updated.</param>
+        private void UpdateJobChildStart(SyncJob job)
+        {
+            _log.LogInformation($"Updating job { job.Job_ID}: child start");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Child_Job_Start = DateTime.UtcNow;
+                job.Job_Last_Change = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// Updates the job, indicating that child processing finished.
+        /// </summary>
+        /// <param name="job">The job to be updated.</param>
+        private void UpdateJobChildEnd(SyncJob job)
+        {
+            _log.LogInformation($"Updating job { job.Job_ID}: child end");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Child_Job_End = DateTime.UtcNow;
+                job.Job_Last_Change = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// Updates the job, indicating that the tansformation started.
+        /// </summary>
+        /// <param name="job">Job to be updated.</param>
+        private void UpdateJobSyncStart(SyncJob job)
+        {
+            _log.LogInformation($"Updating job { job.Job_ID}: transformation/sync start");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Sync_Start = DateTime.UtcNow;
+                job.Job_Last_Change = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// Updates the job, indicating that the transformation finished.
+        /// </summary>
+        /// <param name="job">Job to be updated.</param>
+        private void UpdateJobSyncEnd(SyncJob job)
+        {
+            _log.LogInformation($"Updating job { job.Job_ID}: transformation/sync end");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Sync_End = DateTime.UtcNow;
+                job.Job_Last_Change = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
         /// <param name="job">The job to be updated.</param>
@@ -375,7 +487,7 @@ namespace Syncer.Flows
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = DateTime.Now.ToUniversalTime();
                 job.Job_Run_Count += 1;
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);
@@ -396,7 +508,7 @@ namespace Syncer.Flows
             {
                 job.Job_State = SosyncState.Done;
                 job.Job_End = DateTime.Now.ToUniversalTime();
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);
@@ -415,10 +527,10 @@ namespace Syncer.Flows
             using (var db = _svc.GetService<DataService>())
             {
                 job.Job_State = SosyncState.Error;
-                job.Job_End = DateTime.Now.ToUniversalTime();
+                job.Job_End = DateTime.UtcNow;
                 job.Job_Error_Code = errorCode;
                 job.Job_Error_Text = errorText;
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
             }
             UpdateJobFso(job);
