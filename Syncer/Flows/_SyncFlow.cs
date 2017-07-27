@@ -200,6 +200,13 @@ namespace Syncer.Flows
             }
         }
 
+        /// <summary>
+        /// Inform the sync flow that a specific model is needed as a child job
+        /// for the current flow.
+        /// </summary>
+        /// <param name="system">The job source system.</param>
+        /// <param name="model">The requested source model.</param>
+        /// <param name="id">The requested source ID for the model.</param>
         protected void RequestChildJob(string system, string model, int id)
         {
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
