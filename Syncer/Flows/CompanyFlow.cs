@@ -57,13 +57,13 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID)
         {
             // Do nothing, for now, to see if job gets closed successfully
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         protected override void TransformToStudio(int onlineID)
         {
             // Do nothing, for now, to see if job gets closed successfully
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
         #endregion
 

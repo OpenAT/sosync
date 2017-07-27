@@ -18,29 +18,17 @@ namespace WebSosync.Controllers
     [Route("[controller]")]
     public class JobController : Controller
     {
-        #region Members
-        private DataService _db;
-        private IBackgroundJob<SyncWorker> _syncJob;
-        private ILogger<JobController> _log;
-        #endregion
-        
         #region Constructors
-        public JobController(
-            ILogger<JobController> log, 
-            DataService db, 
-            IBackgroundJob<SyncWorker> syncJob)
+        public JobController()
         {
-            _log = log;
-            _db = db;
-            _syncJob = syncJob;
         }
         #endregion
 
         #region Methods
         [HttpGet("info/{id}")]
-        public IActionResult Get([FromRoute]int id)
+        public IActionResult Get([FromServices]DataService db, [FromRoute]int id)
         {
-            var result = _db.GetJob(id);
+            var result = db.GetJob(id);
 
 #warning TODO: It's a bad practice to return internal objects without DTOs, probably discuss later
             if (result != null)
@@ -55,20 +43,23 @@ namespace WebSosync.Controllers
         }
 
         [HttpGet("list")]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromServices]DataService db)
         {
 #warning TODO: Bad practice and returning everything unpaged... fix some time!
-            var result = _db.GetJobs(false);
+            var result = db.GetJobs(false);
             return new OkObjectResult(result);
         }
 
         // job/create
         [HttpGet("create")]
         public IActionResult Get(
-            [FromQuery]SyncJobDto jobDto,
             [FromServices]SosyncOptions config,
             [FromServices]RequestValidator<SyncJobDto> validator,
-            [FromServices]OdooService odoo)
+            [FromServices]OdooService odoo,
+            [FromServices]DataService db,
+            [FromServices]IBackgroundJob<SyncWorker> syncJob,
+            [FromServices]ILogger<JobController> log,
+            [FromQuery]SyncJobDto jobDto)
         {
             JobResultDto result = new JobResultDto();
             validator.Configure(Request, ModelState);
@@ -99,7 +90,7 @@ namespace WebSosync.Controllers
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
                 // Create the sync job, get it's ID into the result and start the job thread
-                _db.CreateJob(job);
+                db.CreateJob(job);
                 result.JobID = job.Job_ID;
 
                 // Try to push the job to Odoo
@@ -107,15 +98,15 @@ namespace WebSosync.Controllers
                 {
                     int odooId = odoo.Client.CreateModel<SyncJob>("sosync.job", job);
                     job.Job_Fso_ID = odooId;
-                    _db.UpdateJob(job, x => x.Job_Fso_ID);
+                    db.UpdateJob(job, x => x.Job_Fso_ID);
                 }
                 catch (Exception ex)
                 {
-                    _log.LogError(ex.ToString());
+                    log.LogError(ex.ToString());
                 }
 
                 // Start the sync background job
-                _syncJob.Start();
+                syncJob.Start();
 
                 // Just return empty OK result
                 return new OkObjectResult(result);
