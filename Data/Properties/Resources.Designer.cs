@@ -129,7 +129,7 @@ namespace WebSosync.Data.Properties {
         ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
         ///(
         /// -- SyncJob
-        ///  job_id serial,
+        ///  job_id serial constraint synctable_primary_key primary key,
         ///  job_date timestamp without time zone not null,
         ///  
         ///  -- Sosync only
@@ -145,8 +145,7 @@ namespace WebSosync.Data.Properties {
         ///  -- SyncJob info
         ///  job_fetched timestamp without time zone,
         ///  job_start timestamp without time zone,
-        ///  job_end timestamp without time zone,
-        ///  job [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetupDatabase_SCRIPT {
             get {
