@@ -31,19 +31,27 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
+            // Get company ids and write date
             var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "partner_id", "write_date" });
             var partnerID = Convert.ToInt32(((List<Object>)dicCompany["partner_id"])[0]);
 
+            // A company is a partner, so to get the sosync_fs_id for the company, the corresponding partner is needed
             var dicPartner = Odoo.Client.GetDictionary("res.partner", partnerID, new string[] { "sosync_fs_id" });
 
-            if (!string.IsNullOrEmpty((string)dicPartner["sosync_fs_id"]) && Convert.ToInt32(dicPartner["sosync_fs_id"]) > 0)
-                return new ModelInfo(onlineID, int.Parse((string)dicPartner["sosync_fs_id"]), DateTime.Parse((string)dicCompany["write_date"]));
+            // Pick sosync_fs_id from the partner entry of the company, and the write date from the company itself
+            var fsIdStr = (string)dicPartner["sosync_fs_id"];
+            var writeDateStr = (string)dicCompany["write_date"];
+
+            if (!string.IsNullOrEmpty(fsIdStr) && Convert.ToInt32(fsIdStr) > 0)
+                return new ModelInfo(onlineID, Convert.ToInt32(fsIdStr), DateTime.Parse(writeDateStr));
             else
                 return new ModelInfo(onlineID, null, DateTime.Parse((string)dicCompany["write_date"]));
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
+            // A company in FS is just an entry in the xBPKAccount table.
+            // So get the write date from that table
             dboxBPKAccount acc = null;
 
             using (var db = Mdb.GetDataService<dboxBPKAccount>())
