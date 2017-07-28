@@ -211,16 +211,18 @@ namespace Syncer.Flows
                 // -----------------------------------------------------------------------
                 // 4) Transformation
                 // -----------------------------------------------------------------------
+                if (!IsConsistent(job, initialWriteDate))
+                {
+                    // Job is inconsistent, cancel the current flow. Make sure
+                    // To do this outside the try-finally block, because we want
+                    // the job to stay "in progress".
+                    return;
+                }
+
                 try
                 {
                     // try-finally to ensure the sync_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
-
-                    if (!IsConsistent(job, initialWriteDate))
-                    {
-                        // Job is inconsistent, leave it "in progress" but cancel the current flow
-                        return;
-                    }
 
                     UpdateJobSyncStart(job);
 
