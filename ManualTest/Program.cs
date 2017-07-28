@@ -18,7 +18,7 @@ namespace ManualTest
 
         static async Task StartRequestsAsync()
         {
-            var count = 100;
+            var count = 10;
             string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fff}&job_source_system=fso&job_source_model=res.company&job_source_record_id=1";
 
             var requests = new List<Task<WebResponse>>(count);
