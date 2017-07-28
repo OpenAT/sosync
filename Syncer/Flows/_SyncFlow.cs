@@ -313,32 +313,64 @@ namespace Syncer.Flows
                 {
                     // Both models are within tolerance, and considered up to date.
                     writeDate = null;
-                    UpdateJobSource(job, "", "", null, "Model up to date.");
+                    UpdateJobSourceAndTarget(job, "", "", null, "", "", null, "Model up to date.");
                 }
                 else if(diff.TotalMilliseconds < 0)
                 {
                     // The studio model was newer
                     writeDate = studioInfo.WriteDate;
-                    UpdateJobSource(job, SosyncSystem.FundraisingStudio, studioAtt.Name, studioInfo.ID, "");
+                    UpdateJobSourceAndTarget(
+                        job,
+                        SosyncSystem.FundraisingStudio,
+                        studioAtt.Name,
+                        studioInfo.ID,
+                        SosyncSystem.FSOnline,
+                        onlineAtt.Name,
+                        studioInfo.ForeignID,
+                        "");
                 }
                 else
                 {
                     // The online model was newer
                     writeDate = onlineInfo.WriteDate;
-                    UpdateJobSource(job, SosyncSystem.FSOnline, onlineAtt.Name, onlineInfo.ID, "");
+                    UpdateJobSourceAndTarget(
+                        job,
+                        SosyncSystem.FSOnline,
+                        onlineAtt.Name,
+                        onlineInfo.ID,
+                        SosyncSystem.FundraisingStudio,
+                        studioAtt.Name,
+                        onlineInfo.ForeignID,
+                        "");
                 }
             }
             else if (onlineInfo != null && studioInfo == null)
             {
                 // The online model is not yet in studio
                 writeDate = onlineInfo.WriteDate;
-                UpdateJobSource(job, SosyncSystem.FSOnline, onlineAtt.Name, onlineInfo.ID, "");
+                UpdateJobSourceAndTarget(
+                    job,
+                    SosyncSystem.FSOnline,
+                    onlineAtt.Name,
+                    onlineInfo.ID,
+                    SosyncSystem.FundraisingStudio,
+                    studioAtt.Name,
+                    null,
+                    "");
             }
             else if (onlineInfo == null && studioInfo != null)
             {
                 // The studio model is not yet in online
                 writeDate = studioInfo.WriteDate;
-                UpdateJobSource(job, SosyncSystem.FundraisingStudio, studioAtt.Name, studioInfo.ID, "");
+                UpdateJobSourceAndTarget(
+                    job,
+                    SosyncSystem.FundraisingStudio,
+                    studioAtt.Name,
+                    studioInfo.ID,
+                    SosyncSystem.FSOnline,
+                    onlineAtt.Name,
+                    null,
+                    "");
             }
             else
             {
@@ -394,19 +426,24 @@ namespace Syncer.Flows
         /// Updates the sync source data and log field.
         /// </summary>
         /// <param name="job">The job to be updated.</param>
-        /// <param name="system">The sync source system.</param>
-        /// <param name="model">The sync source model.</param>
-        /// <param name="id">The sync source ID.</param>
+        /// <param name="srcSystem">The sync source system.</param>
+        /// <param name="srcModel">The sync source model.</param>
+        /// <param name="srcId">The sync source ID.</param>
         /// <param name="log">Information to be logged.</param>
-        private void UpdateJobSource(SyncJob job, string system, string model, int? id, string log)
+        private void UpdateJobSourceAndTarget(SyncJob job, string srcSystem, string srcModel, int? srcId, string targetSystem, string targetModel, int? targetId, string log)
         {
             _log.LogInformation($"Updating job {job.Job_ID}: check source");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Sync_Source_System = system;
-                job.Sync_Source_Model = model;
-                job.Sync_Source_Record_ID = id;
+                job.Sync_Source_System = srcSystem;
+                job.Sync_Source_Model = srcModel;
+                job.Sync_Source_Record_ID = srcId;
+
+                job.Sync_Target_System = targetSystem;
+                job.Sync_Target_Model = targetModel;
+                job.Sync_Target_Record_ID = targetId;
+
                 job.Job_Log = log;
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
@@ -542,7 +579,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be synchronized.</param>
         private void UpdateJobFso(SyncJob job)
         {
-            _log.LogInformation($"Synchronizing job {job.Job_ID} to FSOnline");
+            _log.LogInformation($"Updating job {job.Job_ID} in FSOnline");
 
             if (job.Job_Fso_ID.HasValue)
             {
