@@ -1,5 +1,6 @@
 ﻿using dadi_data.Models;
 using Syncer.Attributes;
+using Syncer.Enumerations;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -83,13 +84,13 @@ namespace Syncer.Flows
             RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpkAccount);
         }
 
-        protected override void TransformToOnline(int studioID)
+        protected override void TransformToOnline(int studioID, TransformType action)
         {
             // Load studio model, save it to online
             throw new NotImplementedException();
         }
 
-        protected override void TransformToStudio(int onlineID)
+        protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Load online model, save it to studio
             throw new NotImplementedException();

@@ -6,6 +6,7 @@ using Syncer.Models;
 using WebSosync.Data.Models;
 using dadi_data.Models;
 using System.Linq;
+using Syncer.Enumerations;
 
 namespace Syncer.Flows
 {
@@ -62,13 +63,13 @@ namespace Syncer.Flows
             return new ModelInfo(studioID, acc.res_company_id, acc.write_date);
         }
 
-        protected override void TransformToOnline(int studioID)
+        protected override void TransformToOnline(int studioID, TransformType action)
         {
             // Do nothing, for now, to see if job gets closed successfully
             //throw new NotImplementedException();
         }
 
-        protected override void TransformToStudio(int onlineID)
+        protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Do nothing, for now, to see if job gets closed successfully
             //throw new NotImplementedException();

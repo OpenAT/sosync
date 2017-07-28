@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
+using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
@@ -103,14 +104,14 @@ namespace Syncer.Flows
         /// to an online model. Ensure transactional behaviour.
         /// </summary>
         /// <param name="studioID">The ID of the studio model to be loaded.</param>
-        protected abstract void TransformToOnline(int studioID);
+        protected abstract void TransformToOnline(int studioID, TransformType action);
 
         /// <summary>
         /// Read the online model with the given ID and transform it
         /// to a studio model. Ensure transactional behaviour.
         /// </summary>
         /// <param name="onlineID">The ID of the online model to be loaded.</param>
-        protected abstract void TransformToStudio(int onlineID);
+        protected abstract void TransformToStudio(int onlineID, TransformType action);
 
         /// <summary>
         /// Starts the data flow.
@@ -226,10 +227,12 @@ namespace Syncer.Flows
 
                     UpdateJobSyncStart(job);
 
+                    var action = job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
+
                     if (job.Sync_Source_System == SosyncSystem.FSOnline)
-                        TransformToStudio(job.Sync_Source_Record_ID.Value);
+                        TransformToStudio(job.Sync_Source_Record_ID.Value, action);
                     else
-                        TransformToOnline(job.Sync_Source_Record_ID.Value);
+                        TransformToOnline(job.Sync_Source_Record_ID.Value, action);
                 }
                 finally
                 {
