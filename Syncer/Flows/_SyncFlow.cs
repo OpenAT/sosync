@@ -416,7 +416,7 @@ namespace Syncer.Flows
 
             // If the difference is within the tolerance,
             // return zero
-            if (Math.Abs(result.Milliseconds) <= toleranceMS)
+            if (Math.Abs(result.TotalMilliseconds) <= toleranceMS)
                 result = TimeSpan.FromMilliseconds(0);
 
             return result;
