@@ -71,14 +71,14 @@ namespace Syncer.Flows
 
         #region Methods
         /// <summary>
-        /// Get the write date for the model in online.
+        /// Get IDs and write date for the model in online.
         /// </summary>
         /// <param name="onlineID">The ID for the model.</param>
         /// <returns></returns>
         protected abstract ModelInfo GetOnlineInfo(int onlineID);
 
         /// <summary>
-        /// Get the write date for the model in studio.
+        /// Get IDs and write date for the model in studio.
         /// </summary>
         /// <param name="studioID">The ID for the model.</param>
         /// <returns></returns>
