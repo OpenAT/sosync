@@ -10,7 +10,7 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
-    [StudioModel(Name = "dboPerson")]
+    [StudioModel(Name = "dbo.Person")]
     [OnlineModel(Name = "res.Partner")]
     public class PartnerFlow : SyncFlow
     {
@@ -80,7 +80,7 @@ namespace Syncer.Flows
             // Use the person id to get the xBPKAccount id
             var bpkAccount = 0;
 
-            RequestChildJob(SosyncSystem.FundraisingStudio, "dboxBPKAccount", bpkAccount);
+            RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpkAccount);
         }
 
         protected override void TransformToOnline(int studioID)

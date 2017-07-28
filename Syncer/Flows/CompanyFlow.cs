@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Syncer.Flows
 {
-    [StudioModel(Name = "dboxBPKAccount")]
+    [StudioModel(Name = "dbo.xBPKAccount")]
     [OnlineModel(Name = "res.company")]
     public class CompanyFlow : SyncFlow
     {
