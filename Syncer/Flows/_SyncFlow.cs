@@ -412,7 +412,7 @@ namespace Syncer.Flows
         private TimeSpan GetWriteDateDifference(DateTime d1, DateTime d2)
         {
             var toleranceMS = 1000;
-            var result = d1 - d1;
+            var result = d1 - d2;
 
             // If the difference is within the tolerance,
             // return zero
