@@ -127,13 +127,13 @@ namespace XmlRpc
 
                 return result;
             }
-            else if (t.GetTypeInfo().IsPrimitive || t == typeof(string) || (
+            else if (t.GetTypeInfo().IsPrimitive || t == typeof(string) || t == typeof(object) || (
                 t.GetTypeInfo().IsGenericType
                 && t.GetGenericTypeDefinition() == typeof(Nullable<>)
                 && t.GetGenericArguments().Any(x => x.GetTypeInfo().IsValueType && x.GetTypeInfo().IsPrimitive)
                 ))
             {
-                // For primitives or strings, just parse a single value using InnerText,
+                // For primitives, strings and plain objects, just parse a single value using InnerText,
                 // to omit any nested nodes inside the passed node
 
                 // If the node type is bool while the expected type is different,
@@ -162,16 +162,16 @@ namespace XmlRpc
                 else
                     return null;
             }
-            else if (t.IsArray && (t.GetElementType().GetTypeInfo().IsPrimitive || t.GetElementType() == typeof(string)))
+            else if (t.IsArray && (t.GetElementType().GetTypeInfo().IsPrimitive || t.GetElementType() == typeof(string)) || t.GetElementType() == typeof(object))
             {
                 // Create and parse primitive type arrays
-                var nodes = e["array"].ChildNodes.OfType<XmlNode>().Where(x => !string.IsNullOrEmpty(x.InnerText)).ToList();
+                var nodes = e["array"]["data"].ChildNodes.OfType<XmlNode>().Where(x => !string.IsNullOrEmpty(x.InnerText)).ToList();
                 var arr = Array.CreateInstance(t.GetElementType(), nodes.Count);
 
                 int i = 0;
                 foreach (XmlElement node in nodes)
                 {
-                    arr.SetValue(GetXmlRpcResult(t.GetElementType(), node), i);
+                    arr.SetValue(GetXmlRpcResult(t.GetElementType(), node), i++);
                 }
 
                 return arr;
