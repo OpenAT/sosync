@@ -205,6 +205,35 @@ namespace Odoo
         /// <param name="model">The actual model with the data.</param>
         public bool UpdateModel<T>(string modelName, T model, int fsoId) where T: class
         {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            try
+            {
+                var context = new { lang = Language };
+
+                var result = _rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "write",
+                    new object[] { new int[] { fsoId }, model, context });
+
+                return result != 0;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
+        }
+
+        public bool UpdateModel(string modelName, object model, int fsoId)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
             try
             {
                 var context = new { lang = Language };
