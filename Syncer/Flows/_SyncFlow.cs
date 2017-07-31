@@ -298,8 +298,13 @@ namespace Syncer.Flows
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
 
                 if (studioInfo.ForeignID != null)
-                    onlineInfo = GetStudioInfo(studioInfo.ForeignID.Value);
+                    onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
             }
+
+            // If the studio model had a write date, convert it to UTC. Because
+            // FundraisingStudio always saves local time stamps.
+            if (studioInfo.WriteDate.HasValue)
+                studioInfo.WriteDate = studioInfo.WriteDate.Value.ToUniversalTime();
 
             writeDate = null;
 
@@ -385,8 +390,7 @@ namespace Syncer.Flows
         }
 
         /// <summary>
-        /// Checks if the specified job is still consistent with the specified
-        /// write date.
+        /// Checks if the specified write date is still the same in the source system.
         /// </summary>
         /// <param name="job">The job to be checked.</param>
         /// <param name="writeDate">The write date of the job since the last read.</param>
@@ -398,9 +402,17 @@ namespace Syncer.Flows
             if (job.Sync_Source_System == SosyncSystem.FSOnline)
                 currentInfo = GetOnlineInfo(job.Sync_Source_Record_ID.Value);
             else
+            {
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
 
-            if (GetWriteDateDifference(writeDate.Value, currentInfo.WriteDate.Value).TotalMilliseconds == 0)
+                // Studio only uses local times, so convert studio time to UTC before working with it
+                if (currentInfo.WriteDate.HasValue)
+                    currentInfo.WriteDate = currentInfo.WriteDate.Value.ToUniversalTime();
+            }
+
+            // Do not use any tolerance here. It's a check to see if the provided write date
+            // is different from what is currently in the model
+            if (writeDate.Value == currentInfo.WriteDate.Value)
                 return true;
 
             return false;
@@ -411,13 +423,16 @@ namespace Syncer.Flows
         /// the difference is within a certain tolerance, the
         /// difference is returned as zero.
         /// </summary>
-        /// <param name="d1">The first time stamp.</param>
-        /// <param name="d2">The second time stamp.</param>
+        /// <param name="onlineWriteDateUTC">The FSO write date UTC time stamp.</param>
+        /// <param name="studioWriteDateUTC">The Studio UTC time stamp.</param>
         /// <returns></returns>
-        private TimeSpan GetWriteDateDifference(DateTime d1, DateTime d2)
+        private TimeSpan GetWriteDateDifference(DateTime onlineWriteDateUTC, DateTime studioWriteDateUTC)
         {
             var toleranceMS = 1000;
-            var result = d1 - d2;
+            // FSO has UTC times, FundraisingStudio has local times
+            var result = onlineWriteDateUTC - studioWriteDateUTC;
+
+            _log.LogInformation($"GetWriteDateDifference() - Write date diff: {Math.Abs(result.TotalMilliseconds)} Tolerance: {toleranceMS}");
 
             // If the difference is within the tolerance,
             // return zero
