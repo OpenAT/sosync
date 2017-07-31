@@ -74,22 +74,36 @@ namespace Syncer.Flows
             using (var db = Mdb.GetDataService<dboxBPKAccount>())
             {
                 acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
-            }
 
-            if (action == TransformType.CreateNew)
-            {
-#warning TODO: implement CompanyFlow Online create
-            }
-            else
-            {
-                Odoo.Client.UpdateModel("res.company", new { name = acc.Name }, acc.res_company_id.Value);
+                if (action == TransformType.CreateNew)
+                {
+                    // Create the company
+                    int odooCompanyId = Odoo.Client.CreateModel("res.company", new { name = acc.Name });
+
+                    // Update the odoo company id in mssql
+                    acc.res_company_id = odooCompanyId;
+                    db.Update(acc);
+
+                    // Load the newly created company to get the partner id
+                    var company = Odoo.Client.GetModel<resCompany>("res.company", odooCompanyId);
+                    var partnerID = Convert.ToInt32(company.Partner[0]);
+
+                    // Update the sosync_fs_id on the partner
+                    Odoo.Client.UpdateModel("res.partner", new { sosync_fs_id = studioID }, partnerID);
+                }
+                else
+                {
+                    // Request the current data from Odoo
+                    Odoo.Client.GetModel<resCompany>("res.Company", acc.res_company_id.Value);
+                    UpdateSyncTargetDataBeforeUpdate(Odoo.Client.LastResponseRaw);
+
+                    Odoo.Client.UpdateModel("res.company", new { name = acc.Name }, acc.res_company_id.Value);
+                }
             }
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            //var result = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "display_name" });
-            //var result = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { });
             var company = Odoo.Client.GetModel<resCompany>("res.company", onlineID);
 
             using (var db = Mdb.GetDataService<dboxBPKAccount>())
