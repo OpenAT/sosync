@@ -28,6 +28,7 @@ namespace Syncer.Flows
         private CancellationToken _cancelToken;
 
         private List<ChildJobRequest> _requiredChildJobs;
+        private SyncJob _job;
         #endregion
 
         #region Properties
@@ -116,21 +117,23 @@ namespace Syncer.Flows
         /// <summary>
         /// Starts the data flow.
         /// </summary>
-        /// <param name="job"></param>
+        /// <param name="_job"></param>
         public void Start(SyncJob job)
         {
-            UpdateJobStart(job);
+            _job = job;
+
+            UpdateJobStart();
 
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
             // -----------------------------------------------------------------------
             try
             {
-                CheckRunCount(job, 20);
+                CheckRunCount(20);
             }
             catch (Exception ex)
             {
-                UpdateJobError(job, SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
             }
 
             // -----------------------------------------------------------------------
@@ -139,19 +142,19 @@ namespace Syncer.Flows
             DateTime? initialWriteDate = null;
             try
             {
-                SetSyncSource(job, out initialWriteDate);
+                SetSyncSource(_job, out initialWriteDate);
 
-                if (string.IsNullOrEmpty(job.Sync_Source_System))
+                if (string.IsNullOrEmpty(_job.Sync_Source_System))
                 {
                     // Model is up to date in both systems. Close
                     // the job, and stop this flow
-                    UpdateJobSuccess(job, true);
+                    UpdateJobSuccess(true);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                UpdateJobError(job, SosyncError.SourceData, $"2) Sync direction:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.SourceData, $"2) Sync direction:\n{ex.ToString()}");
             }
 
             // -----------------------------------------------------------------------
@@ -164,10 +167,10 @@ namespace Syncer.Flows
 
                 // This setup is not counted towards child_job_start and child_job_end.
 
-                if (job.Sync_Source_System == SosyncSystem.FSOnline)
-                    SetupOnlineToStudioChildJobs(job.Sync_Source_Record_ID.Value);
+                if (_job.Sync_Source_System == SosyncSystem.FSOnline)
+                    SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
                 else
-                    SetupStudioToOnlineChildJobs(job.Sync_Source_Record_ID.Value);
+                    SetupStudioToOnlineChildJobs(_job.Sync_Source_Record_ID.Value);
 
                 // Process the requested child jobs:
                 // 1) Ignore finished child jobs
@@ -177,11 +180,11 @@ namespace Syncer.Flows
                 {
                     // try-finally to ensure the child_job_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
-                    UpdateJobChildStart(job);
+                    UpdateJobChildStart(_job);
 
                     foreach (ChildJobRequest jobRequest in _requiredChildJobs)
                     {
-                        if (!IsConsistent(job, initialWriteDate))
+                        if (!IsConsistent(_job, initialWriteDate))
                         {
                             // Job is inconsistent, cancel the flow and leave it "in progress",
                             // so it will be restarted later.
@@ -198,13 +201,13 @@ namespace Syncer.Flows
                 finally
                 {
                     // In any case, log the child end at this point
-                    UpdateJobChildEnd(job);
+                    UpdateJobChildEnd();
                 }
             }
             catch (Exception ex)
             {
 #warning TODO: Somehow differentiate between child creation and processing errors
-                UpdateJobError(job, SosyncError.SourceData, $"3) Child jobs:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.SourceData, $"3) Child jobs:\n{ex.ToString()}");
             }
 
             try
@@ -212,7 +215,7 @@ namespace Syncer.Flows
                 // -----------------------------------------------------------------------
                 // 4) Transformation
                 // -----------------------------------------------------------------------
-                if (!IsConsistent(job, initialWriteDate))
+                if (!IsConsistent(_job, initialWriteDate))
                 {
                     // Job is inconsistent, cancel the current flow. Make sure
                     // To do this outside the try-finally block, because we want
@@ -225,27 +228,27 @@ namespace Syncer.Flows
                     // try-finally to ensure the sync_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
 
-                    UpdateJobSyncStart(job);
+                    UpdateJobSyncStart();
 
-                    var action = job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
+                    var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
 
-                    if (job.Sync_Source_System == SosyncSystem.FSOnline)
-                        TransformToStudio(job.Sync_Source_Record_ID.Value, action);
+                    if (_job.Sync_Source_System == SosyncSystem.FSOnline)
+                        TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
                     else
-                        TransformToOnline(job.Sync_Source_Record_ID.Value, action);
+                        TransformToOnline(_job.Sync_Source_Record_ID.Value, action);
                 }
                 finally
                 {
                     // In any case, log the transformation/sync end at this point
-                    UpdateJobSyncEnd(job);
+                    UpdateJobSyncEnd();
                 }
 
                 // Done - update job success
-                UpdateJobSuccess(job, false);
+                UpdateJobSuccess(false);
             }
             catch (Exception ex)
             {
-                UpdateJobError(job, SosyncError.SourceData, $"4) Transformation/sync:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.SourceData, $"4) Transformation/sync:\n{ex.ToString()}");
             }
         }
 
@@ -261,17 +264,17 @@ namespace Syncer.Flows
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
         }
 
-        protected void UpdateSyncTargetDataBeforeUpdate(SyncJob job, string data)
+        protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: Target data before update");
+            _log.LogInformation($"Updating job {_job.Job_ID}: Target data before update");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Sync_Target_Data_Before_Update = data;
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(job);
+                _job.Sync_Target_Data_Before_Update = data;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
             }
-            UpdateJobFso(job);
+            UpdateJobFso();
         }
 
         /// <summary>
@@ -279,12 +282,11 @@ namespace Syncer.Flows
         /// specified maximum value. Throws an <see cref="RunCountException"/>
         /// if the maximum value is reached or exceeded.
         /// </summary>
-        /// <param name="job">The job to be checked.</param>
         /// <param name="maxRuns">The number of runs upon an exception is raised.</param>
-        private void CheckRunCount(SyncJob job, int maxRuns)
+        private void CheckRunCount(int maxRuns)
         {
-            if (job.Job_Run_Count >= maxRuns)
-                throw new RunCountException(job.Job_Run_Count, maxRuns);
+            if (_job.Job_Run_Count >= maxRuns)
+                throw new RunCountException(_job.Job_Run_Count, maxRuns);
         }
 
         /// <summary>
@@ -481,7 +483,7 @@ namespace Syncer.Flows
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
             }
-            UpdateJobFso(job);
+            UpdateJobFso();
         }
 
         /// <summary>
@@ -502,122 +504,115 @@ namespace Syncer.Flows
         /// <summary>
         /// Updates the job, indicating that child processing finished.
         /// </summary>
-        /// <param name="job">The job to be updated.</param>
-        private void UpdateJobChildEnd(SyncJob job)
+        private void UpdateJobChildEnd()
         {
-            _log.LogInformation($"Updating job { job.Job_ID}: child end");
+            _log.LogInformation($"Updating job { _job.Job_ID}: child end");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Child_Job_End = DateTime.UtcNow;
-                job.Job_Last_Change = DateTime.UtcNow;
+                _job.Child_Job_End = DateTime.UtcNow;
+                _job.Job_Last_Change = DateTime.UtcNow;
             }
         }
 
         /// <summary>
         /// Updates the job, indicating that the tansformation started.
         /// </summary>
-        /// <param name="job">Job to be updated.</param>
-        private void UpdateJobSyncStart(SyncJob job)
+        private void UpdateJobSyncStart()
         {
-            _log.LogInformation($"Updating job { job.Job_ID}: transformation/sync start");
+            _log.LogInformation($"Updating job {_job.Job_ID}: transformation/sync start");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Sync_Start = DateTime.UtcNow;
-                job.Job_Last_Change = DateTime.UtcNow;
+                _job.Sync_Start = DateTime.UtcNow;
+                _job.Job_Last_Change = DateTime.UtcNow;
             }
         }
 
         /// <summary>
         /// Updates the job, indicating that the transformation finished.
         /// </summary>
-        /// <param name="job">Job to be updated.</param>
-        private void UpdateJobSyncEnd(SyncJob job)
+        private void UpdateJobSyncEnd()
         {
-            _log.LogInformation($"Updating job { job.Job_ID}: transformation/sync end");
+            _log.LogInformation($"Updating job { _job.Job_ID}: transformation/sync end");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Sync_End = DateTime.UtcNow;
-                job.Job_Last_Change = DateTime.UtcNow;
+                _job.Sync_End = DateTime.UtcNow;
+                _job.Job_Last_Change = DateTime.UtcNow;
             }
         }
 
         /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
-        /// <param name="job">The job to be updated.</param>
-        private void UpdateJobStart(SyncJob job)
+        private void UpdateJobStart()
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: job start");
+            _log.LogInformation($"Updating job {_job.Job_ID}: job start");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Job_State = SosyncState.InProgress;
-                job.Job_Start = DateTime.Now.ToUniversalTime();
-                job.Job_Run_Count += 1;
-                job.Job_Last_Change = DateTime.UtcNow;
-                db.UpdateJob(job);
+                _job.Job_State = SosyncState.InProgress;
+                _job.Job_Start = DateTime.Now.ToUniversalTime();
+                _job.Job_Run_Count += 1;
+                _job.Job_Last_Change = DateTime.UtcNow;
+                db.UpdateJob(_job);
             }
-            UpdateJobFso(job);
+            UpdateJobFso();
         }
 
         /// <summary>
         /// Updates the job, indicating the processing was
         /// done successfully.
         /// </summary>
-        /// <param name="job"></param>
         /// <param name="wasInSync">Set to true, if the job was
         /// finished because it was already in sync.</param>
-        private void UpdateJobSuccess(SyncJob job, bool wasInSync)
+        private void UpdateJobSuccess(bool wasInSync)
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            _log.LogInformation($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Job_State = SosyncState.Done;
-                job.Job_End = DateTime.Now.ToUniversalTime();
-                job.Job_Last_Change = DateTime.UtcNow;
-                db.UpdateJob(job);
+                _job.Job_State = SosyncState.Done;
+                _job.Job_End = DateTime.Now.ToUniversalTime();
+                _job.Job_Last_Change = DateTime.UtcNow;
+                db.UpdateJob(_job);
             }
-            UpdateJobFso(job);
+            UpdateJobFso();
         }
 
         /// <summary>
         /// Updates the job, indicating an an error occured while processing.
         /// </summary>
-        /// <param name="job">The job to be updated.</param>
         /// <param name="errorCode">Use one of the values from <see cref="SosyncError"/>.</param>
         /// <param name="errorText">The custom error text.</param>
-        private void UpdateJobError(SyncJob job, string errorCode, string errorText)
+        private void UpdateJobError(string errorCode, string errorText)
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: job error");
+            _log.LogInformation($"Updating job {_job.Job_ID}: job error");
 
             using (var db = _svc.GetService<DataService>())
             {
-                job.Job_State = SosyncState.Error;
-                job.Job_End = DateTime.UtcNow;
-                job.Job_Error_Code = errorCode;
-                job.Job_Error_Text = errorText;
-                job.Job_Last_Change = DateTime.UtcNow;
-                db.UpdateJob(job);
+                _job.Job_State = SosyncState.Error;
+                _job.Job_End = DateTime.UtcNow;
+                _job.Job_Error_Code = errorCode;
+                _job.Job_Error_Text = errorText;
+                _job.Job_Last_Change = DateTime.UtcNow;
+                db.UpdateJob(_job);
             }
-            UpdateJobFso(job);
+            UpdateJobFso();
         }
 
         /// <summary>
         /// Synchronizes the specified job to FSO and updates the job_fso_id accordingly.
         /// </summary>
-        /// <param name="job">The job to be synchronized.</param>
-        private void UpdateJobFso(SyncJob job)
+        private void UpdateJobFso()
         {
-            _log.LogInformation($"Updating job {job.Job_ID} in FSOnline");
+            _log.LogInformation($"Updating job {_job.Job_ID} in FSOnline");
 
-            if (job.Job_Fso_ID.HasValue)
+            if (_job.Job_Fso_ID.HasValue)
             {
                 // If job_fso_id is already known, just update fso
-                _odoo.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
+                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
             }
             else
             {
@@ -627,27 +622,27 @@ namespace Syncer.Flows
                 // If more than one result is returend, SingleOrDefault throws
                 // an exception
                 int foundJobId = _odoo.Client
-                    .SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, job.Job_ID)
+                    .SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, _job.Job_ID)
                     .SingleOrDefault();
 
                 if (foundJobId == 0)
                 {
                     // Job didn't exist yet, create it
-                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", job);
-                    job.Job_Fso_ID = newId;
+                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job);
+                    _job.Job_Fso_ID = newId;
 
                     using (var db = _svc.GetService<DataService>())
-                        db.UpdateJob(job, x => x.Job_Fso_ID);
+                        db.UpdateJob(_job, x => x.Job_Fso_ID);
                 }
                 else
                 {
                     // Job was found, update its id in sync_table, then update it
-                    job.Job_Fso_ID = foundJobId;
+                    _job.Job_Fso_ID = foundJobId;
 
                     using (var db = _svc.GetService<DataService>())
-                        db.UpdateJob(job, x => x.Job_Fso_ID);
+                        db.UpdateJob(_job, x => x.Job_Fso_ID);
 
-                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
+                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
                 }
             }
         }
