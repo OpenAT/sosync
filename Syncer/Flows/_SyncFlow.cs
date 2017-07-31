@@ -81,7 +81,7 @@ namespace Syncer.Flows
         /// <summary>
         /// Get IDs and write date for the model in studio.
         /// </summary>
-        /// <param name="studioID">The ID for the model.</param>
+        /// <param name="studioID">The Studio ID for the model.</param>
         /// <returns></returns>
         protected abstract ModelInfo GetStudioInfo(int studioID);
 
@@ -90,27 +90,27 @@ namespace Syncer.Flows
         /// This configuration can at some point be read from meta data
         /// from fs online.
         /// </summary>
-        /// <param name="job">The sync job.</param>
+        /// <param name="onlineID">The Online ID for the model.</param>
         protected abstract void SetupOnlineToStudioChildJobs(int onlineID);
 
         /// <summary>
         /// Configure the flow for the sync direction studio to online.
         /// </summary>
-        /// <param name="job">The sync job.</param>
+        /// <param name="studioID">The Studio ID for the model.</param>
         protected abstract void SetupStudioToOnlineChildJobs(int studioID);
 
         /// <summary>
         /// Read the studio model with the given ID and transform it
         /// to an online model. Ensure transactional behaviour.
         /// </summary>
-        /// <param name="studioID">The ID of the studio model to be loaded.</param>
+        /// <param name="studioID">The Studio ID for the source.</param>
         protected abstract void TransformToOnline(int studioID, TransformType action);
 
         /// <summary>
         /// Read the online model with the given ID and transform it
         /// to a studio model. Ensure transactional behaviour.
         /// </summary>
-        /// <param name="onlineID">The ID of the online model to be loaded.</param>
+        /// <param name="onlineID">The Online ID for the source.</param>
         protected abstract void TransformToStudio(int onlineID, TransformType action);
 
         /// <summary>
