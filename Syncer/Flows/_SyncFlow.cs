@@ -261,6 +261,19 @@ namespace Syncer.Flows
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
         }
 
+        protected void UpdateSyncTargetDataBeforeUpdate(SyncJob job, string data)
+        {
+            _log.LogInformation($"Updating job {job.Job_ID}: Target data before update");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Sync_Target_Data_Before_Update = data;
+                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(job);
+            }
+            UpdateJobFso(job);
+        }
+
         /// <summary>
         /// Checks the current run_count value of the job against the
         /// specified maximum value. Throws an <see cref="RunCountException"/>
