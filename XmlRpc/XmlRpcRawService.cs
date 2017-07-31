@@ -19,7 +19,7 @@ namespace XmlRpc
         public string Address { get; set; }
         public bool DateTimeAsString { get; set; }
         public string LastRequest { get; set; }
-        public string LastRepsonse { get; set; }
+        public string LastResponse { get; set; }
         #endregion
 
         public XmlRpcRawService(string requestUri, string address, bool datetimeAsString)
@@ -75,7 +75,7 @@ namespace XmlRpc
                 {
                     // Always set the last response, if there actually is an response
                     if (response != null)
-                        LastRepsonse = response.Content.ReadAsStringAsync().Result;
+                        LastResponse = response.Content.ReadAsStringAsync().Result;
                 }
 
                 if (typeArgs.Count > 0)
