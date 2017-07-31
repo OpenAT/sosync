@@ -96,7 +96,7 @@ namespace WebSosync
             services.AddSingleton<IConfiguration>(Configuration);
 
             var flowService = new FlowService();
-            services.AddSingleton<FlowService>(flowService);
+            services.AddSingleton(flowService);
 
             RegisterBackgroundJob<SyncWorker>(services);
             RegisterBackgroundJob<ProtocolWorker>(services);
