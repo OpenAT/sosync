@@ -64,7 +64,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcCommon.LastRequest;
-                LastResponseRaw = _rpcCommon.LastRepsonse;
+                LastResponseRaw = _rpcCommon.LastResponse;
             }
         }
 
@@ -101,7 +101,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -125,7 +125,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -162,7 +162,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -193,7 +193,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -217,7 +217,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -250,7 +250,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
 
@@ -276,7 +276,7 @@ namespace Odoo
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastRepsonse;
+                LastResponseRaw = _rpcObject.LastResponse;
             }
         }
         #endregion
