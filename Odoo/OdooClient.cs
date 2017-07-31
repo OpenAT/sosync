@@ -197,6 +197,31 @@ namespace Odoo
             }
         }
 
+        public int CreateModel(string modelName, object model)
+        {
+            try
+            {
+                var context = new { lang = Language };
+
+                var result = (int)_rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "create",
+                    new object[] { model },
+                    new { context = context });
+
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastRepsonse;
+            }
+        }
+
+
         /// <summary>
         /// Updates the specified model in Odoo.
         /// </summary>
