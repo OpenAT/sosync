@@ -266,11 +266,50 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            _log.LogInformation($"Updating job {_job.Job_ID}: Target data before update");
+            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
 
             using (var db = _svc.GetService<DataService>())
             {
                 _job.Sync_Target_Data_Before_Update = data;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncSourceData(string data)
+        {
+            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Source_Data");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Source_Data = data;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncTargetRequest(string requestData)
+        {
+            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Request");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Target_Request = requestData;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncTargetAnswer(string answerData)
+        {
+            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Answer");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
             }
