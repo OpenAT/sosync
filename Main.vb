@@ -54,7 +54,8 @@ Module Main
         Dim hooks As New hooks()
 
         If state.pause Then
-            Logging.init($"{state.instance}, paused")
+            Logging.init(state.instance)
+            Logging.log("sosync", "paused, exiting right away.")
             Exit Sub
         End If
 
