@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using Syncer.Models;
 using WebSosync.Data.Models;
-using dadi_data.Models;
 using System.Linq;
 using Syncer.Enumerations;
 using Odoo;
@@ -35,7 +34,7 @@ namespace Syncer.Flows
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             // Get company ids and write date
-            var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "partner_id", "write_date" });
+            var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "partner_id", "sosync_write_date" });
             var partnerID = Convert.ToInt32(((List<Object>)dicCompany["partner_id"])[0]);
 
             // A company is a partner, so to get the sosync_fs_id for the company, the corresponding partner is needed
@@ -43,12 +42,12 @@ namespace Syncer.Flows
 
             // Pick sosync_fs_id from the partner entry of the company, and the write date from the company itself
             var fsIdStr = (string)dicPartner["sosync_fs_id"];
-            var writeDateStr = (string)dicCompany["write_date"];
+            var writeDateStr = (string)dicCompany["sosync_write_date"];
 
             if (!string.IsNullOrEmpty(fsIdStr) && Convert.ToInt32(fsIdStr) > 0)
                 return new ModelInfo(onlineID, Convert.ToInt32(fsIdStr), DateTime.Parse(writeDateStr));
             else
-                return new ModelInfo(onlineID, null, DateTime.Parse((string)dicCompany["write_date"]));
+                return new ModelInfo(onlineID, null, DateTime.Parse((string)dicCompany["sosync_write_date"]));
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -63,7 +62,7 @@ namespace Syncer.Flows
             }
 
             if (acc != null)
-                return new ModelInfo(studioID, acc.res_company_id, acc.write_date);
+                return new ModelInfo(studioID, acc.res_company_id, acc.Sosync_Write_Date);
 
             return null;
         }
