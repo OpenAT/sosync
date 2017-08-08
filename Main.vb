@@ -53,11 +53,12 @@ Module Main
         Dim state As New sosyncState()
         Dim hooks As New hooks()
 
-        Logging.init(state.instance)
-
         If state.pause Then
+            Logging.init($"{state.instance}, paused")
             Exit Sub
         End If
+
+        Logging.init(state.instance)
 
         If state.runlock Then
             If state.update Then
