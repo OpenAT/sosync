@@ -60,6 +60,30 @@ Public Class pgSQLServer
 
     End Function
 
+    Public Function get_table_columns(table_name As String) As List(Of String)
+        Dim result As New List(Of String)()
+
+        Dim sql = "select column_name from information_schema.columns where table_name=:table_name;"
+
+        Try
+            Me._connection.Open()
+            Dim cmd = New NpgsqlCommand(sql, Me._connection)
+            cmd.Parameters.Add("table_name", NpgsqlTypes.NpgsqlDbType.Text).Value = table_name
+            Dim rdr = cmd.ExecuteReader()
+
+            While rdr.Read()
+                result.Add(Convert.ToString(rdr(0))) ' 0: column_name
+            End While
+
+            Me._connection.Close()
+
+        Catch ex As Exception
+            log.write_line(String.Format("error executing command against pgSQLServer.{1}statement:{0}{1}exception:{2}", Command, Environment.NewLine, ex.ToString()), log.Level.Error)
+        End Try
+
+        Return result
+    End Function
+
     Public Function get_watched_schema() As Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
         Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
