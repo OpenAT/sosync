@@ -100,6 +100,22 @@ sync_block:
         Dim odoo_user_id As Integer = pgSQLHost.get_uid()
 
         Dim schema = msSQLHost.get_Schema()
+
+        ' After reading the MSSQL schema, also read the pgSQL schema.
+        ' Remove columns from the MSSQL schema if there is no corresponding
+        ' column in the pgSQL schema
+        For Each scm In schema
+            Dim pg_columns = pgSQLHost.get_table_columns(scm.Key)
+
+            Dim fields_list = scm.Value("fields")
+            For i As Integer = fields_list.Count - 1 To 0 Step -1
+                If Not pg_columns.Contains(fields_list(i)) Then
+                    fields_list.Remove(fields_list(i))
+                End If
+            Next
+        Next
+        '--------------------
+
         Dim field_types = msSQLHost.get_Schema_fieldTypes()
 
         If Not schema_check(pgSQLHost, msSQLHost, odoo_user_id, state.instance, schema, state.force_trigger_renew) Then
@@ -432,9 +448,6 @@ end_block:
                     If Not pgSQLHost.execute(cmd) Then Return False
 
                 Next
-
-
-
 
             Else
 
