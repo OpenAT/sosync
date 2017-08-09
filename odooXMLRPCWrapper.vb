@@ -459,6 +459,7 @@ Public Class odooXMLRPCWrapper
         Dim date_list As New List(Of String)
         date_list.Add("birthdate_web")
         date_list.Add("expiration_date")
+        date_list.Add("BPKForcedBirthdate")
 
         Dim xml_args As New XmlRpcStruct()
         If data IsNot Nothing Then
