@@ -47,17 +47,19 @@ namespace Syncer.Flows
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
                 writeDates.Add(person.write_date);
 
-                var address = addressSvc.Read(new { PersonAdresseID = person.insync_PersonAdresseID }).FirstOrDefault();
-                writeDates.Add(address.write_date);
+#warning TODO: Columns missing in updated data layer - check with Sebi what to do/change
+                //var address = addressSvc.Read(new { PersonAdresseID = person.insync_PersonAdresseID }).FirstOrDefault();
+                //writeDates.Add(address.write_date);
 
-                var email = emailSvc.Read(new { PersonEmailID = person.insync_PersonEmailID }).FirstOrDefault();
-                writeDates.Add(email.write_date);
+                //var email = emailSvc.Read(new { PersonEmailID = person.insync_PersonEmailID }).FirstOrDefault();
+                //writeDates.Add(email.write_date);
 
-                var phone = emailSvc.Read(new { PersonTelefonID = person.insync_PersonTelefonID }).FirstOrDefault();
-                writeDates.Add(phone.write_date);
+                //var phone = emailSvc.Read(new { PersonTelefonID = person.insync_PersonTelefonID }).FirstOrDefault();
+                //writeDates.Add(phone.write_date);
             }
 
-            return new ModelInfo(studioID, person.res_partner_id, writeDates.Max());
+            return new ModelInfo(studioID, 0, writeDates.Max());
+            //return new ModelInfo(studioID, person.res_partner_id, writeDates.Max());
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
