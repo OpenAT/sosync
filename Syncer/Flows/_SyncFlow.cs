@@ -361,7 +361,7 @@ namespace Syncer.Flows
             {
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
 
-                if (onlineInfo == null)
+                if (studioInfo == null)
                     throw new SourceModelNotFoundException(
                         SosyncSystem.FundraisingStudio,
                         job.Job_Source_Model,
@@ -370,11 +370,6 @@ namespace Syncer.Flows
                 if (studioInfo.ForeignID != null)
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
             }
-
-            // If the studio model was found, and had a write date, convert it to UTC. Because
-            // FundraisingStudio always saves local time stamps.
-            if (studioInfo != null && studioInfo.WriteDate.HasValue)
-                studioInfo.WriteDate = studioInfo.WriteDate.Value.ToUniversalTime();
 
             writeDate = null;
 
@@ -387,8 +382,21 @@ namespace Syncer.Flows
             if (onlineInfo != null && studioInfo != null)
             {
                 // Both systems already have the model, check write date
-                // and decide source
-                var diff = GetWriteDateDifference(onlineInfo.WriteDate.Value, studioInfo.WriteDate.Value);
+                // and decide source. If any sosync_write_date is null,
+                // assume DateTime.MinValue.
+
+                if (!onlineInfo.SosyncWriteDate.HasValue)
+                    throw new SyncerException($"Model {job.Job_Source_Model} had no sosync_write_date in [fso]");
+
+                if (!studioInfo.SosyncWriteDate.HasValue)
+                    throw new SyncerException($"Model {job.Job_Source_Model} had no sosync_write_date in [fs]");
+
+                // XML-RPC default format for date/time does not include milliseconds, so
+                // when comparing the difference, up to 999 milliseconds difference is still
+                // considered equal
+                var toleranceMS = 999;
+
+                var diff = GetWriteDateDifference(onlineInfo.SosyncWriteDate.Value, studioInfo.SosyncWriteDate.Value, toleranceMS);
                 if (diff.TotalMilliseconds == 0)
                 {
                     // Both models are within tolerance, and considered up to date.
@@ -398,7 +406,7 @@ namespace Syncer.Flows
                 else if(diff.TotalMilliseconds < 0)
                 {
                     // The studio model was newer
-                    writeDate = studioInfo.WriteDate;
+                    writeDate = studioInfo.SosyncWriteDate;
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FundraisingStudio,
@@ -412,7 +420,7 @@ namespace Syncer.Flows
                 else
                 {
                     // The online model was newer
-                    writeDate = onlineInfo.WriteDate;
+                    writeDate = onlineInfo.SosyncWriteDate;
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FSOnline,
@@ -427,7 +435,7 @@ namespace Syncer.Flows
             else if (onlineInfo != null && studioInfo == null)
             {
                 // The online model is not yet in studio
-                writeDate = onlineInfo.WriteDate;
+                writeDate = onlineInfo.SosyncWriteDate;
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FSOnline,
@@ -441,7 +449,7 @@ namespace Syncer.Flows
             else if (onlineInfo == null && studioInfo != null)
             {
                 // The studio model is not yet in online
-                writeDate = studioInfo.WriteDate;
+                writeDate = studioInfo.SosyncWriteDate;
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FundraisingStudio,
@@ -472,17 +480,11 @@ namespace Syncer.Flows
             if (job.Sync_Source_System == SosyncSystem.FSOnline)
                 currentInfo = GetOnlineInfo(job.Sync_Source_Record_ID.Value);
             else
-            {
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
-
-                // Studio only uses local times, so convert studio time to UTC before working with it
-                if (currentInfo.WriteDate.HasValue)
-                    currentInfo.WriteDate = currentInfo.WriteDate.Value.ToUniversalTime();
-            }
 
             // Do not use any tolerance here. It's a check to see if the provided write date
             // is different from what is currently in the model
-            if (writeDate.Value == currentInfo.WriteDate.Value)
+            if (writeDate.Value == currentInfo.SosyncWriteDate.Value)
                 return true;
 
             return false;
@@ -493,14 +495,12 @@ namespace Syncer.Flows
         /// the difference is within a certain tolerance, the
         /// difference is returned as zero.
         /// </summary>
-        /// <param name="onlineWriteDateUTC">The FSO write date UTC time stamp.</param>
-        /// <param name="studioWriteDateUTC">The Studio UTC time stamp.</param>
+        /// <param name="onlineWriteDate">The FSO time stamp.</param>
+        /// <param name="studioWriteDate">The Studio time stamp.</param>
         /// <returns></returns>
-        private TimeSpan GetWriteDateDifference(DateTime onlineWriteDateUTC, DateTime studioWriteDateUTC)
+        private TimeSpan GetWriteDateDifference(DateTime onlineWriteDate, DateTime studioWriteDate, int toleranceMS)
         {
-            var toleranceMS = 1000;
-            // FSO has UTC times, FundraisingStudio has local times
-            var result = onlineWriteDateUTC - studioWriteDateUTC;
+            var result = onlineWriteDate - studioWriteDate;
 
             _log.LogInformation($"GetWriteDateDifference() - Write date diff: {Math.Abs(result.TotalMilliseconds)} Tolerance: {toleranceMS}");
 
@@ -667,7 +667,7 @@ namespace Syncer.Flows
             if (_job.Job_Fso_ID.HasValue)
             {
                 // If job_fso_id is already known, just update fso
-                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
+                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value, false);
             }
             else
             {
@@ -683,7 +683,7 @@ namespace Syncer.Flows
                 if (foundJobId == 0)
                 {
                     // Job didn't exist yet, create it
-                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job);
+                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job, false);
                     _job.Job_Fso_ID = newId;
 
                     using (var db = _svc.GetService<DataService>())
@@ -697,7 +697,7 @@ namespace Syncer.Flows
                     using (var db = _svc.GetService<DataService>())
                         db.UpdateJob(_job, x => x.Job_Fso_ID);
 
-                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
+                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value, false);
                 }
             }
         }
