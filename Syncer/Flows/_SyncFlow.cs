@@ -349,7 +349,7 @@ namespace Syncer.Flows
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
 
                 if (onlineInfo == null)
-                    throw new ModelNotFoundException(
+                    throw new SourceModelNotFoundException(
                         SosyncSystem.FSOnline,
                         job.Job_Source_Model,
                         job.Job_Source_Record_ID);
@@ -362,7 +362,7 @@ namespace Syncer.Flows
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
 
                 if (onlineInfo == null)
-                    throw new ModelNotFoundException(
+                    throw new SourceModelNotFoundException(
                         SosyncSystem.FundraisingStudio,
                         job.Job_Source_Model,
                         job.Job_Source_Record_ID);
@@ -371,9 +371,9 @@ namespace Syncer.Flows
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
             }
 
-            // If the studio model had a write date, convert it to UTC. Because
+            // If the studio model was found, and had a write date, convert it to UTC. Because
             // FundraisingStudio always saves local time stamps.
-            if (studioInfo.WriteDate.HasValue)
+            if (studioInfo != null && studioInfo.WriteDate.HasValue)
                 studioInfo.WriteDate = studioInfo.WriteDate.Value.ToUniversalTime();
 
             writeDate = null;
