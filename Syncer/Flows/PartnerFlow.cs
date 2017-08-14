@@ -1,6 +1,7 @@
 ﻿using dadi_data.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -38,28 +39,39 @@ namespace Syncer.Flows
             var writeDates = new List<DateTime>(3);
 
             dboPerson person = null;
+            dboPersonOdooResPartner syncDetails = null;
 
             using (var personSvc = Mdb.GetDataService<dboPerson>())
+            using (var persOdoo = Mdb.GetDataService<dboPersonOdooResPartner>())
             using (var addressSvc = Mdb.GetDataService<dboPersonAdresse>())
             using (var emailSvc = Mdb.GetDataService<dboPersonEmail>())
             using (var phoneSvc = Mdb.GetDataService<dboPersonTelefon>())
             {
+                // Load person and sosync write date
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
-                writeDates.Add(person.write_date);
+                writeDates.Add(person.sosync_write_date ?? DateTime.MinValue);
 
-#warning TODO: Columns missing in updated data layer - check with Sebi what to do/change
-                //var address = addressSvc.Read(new { PersonAdresseID = person.insync_PersonAdresseID }).FirstOrDefault();
-                //writeDates.Add(address.write_date);
+                // Get the associated ids for the detail tables
+                syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
 
-                //var email = emailSvc.Read(new { PersonEmailID = person.insync_PersonEmailID }).FirstOrDefault();
-                //writeDates.Add(email.write_date);
+                if (syncDetails != null)
+                {
+                    var address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
+                    writeDates.Add(address.write_date);
 
-                //var phone = emailSvc.Read(new { PersonTelefonID = person.insync_PersonTelefonID }).FirstOrDefault();
-                //writeDates.Add(phone.write_date);
+                    var email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
+                    writeDates.Add(email.write_date);
+
+                    var phone = emailSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
+                    writeDates.Add(phone.write_date);
+
+                    return new ModelInfo(studioID, syncDetails.res_partner_id, writeDates.Max());
+                }
+                else
+                {
+                    throw new SyncerException($"dbo.Person {studioID} has no entry in dbo.PersonOdooResPartner.");
+                }
             }
-
-            return new ModelInfo(studioID, 0, writeDates.Max());
-            //return new ModelInfo(studioID, person.res_partner_id, writeDates.Max());
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
