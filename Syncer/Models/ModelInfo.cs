@@ -20,15 +20,15 @@ namespace Syncer.Models
         /// <summary>
         /// The last write date for the model.
         /// </summary>
-        public DateTime? WriteDate { get; set; }
+        public DateTime? SosyncWriteDate { get; set; }
         #endregion
 
         #region Constructor
-        public ModelInfo(int id, int? foreignID, DateTime? writeDate)
+        public ModelInfo(int id, int? foreignID, DateTime? sosyncWriteDate)
         {
             ID = id;
             ForeignID = foreignID;
-            WriteDate = writeDate;
+            SosyncWriteDate = sosyncWriteDate;
         }
         #endregion
     }
