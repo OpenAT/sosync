@@ -292,7 +292,7 @@ namespace XmlRpc
             switch (rpcType)
             {
                 case "dateTime.iso8601": result = ((DateTime)value).ToString("o"); break;
-                default: result = Convert.ToString(value); break;
+                default: result = XmlHelper.ToXmlString(Convert.ToString(value)); break;
             }
 
             return result;
