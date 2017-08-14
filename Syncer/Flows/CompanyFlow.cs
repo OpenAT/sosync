@@ -8,6 +8,7 @@ using System.Linq;
 using Syncer.Enumerations;
 using Odoo;
 using Odoo.Models;
+using dadi_data.Models;
 
 namespace Syncer.Flows
 {
@@ -62,7 +63,7 @@ namespace Syncer.Flows
             }
 
             if (acc != null)
-                return new ModelInfo(studioID, acc.res_company_id, acc.Sosync_Write_Date);
+                return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date);
 
             return null;
         }
