@@ -38,11 +38,11 @@ namespace Syncer.Flows
             var partnerID = Convert.ToInt32(((List<Object>)dicCompany["partner_id"])[0]);
 
             // A company is a partner, so to get the sosync_fs_id for the company, the corresponding partner is needed
-            var dicPartner = Odoo.Client.GetDictionary("res.partner", partnerID, new string[] { "sosync_fs_id" });
+            var dicPartner = Odoo.Client.GetDictionary("res.partner", partnerID, new string[] { "sosync_fs_id", "sosync_write_date" });
 
             // Pick sosync_fs_id from the partner entry of the company, and the write date from the company itself
             var fsIdStr = (string)dicPartner["sosync_fs_id"];
-            var writeDateStr = (string)dicCompany["sosync_write_date"];
+            var writeDateStr = (string)dicPartner["sosync_write_date"];
 
             if (!string.IsNullOrEmpty(fsIdStr) && Convert.ToInt32(fsIdStr) > 0)
                 return new ModelInfo(onlineID, Convert.ToInt32(fsIdStr), DateTime.Parse(writeDateStr));
