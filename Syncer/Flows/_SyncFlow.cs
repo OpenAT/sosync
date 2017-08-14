@@ -134,6 +134,7 @@ namespace Syncer.Flows
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
+                throw;
             }
 
             // -----------------------------------------------------------------------
@@ -155,6 +156,7 @@ namespace Syncer.Flows
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.SourceData, $"2) Sync direction:\n{ex.ToString()}");
+                throw;
             }
 
             // -----------------------------------------------------------------------
@@ -208,6 +210,7 @@ namespace Syncer.Flows
             {
 #warning TODO: Somehow differentiate between child creation and processing errors
                 UpdateJobError(SosyncError.SourceData, $"3) Child jobs:\n{ex.ToString()}");
+                throw;
             }
 
             try
@@ -249,6 +252,7 @@ namespace Syncer.Flows
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.SourceData, $"4) Transformation/sync:\n{ex.ToString()}");
+                throw;
             }
         }
 
@@ -344,12 +348,24 @@ namespace Syncer.Flows
             {
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
 
+                if (onlineInfo == null)
+                    throw new ModelNotFoundException(
+                        SosyncSystem.FSOnline,
+                        job.Job_Source_Model,
+                        job.Job_Source_Record_ID);
+
                 if (onlineInfo.ForeignID != null)
                     studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
             }
             else
             {
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
+
+                if (onlineInfo == null)
+                    throw new ModelNotFoundException(
+                        SosyncSystem.FundraisingStudio,
+                        job.Job_Source_Model,
+                        job.Job_Source_Record_ID);
 
                 if (studioInfo.ForeignID != null)
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
