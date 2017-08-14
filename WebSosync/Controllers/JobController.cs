@@ -96,7 +96,7 @@ namespace WebSosync.Controllers
                 // Try to push the job to Odoo
                 try
                 {
-                    int odooId = odoo.Client.CreateModel<SyncJob>("sosync.job", job);
+                    int odooId = odoo.Client.CreateModel<SyncJob>("sosync.job", job, false);
                     job.Job_Fso_ID = odooId;
                     db.UpdateJob(job, x => x.Job_Fso_ID);
                 }
