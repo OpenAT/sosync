@@ -12,5 +12,8 @@ namespace Odoo.Models
 
         [DataMember(Name = "partner_id")]
         public string[] Partner { get; set; }
+
+        [DataMember(Name = "sosync_write_date")]
+        public DateTime? Sosync_Write_Date { get; set; }
     }
 }
