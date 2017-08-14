@@ -28,10 +28,9 @@ namespace Syncer.Services
         /// <returns></returns>
         public DataService<TModel> GetDataService<TModel>()
         {
-#warning TODO: Use real connection string
-            return new DataService<TModel>($"Data Source=mssql1; Initial Catalog=mdb_careseh_test; Integrated Security=True;");
-            
-            //return new DataService<TModel>($"Data Source={_config.Studio_MSSQL_Host}; Initial Catalog=mdb_{_config.Instance}; User ID={_config.Studio_Sosync_User}; Password={_config.Studio_Sosync_PW}");
+            //return new DataService<TModel>($"Data Source=mssql1; Initial Catalog=mdb_careseh_test; Integrated Security=True;");
+            var conStr = $"Data Source={_config.Studio_MSSQL_Host}; Initial Catalog=mdb_{_config.Instance}; User ID={_config.Studio_Sosync_User}; Password={_config.Studio_Sosync_PW}";
+            return new DataService<TModel>(conStr);
         }
         #endregion
     }
