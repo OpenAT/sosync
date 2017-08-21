@@ -56,6 +56,7 @@ namespace Syncer.Flows
 
                 if (syncDetails != null)
                 {
+#warning TODO: replace the write dates with sosync_write_date once the database has the field
                     dboPersonAdresse address = null;
                     if (syncDetails.PersonAdresseID.HasValue)
                     {
