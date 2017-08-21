@@ -89,26 +89,12 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            // Since this is a partner flow, onlineID represents the
-            // res.partner id.
 
-            // Use that partner id to get the company id
-            var companyID = 0;
-
-            // Tell the sync flow base, that this partner flow requires
-            // the res.company
-            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            // Since this is a partner flow, onlineID represents the
-            // dboPerson id.
 
-            // Use the person id to get the xBPKAccount id
-            var bpkAccount = 0;
-
-            RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpkAccount);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
