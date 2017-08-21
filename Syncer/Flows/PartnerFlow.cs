@@ -99,8 +99,42 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            // Load studio model, save it to online
-            throw new NotImplementedException();
+            dboPerson person = null;
+            dboPersonOdooResPartner syncDetails = null;
+            dboPersonAdresse address = null;
+            dboPersonEmail email = null;
+            dboPersonTelefon phone = null;
+
+            using (var personSvc = Mdb.GetDataService<dboPerson>())
+            using (var persOdoo = Mdb.GetDataService<dboPersonOdooResPartner>())
+            using (var addressSvc = Mdb.GetDataService<dboPersonAdresse>())
+            using (var emailSvc = Mdb.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = Mdb.GetDataService<dboPersonTelefon>())
+            {
+                person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
+                syncDetails = persOdoo.Read(new { PersonID = studioID }).SingleOrDefault();
+
+                if (syncDetails.PersonAdresseID.HasValue)
+                    address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
+
+                if (syncDetails.PersonEmailID.HasValue)
+                    email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
+
+                if (syncDetails.PersonTelefonID.HasValue)
+                    phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
+            }
+
+            if (action == TransformType.CreateNew)
+            {
+
+                // Create res.partner
+                //Odoo.Client.CreateModel("res.partner", null, false);
+            }
+            else
+            {
+                // Update res.partner
+
+            }
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
