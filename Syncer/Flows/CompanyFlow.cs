@@ -64,7 +64,7 @@ namespace Syncer.Flows
 
             if (acc != null)
             {
-                var writeDate = acc.sosync_write_date.HasValue ? acc.sosync_write_date.Value.ToUniversalTime() : (DateTime?)null;
+                var writeDate = acc.sosync_write_date;
                 return new ModelInfo(studioID, acc.res_company_id, writeDate);
             }
 
