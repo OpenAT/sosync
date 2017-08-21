@@ -56,14 +56,26 @@ namespace Syncer.Flows
 
                 if (syncDetails != null)
                 {
-                    var address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
-                    writeDates.Add(address.write_date);
+                    dboPersonAdresse address = null;
+                    if (syncDetails.PersonAdresseID.HasValue)
+                    {
+                        address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
+                        writeDates.Add(address.write_date);
+                    }
 
-                    var email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
-                    writeDates.Add(email.write_date);
+                    dboPersonEmail email = null;
+                    if (syncDetails.PersonEmailID.HasValue)
+                    {
+                        email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
+                        writeDates.Add(email.write_date);
+                    }
 
-                    var phone = emailSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
-                    writeDates.Add(phone.write_date);
+                    dboPersonTelefon phone = null;
+                    if (syncDetails.PersonTelefonID.HasValue)
+                    {
+                        phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
+                        writeDates.Add(phone.write_date);
+                    }
 
                     return new ModelInfo(studioID, syncDetails.res_partner_id, writeDates.Max());
                 }
