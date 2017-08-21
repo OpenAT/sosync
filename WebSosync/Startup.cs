@@ -108,6 +108,7 @@ namespace WebSosync
             services.AddTransient<DataService>();
             services.AddTransient<GitService>();
             services.AddTransient<OdooService>();
+            services.AddTransient<OdooFormatService>();
             services.AddSingleton<MdbService>();
 
             // Automatic registering of all data flows in the syncer project
