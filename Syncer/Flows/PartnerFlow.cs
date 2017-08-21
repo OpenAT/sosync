@@ -26,12 +26,15 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            var dic = Odoo.Client.GetDictionary("res.partner", 1, new string[] { "id", "sosync_fs_id", "write_date" });
+            var dic = Odoo.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
+
+            if (dic.Count == 1 && dic.Keys.Contains("value") && Convert.ToInt32(dic["value"]) == 0)
+                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
 
             if (!string.IsNullOrEmpty((string)dic["sosync_fs_id"]))
-                return new ModelInfo(onlineID, int.Parse((string)dic["sosync_fs_id"]), DateTime.Parse((string)dic["write_date"]));
+                return new ModelInfo(onlineID, int.Parse((string)dic["sosync_fs_id"]), DateTime.Parse((string)dic["sosync_write_date"]));
             else
-                return new ModelInfo(onlineID, null, DateTime.Parse((string)dic["write_date"]));
+                return new ModelInfo(onlineID, null, DateTime.Parse((string)dic["sosync_write_date"]));
         }
 
         private DateTime? GetPersonSosyncWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail mail, dboPersonTelefon phone)
@@ -49,6 +52,10 @@ namespace Syncer.Flows
 
             if (phone != null)
                 writeDates.Add(phone.write_date);
+
+
+            if (writeDates.Count == 0)
+                return null;
 
             return writeDates.Max();
         }
@@ -138,24 +145,31 @@ namespace Syncer.Flows
 
                 if (syncDetails.PersonTelefonID.HasValue)
                     phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
-            }
 
-            var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
+                var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
 
-            if (action == TransformType.CreateNew)
-            {
-                var data = new Dictionary<string, object>();
+                if (action == TransformType.CreateNew)
+                {
+                    var data = new Dictionary<string, object>();
 
-                data.Add("sosync_fs_id", person.PersonID);
-                data.Add("sosync_write_date", sosync_write_date);
+                    data.Add("firstname", OdooFormat.ToString(person.Vorname));
+                    data.Add("lastname", OdooFormat.ToString(person.Name));
+                    data.Add("name_zwei", OdooFormat.ToString(person.Name2));
+                    data.Add("sosync_fs_id", person.PersonID);
+                    data.Add("sosync_write_date", OdooFormat.ToDateTime(sosync_write_date.Value.ToUniversalTime()));
 
-                // Create res.partner
-                Odoo.Client.CreateModel("res.partner", data, false);
-            }
-            else
-            {
-                // Update res.partner
+                    // Create res.partner
+                    int odooPartnerId = Odoo.Client.CreateModel("res.partner", data, false);
 
+                    // Update the remote id in studio
+                    syncDetails.res_partner_id = odooPartnerId;
+                    persOdoo.Update(syncDetails);
+                }
+                else
+                {
+                    // Update res.partner
+
+                }
             }
         }
 
