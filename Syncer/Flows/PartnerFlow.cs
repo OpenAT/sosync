@@ -34,9 +34,27 @@ namespace Syncer.Flows
                 return new ModelInfo(onlineID, null, DateTime.Parse((string)dic["write_date"]));
         }
 
+        private DateTime? GetPersonSosyncWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail mail, dboPersonTelefon phone)
+        {
+            var writeDates = new List<DateTime>();
+
+            if (person.sosync_write_date.HasValue)
+                writeDates.Add(person.sosync_write_date.Value);
+
+            if (address != null)
+                writeDates.Add(address.write_date);
+
+            if (mail != null)
+                writeDates.Add(mail.write_date);
+
+            if (phone != null)
+                writeDates.Add(phone.write_date);
+
+            return writeDates.Max();
+        }
+
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            var writeDates = new List<DateTime>(3);
 
             dboPerson person = null;
             dboPersonOdooResPartner syncDetails = null;
@@ -49,7 +67,6 @@ namespace Syncer.Flows
             {
                 // Load person and sosync write date
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
-                writeDates.Add(person.sosync_write_date ?? DateTime.MinValue);
 
                 // Get the associated ids for the detail tables
                 syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
@@ -61,24 +78,23 @@ namespace Syncer.Flows
                     if (syncDetails.PersonAdresseID.HasValue)
                     {
                         address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
-                        writeDates.Add(address.write_date);
                     }
 
                     dboPersonEmail email = null;
                     if (syncDetails.PersonEmailID.HasValue)
                     {
                         email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
-                        writeDates.Add(email.write_date);
                     }
 
                     dboPersonTelefon phone = null;
                     if (syncDetails.PersonTelefonID.HasValue)
                     {
                         phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
-                        writeDates.Add(phone.write_date);
                     }
 
-                    return new ModelInfo(studioID, syncDetails.res_partner_id, writeDates.Max());
+                    var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
+
+                    return new ModelInfo(studioID, syncDetails.res_partner_id, sosync_write_date);
                 }
                 else
                 {
@@ -124,11 +140,17 @@ namespace Syncer.Flows
                     phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
             }
 
+            var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
+
             if (action == TransformType.CreateNew)
             {
+                var data = new Dictionary<string, object>();
+
+                data.Add("sosync_fs_id", person.PersonID);
+                data.Add("sosync_write_date", sosync_write_date);
 
                 // Create res.partner
-                //Odoo.Client.CreateModel("res.partner", null, false);
+                Odoo.Client.CreateModel("res.partner", data, false);
             }
             else
             {
