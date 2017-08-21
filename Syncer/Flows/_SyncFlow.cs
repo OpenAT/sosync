@@ -52,6 +52,8 @@ namespace Syncer.Flows
             get { return _mdb; }
         }
 
+        protected OdooFormatService OdooFormat { get; private set; }
+
         public CancellationToken CancelToken
         {
             get { return _cancelToken; }
@@ -66,6 +68,7 @@ namespace Syncer.Flows
             _log = _svc.GetService<ILogger<SyncFlow>>();
             _odoo = _svc.GetService<OdooService>();
             _mdb = _svc.GetService<MdbService>();
+            OdooFormat = _svc.GetService<OdooFormatService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
         }
@@ -349,7 +352,7 @@ namespace Syncer.Flows
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
 
                 if (onlineInfo == null)
-                    throw new SourceModelNotFoundException(
+                    throw new ModelNotFoundException(
                         SosyncSystem.FSOnline,
                         job.Job_Source_Model,
                         job.Job_Source_Record_ID);
@@ -362,7 +365,7 @@ namespace Syncer.Flows
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
 
                 if (studioInfo == null)
-                    throw new SourceModelNotFoundException(
+                    throw new ModelNotFoundException(
                         SosyncSystem.FundraisingStudio,
                         job.Job_Source_Model,
                         job.Job_Source_Record_ID);
@@ -396,7 +399,11 @@ namespace Syncer.Flows
                 // considered equal
                 var toleranceMS = 999;
 
-                var diff = GetWriteDateDifference(onlineInfo.SosyncWriteDate.Value, studioInfo.SosyncWriteDate.Value, toleranceMS);
+                var diff = GetWriteDateDifference(
+                    onlineInfo.SosyncWriteDate.Value,
+                    studioInfo.SosyncWriteDate.Value.ToUniversalTime(),
+                    toleranceMS);
+
                 if (diff.TotalMilliseconds == 0)
                 {
                     // Both models are within tolerance, and considered up to date.
@@ -482,9 +489,15 @@ namespace Syncer.Flows
             else
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
 
+            if (!currentInfo.SosyncWriteDate.HasValue)
+                throw new MissingSosyncWriteDateException(
+                    job.Sync_Source_System,
+                    job.Sync_Source_Model,
+                    job.Sync_Source_Record_ID.Value);
+
             // Do not use any tolerance here. It's a check to see if the provided write date
             // is different from what is currently in the model
-            if (writeDate.Value == currentInfo.SosyncWriteDate.Value)
+            if (writeDate.HasValue && writeDate.Value == currentInfo.SosyncWriteDate.Value)
                 return true;
 
             return false;
