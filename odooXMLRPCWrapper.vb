@@ -461,6 +461,8 @@ Public Class odooXMLRPCWrapper
         date_list.Add("expiration_date")
         date_list.Add("BPKForcedBirthdate")
 
+        data.Add("test", "")
+
         Dim xml_args As New XmlRpcStruct()
         If data IsNot Nothing Then
             For Each item In data
@@ -477,6 +479,10 @@ Public Class odooXMLRPCWrapper
 
                 If value IsNot Nothing AndAlso value.GetType() Is GetType(Decimal) Then
                     value = CType(value, Decimal).ToString("G").Replace(",", ".")
+                End If
+
+                If value IsNot Nothing AndAlso value.GetType Is GetType(String) AndAlso String.IsNullOrEmpty(value) Then
+                    value = Nothing
                 End If
 
                 xml_args.Add(item.Key, value)
