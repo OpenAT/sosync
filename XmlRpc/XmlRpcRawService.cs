@@ -110,7 +110,7 @@ namespace XmlRpc
 
                 foreach (XmlNode member in e.FirstChild.ChildNodes)
                 {
-                    if (member["value"].FirstChild.Name == "array")
+                    if (member.HasChildNodes && member["value"].FirstChild.Name == "array")
                     {
                         var list = new List<object>();
 
@@ -119,9 +119,13 @@ namespace XmlRpc
 
                         result.Add(member["name"].InnerText, list);
                     }
-                    else
+                    else if (member.HasChildNodes)
                     {
                         result.Add(member["name"].InnerText, member["value"].InnerText);
+                    }
+                    else
+                    {
+                        result.Add("value", member.Value);
                     }
                 }
 
