@@ -240,32 +240,10 @@ namespace XmlRpc
 
                 if (t.GetTypeInfo().IsClass && t != typeof(string) && !t.IsArray)
                 {
-                    var properties = t.GetProperties();
-                    foreach (var prop in properties)
-                    {
-                        var attIgnore = prop.GetCustomAttribute<IgnoreDataMemberAttribute>();
-
-                        if (attIgnore == null)
-                        {
-                            var att = prop.GetCustomAttribute<DataMemberAttribute>();
-
-                            object propValue = prop.GetValue(arg);
-
-                            if (propValue != null)
-                            {
-                                string propName = prop.Name;
-
-                                if (att != null)
-                                    propName = att.Name;
-
-                                string propType = GetXmlRpcType(propValue);
-
-                                content.Append("<member>");
-                                content.Append($"<name>{propName}</name><value>{GetXmlRpcValueNode(propValue)}</value>");
-                                content.AppendLine("</member>");
-                            }
-                        }
-                    }
+                    if (t == typeof(Dictionary<string, object>))
+                        FillContentFromDictionary((Dictionary<string, object> )arg, content);
+                    else
+                        FillContentFromProperties(arg, content);
                 }
                 else if (t.GetTypeInfo().IsClass && t.IsArray)
                 {
@@ -283,6 +261,48 @@ namespace XmlRpc
             }
 
             return content.ToString();
+        }
+
+        private void FillContentFromProperties(object arg, StringBuilder content)
+        {
+            Type t = arg.GetType();
+
+            var properties = t.GetProperties();
+            foreach (var prop in properties)
+            {
+                var attIgnore = prop.GetCustomAttribute<IgnoreDataMemberAttribute>();
+
+                if (attIgnore == null)
+                {
+                    var att = prop.GetCustomAttribute<DataMemberAttribute>();
+
+                    object propValue = prop.GetValue(arg);
+
+                    if (propValue != null)
+                    {
+                        string propName = prop.Name;
+
+                        if (att != null)
+                            propName = att.Name;
+
+                        string propType = GetXmlRpcType(propValue);
+
+                        content.Append("<member>");
+                        content.Append($"<name>{propName}</name><value>{GetXmlRpcValueNode(propValue)}</value>");
+                        content.AppendLine("</member>");
+                    }
+                }
+            }
+        }
+
+        private void FillContentFromDictionary(Dictionary<string, object> arg, StringBuilder content)
+        {
+            foreach (var entry in arg)
+            {
+                content.Append("<member>");
+                content.Append($"<name>{entry.Key}</name><value>{GetXmlRpcValueNode(entry.Value)}</value>");
+                content.AppendLine("</member>");
+            }
         }
 
         private string GetXmlRpcValue(string rpcType, object value)
