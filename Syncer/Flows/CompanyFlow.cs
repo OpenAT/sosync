@@ -35,20 +35,18 @@ namespace Syncer.Flows
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             // Get company ids and write date
-            var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "partner_id", "sosync_write_date" });
-            var partnerID = Convert.ToInt32(((List<Object>)dicCompany["partner_id"])[0]);
+            var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
-            // A company is a partner, so to get the sosync_fs_id for the company, the corresponding partner is needed
-            var dicPartner = Odoo.Client.GetDictionary("res.partner", partnerID, new string[] { "sosync_fs_id", "sosync_write_date" });
+            int fsID = 0;
+            Int32.TryParse((string)dicCompany["sosync_fs_id"], out fsID);
 
-            // Pick sosync_fs_id from the partner entry of the company, and the write date from the company itself
-            var fsIdStr = (string)dicPartner["sosync_fs_id"];
-            var writeDateStr = (string)dicPartner["sosync_write_date"];
+            var writeDateStr = (string)dicCompany["sosync_write_date"];
 
-            if (!string.IsNullOrEmpty(fsIdStr) && Convert.ToInt32(fsIdStr) > 0)
-                return new ModelInfo(onlineID, Convert.ToInt32(fsIdStr), DateTime.Parse(writeDateStr));
-            else
-                return new ModelInfo(onlineID, null, DateTime.Parse((string)dicPartner["sosync_write_date"]));
+            DateTime? writeDate = null;
+            if (writeDateStr != "0")
+                writeDate = DateTime.Parse(writeDateStr);
+
+            return new ModelInfo(onlineID, fsID > 0 ? fsID : (int?)null, writeDate);
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -83,29 +81,17 @@ namespace Syncer.Flows
                     // Create the company
                     int odooCompanyId = Odoo.Client.CreateModel(
                         "res.company",
-                        new { name = acc.Name, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
+                        new { name = acc.Name, sosync_fs_id = acc.xBPKAccountID, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
                         false);
 
                     // Update the odoo company id in mssql
                     acc.res_company_id = odooCompanyId;
                     db.Update(acc);
-
-                    // Load the newly created company to get the partner id
-                    var company = Odoo.Client.GetModel<resCompany>("res.company", odooCompanyId);
-                    var partnerID = Convert.ToInt32(company.Partner[0]);
-
-                    // Update the sosync_fs_id on the partner
-                    Odoo.Client.UpdateModel(
-                        "res.partner",
-                        new { sosync_fs_id = studioID },
-                        partnerID,
-                        false);
                 }
                 else
                 {
                     // Request the current data from Odoo
                     var company = Odoo.Client.GetModel<resCompany>("res.company", acc.res_company_id.Value);
-                    var partnerID = Convert.ToInt32(company.Partner[0]);
 
                     UpdateSyncTargetDataBeforeUpdate(Odoo.Client.LastResponseRaw);
 
@@ -114,13 +100,6 @@ namespace Syncer.Flows
                         new { name = acc.Name, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
                         acc.res_company_id.Value,
                         false);
-
-                    // Only until res.company supports sosync_write_date directly
-                    Odoo.Client.UpdateModel(
-                        "res.partner",
-                        new { sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
-                        partnerID,
-                        false);
                 }
             }
         }
@@ -128,15 +107,6 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var company = Odoo.Client.GetModel<resCompany>("res.company", onlineID);
-
-            // A company is a partner, so to get the sosync_fs_id for the company, the corresponding partner is needed
-            var dicPartner = Odoo.Client.GetDictionary(
-                "res.partner",
-                Convert.ToInt32(company.Partner[0]),
-                new string[] { "sosync_fs_id", "sosync_write_date" });
-
-            company.Sosync_Write_Date = Convert.ToDateTime(
-                dicPartner["sosync_write_date"]).ToLocalTime();
 
             using (var db = Mdb.GetDataService<dboxBPKAccount>())
             {
@@ -151,17 +121,17 @@ namespace Syncer.Flows
 
                     db.Create(entry);
                     Odoo.Client.UpdateModel(
-                        "res.partner",
-                        new { sosync_fs_id = entry.xBPKAccountID, sosync_write_date = entry.sosync_write_date },
-                        Convert.ToInt32(company.Partner[0]),
+                        "res.company",
+                        new { sosync_fs_id = entry.xBPKAccountID },
+                        onlineID,
                         false);
                 }
                 else
                 {
-                    var sosync_fs_id = Convert.ToInt32(dicPartner["sosync_fs_id"]);
+                    var sosync_fs_id = company.Sosync_FS_ID;
                     var acc = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
                     acc.Name = company.Name;
-                    acc.sosync_write_date = company.Sosync_Write_Date;
+                    acc.sosync_write_date = company.Sosync_Write_Date.Value.ToLocalTime();
                     db.Update(acc);
                 }
             }
