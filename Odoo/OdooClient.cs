@@ -179,9 +179,9 @@ namespace Odoo
             {
                 object context = null;
                 if (create_sync_job == false)
-                    context = new { lang = Language };
-                else
                     context = new { lang = Language, create_sync_job = create_sync_job };
+                else
+                    context = new { lang = Language };
 
                 var result = (int)_rpcObject.execute_kw<int>(
                     Database,
@@ -207,9 +207,9 @@ namespace Odoo
             {
                 object context = null;
                 if (create_sync_job == false)
-                    context = new { lang = Language };
-                else
                     context = new { lang = Language, create_sync_job = create_sync_job };
+                else
+                    context = new { lang = Language };
 
                 var result = (int)_rpcObject.execute_kw<int>(
                     Database,
@@ -245,9 +245,9 @@ namespace Odoo
             {
                 object context = null;
                 if (create_sync_job == false)
-                    context = new { lang = Language };
-                else
                     context = new { lang = Language, create_sync_job = create_sync_job };
+                else
+                    context = new { lang = Language };
 
                 var result = _rpcObject.execute_kw<int>(
                     Database,
@@ -275,9 +275,9 @@ namespace Odoo
             {
                 object context = null;
                 if (create_sync_job == false)
-                    context = new { lang = Language };
-                else
                     context = new { lang = Language, create_sync_job = create_sync_job };
+                else
+                    context = new { lang = Language };
 
                 var result = _rpcObject.execute_kw<int>(
                     Database,
