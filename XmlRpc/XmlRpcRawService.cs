@@ -341,6 +341,7 @@ namespace XmlRpc
             switch (rpcType)
             {
                 case "dateTime.iso8601": result = ((DateTime)value).ToString("o"); break;
+                case "boolean": result = ((bool)value ? 1 : 0).ToString(); break;
                 default: result = XmlHelper.ToXmlString(Convert.ToString(value)); break;
             }
 
@@ -355,6 +356,9 @@ namespace XmlRpc
 
             if (t == null)
                 t = arg.GetType();
+
+            if (t == typeof(bool))
+                return "boolean";
 
             if (t == typeof(int))
                 return "int";
