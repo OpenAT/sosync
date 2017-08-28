@@ -82,7 +82,7 @@ namespace XmlRpc
                 {
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(response.Content.ReadAsStringAsync().Result);
-
+                    ThrowOnFaultResponse(doc);
                     result = GetXmlRpcResult(typeArgs[0], doc["methodResponse"]["params"]["param"]["value"]);
                 }
                 else
@@ -100,6 +100,31 @@ namespace XmlRpc
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Throws an exception if the provided XML document contains a XML-RPC
+        /// fault result.
+        /// </summary>
+        /// <param name="doc">XML document to be analyzed</param>
+        private void ThrowOnFaultResponse(XmlDocument doc)
+        {
+            if (doc["methodResponse"].FirstChild.Name.ToLower() == "fault")
+            {
+                var faultNode = doc["methodResponse"]["fault"]["value"]["struct"];
+                string faultCode = "";
+                string faultString = "";
+
+                foreach (XmlNode subNode in faultNode.ChildNodes)
+                {
+                    if (subNode["name"].InnerText.ToLower() == "faultcode")
+                        faultCode = subNode["value"]["int"].InnerText;
+                    else if (subNode["name"].InnerText.ToLower() == "faultstring")
+                        faultString = subNode["value"].InnerText;
+                }
+
+                throw new Exception($"XML-RPC returned fault code: {faultCode}\n\n{faultString}");
+            }
         }
 
         private object GetXmlRpcResult(Type t, XmlElement e)
