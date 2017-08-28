@@ -35,7 +35,10 @@ namespace Syncer.Flows
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             // Get company ids and write date
-            var dicCompany = Odoo.Client.GetDictionary("res.company", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
+            var dicCompany = Odoo.Client.GetDictionary(
+                "res.company",
+                onlineID,
+                new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
             int fsID = 0;
             Int32.TryParse((string)dicCompany["sosync_fs_id"], out fsID);
