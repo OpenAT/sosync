@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -53,6 +54,7 @@ namespace Syncer.Flows
         }
 
         protected OdooFormatService OdooFormat { get; private set; }
+        protected SerializationService Serializer { get; private set; }
 
         public CancellationToken CancelToken
         {
@@ -69,6 +71,7 @@ namespace Syncer.Flows
             _odoo = _svc.GetService<OdooService>();
             _mdb = _svc.GetService<MdbService>();
             OdooFormat = _svc.GetService<OdooFormatService>();
+            Serializer = _svc.GetService<SerializationService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
         }

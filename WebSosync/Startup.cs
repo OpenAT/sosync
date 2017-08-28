@@ -11,6 +11,7 @@ using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.IO;
+using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -94,6 +95,7 @@ namespace WebSosync
             services.AddSingleton<IServiceCollection>(services);
             services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IConfiguration>(Configuration);
+            services.AddSingleton<MdbService>();
 
             var flowService = new FlowService();
             services.AddSingleton(flowService);
@@ -109,7 +111,7 @@ namespace WebSosync
             services.AddTransient<GitService>();
             services.AddTransient<OdooService>();
             services.AddTransient<OdooFormatService>();
-            services.AddSingleton<MdbService>();
+            services.AddTransient<SerializationService>();
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);
