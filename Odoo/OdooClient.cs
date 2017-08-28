@@ -42,6 +42,20 @@ namespace Odoo
 
         #region Methods
         /// <summary>
+        /// Creates the additional parameters for execute_kw, including the context
+        /// and create_sync_job parameters.
+        /// </summary>
+        /// <param name="create_sync_job">Value for create_sync_job_parameter, if null the parameter will be omitted.</param>
+        /// <returns></returns>
+        private object CreateAdditional(bool? create_sync_job)
+        {
+            if (create_sync_job.HasValue)
+                return new { context = new { lang = Language }, create_sync_job = create_sync_job };
+            else
+                return new { context = new { lang = Language } };
+        }
+
+        /// <summary>
         /// Authorizes the specified user and internally stores the user ID.
         /// </summary>
         /// <param name="user">The user for the client.</param>
@@ -173,15 +187,11 @@ namespace Odoo
         /// <param name="modelName">The Odoo model name for the model to be created.</param>
         /// <param name="model">The actual model with the data.</param>
         /// <returns></returns>
-        public int CreateModel<T>(string modelName, T model, bool create_sync_job) where T: class
+        public int CreateModel<T>(string modelName, T model, bool? create_sync_job) where T: class
         {
             try
             {
-                object context = null;
-                if (create_sync_job == false)
-                    context = new { lang = Language, create_sync_job = create_sync_job };
-                else
-                    context = new { lang = Language };
+                object additional = CreateAdditional(create_sync_job);
 
                 var result = (int)_rpcObject.execute_kw<int>(
                     Database,
@@ -190,7 +200,7 @@ namespace Odoo
                     modelName,
                     "create",
                     new T[] { model },
-                    new { context = context });
+                    additional);
 
                 return result;
             }
@@ -201,15 +211,11 @@ namespace Odoo
             }
         }
 
-        public int CreateModel(string modelName, object model, bool create_sync_job)
+        public int CreateModel(string modelName, object model, bool? create_sync_job)
         {
             try
             {
-                object context = null;
-                if (create_sync_job == false)
-                    context = new { lang = Language, create_sync_job = create_sync_job };
-                else
-                    context = new { lang = Language };
+                object additional = CreateAdditional(create_sync_job);
 
                 var result = (int)_rpcObject.execute_kw<int>(
                     Database,
@@ -218,7 +224,7 @@ namespace Odoo
                     modelName,
                     "create",
                     new object[] { model },
-                    new { context = context });
+                    additional);
 
                 return result;
             }
@@ -236,18 +242,14 @@ namespace Odoo
         /// <typeparam name="T">Type used for mapping.</typeparam>
         /// <param name="modelName">The Odoo model name for the model to be updated.</param>
         /// <param name="model">The actual model with the data.</param>
-        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool create_sync_job) where T : class
+        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool? create_sync_job) where T : class
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
             try
             {
-                object context = null;
-                if (create_sync_job == false)
-                    context = new { lang = Language, create_sync_job = create_sync_job };
-                else
-                    context = new { lang = Language };
+                object additional = CreateAdditional(create_sync_job);
 
                 var result = _rpcObject.execute_kw<int>(
                     Database,
@@ -256,7 +258,7 @@ namespace Odoo
                     modelName,
                     "write",
                     new object[] { new int[] { fsoId }, model },
-                    new { context = context });
+                    additional);
 
                 return result != 0;
             }
@@ -267,18 +269,14 @@ namespace Odoo
             }
         }
 
-        public bool UpdateModel(string modelName, object model, int fsoId, bool create_sync_job)
+        public bool UpdateModel(string modelName, object model, int fsoId, bool? create_sync_job)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
             try
             {
-                object context = null;
-                if (create_sync_job == false)
-                    context = new { lang = Language, create_sync_job = create_sync_job };
-                else
-                    context = new { lang = Language };
+                object additional = CreateAdditional(create_sync_job);
 
                 var result = _rpcObject.execute_kw<int>(
                     Database,
@@ -287,7 +285,7 @@ namespace Odoo
                     modelName,
                     "write",
                     new object[] { new int[] { fsoId }, model },
-                    new { context = context });
+                    additional);
 
                 return result != 0;
             }
