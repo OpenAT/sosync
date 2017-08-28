@@ -295,6 +295,17 @@ namespace Odoo
                 LastResponseRaw = _rpcObject.LastResponse;
             }
         }
+
+        public bool IsValidResult(Dictionary<string, object> dic)
+        {
+            if (dic == null)
+                throw new InvalidOperationException($"{nameof(dic)} cannot be null.");
+
+            if (dic.Count == 1 && dic.Keys.Contains("value") && Convert.ToInt32(dic["value"]) == 0)
+                return false;
+
+            return true;
+        }
         #endregion
     }
 }

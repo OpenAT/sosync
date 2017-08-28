@@ -42,12 +42,12 @@ namespace Syncer.Flows
             get { return _svc; }
         }
 
-        protected OdooService Odoo
+        protected OdooService OdooService
         {
             get { return _odoo; }
         }
 
-        protected MdbService Mdb
+        protected MdbService MdbService
         {
             get { return _mdb; }
         }

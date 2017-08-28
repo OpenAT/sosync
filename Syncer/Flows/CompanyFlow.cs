@@ -9,6 +9,8 @@ using Syncer.Enumerations;
 using Odoo;
 using Odoo.Models;
 using dadi_data.Models;
+using Syncer.Exceptions;
+using WebSosync.Data;
 
 namespace Syncer.Flows
 {
@@ -35,21 +37,18 @@ namespace Syncer.Flows
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             // Get company ids and write date
-            var dicCompany = Odoo.Client.GetDictionary(
+            var dicCompany = OdooService.Client.GetDictionary(
                 "res.company",
                 onlineID,
                 new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
-            int fsID = 0;
-            Int32.TryParse((string)dicCompany["sosync_fs_id"], out fsID);
+            if (OdooService.Client.IsValidResult(dicCompany))
+                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.company", onlineID);
 
-            var writeDateStr = (string)dicCompany["sosync_write_date"];
+            var fsID = OdooConvert.ToInt32((string)dicCompany["sosync_fs_id"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicCompany["sosync_write_date"]);
 
-            DateTime? writeDate = null;
-            if (writeDateStr != "0")
-                writeDate = DateTime.Parse(writeDateStr);
-
-            return new ModelInfo(onlineID, fsID > 0 ? fsID : (int?)null, writeDate);
+            return new ModelInfo(onlineID, fsID, writeDate);
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -58,7 +57,7 @@ namespace Syncer.Flows
             // So get the write date from that table
             dboxBPKAccount acc = null;
 
-            using (var db = Mdb.GetDataService<dboxBPKAccount>())
+            using (var db = MdbService.GetDataService<dboxBPKAccount>())
             {
                 acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
             }
@@ -75,14 +74,14 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboxBPKAccount acc = null;
-            using (var db = Mdb.GetDataService<dboxBPKAccount>())
+            using (var db = MdbService.GetDataService<dboxBPKAccount>())
             {
                 acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
 
                 if (action == TransformType.CreateNew)
                 {
                     // Create the company
-                    int odooCompanyId = Odoo.Client.CreateModel(
+                    int odooCompanyId = OdooService.Client.CreateModel(
                         "res.company",
                         new { name = acc.Name, sosync_fs_id = acc.xBPKAccountID, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
                         false);
@@ -94,11 +93,11 @@ namespace Syncer.Flows
                 else
                 {
                     // Request the current data from Odoo
-                    var company = Odoo.Client.GetModel<resCompany>("res.company", acc.res_company_id.Value);
+                    var company = OdooService.Client.GetModel<resCompany>("res.company", acc.res_company_id.Value);
 
-                    UpdateSyncTargetDataBeforeUpdate(Odoo.Client.LastResponseRaw);
+                    UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
 
-                    Odoo.Client.UpdateModel(
+                    OdooService.Client.UpdateModel(
                         "res.company",
                         new { name = acc.Name, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
                         acc.res_company_id.Value,
@@ -109,9 +108,9 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            var company = Odoo.Client.GetModel<resCompany>("res.company", onlineID);
+            var company = OdooService.Client.GetModel<resCompany>("res.company", onlineID);
 
-            using (var db = Mdb.GetDataService<dboxBPKAccount>())
+            using (var db = MdbService.GetDataService<dboxBPKAccount>())
             {
                 if (action == TransformType.CreateNew)
                 {
@@ -123,7 +122,7 @@ namespace Syncer.Flows
                     };
 
                     db.Create(entry);
-                    Odoo.Client.UpdateModel(
+                    OdooService.Client.UpdateModel(
                         "res.company",
                         new { sosync_fs_id = entry.xBPKAccountID },
                         onlineID,

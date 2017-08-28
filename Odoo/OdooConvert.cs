@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Odoo
 {
-    public static class Convert
+    public static class OdooConvert
     {
         public static int? ToInt32(string value)
         {

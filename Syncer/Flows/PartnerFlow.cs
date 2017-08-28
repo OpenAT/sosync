@@ -1,4 +1,5 @@
 ﻿using dadi_data.Models;
+using Odoo;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
@@ -26,15 +27,15 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            var dic = Odoo.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
+            var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
-            if (dic.Count == 1 && dic.Keys.Contains("value") && Convert.ToInt32(dic["value"]) == 0)
+            if (OdooService.Client.IsValidResult(dicPartner))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
 
-            if (!string.IsNullOrEmpty((string)dic["sosync_fs_id"]))
-                return new ModelInfo(onlineID, int.Parse((string)dic["sosync_fs_id"]), DateTime.Parse((string)dic["sosync_write_date"]));
-            else
-                return new ModelInfo(onlineID, null, DateTime.Parse((string)dic["sosync_write_date"]));
+            var fsID = OdooConvert.ToInt32((string)dicPartner["sosync_fs_id"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicPartner["sosync_write_date"]);
+
+            return new ModelInfo(onlineID, fsID, writeDate);
         }
 
         private DateTime? GetPersonSosyncWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail mail, dboPersonTelefon phone)
@@ -66,11 +67,11 @@ namespace Syncer.Flows
             dboPerson person = null;
             dboPersonOdooResPartner syncDetails = null;
 
-            using (var personSvc = Mdb.GetDataService<dboPerson>())
-            using (var persOdoo = Mdb.GetDataService<dboPersonOdooResPartner>())
-            using (var addressSvc = Mdb.GetDataService<dboPersonAdresse>())
-            using (var emailSvc = Mdb.GetDataService<dboPersonEmail>())
-            using (var phoneSvc = Mdb.GetDataService<dboPersonTelefon>())
+            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
+            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 // Load person and sosync write date
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
@@ -128,11 +129,11 @@ namespace Syncer.Flows
             dboPersonEmail email = null;
             dboPersonTelefon phone = null;
 
-            using (var personSvc = Mdb.GetDataService<dboPerson>())
-            using (var persOdoo = Mdb.GetDataService<dboPersonOdooResPartner>())
-            using (var addressSvc = Mdb.GetDataService<dboPersonAdresse>())
-            using (var emailSvc = Mdb.GetDataService<dboPersonEmail>())
-            using (var phoneSvc = Mdb.GetDataService<dboPersonTelefon>())
+            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
+            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
                 syncDetails = persOdoo.Read(new { PersonID = studioID }).SingleOrDefault();
@@ -159,7 +160,7 @@ namespace Syncer.Flows
                     data.Add("sosync_write_date", OdooFormat.ToDateTime(sosync_write_date.Value.ToUniversalTime()));
 
                     // Create res.partner
-                    int odooPartnerId = Odoo.Client.CreateModel("res.partner", data, false);
+                    int odooPartnerId = OdooService.Client.CreateModel("res.partner", data, false);
 
                     // Update the remote id in studio
                     syncDetails.res_partner_id = odooPartnerId;
