@@ -42,7 +42,7 @@ namespace Syncer.Flows
                 onlineID,
                 new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
-            if (OdooService.Client.IsValidResult(dicCompany))
+            if (!OdooService.Client.IsValidResult(dicCompany))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.company", onlineID);
 
             var fsID = OdooConvert.ToInt32((string)dicCompany["sosync_fs_id"]);

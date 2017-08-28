@@ -29,7 +29,7 @@ namespace Syncer.Flows
         {
             var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
 
-            if (OdooService.Client.IsValidResult(dicPartner))
+            if (!OdooService.Client.IsValidResult(dicPartner))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
 
             var fsID = OdooConvert.ToInt32((string)dicPartner["sosync_fs_id"]);
