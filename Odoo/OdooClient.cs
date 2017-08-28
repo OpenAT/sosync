@@ -267,33 +267,6 @@ namespace Odoo
             }
         }
 
-        public bool UpdateModelTEST<T>(string modelName, T model, int fsoId, bool create_sync_job) where T : class
-        {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model));
-
-            try
-            {
-                object context = context = new { lang = Language };
-
-                var result = _rpcObject.execute_kw<int>(
-                    Database,
-                    _uid,
-                    Password,
-                    modelName,
-                    "write",
-                    new object[] { new int[] { fsoId }, model },
-                    new { create_sync_job = create_sync_job, context = context });
-
-                return result != 0;
-            }
-            finally
-            {
-                LastRequestRaw = _rpcObject.LastRequest;
-                LastResponseRaw = _rpcObject.LastResponse;
-            }
-        }
-
         public bool UpdateModel(string modelName, object model, int fsoId, bool create_sync_job)
         {
             if (model == null)
