@@ -255,7 +255,8 @@ namespace Odoo
                     Password,
                     modelName,
                     "write",
-                    new object[] { new int[] { fsoId }, model, context });
+                    new object[] { new int[] { fsoId }, model },
+                    new { context = context });
 
                 return result != 0;
             }
@@ -312,7 +313,8 @@ namespace Odoo
                     Password,
                     modelName,
                     "write",
-                    new object[] { new int[] { fsoId }, model, context });
+                    new object[] { new int[] { fsoId }, model },
+                    new { context = context });
 
                 return result != 0;
             }
