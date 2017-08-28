@@ -187,7 +187,7 @@ namespace Odoo
         /// <param name="modelName">The Odoo model name for the model to be created.</param>
         /// <param name="model">The actual model with the data.</param>
         /// <returns></returns>
-        public int CreateModel<T>(string modelName, T model, bool? create_sync_job) where T: class
+        public int CreateModel<T>(string modelName, T model, bool? create_sync_job = null) where T: class
         {
             try
             {
@@ -211,7 +211,7 @@ namespace Odoo
             }
         }
 
-        public int CreateModel(string modelName, object model, bool? create_sync_job)
+        public int CreateModel(string modelName, object model, bool? create_sync_job = null)
         {
             try
             {
@@ -242,7 +242,7 @@ namespace Odoo
         /// <typeparam name="T">Type used for mapping.</typeparam>
         /// <param name="modelName">The Odoo model name for the model to be updated.</param>
         /// <param name="model">The actual model with the data.</param>
-        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool? create_sync_job) where T : class
+        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool? create_sync_job = null) where T : class
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -269,7 +269,7 @@ namespace Odoo
             }
         }
 
-        public bool UpdateModel(string modelName, object model, int fsoId, bool? create_sync_job)
+        public bool UpdateModel(string modelName, object model, int fsoId, bool? create_sync_job = null)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
