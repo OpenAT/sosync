@@ -680,7 +680,7 @@ namespace Syncer.Flows
             if (_job.Job_Fso_ID.HasValue)
             {
                 // If job_fso_id is already known, just update fso
-                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value, false);
+                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
             }
             else
             {
@@ -696,7 +696,7 @@ namespace Syncer.Flows
                 if (foundJobId == 0)
                 {
                     // Job didn't exist yet, create it
-                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job, false);
+                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job);
                     _job.Job_Fso_ID = newId;
 
                     using (var db = _svc.GetService<DataService>())
@@ -710,7 +710,7 @@ namespace Syncer.Flows
                     using (var db = _svc.GetService<DataService>())
                         db.UpdateJob(_job, x => x.Job_Fso_ID);
 
-                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value, false);
+                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
                 }
             }
         }
