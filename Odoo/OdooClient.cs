@@ -50,7 +50,7 @@ namespace Odoo
         private object CreateAdditional(bool? create_sync_job)
         {
             if (create_sync_job.HasValue)
-                return new { context = new { lang = Language, create_sync_job = create_sync_job } };
+                return new { context = new { lang = Language, create_sync_job = create_sync_job.Value } };
             else
                 return new { context = new { lang = Language } };
         }
