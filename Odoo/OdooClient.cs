@@ -236,7 +236,7 @@ namespace Odoo
         /// <typeparam name="T">Type used for mapping.</typeparam>
         /// <param name="modelName">The Odoo model name for the model to be updated.</param>
         /// <param name="model">The actual model with the data.</param>
-        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool create_sync_job) where T: class
+        public bool UpdateModel<T>(string modelName, T model, int fsoId, bool create_sync_job) where T : class
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -256,6 +256,33 @@ namespace Odoo
                     modelName,
                     "write",
                     new object[] { new int[] { fsoId }, model, context });
+
+                return result != 0;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastResponse;
+            }
+        }
+
+        public bool UpdateModelTEST<T>(string modelName, T model, int fsoId, bool create_sync_job) where T : class
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            try
+            {
+                object context = context = new { lang = Language };
+
+                var result = _rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "write",
+                    new object[] { new int[] { fsoId }, model },
+                    new { create_sync_job = create_sync_job, context = context });
 
                 return result != 0;
             }
