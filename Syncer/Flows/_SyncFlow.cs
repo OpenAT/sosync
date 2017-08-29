@@ -479,7 +479,7 @@ namespace Syncer.Flows
         {
             var result = onlineWriteDate - studioWriteDate;
 
-            _log.LogInformation($"GetWriteDateDifference() - Write date diff: {Math.Abs(result.TotalMilliseconds)} Tolerance: {toleranceMS}");
+            _log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write date diff: {Math.Abs(result.TotalMilliseconds).ToString("#,##0")}ms Tolerance: {toleranceMS.ToString("#,##0")}ms");
 
             // If the difference is within the tolerance,
             // return zero
