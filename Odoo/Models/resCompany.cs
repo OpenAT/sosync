@@ -16,6 +16,9 @@ namespace Odoo.Models
         [DataMember(Name = "sosync_write_date")]
         public DateTime? Sosync_Write_Date { get; set; }
 
+        [DataMember(Name = "write_date")]
+        public DateTime? Write_Date { get; set; }
+
         [DataMember(Name = "sosync_fs_id")]
         public int? Sosync_FS_ID { get; set; }
     }
