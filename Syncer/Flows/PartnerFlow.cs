@@ -27,7 +27,7 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "sosync_write_date" });
+            var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
 
             if (!OdooService.Client.IsValidResult(dicPartner))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
