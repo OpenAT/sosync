@@ -157,17 +157,22 @@ namespace Syncer.Flows
                 if (syncDetails.PersonTelefonID.HasValue)
                     phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
 
-                var sosync_write_date = GetPersonWriteDate(person, address, email, phone);
+                var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                var writeDate = GetPersonWriteDate(person, address, email, phone);
+
+                // Perpare data that is the same for create or update
+                var data = new Dictionary<string, object>()
+                {
+                    { "firstname", person.Vorname },
+                    { "lastname", person.Name },
+                    { "name_zwei", person.Name2 },
+                    { "sosync_write_date",  OdooFormat.ToDateTime((sosyncWriteDate ?? writeDate).Value.ToUniversalTime()) }
+                };
 
                 if (action == TransformType.CreateNew)
                 {
-                    var data = new Dictionary<string, object>();
-
-                    data.Add("firstname", OdooFormat.ToString(person.Vorname));
-                    data.Add("lastname", OdooFormat.ToString(person.Name));
-                    data.Add("name_zwei", OdooFormat.ToString(person.Name2));
+                    // On creation, also add the sosync_fs_id
                     data.Add("sosync_fs_id", person.PersonID);
-                    data.Add("sosync_write_date", OdooFormat.ToDateTime(sosync_write_date.Value.ToUniversalTime()));
 
                     // Create res.partner
                     int odooPartnerId = OdooService.Client.CreateModel("res.partner", data, false);
@@ -179,7 +184,7 @@ namespace Syncer.Flows
                 else
                 {
                     // Update res.partner
-
+                    OdooService.Client.UpdateModel("res.partner", data, syncDetails.res_partner_id.Value, false);
                 }
             }
         }
