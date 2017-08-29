@@ -177,7 +177,7 @@ namespace Syncer.Flows
                     { "firstname", person.Vorname },
                     { "lastname", person.Name },
                     { "name_zwei", person.Name2 },
-                    { "sosync_write_date",  OdooFormat.ToDateTime((sosyncWriteDate ?? writeDate).Value.ToUniversalTime()) }
+                    { "sosync_write_date", (sosyncWriteDate ?? writeDate).Value.ToUniversalTime() }
                 };
 
                 if (action == TransformType.CreateNew)
