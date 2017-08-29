@@ -28,5 +28,7 @@ namespace WebSosync.Data.Models
         public string Online_Host { get; set; }
         public string Online_Sosync_User { get; set; }
         public string Online_Sosync_PW { get; set; }
+
+        public int Throttle_ms { get; set; }
     }
 }
