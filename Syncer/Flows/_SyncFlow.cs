@@ -21,6 +21,10 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class SyncFlow
     {
+        #region Constants
+        public const string MssqlTargetSuccessMessage = "success";
+        #endregion
+
         #region Members
         private IServiceProvider _svc;
         private OdooService _odoo;
