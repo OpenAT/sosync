@@ -393,7 +393,8 @@ namespace Syncer.Flows
             {
                 // Both systems already have the model, check write date
                 // and decide source. If any sosync_write_date is null,
-                // assume DateTime.MinValue.
+                // use the write_date instead. If both are null, an exception
+                // is thrown to abort the synchronization
 
                 if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
                     throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
