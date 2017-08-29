@@ -223,8 +223,72 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            // Load online model, save it to studio
-            throw new NotImplementedException();
+            var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
+
+            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+
+            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
+            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            {
+                // Load online model, save it to studio
+                if (action == TransformType.CreateNew)
+                {
+                    // 1) Create Person
+                    // 2) Create PersonAddress
+                    // 3) Create PersonEmail
+                    // 4) Create PersonTelefon
+
+                    throw new NotImplementedException("Create dbo.Person not implemented/finished yet!");
+                }
+                else
+                {
+                    dboPerson person = null;
+                    dboPersonOdooResPartner syncDetails = null;
+                    dboPersonAdresse address = null;
+                    dboPersonEmail email = null;
+                    dboPersonTelefon phone = null;
+
+                    person = personSvc.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
+                    syncDetails = persOdoo.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
+
+                    if (syncDetails.PersonAdresseID.HasValue)
+                        address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
+
+                    if (syncDetails.PersonEmailID.HasValue)
+                        email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
+
+                    if (syncDetails.PersonTelefonID.HasValue)
+                        phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
+
+                    var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                    var writeDate = GetPersonWriteDate(person, address, email, phone);
+
+                    var sourceData = new PersonCombined()
+                    {
+                        Person = person,
+                        PersonAdresse = address,
+                        PersonEmail = email,
+                        PersonTelefon = phone,
+                        WriteDateCombined = writeDate,
+                        SosyncWriteDateCombined = sosyncWriteDate
+                    };
+
+                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(sourceData));
+
+                    // Person data
+                    person.Vorname = partner.FirstName;
+                    person.Name = partner.LastName;
+                    person.Name2 = partner.Name_Zwei;
+                    person.sosync_write_date = partner.Sosync_Write_Date.Value.ToLocalTime();
+
+                    personSvc.Update(person);
+
+                    // 
+                }
+            }
         }
         #endregion
     }
