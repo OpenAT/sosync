@@ -48,9 +48,10 @@ namespace Syncer.Flows
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.company", onlineID);
 
             var fsID = OdooConvert.ToInt32((string)dicCompany["sosync_fs_id"]);
-            var syncWriteDate = OdooConvert.ToDateTime((string)dicCompany["sosync_write_date"]);
+            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicCompany["sosync_write_date"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicCompany["write_date"]);
 
-            return new ModelInfo(onlineID, fsID, syncWriteDate);
+            return new ModelInfo(onlineID, fsID, sosyncWriteDate, writeDate);
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -66,7 +67,7 @@ namespace Syncer.Flows
 
             if (acc != null)
             {
-                return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date);
+                return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date, acc.write_date);
             }
 
             return null;

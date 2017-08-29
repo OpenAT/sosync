@@ -33,33 +33,45 @@ namespace Syncer.Flows
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
 
             var fsID = OdooConvert.ToInt32((string)dicPartner["sosync_fs_id"]);
-            var writeDate = OdooConvert.ToDateTime((string)dicPartner["sosync_write_date"]);
+            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicPartner["sosync_write_date"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicPartner["write_date"]);
 
-            return new ModelInfo(onlineID, fsID, writeDate);
+            return new ModelInfo(onlineID, fsID, sosyncWriteDate, writeDate);
         }
 
-        private DateTime? GetPersonSosyncWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail mail, dboPersonTelefon phone)
+        private DateTime? GetPersonWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail email, dboPersonTelefon phone)
         {
-            var writeDates = new List<DateTime>();
+            var query = new DateTime?[]
+            {
+                        person != null ? person.write_date : (DateTime?)null,
+                        address != null ? address.write_date : (DateTime?)null,
+                        email != null ? email.write_date : (DateTime?)null,
+                        phone != null ? phone.write_date : (DateTime?)null
+            }.Where(x => x.HasValue);
 
-            if (person.sosync_write_date.HasValue)
-                writeDates.Add(person.sosync_write_date.Value);
+            if (query.Any())
+                return query.Max();
 
-            if (address != null)
-                writeDates.Add(address.write_date);
-
-            if (mail != null)
-                writeDates.Add(mail.write_date);
-
-            if (phone != null)
-                writeDates.Add(phone.write_date);
-
-
-            if (writeDates.Count == 0)
-                return null;
-
-            return writeDates.Max();
+            return null;
         }
+
+        private DateTime? GetPersonSosyncWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail email, dboPersonTelefon phone)
+        {
+#warning TODO: replace write_date with sosync_write_date once database has it on all models
+            var query = new DateTime?[]
+            {
+                        person != null ? person.sosync_write_date : (DateTime?)null,
+                        address != null ? address.write_date : (DateTime?)null,
+                        email != null ? email.write_date : (DateTime?)null,
+                        phone != null ? phone.write_date : (DateTime?)null
+            }.Where(x => x.HasValue);
+
+            if (query.Any())
+                return query.Max();
+
+            return null;
+        }
+
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
@@ -81,28 +93,26 @@ namespace Syncer.Flows
 
                 if (syncDetails != null)
                 {
-#warning TODO: replace the write dates with sosync_write_date once the database has the field
                     dboPersonAdresse address = null;
                     if (syncDetails.PersonAdresseID.HasValue)
-                    {
                         address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
-                    }
 
                     dboPersonEmail email = null;
                     if (syncDetails.PersonEmailID.HasValue)
-                    {
                         email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
-                    }
 
                     dboPersonTelefon phone = null;
                     if (syncDetails.PersonTelefonID.HasValue)
-                    {
                         phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
-                    }
 
-                    var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
+                    // Get a combined write date, this considers all 4 entities, aswell as sosync_write_date and write_date
 
-                    return new ModelInfo(studioID, syncDetails.res_partner_id, sosync_write_date);
+                    var combinedSosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                    var combinedWriteDate = GetPersonWriteDate(person, address, email, phone);
+
+                    // Because GetPersonSosyncWriteDate already combines sosync_write_date and write_date,
+                    // the combined_write_date can be used for both in the model info
+                    return new ModelInfo(studioID, syncDetails.res_partner_id, combinedSosyncWriteDate, combinedWriteDate);
                 }
                 else
                 {
@@ -147,7 +157,7 @@ namespace Syncer.Flows
                 if (syncDetails.PersonTelefonID.HasValue)
                     phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
 
-                var sosync_write_date = GetPersonSosyncWriteDate(person, address, email, phone);
+                var sosync_write_date = GetPersonWriteDate(person, address, email, phone);
 
                 if (action == TransformType.CreateNew)
                 {
