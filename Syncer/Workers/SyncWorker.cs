@@ -53,17 +53,21 @@ namespace Syncer.Workers
                 SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model));
                 flow.Start(job, loadTimeUTC);
 
-                var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
-                var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
+                // Throttling
+                if (Configuration.Throttle_ms > 0)
+                {
+                    var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
+                    var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
 
-                if (remainingTimeMs > 0)
-                {
-                    _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
-                    Thread.Sleep(remainingTimeMs);
-                }
-                else
-                {
-                    _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
+                    if (remainingTimeMs > 0)
+                    {
+                        _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
+                        Thread.Sleep(remainingTimeMs);
+                    }
+                    else
+                    {
+                        _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
+                    }
                 }
 
                 // Stop processing the queue if cancellation was requested
