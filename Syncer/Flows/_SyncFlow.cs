@@ -395,11 +395,11 @@ namespace Syncer.Flows
                 // and decide source. If any sosync_write_date is null,
                 // assume DateTime.MinValue.
 
-                if (!onlineInfo.SosyncWriteDate.HasValue)
-                    throw new SyncerException($"Model {job.Job_Source_Model} had no sosync_write_date in [fso]");
+                if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
+                    throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
 
-                if (!studioInfo.SosyncWriteDate.HasValue)
-                    throw new SyncerException($"Model {job.Job_Source_Model} had no sosync_write_date in [fs]");
+                if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
+                    throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
 
                 // XML-RPC default format for date/time does not include milliseconds, so
                 // when comparing the difference, up to 999 milliseconds difference is still
@@ -407,8 +407,8 @@ namespace Syncer.Flows
                 var toleranceMS = 999;
 
                 var diff = GetWriteDateDifference(
-                    onlineInfo.SosyncWriteDate.Value,
-                    studioInfo.SosyncWriteDate.Value.ToUniversalTime(),
+                    onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate.Value,
+                    (studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value).ToUniversalTime(),
                     toleranceMS);
 
                 if (diff.TotalMilliseconds == 0)
