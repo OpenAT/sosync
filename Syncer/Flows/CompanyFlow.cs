@@ -87,9 +87,29 @@ namespace Syncer.Flows
                     // Create the company
                     try
                     {
+                        var userDic = OdooService.Client.GetDictionary("res.users", OdooService.Client.UserID, new string[] { "company_id" });
+                        var parentID = OdooConvert.ToInt32((string)((List<object>)userDic["company_id"])[0]);
+
+                        object data;
+                        if (parentID.HasValue)
+                            data = new
+                            {
+                                name = acc.Name,
+                                sosync_fs_id = acc.xBPKAccountID,
+                                sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime(),
+                                parent_id = parentID
+                            };
+                        else
+                            data = new
+                            {
+                                name = acc.Name,
+                                sosync_fs_id = acc.xBPKAccountID,
+                                sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime()
+                            };
+
                         int odooCompanyId = OdooService.Client.CreateModel(
                             "res.company",
-                            new { name = acc.Name, sosync_fs_id = acc.xBPKAccountID, sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime() },
+                            data,
                             false);
 
                         // Update the odoo company id in mssql
