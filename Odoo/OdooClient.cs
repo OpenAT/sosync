@@ -26,6 +26,8 @@ namespace Odoo
 
         public string LastRequestRaw { get; private set; }
         public string LastResponseRaw { get; private set; }
+
+        public int UserID { get { return _uid; } }
         #endregion
 
         #region Constructors
