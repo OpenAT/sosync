@@ -25,6 +25,16 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            // No child jobs required
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            // No child jobs required
+        }
+
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
@@ -71,7 +81,6 @@ namespace Syncer.Flows
 
             return null;
         }
-
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
@@ -121,16 +130,6 @@ namespace Syncer.Flows
             }
         }
 
-        protected override void SetupOnlineToStudioChildJobs(int onlineID)
-        {
-
-        }
-
-        protected override void SetupStudioToOnlineChildJobs(int studioID)
-        {
-
-        }
-
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboPerson person = null;
@@ -159,6 +158,18 @@ namespace Syncer.Flows
 
                 var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
                 var writeDate = GetPersonWriteDate(person, address, email, phone);
+
+                var sourceData = new PersonCombined()
+                {
+                    Person = person,
+                    PersonAdresse = address,
+                    PersonEmail = email,
+                    PersonTelefon = phone,
+                    WriteDateCombined = writeDate,
+                    SosyncWriteDateCombined = sosyncWriteDate
+                };
+
+                UpdateSyncSourceData(Serializer.ToXML(sourceData));
 
                 // Perpare data that is the same for create or update
                 var data = new Dictionary<string, object>()
