@@ -278,58 +278,6 @@ namespace Syncer.Flows
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
         }
 
-        protected void UpdateSyncTargetDataBeforeUpdate(string data)
-        {
-            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
-
-            using (var db = _svc.GetService<DataService>())
-            {
-                _job.Sync_Target_Data_Before_Update = data;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(_job);
-            }
-            UpdateJobFso();
-        }
-
-        protected void UpdateSyncSourceData(string data)
-        {
-            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Source_Data");
-
-            using (var db = _svc.GetService<DataService>())
-            {
-                _job.Sync_Source_Data = data;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(_job);
-            }
-            UpdateJobFso();
-        }
-
-        protected void UpdateSyncTargetRequest(string requestData)
-        {
-            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Request");
-
-            using (var db = _svc.GetService<DataService>())
-            {
-                _job.Sync_Target_Request = requestData;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(_job);
-            }
-            UpdateJobFso();
-        }
-
-        protected void UpdateSyncTargetAnswer(string answerData)
-        {
-            _log.LogInformation($"Updating job {_job.Job_ID}: Sync_Target_Answer");
-
-            using (var db = _svc.GetService<DataService>())
-            {
-                _job.Sync_Target_Answer = answerData;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(_job);
-            }
-            UpdateJobFso();
-        }
-
         /// <summary>
         /// Checks the current run_count value of the job against the
         /// specified maximum value. Throws an <see cref="RunCountException"/>
@@ -496,6 +444,8 @@ namespace Syncer.Flows
         /// <returns></returns>
         private bool IsConsistent(SyncJob job, DateTime? writeDate)
         {
+            _log.LogDebug($"Checking model consistency");
+
             ModelInfo currentInfo = null;
 
             if (job.Sync_Source_System == SosyncSystem.FSOnline)
@@ -539,6 +489,58 @@ namespace Syncer.Flows
             return result;
         }
 
+        protected void UpdateSyncTargetDataBeforeUpdate(string data)
+        {
+            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Target_Data_Before_Update = data;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncSourceData(string data)
+        {
+            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Source_Data");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Source_Data = data;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncTargetRequest(string requestData)
+        {
+            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Request");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Target_Request = requestData;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
+        protected void UpdateSyncTargetAnswer(string answerData)
+        {
+            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                _job.Sync_Target_Answer = answerData;
+                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                db.UpdateJob(_job);
+            }
+            UpdateJobFso();
+        }
+
         /// <summary>
         /// Updates the sync source data and log field.
         /// </summary>
@@ -549,7 +551,7 @@ namespace Syncer.Flows
         /// <param name="log">Information to be logged.</param>
         private void UpdateJobSourceAndTarget(SyncJob job, string srcSystem, string srcModel, int? srcId, string targetSystem, string targetModel, int? targetId, string log)
         {
-            _log.LogInformation($"Updating job {job.Job_ID}: check source");
+            _log.LogDebug($"Updating job {job.Job_ID}: check source");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -574,7 +576,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobChildStart(SyncJob job)
         {
-            _log.LogInformation($"Updating job { job.Job_ID}: child start");
+            _log.LogDebug($"Updating job { job.Job_ID}: child start");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -588,7 +590,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobChildEnd()
         {
-            _log.LogInformation($"Updating job { _job.Job_ID}: child end");
+            _log.LogDebug($"Updating job { _job.Job_ID}: child end");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -602,7 +604,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncStart()
         {
-            _log.LogInformation($"Updating job {_job.Job_ID}: transformation/sync start");
+            _log.LogDebug($"Updating job {_job.Job_ID}: transformation/sync start");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -616,7 +618,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncEnd()
         {
-            _log.LogInformation($"Updating job { _job.Job_ID}: transformation/sync end");
+            _log.LogDebug($"Updating job { _job.Job_ID}: transformation/sync end");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -630,7 +632,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobStart()
         {
-            _log.LogInformation($"Updating job {_job.Job_ID}: job start");
+            _log.LogDebug($"Updating job {_job.Job_ID}: job start");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -651,7 +653,7 @@ namespace Syncer.Flows
         /// finished because it was already in sync.</param>
         private void UpdateJobSuccess(bool wasInSync)
         {
-            _log.LogInformation($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            _log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -670,7 +672,7 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         private void UpdateJobError(string errorCode, string errorText)
         {
-            _log.LogInformation($"Updating job {_job.Job_ID}: job error");
+            _log.LogDebug($"Updating job {_job.Job_ID}: job error");
 
             using (var db = _svc.GetService<DataService>())
             {
@@ -689,7 +691,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobFso()
         {
-            _log.LogInformation($"Updating job {_job.Job_ID} in FSOnline");
+            _log.LogDebug($"Updating job {_job.Job_ID} in FSOnline");
 
             if (_job.Job_Fso_ID.HasValue)
             {
