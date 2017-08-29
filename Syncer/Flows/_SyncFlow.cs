@@ -128,11 +128,11 @@ namespace Syncer.Flows
         /// Starts the data flow.
         /// </summary>
         /// <param name="_job"></param>
-        public void Start(SyncJob job)
+        public void Start(SyncJob job, DateTime loadTimeUTC)
         {
             _job = job;
 
-            UpdateJobStart();
+            UpdateJobStart(loadTimeUTC);
 
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
@@ -630,14 +630,14 @@ namespace Syncer.Flows
         /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
-        private void UpdateJobStart()
+        private void UpdateJobStart(DateTime loadTimeUTC)
         {
             _log.LogDebug($"Updating job {_job.Job_ID}: job start");
 
             using (var db = _svc.GetService<DataService>())
             {
                 _job.Job_State = SosyncState.InProgress;
-                _job.Job_Start = DateTime.Now.ToUniversalTime();
+                _job.Job_Start = loadTimeUTC;
                 _job.Job_Run_Count += 1;
                 _job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(_job);

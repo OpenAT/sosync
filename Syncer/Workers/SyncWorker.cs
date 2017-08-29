@@ -39,6 +39,8 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
+            var loadTimeUTC = DateTime.UtcNow;
+
             // Get only the first open job and its hierarchy,
             // and build the tree in memory
             var job = GetNextOpenJob();
@@ -47,7 +49,7 @@ namespace Syncer.Workers
             {
                 // Get the flow for the job source model, and start it
                 SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model));
-                flow.Start(job);
+                flow.Start(job, loadTimeUTC);
 
                 // Stop processing the queue if cancellation was requested
                 if (CancellationToken.IsCancellationRequested)
