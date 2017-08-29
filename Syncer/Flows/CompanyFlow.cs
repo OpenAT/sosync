@@ -96,7 +96,7 @@ namespace Syncer.Flows
                             {
                                 name = acc.Name,
                                 sosync_fs_id = acc.xBPKAccountID,
-                                sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime(),
+                                sosync_write_date = (acc.sosync_write_date ?? acc.write_date).ToUniversalTime(),
                                 parent_id = parentID
                             };
                         else
@@ -104,7 +104,7 @@ namespace Syncer.Flows
                             {
                                 name = acc.Name,
                                 sosync_fs_id = acc.xBPKAccountID,
-                                sosync_write_date = acc.sosync_write_date.Value.ToUniversalTime()
+                                sosync_write_date = (acc.sosync_write_date ?? acc.write_date).ToUniversalTime()
                             };
 
                         int odooCompanyId = OdooService.Client.CreateModel(
@@ -159,7 +159,7 @@ namespace Syncer.Flows
                     var entry = new dboxBPKAccount()
                     {
                         Name = company.Name,
-                        sosync_write_date = company.Sosync_Write_Date,
+                        sosync_write_date = (company.Sosync_Write_Date ?? company.Write_Date).Value.ToLocalTime(),
                         res_company_id = onlineID
                     };
 
