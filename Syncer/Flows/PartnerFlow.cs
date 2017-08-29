@@ -1,5 +1,6 @@
 ﻿using dadi_data.Models;
 using Odoo;
+using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
@@ -185,8 +186,17 @@ namespace Syncer.Flows
                     // On creation, also add the sosync_fs_id
                     data.Add("sosync_fs_id", person.PersonID);
 
-                    // Create res.partner
-                    int odooPartnerId = OdooService.Client.CreateModel("res.partner", data, false);
+                    int odooPartnerId = 0;
+                    try
+                    {
+                        // Create res.partner
+                        odooPartnerId = OdooService.Client.CreateModel("res.partner", data, false);
+                    }
+                    finally
+                    {
+                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                    }
 
                     // Update the remote id in studio
                     syncDetails.res_partner_id = odooPartnerId;
@@ -194,8 +204,19 @@ namespace Syncer.Flows
                 }
                 else
                 {
-                    // Update res.partner
-                    OdooService.Client.UpdateModel("res.partner", data, syncDetails.res_partner_id.Value, false);
+                    OdooService.Client.GetModel<resPartner>("res.partner", syncDetails.res_partner_id.Value);
+
+                    UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+                    try
+                    {
+                        // Update res.partner
+                        OdooService.Client.UpdateModel("res.partner", data, syncDetails.res_partner_id.Value, false);
+                    }
+                    finally
+                    {
+                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                    }
                 }
             }
         }
