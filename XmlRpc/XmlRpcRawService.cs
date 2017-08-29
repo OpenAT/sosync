@@ -306,18 +306,22 @@ namespace XmlRpc
                     var att = prop.GetCustomAttribute<DataMemberAttribute>();
 
                     object propValue = prop.GetValue(arg);
+                    string propName = prop.Name;
+
+                    if (att != null)
+                        propName = att.Name;
 
                     if (propValue != null)
                     {
-                        string propName = prop.Name;
-
-                        if (att != null)
-                            propName = att.Name;
-
-                        string propType = GetXmlRpcType(propValue);
-
                         content.Append("<member>");
                         content.Append($"<name>{propName}</name><value>{GetXmlRpcValueNode(propValue)}</value>");
+                        content.AppendLine("</member>");
+                    }
+                    else
+                    {
+                        // Null values are represented as boolean false
+                        content.Append("<member>");
+                        content.Append($"<name>{propName}</name><value><boolean>0</boolean></value>");
                         content.AppendLine("</member>");
                     }
                 }
@@ -329,7 +333,13 @@ namespace XmlRpc
             foreach (var entry in arg)
             {
                 content.Append("<member>");
-                content.Append($"<name>{entry.Key}</name><value>{GetXmlRpcValueNode(entry.Value)}</value>");
+
+                // In Odoo, null values are represented as boolean false
+                if (entry.Value == null)
+                    content.Append($"<name>{entry.Key}</name><value><boolean>0</boolean></value>");
+                else
+                    content.Append($"<name>{entry.Key}</name><value>{GetXmlRpcValueNode(entry.Value)}</value>");
+
                 content.AppendLine("</member>");
             }
         }
@@ -340,9 +350,21 @@ namespace XmlRpc
 
             switch (rpcType)
             {
-                case "dateTime.iso8601": result = ((DateTime)value).ToString("o"); break;
-                case "boolean": result = ((bool)value ? 1 : 0).ToString(); break;
-                default: result = XmlHelper.ToXmlString(Convert.ToString(value)); break;
+                case "dateTime.iso8601":
+                    result = ((DateTime)value).ToString("o");
+                    break;
+
+                case "boolean":
+                    // Empty strings are treate as boolean false
+                    if (string.IsNullOrEmpty(value as string))
+                        result = "0";
+                    else
+                        result = ((bool)value ? 1 : 0).ToString();
+                    break;
+
+                default:
+                    result = XmlHelper.ToXmlString(Convert.ToString(value));
+                    break;
             }
 
             return result;
@@ -371,6 +393,10 @@ namespace XmlRpc
 
             if (t.IsArray)
                 return "array";
+
+            // Empty or null strings have to be treated as boolean false
+            if (t == typeof(string) && String.IsNullOrEmpty((string)arg))
+                return "boolean";
 
             return "string";
         }
