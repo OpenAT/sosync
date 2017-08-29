@@ -86,8 +86,8 @@ namespace WebSosync.Controllers
 
                 // Defaults
                 job.Job_State = SosyncState.New;
-                job.Job_Fetched = DateTime.Now.ToUniversalTime();
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                job.Job_Fetched = DateTime.UtcNow;
+                job.Job_Last_Change = DateTime.UtcNow;
 
                 // Create the sync job, get it's ID into the result and start the job thread
                 db.CreateJob(job);
