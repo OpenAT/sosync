@@ -75,6 +75,7 @@ Before the service can be started, ensure the following (replace **dadi** with t
 [sosync]
 port = 5050
 instance = inst
+throttle_ms = 0
 
 # Database
 db_host = localhost
@@ -97,6 +98,10 @@ online_host = debug.datadialog.net
 online_sosync_user = theuser3
 online_sosync_pw = thepass17
 ```
+
+If throttle_ms equals 0, throttling will be omitted totally. Otherwise, throttle_ms represents the minimum time
+a sync job will occupy. Meaning, if a sync job finishes in a time larger than throttle_ms, no throttling will
+occur at all, if a sync job finishes faster, it will sleep for the remaining time.
 
 ### Running the application
 Change the working directory to the application directory. After that the following command can be used to start and run the application:
