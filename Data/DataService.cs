@@ -77,6 +77,8 @@ namespace WebSosync.Data
             if (this._con.ConnectionString.Contains("Database=debug"))
                 DestroySosyncDatabase();
 
+            DestroySosyncDatabase();
+
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
