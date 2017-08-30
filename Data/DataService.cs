@@ -73,11 +73,9 @@ namespace WebSosync.Data
         public void Setup()
         {
             // Be mindful of versioning here on the setup!
-#warning Remove code to destroy sosync database for production!
-            if (this._con.ConnectionString.Contains("Database=debug"))
-                DestroySosyncDatabase();
-
-            DestroySosyncDatabase();
+            //#warning Remove code to destroy sosync database for production!
+            //if (this._con.ConnectionString.Contains("Database=debug"))
+            //    DestroySosyncDatabase();
 
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
