@@ -8,7 +8,7 @@ namespace Odoo
     {
         public static int? ToInt32(string value)
         {
-            if (Int32.TryParse(value, out int result))
+            if (!String.IsNullOrEmpty(value) && Int32.TryParse(value, out int result))
                 return result;
 
             return null;
@@ -17,7 +17,7 @@ namespace Odoo
         public static DateTime? ToDateTime(string value)
         {
             DateTime? result = null;
-            if (value != "0")
+            if (!String.IsNullOrEmpty(value) && value != "0")
                 result = DateTime.Parse(value);
 
             return result;
