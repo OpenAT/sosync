@@ -178,8 +178,15 @@ namespace Syncer.Flows
                     { "firstname", person.Vorname },
                     { "lastname", person.Name },
                     { "name_zwei", person.Name2 },
+                    { "birthdate_web", person.Geburtsdatum },
+                    { "title_web", person.Titel },
+                    { "BPKForcedFirstname", person.BPKErzwungenVorname },
+                    { "BPKForcedLastname", person.BPKErzwungenNachname },
+                    { "BPKForcedBirthdate", person.BPKErzwungenGeburtsdatum },
                     { "sosync_write_date", (sosyncWriteDate ?? writeDate).Value.ToUniversalTime() }
                 };
+
+                // --> Country_ID --> über ISO-Code 
 
                 if (action == TransformType.CreateNew)
                 {
