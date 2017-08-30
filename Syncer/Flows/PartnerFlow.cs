@@ -85,6 +85,7 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
+            ModelInfo result = null;
 
             dboPerson person = null;
             dboPersonOdooResPartner syncDetails = null;
@@ -99,35 +100,44 @@ namespace Syncer.Flows
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
 
                 // Get the associated ids for the detail tables
-                syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
-
-                if (syncDetails != null)
+                if (person != null)
                 {
-                    dboPersonAdresse address = null;
-                    if (syncDetails.PersonAdresseID.HasValue)
-                        address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
+                    syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
 
-                    dboPersonEmail email = null;
-                    if (syncDetails.PersonEmailID.HasValue)
-                        email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
+                    if (syncDetails != null)
+                    {
+                        dboPersonAdresse address = null;
+                        if (syncDetails.PersonAdresseID.HasValue)
+                            address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
 
-                    dboPersonTelefon phone = null;
-                    if (syncDetails.PersonTelefonID.HasValue)
-                        phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
+                        dboPersonEmail email = null;
+                        if (syncDetails.PersonEmailID.HasValue)
+                            email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
 
-                    // Get a combined write date, this considers all 4 entities, aswell as sosync_write_date and write_date
+                        dboPersonTelefon phone = null;
+                        if (syncDetails.PersonTelefonID.HasValue)
+                            phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
 
-                    var combinedSosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
-                    var combinedWriteDate = GetPersonWriteDate(person, address, email, phone);
+                        // Get a combined write date, this considers all 4 entities, aswell as sosync_write_date and write_date
 
-                    // Because GetPersonSosyncWriteDate already combines sosync_write_date and write_date,
-                    // the combined_write_date can be used for both in the model info
-                    return new ModelInfo(studioID, syncDetails.res_partner_id, combinedSosyncWriteDate, combinedWriteDate);
+                        var combinedSosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                        var combinedWriteDate = GetPersonWriteDate(person, address, email, phone);
+
+                        // Because GetPersonSosyncWriteDate already combines sosync_write_date and write_date,
+                        // the combined_write_date can be used for both in the model info
+                        result = new ModelInfo(studioID, syncDetails.res_partner_id, combinedSosyncWriteDate, combinedWriteDate);
+                    }
+                    else
+                    {
+                        result = new ModelInfo(studioID, null, person.sosync_write_date, person.write_date);
+                    }
                 }
                 else
                 {
-                    throw new SyncerException($"dbo.Person {studioID} has no entry in dbo.PersonOdooResPartner.");
+                    result = null;
                 }
+
+                return result;
             }
         }
 
@@ -234,6 +244,12 @@ namespace Syncer.Flows
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
+            dboPerson person = null;
+            dboPersonOdooResPartner syncDetails = null;
+            dboPersonAdresse address = null;
+            dboPersonEmail email = null;
+            dboPersonTelefon phone = null;
+
             using (var personSvc = MdbService.GetDataService<dboPerson>())
             using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
             using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
@@ -243,21 +259,56 @@ namespace Syncer.Flows
                 // Load online model, save it to studio
                 if (action == TransformType.CreateNew)
                 {
-                    // 1) Create Person
-                    // 2) Create PersonAddress
-                    // 3) Create PersonEmail
-                    // 4) Create PersonTelefon
+                    person = new dboPerson
+                    {
+                        PersontypID = 101,
+                        Anlagedatum = DateTime.Now,
+                        create_date = DateTime.Now,
+                        write_date = DateTime.Now
+                    };
 
-                    throw new NotImplementedException("Create dbo.Person not implemented/finished yet!");
+                    MapFields(partner, person);
+
+                    var requestData = new PersonCombined()
+                    {
+                        Person = person,
+                        PersonAdresse = address,
+                        PersonEmail = email,
+                        PersonTelefon = phone,
+                        WriteDateCombined = null,
+                        SosyncWriteDateCombined = null
+                    };
+
+                    UpdateSyncTargetRequest(Serializer.ToXML(requestData));
+
+                    try
+                    {
+                        personSvc.Create(person);
+
+                        syncDetails = new dboPersonOdooResPartner()
+                        {
+                            PersonID = person.PersonID,
+                            res_partner_id = onlineID
+                        };
+
+                        persOdoo.Create(syncDetails);
+
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString());
+                        throw;
+                    }
+
+                    OdooService.Client.UpdateModel(
+                        "res.partner",
+                        new { sosync_fs_id = person.PersonID },
+                        onlineID,
+                        false);
                 }
                 else
                 {
-                    dboPerson person = null;
-                    dboPersonOdooResPartner syncDetails = null;
-                    dboPersonAdresse address = null;
-                    dboPersonEmail email = null;
-                    dboPersonTelefon phone = null;
-
                     person = personSvc.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
                     syncDetails = persOdoo.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
 
@@ -285,17 +336,36 @@ namespace Syncer.Flows
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(sourceData));
 
-                    // Person data
-                    person.Vorname = partner.FirstName;
-                    person.Name = partner.LastName;
-                    person.Name2 = partner.Name_Zwei;
-                    person.sosync_write_date = partner.Sosync_Write_Date.Value.ToLocalTime();
+                    MapFields(partner, person);
 
-                    personSvc.Update(person);
+                    UpdateSyncTargetRequest(Serializer.ToXML(sourceData));
 
-                    // 
+                    try
+                    {
+                        personSvc.Update(person);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString());
+                        throw;
+                    }
                 }
             }
+        }
+
+        private void MapFields(resPartner source, dboPerson dest)
+        {
+            // Person data
+            dest.Vorname = source.FirstName;
+            dest.Name = source.LastName;
+            dest.Name2 = source.Name_Zwei;
+            dest.Geburtsdatum = source.Birthdate_Web;
+            dest.Titel = source.Title_Web;
+            dest.BPKErzwungenVorname = source.BPKForcedFirstname;
+            dest.BPKErzwungenNachname = source.BPKForcedLastname;
+            dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
+            dest.sosync_write_date = source.Sosync_Write_Date.Value.ToLocalTime();
         }
         #endregion
     }
