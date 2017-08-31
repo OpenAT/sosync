@@ -13,5 +13,13 @@ namespace WebSosync.Data
         public const string SourceData = "source_data";
         public const string TargetRequest = "target_request";
         public const string Cleanup = "cleanup";
+
+        //public const string Timeout = "timeout";
+        //public const string RunCounter = "run_counter";
+        //public const string SyncSource = "sync_source";
+        //public const string ChildJob = "child_job";
+        //public const string Transformation = "transformation";
+        //public const string Cleanup = "cleanup";
+        //public const string Unknown = "unknown";
     }
 }
