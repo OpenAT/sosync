@@ -165,7 +165,7 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
-                UpdateJobError(SosyncError.SourceData, $"2) Sync direction:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.SyncSource, $"2) Sync direction:\n{ex.ToString()}");
                 throw;
             }
 
@@ -219,7 +219,7 @@ namespace Syncer.Flows
             catch (Exception ex)
             {
 #warning TODO: Somehow differentiate between child creation and processing errors
-                UpdateJobError(SosyncError.SourceData, $"3) Child jobs:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.ChildJob, $"3) Child jobs:\n{ex.ToString()}");
                 throw;
             }
 
@@ -261,7 +261,7 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
-                UpdateJobError(SosyncError.SourceData, $"4) Transformation/sync:\n{ex.ToString()}");
+                UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
                 throw;
             }
         }
