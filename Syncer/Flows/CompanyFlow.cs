@@ -38,36 +38,18 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            // Get company ids and write date
-            var dicCompany = OdooService.Client.GetDictionary(
-                "res.company",
-                onlineID,
-                new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
-
-            if (!OdooService.Client.IsValidResult(dicCompany))
-                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.company", onlineID);
-
-            var fsID = OdooConvert.ToInt32((string)dicCompany["sosync_fs_id"]);
-            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicCompany["sosync_write_date"]);
-            var writeDate = OdooConvert.ToDateTime((string)dicCompany["write_date"]);
-
-            return new ModelInfo(onlineID, fsID, sosyncWriteDate, writeDate);
+            return GetDefaultOnlineModelInfo(onlineID, "res.company");
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
             // A company in FS is just an entry in the xBPKAccount table.
             // So get the write date from that table
-            dboxBPKAccount acc = null;
-
             using (var db = MdbService.GetDataService<dboxBPKAccount>())
             {
-                acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
-            }
-
-            if (acc != null)
-            {
-                return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date, acc.write_date);
+                var acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
+                if (acc != null)
+                    return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date, acc.write_date);
             }
 
             return null;

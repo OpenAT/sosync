@@ -15,7 +15,7 @@ using WebSosync.Data.Models;
 namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.Person")]
-    [OnlineModel(Name = "res.Partner")]
+    [OnlineModel(Name = "res.partner")]
     public class PartnerFlow : SyncFlow
     {
         #region Constructors
@@ -26,28 +26,9 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override void SetupOnlineToStudioChildJobs(int onlineID)
-        {
-            // No child jobs required
-        }
-
-        protected override void SetupStudioToOnlineChildJobs(int studioID)
-        {
-            // No child jobs required
-        }
-
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            var dicPartner = OdooService.Client.GetDictionary("res.partner", onlineID, new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
-
-            if (!OdooService.Client.IsValidResult(dicPartner))
-                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner", onlineID);
-
-            var fsID = OdooConvert.ToInt32((string)dicPartner["sosync_fs_id"]);
-            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicPartner["sosync_write_date"]);
-            var writeDate = OdooConvert.ToDateTime((string)dicPartner["write_date"]);
-
-            return new ModelInfo(onlineID, fsID, sosyncWriteDate, writeDate);
+            return GetDefaultOnlineModelInfo(onlineID, "res.partner");
         }
 
         private DateTime? GetPersonWriteDate(dboPerson person, dboPersonAdresse address, dboPersonEmail email, dboPersonTelefon phone)
@@ -141,6 +122,16 @@ namespace Syncer.Flows
 
                 return result;
             }
+        }
+
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            // No child jobs required
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            // No child jobs required
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
