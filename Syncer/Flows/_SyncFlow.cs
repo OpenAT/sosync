@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Odoo;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
@@ -123,6 +124,29 @@ namespace Syncer.Flows
         /// </summary>
         /// <param name="onlineID">The Online ID for the source.</param>
         protected abstract void TransformToStudio(int onlineID, TransformType action);
+
+        /// <summary>
+        /// Get the ID, sosync_write_date and write_date for a fso model.
+        /// </summary>
+        /// <param name="id">The fso ID of the model.</param>
+        /// <param name="model">The model name.</param>
+        /// <returns></returns>
+        protected ModelInfo GetDefaultOnlineModelInfo(int id, string model)
+        {
+            var dicModel = OdooService.Client.GetDictionary(
+                model,
+                id,
+                new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
+
+            if (!OdooService.Client.IsValidResult(dicModel))
+                throw new ModelNotFoundException(SosyncSystem.FSOnline, model, id);
+
+            var fsID = OdooConvert.ToInt32((string)dicModel["sosync_fs_id"]);
+            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["sosync_write_date"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
+
+            return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
+        }
 
         /// <summary>
         /// Starts the data flow.
