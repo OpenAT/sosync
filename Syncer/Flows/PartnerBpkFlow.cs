@@ -1,11 +1,11 @@
-﻿using Syncer.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using dadi_data.Models;
+using Odoo;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
-using dadi_data.Models;
+using System;
 using System.Linq;
+using WebSosync.Data;
 
 namespace Syncer.Flows
 {
@@ -38,12 +38,23 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            throw new NotImplementedException();
+            var bpk = OdooService.Client.GetDictionary("res.partner.bpk", onlineID, new string[] { "BPKRequestPartnerID", "BPKRequestCompanyID" });
+            var partnerID = OdooConvert.ToInt32((string)bpk["BPKRequestPartnerID"]);
+            var companyID = OdooConvert.ToInt32((string)bpk["BPKRequestCompanyID"]);
+
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            throw new NotImplementedException();
+            using (var db = MdbService.GetDataService<dboPersonBPK>())
+            {
+                var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
+
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpk.xBPKAccountID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", bpk.PersonID);
+            }
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
