@@ -150,7 +150,7 @@ select * from children;</value>
 	from sync_table as child
 	inner join sync_table parent on child.parent_job_id = parent.job_id
 )
-select * from children;</value>
+select * from children order by job_date desc;</value>
   </data>
   <data name="SetupAddColumn_SCRIPT" xml:space="preserve">
     <value>DO $$ 
