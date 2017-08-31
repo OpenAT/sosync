@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Odoo.Models;
+using Syncer.Services;
 using Syncer.Workers;
 using System;
 using WebSosync.Common.Interfaces;
@@ -74,6 +76,12 @@ namespace WebSosync.Controllers
                 _log.LogError(ex.ToString());
                 return new BadRequestObjectResult("Could not read version.");
             }
+        }
+
+        public IActionResult Debug([FromServices]OdooService odoo)
+        {
+            var result = odoo.Client.GetModel<resPartnerBpk>("res.partner.bpk", 1);
+            return new OkObjectResult(result);
         }
 
         //// GET api/values/5

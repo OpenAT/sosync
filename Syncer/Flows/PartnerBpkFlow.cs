@@ -4,6 +4,7 @@ using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using WebSosync.Data;
 
@@ -27,10 +28,8 @@ namespace Syncer.Flows
             using (var db = MdbService.GetDataService<dboPersonBPK>())
             {
                 var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
-
-#warning TODO: Replace res_partner_bpk_id with sosync_fso_id and use sosync_write_date, once database is updated
                 if (bpk != null)
-                    return new ModelInfo(studioID, bpk.res_partner_bpk_id, bpk.write_date, bpk.write_date);
+                    return new ModelInfo(studioID, bpk.sosync_fso_id, bpk.sosync_write_date, bpk.write_date);
             }
 
             return null;
@@ -60,10 +59,47 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             throw new NotImplementedException();
+
+            // Just realized... do this later, if at all, because for BPK the
+            // direction should in theory always be FSO -> FS
+
+
+            //using (var db = MdbService.GetDataService<dboPersonBPK>())
+            //{
+            //    var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
+
+            //    var data = new Dictionary<string, object>()
+            //    {
+            //        { "BPKPrivate", bpk.BPKPrivat },
+            //        { "BPKPublic", bpk.BPKOeffentlich },
+            //        { "BPKRequestFirstname", bpk.Vorname },
+            //        { "BPKRequestLastname", bpk.Nachname },
+            //        { "", bpk.Geburtsdatum },
+
+            //        { "", bpk.PositivAmUm },
+            //        { "", bpk.PositivDaten },
+            //        { "", bpk.PositivAntwortAmUm },
+            //        { "", bpk.PositivAntwortDaten },
+
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum },
+            //        { "", bpk.Geburtsdatum }
+
+            //    };
+            //}
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+
+
+
             throw new NotImplementedException();
         }
     }
