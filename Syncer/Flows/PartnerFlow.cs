@@ -91,10 +91,10 @@ namespace Syncer.Flows
             dboPersonOdooResPartner syncDetails = null;
 
             using (var personSvc = MdbService.GetDataService<dboPerson>())
-            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
-            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
-            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            //using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
+            //using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            //using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            //using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 // Load person and sosync write date
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
@@ -102,35 +102,37 @@ namespace Syncer.Flows
                 // Get the associated ids for the detail tables
                 if (person != null)
                 {
-                    syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
+                    //syncDetails = persOdoo.Read(new { PersonID = person.PersonID }).SingleOrDefault();
 
-                    if (syncDetails != null)
-                    {
-                        dboPersonAdresse address = null;
-                        if (syncDetails.PersonAdresseID.HasValue)
-                            address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
+                    //if (syncDetails != null)
+                    //{
+                    //    dboPersonAdresse address = null;
+                    //    if (syncDetails.PersonAdresseID.HasValue)
+                    //        address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).FirstOrDefault();
 
-                        dboPersonEmail email = null;
-                        if (syncDetails.PersonEmailID.HasValue)
-                            email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
+                    //    dboPersonEmail email = null;
+                    //    if (syncDetails.PersonEmailID.HasValue)
+                    //        email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).FirstOrDefault();
 
-                        dboPersonTelefon phone = null;
-                        if (syncDetails.PersonTelefonID.HasValue)
-                            phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
+                    //    dboPersonTelefon phone = null;
+                    //    if (syncDetails.PersonTelefonID.HasValue)
+                    //        phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).FirstOrDefault();
 
-                        // Get a combined write date, this considers all 4 entities, aswell as sosync_write_date and write_date
+                    //    // Get a combined write date, this considers all 4 entities, aswell as sosync_write_date and write_date
 
-                        var combinedSosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
-                        var combinedWriteDate = GetPersonWriteDate(person, address, email, phone);
+                    //    var combinedSosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                    //    var combinedWriteDate = GetPersonWriteDate(person, address, email, phone);
 
-                        // Because GetPersonSosyncWriteDate already combines sosync_write_date and write_date,
-                        // the combined_write_date can be used for both in the model info
-                        result = new ModelInfo(studioID, syncDetails.res_partner_id, combinedSosyncWriteDate, combinedWriteDate);
-                    }
-                    else
-                    {
-                        result = new ModelInfo(studioID, null, person.sosync_write_date, person.write_date);
-                    }
+                    //    // Because GetPersonSosyncWriteDate already combines sosync_write_date and write_date,
+                    //    // the combined_write_date can be used for both in the model info
+                    //    result = new ModelInfo(studioID, syncDetails.res_partner_id, combinedSosyncWriteDate, combinedWriteDate);
+                    //}
+                    //else
+                    //{
+                    //    result = new ModelInfo(studioID, null, person.sosync_write_date, person.write_date);
+                    //}
+
+                    return new ModelInfo(studioID, person.sosync_fso_id, person.sosync_write_date, person.write_date);
                 }
                 else
                 {
@@ -144,31 +146,33 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboPerson person = null;
-            dboPersonOdooResPartner syncDetails = null;
             dboPersonAdresse address = null;
             dboPersonEmail email = null;
             dboPersonTelefon phone = null;
 
             using (var personSvc = MdbService.GetDataService<dboPerson>())
-            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
-            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
-            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            //using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
+            //using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            //using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            //using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 person = personSvc.Read(new { PersonID = studioID }).SingleOrDefault();
-                syncDetails = persOdoo.Read(new { PersonID = studioID }).SingleOrDefault();
+                //syncDetails = persOdoo.Read(new { PersonID = studioID }).SingleOrDefault();
 
-                if (syncDetails.PersonAdresseID.HasValue)
-                    address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
+                //if (syncDetails.PersonAdresseID.HasValue)
+                //    address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
 
-                if (syncDetails.PersonEmailID.HasValue)
-                    email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
+                //if (syncDetails.PersonEmailID.HasValue)
+                //    email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
 
-                if (syncDetails.PersonTelefonID.HasValue)
-                    phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
+                //if (syncDetails.PersonTelefonID.HasValue)
+                //    phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
 
-                var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
-                var writeDate = GetPersonWriteDate(person, address, email, phone);
+                //var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                //var writeDate = GetPersonWriteDate(person, address, email, phone);
+
+                var sosyncWriteDate = person.sosync_write_date;
+                var writeDate = person.write_date;
 
                 var sourceData = new PersonCombined()
                 {
@@ -193,7 +197,7 @@ namespace Syncer.Flows
                     { "BPKForcedFirstname", person.BPKErzwungenVorname },
                     { "BPKForcedLastname", person.BPKErzwungenNachname },
                     { "BPKForcedBirthdate", person.BPKErzwungenGeburtsdatum },
-                    { "sosync_write_date", (sosyncWriteDate ?? writeDate).Value.ToUniversalTime() }
+                    { "sosync_write_date", (sosyncWriteDate ?? writeDate).ToUniversalTime() }
                 };
 
                 // --> Country_ID --> über ISO-Code 
@@ -216,18 +220,19 @@ namespace Syncer.Flows
                     }
 
                     // Update the remote id in studio
-                    syncDetails.res_partner_id = odooPartnerId;
-                    persOdoo.Update(syncDetails);
+                    //syncDetails.res_partner_id = odooPartnerId;
+                    person.sosync_fso_id = odooPartnerId;
+                    personSvc.Update(person);
                 }
                 else
                 {
-                    OdooService.Client.GetModel<resPartner>("res.partner", syncDetails.res_partner_id.Value);
+                    OdooService.Client.GetModel<resPartner>("res.partner", person.sosync_fso_id.Value);
 
                     UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
                     try
                     {
                         // Update res.partner
-                        OdooService.Client.UpdateModel("res.partner", data, syncDetails.res_partner_id.Value, false);
+                        OdooService.Client.UpdateModel("res.partner", data, person.sosync_fso_id.Value, false);
                     }
                     finally
                     {
@@ -264,7 +269,9 @@ namespace Syncer.Flows
                         PersontypID = 101,
                         Anlagedatum = DateTime.Now,
                         create_date = DateTime.Now,
-                        write_date = DateTime.Now
+                        write_date = DateTime.Now,
+                        sosync_fso_id = onlineID,
+                        noSyncJobSwitch = true
                     };
 
                     MapFields(partner, person);
@@ -310,19 +317,22 @@ namespace Syncer.Flows
                 else
                 {
                     person = personSvc.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
-                    syncDetails = persOdoo.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
+                    //syncDetails = persOdoo.Read(new { PersonID = partner.Sosync_FS_ID }).SingleOrDefault();
 
-                    if (syncDetails.PersonAdresseID.HasValue)
-                        address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
+                    //if (syncDetails.PersonAdresseID.HasValue)
+                    //    address = addressSvc.Read(new { PersonAdresseID = syncDetails.PersonAdresseID }).SingleOrDefault();
 
-                    if (syncDetails.PersonEmailID.HasValue)
-                        email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
+                    //if (syncDetails.PersonEmailID.HasValue)
+                    //    email = emailSvc.Read(new { PersonEmailID = syncDetails.PersonEmailID }).SingleOrDefault();
 
-                    if (syncDetails.PersonTelefonID.HasValue)
-                        phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
+                    //if (syncDetails.PersonTelefonID.HasValue)
+                    //    phone = phoneSvc.Read(new { PersonTelefonID = syncDetails.PersonTelefonID }).SingleOrDefault();
 
-                    var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
-                    var writeDate = GetPersonWriteDate(person, address, email, phone);
+                    //var sosyncWriteDate = GetPersonSosyncWriteDate(person, address, email, phone);
+                    //var writeDate = GetPersonWriteDate(person, address, email, phone);
+
+                    var sosyncWriteDate = person.sosync_write_date;
+                    var writeDate = person.write_date;
 
                     var sourceData = new PersonCombined()
                     {
@@ -337,6 +347,7 @@ namespace Syncer.Flows
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(sourceData));
 
                     MapFields(partner, person);
+                    person.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(sourceData));
 
