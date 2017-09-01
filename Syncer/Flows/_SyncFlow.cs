@@ -385,6 +385,8 @@ namespace Syncer.Flows
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
             }
 
+            writeDate = null;
+
             // Get the attributes for the model names
             var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
             var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
