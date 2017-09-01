@@ -125,7 +125,7 @@ namespace Syncer.Flows
                     {
                         Name = company.Name,
                         sosync_write_date = (company.Sosync_Write_Date ?? company.Write_Date).Value.ToLocalTime(),
-                        res_company_id = onlineID,
+                        sosync_fso_id = onlineID,
                         noSyncJobSwitch = true
                     };
 
