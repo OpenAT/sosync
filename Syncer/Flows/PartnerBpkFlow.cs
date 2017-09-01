@@ -108,6 +108,7 @@ namespace Syncer.Flows
                 {
                     var entry = new dboPersonBPK();
                     CopyPartnerBpkToPersonBpk(bpk, entry);
+                    entry.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
 
@@ -138,6 +139,7 @@ namespace Syncer.Flows
 
                     CopyPartnerBpkToPersonBpk(bpk, entry);
                     entry.sosync_write_date = bpk.Sosync_Write_Date.Value.ToLocalTime();
+                    entry.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
 
@@ -157,7 +159,7 @@ namespace Syncer.Flows
 
         private void CopyPartnerBpkToPersonBpk(resPartnerBpk source, dboPersonBPK dest)
         {
-            throw new NotImplementedException();
+
         }
     }
 }
