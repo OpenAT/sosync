@@ -201,12 +201,14 @@ namespace WebSosync
         /// <param name="log">The Logger to be used foir logging.</param>
         private static void SetupDb(SosyncOptions config, ILogger<Program> log)
         {
-            log.LogInformation($"Setting up database");
+            log.LogInformation($"Ensure sosync database is up to date...");
 
             using (var db = new DataService(config))
             {
                 db.Setup();
             }
+
+            log.LogInformation($"Database check done.");
         }
         #endregion
     }
