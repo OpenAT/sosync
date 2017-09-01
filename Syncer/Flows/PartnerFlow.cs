@@ -282,15 +282,6 @@ namespace Syncer.Flows
                     try
                     {
                         personSvc.Create(person);
-
-                        syncDetails = new dboPersonOdooResPartner()
-                        {
-                            PersonID = person.PersonID,
-                            res_partner_id = onlineID
-                        };
-
-                        persOdoo.Create(syncDetails);
-
                         UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
                     }
                     catch (Exception ex)
