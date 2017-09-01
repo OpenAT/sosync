@@ -78,11 +78,6 @@ namespace WebSosync.Data
             // To modify the sync table in production
             // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
-
-
-#warning TODO: Just for demo, can be removed after test release
-            DropColumnIfExists("sync_target_data_before_update");
-            AddColumnIfNotExists("sync_target_data_before", "text");
         }
 
         /// <summary>
