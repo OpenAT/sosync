@@ -3,6 +3,7 @@ using Odoo;
 using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,20 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            return GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
+            // return GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
+
+            var dicModel = OdooService.Client.GetDictionary(
+                "res.partner.bpk",
+                onlineID,
+                new string[] { "id", "write_date" });
+
+            if (!OdooService.Client.IsValidResult(dicModel))
+                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner.bpk", onlineID);
+
+            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
+            var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
+
+            return new ModelInfo(onlineID, null, sosyncWriteDate, writeDate);
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -39,8 +53,8 @@ namespace Syncer.Flows
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
             var bpk = OdooService.Client.GetDictionary("res.partner.bpk", onlineID, new string[] { "BPKRequestPartnerID", "BPKRequestCompanyID" });
-            var partnerID = OdooConvert.ToInt32((string)bpk["BPKRequestPartnerID"]);
-            var companyID = OdooConvert.ToInt32((string)bpk["BPKRequestCompanyID"]);
+            var partnerID = OdooConvert.ToInt32((string)((List<object>)bpk["BPKRequestPartnerID"])[0]);
+            var companyID = OdooConvert.ToInt32((string)((List<object>)bpk["BPKRequestCompanyID"])[0]);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
@@ -48,6 +62,9 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
+            throw new NotSupportedException("bPK entries can only be synced from [fso] to [fs].");
+
+            /*
             using (var db = MdbService.GetDataService<dboPersonBPK>())
             {
                 var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
@@ -55,6 +72,7 @@ namespace Syncer.Flows
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpk.xBPKAccountID);
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", bpk.PersonID);
             }
+            */
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -78,14 +96,14 @@ namespace Syncer.Flows
                     // Expected to exist due to child jobs
                     using (var dbPers = MdbService.GetDataService<dboPerson>())
                     {
-                        var person = dbPers.Read(new { sosync_fso_id = bpk.BPKRequestPartnerID }).Single();
+                        var person = dbPers.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.BPKRequestPartnerID[0]) }).Single();
                         personID = person.PersonID;
                     }
 
                     // Expected to exist due to child jobs
                     using (var dbAcc = MdbService.GetDataService<dboxBPKAccount>())
                     {
-                        var acc = dbAcc.Read(new { sosync_fso_id = bpk.BPKRequestCompanyID }).Single();
+                        var acc = dbAcc.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.BPKRequestCompanyID[0]) }).Single();
                         xBPKAccountID = acc.xBPKAccountID;
                     }
 
@@ -93,7 +111,9 @@ namespace Syncer.Flows
                     {
                         PersonID = personID,
                         xBPKAccountID = xBPKAccountID,
-                        Anlagedatum = DateTime.Now
+                        Anlagedatum = DateTime.Now,
+                        sosync_write_date = (bpk.Sosync_Write_Date ?? bpk.Write_Date).Value.ToLocalTime(),
+                        sosync_fso_id = bpk.ID
                     };
 
                     CopyPartnerBpkToPersonBpk(bpk, entry);
@@ -120,8 +140,7 @@ namespace Syncer.Flows
                 }
                 else
                 {
-#warning TODO: Fix the ID
-                    var sosync_fs_id = 0; // bpk.sosync_fs_id;
+                    var sosync_fs_id = bpk.Sosync_FS_ID;
                     var entry = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(entry));
