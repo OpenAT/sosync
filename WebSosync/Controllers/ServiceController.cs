@@ -78,12 +78,10 @@ namespace WebSosync.Controllers
             }
         }
 
-#warning TODO: Remove me after testing!
         [HttpGet("debug")]
         public IActionResult Debug([FromServices]OdooService odoo)
         {
-            var result = odoo.Client.GetModel<resPartnerBpk>("res.partner.bpk", 2);
-            return new OkObjectResult(result);
+            return new OkResult();
         }
 
         //// GET api/values/5
