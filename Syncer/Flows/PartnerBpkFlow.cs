@@ -1,5 +1,6 @@
 ﻿using dadi_data.Models;
 using Odoo;
+using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
@@ -97,9 +98,65 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            var bpk = OdooService.Client.GetModel<resPartnerBpk>("res.partner.bpk", onlineID);
 
+            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
+            using (var db = MdbService.GetDataService<dboPersonBPK>())
+            {
+                if (action == TransformType.CreateNew)
+                {
+                    var entry = new dboPersonBPK();
+                    CopyPartnerBpkToPersonBpk(bpk, entry);
 
+                    UpdateSyncTargetRequest(Serializer.ToXML(entry));
+
+                    try
+                    {
+                        db.Create(entry);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString());
+                        throw;
+                    }
+
+                    OdooService.Client.UpdateModel(
+                        "res.partner.bpk",
+                        new { sosync_fs_id = entry.PersonBPKID },
+                        onlineID,
+                        false);
+                }
+                else
+                {
+#warning TODO: Fix the ID
+                    var sosync_fs_id = 0; // bpk.sosync_fs_id;
+                    var entry = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
+
+                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(entry));
+
+                    CopyPartnerBpkToPersonBpk(bpk, entry);
+                    entry.sosync_write_date = bpk.Sosync_Write_Date.Value.ToLocalTime();
+
+                    UpdateSyncTargetRequest(Serializer.ToXML(entry));
+
+                    try
+                    {
+                        db.Update(entry);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString());
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private void CopyPartnerBpkToPersonBpk(resPartnerBpk source, dboPersonBPK dest)
+        {
             throw new NotImplementedException();
         }
     }
