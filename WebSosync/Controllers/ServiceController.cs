@@ -78,6 +78,13 @@ namespace WebSosync.Controllers
             }
         }
 
+        [HttpGet("processjobs")]
+        public IActionResult ProcessJobs([FromServices]IBackgroundJob<SyncWorker> syncJob)
+        {
+            syncJob.Start();
+            return new OkResult();
+        }
+
         [HttpGet("debug")]
         public IActionResult Debug([FromServices]OdooService odoo)
         {
