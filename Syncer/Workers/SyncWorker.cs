@@ -51,7 +51,8 @@ namespace Syncer.Workers
             {
                 // Get the flow for the job source model, and start it
                 SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model));
-                flow.Start(job, loadTimeUTC, out bool requireRestart);
+                bool requireRestart = false;
+                flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart);
 
                 if (requireRestart)
                     RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");

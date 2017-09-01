@@ -128,10 +128,8 @@ namespace Syncer.Flows
         /// Starts the data flow.
         /// </summary>
         /// <param name="_job"></param>
-        public void Start(SyncJob job, DateTime loadTimeUTC, out bool requireRestart)
+        public void Start(FlowService flowManager, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart)
         {
-            requireRestart = false;
-
             _job = job;
 
             UpdateJobStart(loadTimeUTC);
@@ -190,12 +188,13 @@ namespace Syncer.Flows
                 // 1) Ignore finished child jobs
                 // 2) If child job is open --> Skipped?
                 // 3) Create all requested child jobs
-                var allChildJobsFinished = false;
                 try
                 {
                     // try-finally to ensure the child_job_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
                     UpdateJobChildStart(_job);
+
+                    var allChildJobsFinished = true;
 
                     foreach (ChildJobRequest request in _requiredChildJobs)
                     {
@@ -230,15 +229,19 @@ namespace Syncer.Flows
                             Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                             _db.CreateJob(childJob);
                             entry = childJob;
-                            requireRestart = true;
                        }
 
                         if (entry.Job_State == SosyncState.Error)
                             throw new SyncerException($"Child job ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
 
-                        if (entry.Job_State == SosyncState.New)
-                        {
-                            Log.LogInformation($"TODO: Execute child job!");
+                        // If the job is new or marked as "in progress", run it
+                       if (entry.Job_State == SosyncState.New || entry.Job_State == SosyncState.InProgress)
+                        { 
+                            Log.LogDebug($"Executing child job ({entry.Job_ID})");
+
+                            // Get the flow for the job source model, and start it
+                            SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
+                            flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart);
 
                             // Be sure to use logic & operator
                             if (entry.Job_State == SosyncState.Done)
@@ -253,7 +256,7 @@ namespace Syncer.Flows
 
                     if (!allChildJobsFinished)
                     {
-                        // Child jobs are not yet finished, despite just processing them
+                        // Child jobs are not yet finished, despite just processing them.
                         // Require restart, and stop this job, but leave it open so it is
                         // processed again
                         requireRestart = true;
@@ -413,10 +416,7 @@ namespace Syncer.Flows
                 // considered equal
                 var toleranceMS = 999;
 
-                var diff = GetWriteDateDifference(
-                    onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate.Value,
-                    (studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value).ToUniversalTime(),
-                    toleranceMS);
+                var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
 
                 if (diff.TotalMilliseconds == 0)
                 {
@@ -527,11 +527,14 @@ namespace Syncer.Flows
         /// <param name="onlineWriteDate">The FSO time stamp.</param>
         /// <param name="studioWriteDate">The Studio time stamp.</param>
         /// <returns></returns>
-        private TimeSpan GetWriteDateDifference(DateTime onlineWriteDate, DateTime studioWriteDate, int toleranceMS)
+        private TimeSpan GetWriteDateDifference(string anyModelName, ModelInfo studioInfo, ModelInfo onlineInfo, int toleranceMS)
         {
+            var onlineWriteDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate.Value;
+            var studioWriteDate = (studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value).ToUniversalTime();
+
             var result = onlineWriteDate - studioWriteDate;
 
-            Log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+            Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
 
             // If the difference is within the tolerance,
             // return zero
