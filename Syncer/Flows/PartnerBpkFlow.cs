@@ -182,7 +182,26 @@ namespace Syncer.Flows
 
         private void CopyPartnerBpkToPersonBpk(resPartnerBpk source, dboPersonBPK dest)
         {
+            dest.Anlagedatum = source.Create_Date.ToLocalTime();
 
+            dest.BPKPrivat = source.BPKPrivate;
+            dest.BPKOeffentlich = source.BPKPublic;
+
+            dest.Vorname = source.BPKRequestFirstname;
+            dest.Nachname = source.BPKRequestLastname;
+            dest.Geburtsdatum = source.BPKRequestBirthdate;
+
+            dest.PositivAmUm = source.BPKRequestDate;
+            dest.PositivDaten = source.BPKResponseData;
+
+            dest.FehlerAmUm = source.BPKErrorRequestDate;
+            dest.FehlerDaten = source.BPKErrorRequestData;
+            dest.FehlerAntwortDaten = source.BPKErrorResponseData;
+            dest.FehlerNachname = source.BPKErrorRequestLastname;
+            dest.FehlerVorname = source.BPKErrorRequestFirstname;
+            dest.FehlerGeburtsdatum = source.BPKErrorRequestBirthdate;
+            dest.FehlerText = source.BPKErrorText;
+            dest.FehlerCode = source.BPKErrorCode;
         }
     }
 }
