@@ -78,9 +78,10 @@ namespace WebSosync.Controllers
             }
         }
 
+        [HttpGet("debug")]
         public IActionResult Debug([FromServices]OdooService odoo)
         {
-            var result = odoo.Client.GetModel<resPartnerBpk>("res.partner.bpk", 1);
+            var result = odoo.Client.GetModel<resPartnerBpk>("res.partner.bpk", 2);
             return new OkObjectResult(result);
         }
 

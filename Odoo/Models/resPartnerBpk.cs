@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Odoo.Models
 {
     public class resPartnerBpk
     {
+        [DataMember(Name = "id")]
         public int ID { get; set; }
+
         public string BPKErrorRequestZIP { get; set; }
+
+        [DataMember(Name = "create_date")]
         public DateTime Create_Date { get; set; }
+
         public DateTime? BPKErrorRequestDate { get; set; }
         public string BPKErrorRequestData { get; set; }
         public string BPKErrorText { get; set; }
