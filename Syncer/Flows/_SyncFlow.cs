@@ -423,7 +423,11 @@ namespace Syncer.Flows
                 {
                     // Both models are within tolerance, and considered up to date.
                     writeDate = null;
-                    UpdateJobSourceAndTarget(job, "", "", null, "", "", null, "Model up to date.");
+
+                    // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+                    UpdateJobSourceAndTarget(
+                        job, "", "", null, "", "", null,
+                        $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
                 }
                 else if(diff.TotalMilliseconds < 0)
                 {
@@ -551,7 +555,7 @@ namespace Syncer.Flows
 
             using (var db = Service.GetService<DataService>())
             {
-                _job.Sync_Target_Data_Before_Update = data;
+                _job.Sync_Target_Data_Before = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
             }

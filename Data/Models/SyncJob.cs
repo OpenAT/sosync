@@ -138,8 +138,8 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "sync_source_data")]
         public string Sync_Source_Data { get; set; }
 
-        [DataMember(Name = "sync_target_data_before_update")]
-        public string Sync_Target_Data_Before_Update { get; set; }
+        [DataMember(Name = "sync_target_data_before")]
+        public string Sync_Target_Data_Before { get; set; }
 
         [DataMember(Name = "sync_target_request")]
         public string Sync_Target_Request { get; set; }

@@ -209,7 +209,7 @@ $$</value>
   
   -- Synchronization info
   sync_source_data text,
-  sync_target_data_before_update text,
+  sync_target_data_before text,
   sync_target_request text,
   sync_target_answer text,
 
