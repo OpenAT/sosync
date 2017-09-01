@@ -22,20 +22,7 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            // return GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
-
-            var dicModel = OdooService.Client.GetDictionary(
-                "res.partner.bpk",
-                onlineID,
-                new string[] { "id", "write_date" });
-
-            if (!OdooService.Client.IsValidResult(dicModel))
-                throw new ModelNotFoundException(SosyncSystem.FSOnline, "res.partner.bpk", onlineID);
-
-            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
-            var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
-
-            return new ModelInfo(onlineID, null, sosyncWriteDate, writeDate);
+            return GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -63,16 +50,6 @@ namespace Syncer.Flows
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
             throw new NotSupportedException("bPK entries can only be synced from [fso] to [fs].");
-
-            /*
-            using (var db = MdbService.GetDataService<dboPersonBPK>())
-            {
-                var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
-
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", bpk.xBPKAccountID);
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", bpk.PersonID);
-            }
-            */
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -142,6 +119,9 @@ namespace Syncer.Flows
                 {
                     var sosync_fs_id = bpk.Sosync_FS_ID;
                     var entry = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
+
+                    if (entry == null)
+                        throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, "dbo.PersonBPK", sosync_fs_id);
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(entry));
 
