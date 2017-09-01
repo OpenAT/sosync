@@ -213,6 +213,8 @@ namespace Syncer.Flows
                     // Update the remote id in studio
                     //syncDetails.res_partner_id = odooPartnerId;
                     person.sosync_fso_id = odooPartnerId;
+                    person.noSyncJobSwitch = true;
+
                     personSvc.Update(person);
                 }
                 else
@@ -241,13 +243,11 @@ namespace Syncer.Flows
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
             dboPerson person = null;
-            dboPersonOdooResPartner syncDetails = null;
             dboPersonAdresse address = null;
             dboPersonEmail email = null;
             dboPersonTelefon phone = null;
 
             using (var personSvc = MdbService.GetDataService<dboPerson>())
-            using (var persOdoo = MdbService.GetDataService<dboPersonOdooResPartner>())
             using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
             using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
@@ -266,6 +266,7 @@ namespace Syncer.Flows
                     };
 
                     CopyPartnerToPerson(partner, person);
+                    person.noSyncJobSwitch = true;
 
                     var requestData = new PersonCombined()
                     {
