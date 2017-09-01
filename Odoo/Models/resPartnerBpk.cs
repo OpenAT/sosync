@@ -32,5 +32,11 @@ namespace Odoo.Models
         public string BPKRequestData { get; set; }
         public DateTime? BPKRequestDate { get; set; }
         public string BPKResponseData { get; set; }
+
+        [DataMember(Name = "sosync_fs_id")]
+        public int Sosync_FS_ID { get; set; }
+
+        [DataMember(Name = "sosync_write_date")]
+        public DateTime? Sosync_Write_Date { get; set; }
     }
 }
