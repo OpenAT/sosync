@@ -27,56 +27,30 @@ namespace Syncer.Flows
         #endregion
 
         #region Members
-        private IServiceProvider _svc;
-        private OdooService _odoo;
-        private MdbService _mdb;
-        private ILogger<SyncFlow> _log;
-        private CancellationToken _cancelToken;
-
         private List<ChildJobRequest> _requiredChildJobs;
         private SyncJob _job;
         #endregion
 
         #region Properties
-        protected ILogger<SyncFlow> Log
-        {
-            get { return _log; }
-        }
-
-        protected IServiceProvider Service
-        {
-            get { return _svc; }
-        }
-
-        protected OdooService OdooService
-        {
-            get { return _odoo; }
-        }
-
-        protected MdbService MdbService
-        {
-            get { return _mdb; }
-        }
-
+        protected ILogger<SyncFlow> Log { get; private set; }
+        protected IServiceProvider Service { get; private set; }
+        protected OdooService OdooService { get; private set; }
+        protected MdbService MdbService { get; private set; }
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
 
-        public CancellationToken CancelToken
-        {
-            get { return _cancelToken; }
-            set { _cancelToken = value; }
-        }
+        public CancellationToken CancelToken { get; set; }
         #endregion
 
         #region Constructors
         public SyncFlow(IServiceProvider svc)
         {
-            _svc = svc;
-            _log = _svc.GetService<ILogger<SyncFlow>>();
-            _odoo = _svc.GetService<OdooService>();
-            _mdb = _svc.GetService<MdbService>();
-            OdooFormat = _svc.GetService<OdooFormatService>();
-            Serializer = _svc.GetService<SerializationService>();
+            Service = svc;
+            Log = Service.GetService<ILogger<SyncFlow>>();
+            OdooService = Service.GetService<OdooService>();
+            MdbService = Service.GetService<MdbService>();
+            OdooFormat = Service.GetService<OdooFormatService>();
+            Serializer = Service.GetService<SerializationService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
         }
@@ -270,7 +244,7 @@ namespace Syncer.Flows
                     var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
 
                     var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
-                    _log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
+                    Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
 
                     if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                         TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
@@ -471,7 +445,7 @@ namespace Syncer.Flows
         /// <returns></returns>
         private bool IsConsistent(SyncJob job, DateTime? writeDate)
         {
-            _log.LogDebug($"Checking model consistency");
+            Log.LogDebug($"Checking model consistency");
 
             ModelInfo currentInfo = null;
 
@@ -506,7 +480,7 @@ namespace Syncer.Flows
         {
             var result = onlineWriteDate - studioWriteDate;
 
-            _log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+            Log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
 
             // If the difference is within the tolerance,
             // return zero
@@ -518,9 +492,9 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
+            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_Target_Data_Before_Update = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -531,9 +505,9 @@ namespace Syncer.Flows
 
         protected void UpdateSyncSourceData(string data)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Source_Data");
+            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Source_Data");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_Source_Data = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -544,9 +518,9 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetRequest(string requestData)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Request");
+            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Request");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_Target_Request = requestData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -557,9 +531,9 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetAnswer(string answerData)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
+            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -578,9 +552,9 @@ namespace Syncer.Flows
         /// <param name="log">Information to be logged.</param>
         private void UpdateJobSourceAndTarget(SyncJob job, string srcSystem, string srcModel, int? srcId, string targetSystem, string targetModel, int? targetId, string log)
         {
-            _log.LogDebug($"Updating job {job.Job_ID}: check source");
+            Log.LogDebug($"Updating job {job.Job_ID}: check source");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 job.Sync_Source_System = srcSystem;
                 job.Sync_Source_Model = srcModel;
@@ -603,9 +577,9 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobChildStart(SyncJob job)
         {
-            _log.LogDebug($"Updating job { job.Job_ID}: child start");
+            Log.LogDebug($"Updating job { job.Job_ID}: child start");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 job.Child_Job_Start = DateTime.UtcNow;
                 job.Job_Last_Change = DateTime.UtcNow;
@@ -617,9 +591,9 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobChildEnd()
         {
-            _log.LogDebug($"Updating job { _job.Job_ID}: child end");
+            Log.LogDebug($"Updating job { _job.Job_ID}: child end");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Child_Job_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -631,9 +605,9 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncStart()
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: transformation/sync start");
+            Log.LogDebug($"Updating job {_job.Job_ID}: transformation/sync start");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_Start = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -645,9 +619,9 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncEnd()
         {
-            _log.LogDebug($"Updating job { _job.Job_ID}: transformation/sync end");
+            Log.LogDebug($"Updating job { _job.Job_ID}: transformation/sync end");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Sync_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -659,9 +633,9 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobStart(DateTime loadTimeUTC)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: job start");
+            Log.LogDebug($"Updating job {_job.Job_ID}: job start");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Job_State = SosyncState.InProgress;
                 _job.Job_Start = loadTimeUTC;
@@ -680,9 +654,9 @@ namespace Syncer.Flows
         /// finished because it was already in sync.</param>
         private void UpdateJobSuccess(bool wasInSync)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            Log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Job_State = SosyncState.Done;
                 _job.Job_End = DateTime.Now.ToUniversalTime();
@@ -699,9 +673,9 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         private void UpdateJobError(string errorCode, string errorText)
         {
-            _log.LogDebug($"Updating job {_job.Job_ID}: job error");
+            Log.LogDebug($"Updating job {_job.Job_ID}: job error");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = Service.GetService<DataService>())
             {
                 _job.Job_State = SosyncState.Error;
                 _job.Job_End = DateTime.UtcNow;
@@ -718,12 +692,12 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobFso()
         {
-            _log.LogDebug($"Updating job {_job.Job_ID} in FSOnline");
+            Log.LogDebug($"Updating job {_job.Job_ID} in FSOnline");
 
             if (_job.Job_Fso_ID.HasValue)
             {
                 // If job_fso_id is already known, just update fso
-                _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
+                OdooService.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
             }
             else
             {
@@ -732,17 +706,17 @@ namespace Syncer.Flows
                 // then update the job.
                 // If more than one result is returend, SingleOrDefault throws
                 // an exception
-                int foundJobId = _odoo.Client
+                int foundJobId = OdooService.Client
                     .SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, _job.Job_ID)
                     .SingleOrDefault();
 
                 if (foundJobId == 0)
                 {
                     // Job didn't exist yet, create it
-                    int newId = _odoo.Client.CreateModel<SyncJob>("sosync.job", _job);
+                    int newId = OdooService.Client.CreateModel<SyncJob>("sosync.job", _job);
                     _job.Job_Fso_ID = newId;
 
-                    using (var db = _svc.GetService<DataService>())
+                    using (var db = Service.GetService<DataService>())
                         db.UpdateJob(_job, x => x.Job_Fso_ID);
                 }
                 else
@@ -750,10 +724,10 @@ namespace Syncer.Flows
                     // Job was found, update its id in sync_table, then update it
                     _job.Job_Fso_ID = foundJobId;
 
-                    using (var db = _svc.GetService<DataService>())
+                    using (var db = Service.GetService<DataService>())
                         db.UpdateJob(_job, x => x.Job_Fso_ID);
 
-                    _odoo.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
+                    OdooService.Client.UpdateModel<SyncJob>("sosync.job", _job, _job.Job_Fso_ID.Value);
                 }
             }
         }
