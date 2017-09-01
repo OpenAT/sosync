@@ -265,7 +265,7 @@ namespace Syncer.Flows
                         noSyncJobSwitch = true
                     };
 
-                    MapFields(partner, person);
+                    CopyPartnerToPerson(partner, person);
 
                     var requestData = new PersonCombined()
                     {
@@ -330,7 +330,7 @@ namespace Syncer.Flows
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(sourceData));
 
-                    MapFields(partner, person);
+                    CopyPartnerToPerson(partner, person);
                     person.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(sourceData));
@@ -349,7 +349,7 @@ namespace Syncer.Flows
             }
         }
 
-        private void MapFields(resPartner source, dboPerson dest)
+        private void CopyPartnerToPerson(resPartner source, dboPerson dest)
         {
             // Person data
             dest.Vorname = source.FirstName;
