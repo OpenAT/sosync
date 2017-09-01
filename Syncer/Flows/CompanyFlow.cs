@@ -125,7 +125,8 @@ namespace Syncer.Flows
                     {
                         Name = company.Name,
                         sosync_write_date = (company.Sosync_Write_Date ?? company.Write_Date).Value.ToLocalTime(),
-                        res_company_id = onlineID
+                        res_company_id = onlineID,
+                        noSyncJobSwitch = true
                     };
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
@@ -156,6 +157,7 @@ namespace Syncer.Flows
 
                     acc.Name = company.Name;
                     acc.sosync_write_date = company.Sosync_Write_Date.Value.ToLocalTime();
+                    acc.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(acc));
 
