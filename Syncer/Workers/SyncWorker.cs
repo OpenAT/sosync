@@ -54,7 +54,7 @@ namespace Syncer.Workers
                 flow.Start(job, loadTimeUTC, out bool requireRestart);
 
                 if (requireRestart)
-                    RaiseRequireRestart();
+                    RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");
 
                 // Throttling
                 if (Configuration.Throttle_ms > 0)

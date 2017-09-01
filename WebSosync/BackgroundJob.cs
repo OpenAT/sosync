@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSosync.Common.Enumerations;
+using WebSosync.Common.Events;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
@@ -160,10 +161,10 @@ namespace WebSosync
             _log.LogInformation($"BackgroundJob-{typeof(T).Name}: cancelling gracefully");
         }
 
-        private void Syncer_RequireRestart(object sender, EventArgs e)
+        private void Syncer_RequireRestart(object sender, RequireRestartEventArgs e)
         {
             RestartOnFinish = true;
-            _log.LogInformation($"BackgroundJob-{typeof(T).Name}: requested restart on finish");
+            _log.LogInformation($"BackgroundJob-{typeof(T).Name}: requested restart, reason: {e.Reason}");
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
+using WebSosync.Common.Events;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data.Models;
 
@@ -11,7 +10,7 @@ namespace Syncer.Workers
     {
         #region IBackgroundJobWorker implementation
         public event EventHandler Cancelling;
-        public event EventHandler RequireRestart;
+        public event EventHandler<RequireRestartEventArgs> RequireRestart;
 
         public void ConfigureCancellation(CancellationToken token)
         {
@@ -39,9 +38,9 @@ namespace Syncer.Workers
             Cancelling?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void RaiseRequireRestart()
+        protected void RaiseRequireRestart(string reason)
         {
-            RequireRestart?.Invoke(this, EventArgs.Empty);
+            RequireRestart?.Invoke(this, new RequireRestartEventArgs(reason));
         }
         #endregion
     }

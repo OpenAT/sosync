@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using WebSosync.Common.Events;
 using WebSosync.Data.Models;
 
 namespace WebSosync.Common.Interfaces
@@ -10,6 +11,6 @@ namespace WebSosync.Common.Interfaces
         void Start();
 
         event EventHandler Cancelling;
-        event EventHandler RequireRestart;
+        event EventHandler<RequireRestartEventArgs> RequireRestart;
     }
 }
