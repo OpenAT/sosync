@@ -10,5 +10,6 @@ namespace WebSosync.Common.Interfaces
         void Start();
 
         event EventHandler Cancelling;
+        event EventHandler RequireRestart;
     }
 }

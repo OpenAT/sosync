@@ -137,8 +137,11 @@ namespace WebSosync
                 T worker = _svc.GetService<T>();
                 worker.ConfigureCancellation(_token);
                 worker.Cancelling += Syncer_Cancelling;
+                worker.RequireRestart += Syncer_RequireRestart;
+
                 worker.Start();
 
+                worker.RequireRestart -= Syncer_RequireRestart;
                 worker.Cancelling -= Syncer_Cancelling;
 
                 s.Stop();
@@ -155,6 +158,12 @@ namespace WebSosync
         {
             Status = BackgoundJobState.Stopping;
             _log.LogInformation($"BackgroundJob-{typeof(T).Name}: cancelling gracefully");
+        }
+
+        private void Syncer_RequireRestart(object sender, EventArgs e)
+        {
+            RestartOnFinish = true;
+            _log.LogInformation($"BackgroundJob-{typeof(T).Name}: requested restart on finish");
         }
 
         /// <summary>

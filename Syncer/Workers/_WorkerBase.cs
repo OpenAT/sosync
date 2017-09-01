@@ -11,6 +11,7 @@ namespace Syncer.Workers
     {
         #region IBackgroundJobWorker implementation
         public event EventHandler Cancelling;
+        public event EventHandler RequireRestart;
 
         public void ConfigureCancellation(CancellationToken token)
         {
@@ -36,6 +37,11 @@ namespace Syncer.Workers
         protected void RaiseCancelling()
         {
             Cancelling?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected void RaiseRequireRestart()
+        {
+            RequireRestart?.Invoke(this, EventArgs.Empty);
         }
         #endregion
     }

@@ -29,6 +29,7 @@ namespace Syncer.Flows
         #region Members
         private List<ChildJobRequest> _requiredChildJobs;
         private SyncJob _job;
+        private DataService _db;
         #endregion
 
         #region Properties
@@ -38,7 +39,7 @@ namespace Syncer.Flows
         protected MdbService MdbService { get; private set; }
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
-
+        
         public CancellationToken CancelToken { get; set; }
         #endregion
 
@@ -53,6 +54,7 @@ namespace Syncer.Flows
             Serializer = Service.GetService<SerializationService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
+            _db = Service.GetService<DataService>();
         }
         #endregion
 
@@ -126,8 +128,10 @@ namespace Syncer.Flows
         /// Starts the data flow.
         /// </summary>
         /// <param name="_job"></param>
-        public void Start(SyncJob job, DateTime loadTimeUTC)
+        public void Start(SyncJob job, DateTime loadTimeUTC, out bool requireRestart)
         {
+            requireRestart = false;
+
             _job = job;
 
             UpdateJobStart(loadTimeUTC);
@@ -186,13 +190,14 @@ namespace Syncer.Flows
                 // 1) Ignore finished child jobs
                 // 2) If child job is open --> Skipped?
                 // 3) Create all requested child jobs
+                var allChildJobsFinished = false;
                 try
                 {
                     // try-finally to ensure the child_job_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
                     UpdateJobChildStart(_job);
 
-                    foreach (ChildJobRequest jobRequest in _requiredChildJobs)
+                    foreach (ChildJobRequest request in _requiredChildJobs)
                     {
                         if (!IsConsistent(_job, initialWriteDate))
                         {
@@ -206,7 +211,45 @@ namespace Syncer.Flows
                         //    sync_source_system, sync_source_model, sync_source_record-id
 
                         // 2 Create & Process child job
+                        var childJob = new SyncJob()
+                        {
+                            Parent_Job_ID = _job.Job_ID,
+                            Job_State = SosyncState.New,
+                            Job_Date = DateTime.UtcNow,
+                            Job_Fetched = DateTime.UtcNow,
+                            Job_Source_System = request.JobSourceSystem,
+                            Job_Source_Model = request.JobSourceModel,
+                            Job_Source_Record_ID = request.JobSourceRecordID
+                        };
+
+                        var entry = _db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
+
+                        // If the child job wasn't created yet, create it
+                        if (entry == null)
+                        {
+                            Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
+                            _db.CreateJob(childJob);
+                            entry = childJob;
+                            requireRestart = true;
+                       }
+
+                        if (entry.Job_State == SosyncState.Error)
+                            throw new SyncerException($"Child job ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
+
+                        if (entry.Job_State == SosyncState.New)
+                        {
+                            Log.LogInformation($"TODO: Execute child job!");
+
+                            // Be sure to use logic & operator
+                            if (entry.Job_State == SosyncState.Done)
+                                allChildJobsFinished &= true;
+                            else
+                                allChildJobsFinished &= false;
+                        }
                     }
+
+                    if (!allChildJobsFinished)
+                        throw new SyncerException($"No child job errors occured, but there were still unfinished child jobs left.");
                 }
                 finally
                 {
@@ -216,7 +259,6 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
-#warning TODO: Somehow differentiate between child creation and processing errors
                 UpdateJobError(SosyncError.ChildJob, $"3) Child jobs:\n{ex.ToString()}");
                 throw;
             }

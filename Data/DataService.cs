@@ -159,6 +159,17 @@ namespace WebSosync.Data
             return result;
         }
 
+        public SyncJob GetJobBy(int parentJobId, string jobSourceSystem, string jobSourceModel, int jobSourceRecordId)
+        {
+            var result = _con.Query<SyncJob>(
+                "select * from sync_table where job_id = @job_id and job_source_system = @job_source_system and job_source_model = @job_source_model and job_source_record_id = @job_source_record_id",
+                new { job_id = parentJobId, job_source_system = jobSourceSystem, job_source_model = jobSourceModel, job_source_record_id = jobSourceRecordId },
+                commandTimeout: _cmdTimeoutSec)
+                .SingleOrDefault();
+
+            return result;
+        }
+
         /// <summary>
         /// Creates a new sync job in the database.
         /// </summary>
