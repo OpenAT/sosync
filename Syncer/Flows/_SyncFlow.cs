@@ -385,8 +385,6 @@ namespace Syncer.Flows
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
             }
 
-            writeDate = null;
-
             // Get the attributes for the model names
             var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
             var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
@@ -412,11 +410,7 @@ namespace Syncer.Flows
                 if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
                     throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
 
-                // XML-RPC default format for date/time does not include milliseconds, so
-                // when comparing the difference, up to 999 milliseconds difference is still
-                // considered equal
-                var toleranceMS = 999;
-
+                var toleranceMS = 0;
                 var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
 
                 if (diff.TotalMilliseconds == 0)
