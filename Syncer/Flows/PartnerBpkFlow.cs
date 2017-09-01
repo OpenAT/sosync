@@ -106,7 +106,30 @@ namespace Syncer.Flows
             {
                 if (action == TransformType.CreateNew)
                 {
-                    var entry = new dboPersonBPK();
+                    var personID = 0;
+                    var xBPKAccountID = 0;
+
+                    // Expected to exist due to child jobs
+                    using (var dbPers = MdbService.GetDataService<dboPerson>())
+                    {
+                        var person = dbPers.Read(new { sosync_fso_id = bpk.BPKRequestPartnerID }).Single();
+                        personID = person.PersonID;
+                    }
+
+                    // Expected to exist due to child jobs
+                    using (var dbAcc = MdbService.GetDataService<dboxBPKAccount>())
+                    {
+                        var acc = dbAcc.Read(new { sosync_fso_id = bpk.BPKRequestCompanyID }).Single();
+                        xBPKAccountID = acc.xBPKAccountID;
+                    }
+
+                    var entry = new dboPersonBPK()
+                    {
+                        PersonID = personID,
+                        xBPKAccountID = xBPKAccountID,
+                        Anlagedatum = DateTime.Now
+                    };
+
                     CopyPartnerBpkToPersonBpk(bpk, entry);
                     entry.noSyncJobSwitch = true;
 
