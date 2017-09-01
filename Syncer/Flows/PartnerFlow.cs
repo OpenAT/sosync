@@ -325,6 +325,8 @@ namespace Syncer.Flows
                     var sosyncWriteDate = person.sosync_write_date;
                     var writeDate = person.write_date;
 
+                    // PersonCombined is a helper class to combine all entities into one for
+                    // serialization
                     var sourceData = new PersonCombined()
                     {
                         Person = person,
