@@ -270,7 +270,7 @@ namespace Syncer.Flows
                     var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
 
                     var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
-                    _log.LogInformation($"Transforming {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to {_job.Sync_Target_Model} ({targetIdText})");
+                    _log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
 
                     if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                         TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
@@ -506,7 +506,7 @@ namespace Syncer.Flows
         {
             var result = onlineWriteDate - studioWriteDate;
 
-            _log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write diff: {Math.Abs(result.TotalMilliseconds).ToString("#,##0")}ms Tolerance: {toleranceMS.ToString("#,##0")}ms");
+            _log.LogInformation($"{nameof(GetWriteDateDifference)}() - Write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
 
             // If the difference is within the tolerance,
             // return zero
