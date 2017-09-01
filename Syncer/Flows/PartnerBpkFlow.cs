@@ -59,41 +59,7 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotImplementedException();
-
-            // Just realized... do this later, if at all, because for BPK the
-            // direction should in theory always be FSO -> FS
-
-
-            //using (var db = MdbService.GetDataService<dboPersonBPK>())
-            //{
-            //    var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
-
-            //    var data = new Dictionary<string, object>()
-            //    {
-            //        { "BPKPrivate", bpk.BPKPrivat },
-            //        { "BPKPublic", bpk.BPKOeffentlich },
-            //        { "BPKRequestFirstname", bpk.Vorname },
-            //        { "BPKRequestLastname", bpk.Nachname },
-            //        { "", bpk.Geburtsdatum },
-
-            //        { "", bpk.PositivAmUm },
-            //        { "", bpk.PositivDaten },
-            //        { "", bpk.PositivAntwortAmUm },
-            //        { "", bpk.PositivAntwortDaten },
-
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum },
-            //        { "", bpk.Geburtsdatum }
-
-            //    };
-            //}
+            throw new NotSupportedException("bPK entries can only be synced from [fso] to [fs].");
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
