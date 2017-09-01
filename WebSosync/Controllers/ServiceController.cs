@@ -78,6 +78,7 @@ namespace WebSosync.Controllers
             }
         }
 
+#warning TODO: Remove me after testing!
         [HttpGet("debug")]
         public IActionResult Debug([FromServices]OdooService odoo)
         {
