@@ -141,7 +141,7 @@ namespace Syncer.Flows
             // -----------------------------------------------------------------------
             try
             {
-                CheckRunCount(20);
+                CheckRunCount(5);
             }
             catch (Exception ex)
             {
