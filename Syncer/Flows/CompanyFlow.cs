@@ -149,8 +149,8 @@ namespace Syncer.Flows
                 }
                 else
                 {
-                    var sosync_fso_id = company.Sosync_FS_ID;
-                    var acc = db.Read(new { xBPKAccountID = sosync_fso_id }).SingleOrDefault();
+                    var sosync_fs_id = company.Sosync_FS_ID;
+                    var acc = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(acc));
 
