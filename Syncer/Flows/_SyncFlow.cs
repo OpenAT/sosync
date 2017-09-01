@@ -248,8 +248,17 @@ namespace Syncer.Flows
                         }
                     }
 
+                    //if (!allChildJobsFinished)
+                    //    throw new SyncerException($"No child job errors occured, but there were still unfinished child jobs left.");
+
                     if (!allChildJobsFinished)
-                        throw new SyncerException($"No child job errors occured, but there were still unfinished child jobs left.");
+                    {
+                        // Child jobs are not yet finished, despite just processing them
+                        // Require restart, and stop this job, but leave it open so it is
+                        // processed again
+                        requireRestart = true;
+                        return;
+                    }
                 }
                 finally
                 {
