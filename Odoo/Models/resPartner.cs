@@ -39,5 +39,29 @@ namespace Odoo.Models
 
         [DataMember(Name = "sosync_write_date")]
         public DateTime? Sosync_Write_Date { get; set; }
+
+        [DataMember(Name = "street")]
+        public string Street { get; set; }
+
+        [DataMember(Name = "street_number_web")]
+        public string StreetNumber { get; set; }
+
+        [DataMember(Name = "zip")]
+        public string Zip { get; set; }
+
+        [DataMember(Name = "city")]
+        public string City { get; set; }
+
+        [DataMember(Name = "phone")]
+        public string Phone { get; set; }
+
+        [DataMember(Name = "email")]
+        public string Email { get; set; }
+
+        [DataMember(Name = "donation_deduction_optout_web")]
+        public bool DonationDeductionOptOut { get; set; }
+
+        [DataMember(Name = "newsletter_web")]
+        public bool EmailNewsletter { get; set; }
     }
 }
