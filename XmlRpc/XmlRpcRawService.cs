@@ -156,11 +156,12 @@ namespace XmlRpc
 
                 return result;
             }
-            else if (t.GetTypeInfo().IsPrimitive || t == typeof(string) || t == typeof(object) || (
-                t.GetTypeInfo().IsGenericType
-                && t.GetGenericTypeDefinition() == typeof(Nullable<>)
-                && t.GetGenericArguments().Any(x => x.GetTypeInfo().IsValueType && x.GetTypeInfo().IsPrimitive)
-                ))
+            else if (t.GetTypeInfo().IsPrimitive
+                || t == typeof(string)
+                || t == typeof(object)
+                || (t.GetTypeInfo().IsGenericType
+                    && t.GetGenericTypeDefinition() == typeof(Nullable<>)
+                    && t.GetGenericArguments().Any(x => x.GetTypeInfo().IsValueType && x.GetTypeInfo().IsPrimitive)))
             {
                 // For primitives, strings and plain objects, just parse a single value using InnerText,
                 // to omit any nested nodes inside the passed node
@@ -172,11 +173,23 @@ namespace XmlRpc
                     return null;
 
                 if (!string.IsNullOrEmpty(e.InnerText) && !t.GetTypeInfo().IsGenericType)
-                    return Convert.ChangeType(e.InnerText, t);
+                {
+                    if (t == typeof(bool))
+                        return Convert.ChangeType(int.Parse(e.InnerText), t);
+                    else
+                        return Convert.ChangeType(e.InnerText, t);
+                }
                 else if (e != null && !string.IsNullOrEmpty(e.InnerText) && t.GetGenericTypeDefinition() == typeof(Nullable<>))
-                    return Convert.ChangeType(e.InnerText, t.GetGenericArguments()[0]);
+                {
+                    if (t.GetGenericArguments()[0] == typeof(bool))
+                        return Convert.ChangeType(int.Parse(e.InnerText), t.GetGenericArguments()[0]);
+                    else
+                        return Convert.ChangeType(e.InnerText, t.GetGenericArguments()[0]);
+                }
                 else
+                {
                     return null;
+                }
             }
             else if (t == typeof(DateTime) || t == typeof(DateTime?))
             {
@@ -187,7 +200,7 @@ namespace XmlRpc
                     if (e.InnerText.Length <= 1)
                         return null;
                     else
-                        return DateTime.ParseExact(e.InnerText, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+                        return DateTime.ParseExact(e.InnerText, "yyyy-MM-dd HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture);
                 else
                     return null;
             }
@@ -199,9 +212,7 @@ namespace XmlRpc
 
                 int i = 0;
                 foreach (XmlElement node in nodes)
-                {
                     arr.SetValue(GetXmlRpcResult(t.GetElementType(), node), i++);
-                }
 
                 return arr;
             }
@@ -234,13 +245,15 @@ namespace XmlRpc
                             }
                         }
 
+                        object value = null;
                         try
                         {
+                            value = destElement.InnerText;
                             prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
                         }
                         catch (Exception ex)
                         {
-                            new Exception($"Property: {prop.Name}", ex);
+                            throw new Exception($"Property: {prop.Name}, value: \"{Convert.ToString(value)}\"", ex);
                         }
                     }
                 }
