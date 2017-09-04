@@ -59,7 +59,7 @@ namespace Odoo.Models
         public string Email { get; set; }
 
         [DataMember(Name = "donation_deduction_optout_web")]
-        public bool DonationDeductionOptOut { get; set; }
+        public bool? DonationDeductionOptOut { get; set; }
 
         [DataMember(Name = "newsletter_web")]
         public bool EmailNewsletter { get; set; }
