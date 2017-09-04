@@ -14,7 +14,7 @@ namespace WebSosync.Common
                 return $"{t.TotalDays.ToString("0")}d";
 
             if (t.TotalHours > 1)
-                return $"{t.TotalDays.ToString("0")}h";
+                return $"{t.TotalHours.ToString("0")}h";
 
             if (t.TotalMinutes > 1)
                 return $"{t.TotalMinutes.ToString("0")}min";
