@@ -118,8 +118,8 @@ namespace Syncer.Flows
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, model, id);
 
             var fsID = OdooConvert.ToInt32((string)dicModel["sosync_fs_id"]);
-            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["sosync_write_date"]);
-            var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"]);
+            var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["sosync_write_date"], true);
+            var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"], true);
 
             return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
         }
