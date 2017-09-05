@@ -205,8 +205,8 @@ namespace XmlRpc
                     {
                         var formats = new string[]
                         {
-                            "yyyy-MM-dd HH:mm:ss.FFFFFFF",
-                            "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ"
+                            "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ",
+                            "yyyy-MM-dd HH:mm:ss.FFFFFFF"
                         };
                         var result = DateTime.ParseExact(
                             e.InnerText,
@@ -378,11 +378,15 @@ namespace XmlRpc
             switch (rpcType)
             {
                 case "dateTime.iso8601":
-                    result = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+                    var date = (DateTime)value;
+                    if (date.Kind == DateTimeKind.Utc)
+                        result = date.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
+                    else
+                        result = date.ToString("yyyy-MM-ddTHH:mm:ss.fffffff");
                     break;
 
                 case "boolean":
-                    // Empty strings are treate as boolean false
+                    // Empty strings are treated as boolean false
                     if (string.IsNullOrEmpty(value as string))
                         result = "0";
                     else
