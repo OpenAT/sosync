@@ -198,9 +198,23 @@ namespace XmlRpc
                 // "boolean null" values
                 if (e != null)
                     if (e.InnerText.Length <= 1)
+                    {
                         return null;
+                    }
                     else
-                        return DateTime.ParseExact(e.InnerText, "yyyy-MM-dd HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture);
+                    {
+                        var formats = new string[]
+                        {
+                            "yyyy-MM-dd HH:mm:ss.FFFFFFF",
+                            "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ"
+                        };
+                        var result = DateTime.ParseExact(
+                            e.InnerText,
+                            formats,
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                        return result;
+                    }
                 else
                     return null;
             }
@@ -364,7 +378,7 @@ namespace XmlRpc
             switch (rpcType)
             {
                 case "dateTime.iso8601":
-                    result = ((DateTime)value).ToString("o");
+                    result = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.fffffff");
                     break;
 
                 case "boolean":
