@@ -77,11 +77,6 @@ namespace Syncer.Flows
                     try
                     {
                         var userDic = OdooService.Client.GetDictionary("res.users", OdooService.Client.UserID, new string[] { "company_id" });
-                        var parentID = OdooConvert.ToInt32((string)((List<object>)userDic["company_id"])[0]);
-
-                        if (parentID.HasValue)
-                            data.Add("parent_id", parentID);
-
                         int odooCompanyId = OdooService.Client.CreateModel("res.company", data, false);
 
                         acc.res_company_id = odooCompanyId;
