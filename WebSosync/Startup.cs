@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,9 +103,6 @@ namespace WebSosync
 
             RegisterBackgroundJob<SyncWorker>(services);
             RegisterBackgroundJob<ProtocolWorker>(services);
-
-            // Scoped services
-            services.AddScoped<RequestValidator<SyncJobDto>>();
 
             // Transient services
             services.AddTransient<DataService>();

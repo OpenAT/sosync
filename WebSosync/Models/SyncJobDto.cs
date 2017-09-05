@@ -22,18 +22,21 @@ namespace WebSosync.Models
 
         [DataMember(Name = "job_source_system")]
         [FromQuery(Name = "job_source_system")]
+        [JsonProperty(PropertyName = "job_source_system")]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(AllowEmptyStrings = true, ErrorMessage = "job_source_system is required.")]
         public string JobSourceSystem { get; set; }
 
         [DataMember(Name = "job_source_model")]
         [FromQuery(Name = "job_source_model")]
+        [JsonProperty(PropertyName = "job_source_model")]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(AllowEmptyStrings = true, ErrorMessage = "job_source_model is required.")]
         public string JobSourceModel { get; set; }
 
         [DataMember(Name = "job_source_record_id")]
         [FromQuery(Name = "job_source_record_id")]
+        [JsonProperty(PropertyName = "job_source_record_id")]
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "job_source_record_id must be greter than 0.")]
         public int? JobSourceRecordID { get; set; }
@@ -43,6 +46,7 @@ namespace WebSosync.Models
         /// </summary>
         [DataMember(Name = "job_date")]
         [FromQuery(Name = "job_date")]
+        [JsonProperty(PropertyName = "job_date")]
         [Required]
         public DateTime? JobDate { get; set; }
     }

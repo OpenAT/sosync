@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Odoo;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -50,45 +53,53 @@ namespace WebSosync.Controllers
             return new OkObjectResult(result);
         }
 
-        // job/create
-        [HttpGet("create")]
-        public IActionResult Get(
-            [FromServices]SosyncOptions config,
-            [FromServices]RequestValidator<SyncJobDto> validator,
-            [FromServices]OdooService odoo,
-            [FromServices]DataService db,
-            [FromServices]IBackgroundJob<SyncWorker> syncJob,
-            [FromServices]ILogger<JobController> log,
-            [FromQuery]SyncJobDto jobDto)
+        [HttpPost("create")]
+        public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, string> data)
         {
-            JobResultDto result = new JobResultDto();
-            validator.Configure(Request, ModelState);
+            return HandleCreateJob(services, data);
+        }
 
-            validator.AddCustomCheck(x => x.JobSourceSystem, val =>
+        [HttpGet("create")]
+        public IActionResult Get([FromServices]IServiceProvider services, [FromQuery]Dictionary<string, string> data)
+        {
+            return HandleCreateJob(services, data);
+        }
+
+        private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, string> data)
+        {
+            var result = new JobResultDto()
             {
-                if (val != "fs" && val != "fso")
-                    return "source_system can only be 'fs' or 'fso'";
+                ErrorCode = (int)JobErrorCode.None,
+                ErrorText = JobErrorCode.None.ToString(),
+                ErrorDetail = new Dictionary<string, string>()
+            };
 
-                return "";
-            });
-
-            validator.Validate();
-
-            result.ErrorCode = (int)validator.ErrorCode;
-            result.ErrorText = validator.ErrorCode.ToString();
-            result.ErrorDetail = validator.Errors.Values;
+            string dateFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
             
-            // Only attempt to store the job, if validation was successful
-            if (validator.ErrorCode == JobErrorCode.None)
-            {
-                // Create a full SyncJob object from the transfer object
-                var job = Mapper.Map<SyncJobDto, SyncJob>(jobDto);
+            if (!RequestValidator.ValidateInterface(result, data))
+                return new BadRequestObjectResult(result);
 
-                // Defaults
+            if (!RequestValidator.ValidateData(result, data, dateFormat))
+                return new BadRequestObjectResult(result);
+
+            var config = (SosyncOptions)services.GetService(typeof(SosyncOptions));
+            var odoo = (OdooService)services.GetService(typeof(OdooService));
+            var syncJob = (IBackgroundJob<SyncWorker>)services.GetService(typeof(IBackgroundJob<SyncWorker>));
+            var log = (ILogger<JobController>)services.GetService(typeof(ILogger<JobController>));
+
+            using (var db = (DataService)services.GetService(typeof(DataService)))
+            {
+                var job = new SyncJob()
+                {
+                    Job_Date = DateTime.ParseExact(data["job_date"], dateFormat, CultureInfo.InvariantCulture),
+                    Job_Source_System = data["job_source_system"],
+                    Job_Source_Model = data["job_source_model"],
+                    Job_Source_Record_ID = int.Parse(data["job_source_record_id"])
+                };
+
                 job.Job_State = SosyncState.New;
                 job.Job_Fetched = DateTime.UtcNow;
 
-                // Create the sync job, get it's ID into the result and start the job thread
                 db.CreateJob(job);
                 result.JobID = job.Job_ID;
 
@@ -106,14 +117,9 @@ namespace WebSosync.Controllers
 
                 // Start the sync background job
                 syncJob.Start();
+            }
 
-                // Just return empty OK result
-                return new OkObjectResult(result);
-            }
-            else
-            {
-                return new BadRequestObjectResult(result);
-            }
+            return new OkObjectResult(result);
         }
         #endregion
     }
