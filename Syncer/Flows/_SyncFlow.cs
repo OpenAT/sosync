@@ -20,7 +20,7 @@ namespace Syncer.Flows
     /// <summary>
     /// Base class for any sync flow.
     /// </summary>
-    public abstract class SyncFlow
+    public abstract class SyncFlow : IDisposable
     {
         #region Constants
         public const string MssqlTargetSuccessMessage = "success";
@@ -789,6 +789,10 @@ namespace Syncer.Flows
                     OdooService.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
                 }
             }
+        }
+        public void Dispose()
+        {
+            _db.Dispose();
         }
         #endregion
     }

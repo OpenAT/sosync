@@ -50,41 +50,43 @@ namespace Syncer.Workers
             while (job != null)
             {
                 // Get the flow for the job source model, and start it
-                SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model));
-                bool requireRestart = false;
-                flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart);
-
-                if (requireRestart)
-                    RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");
-
-                // Throttling
-                if (Configuration.Throttle_ms > 0)
+                using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model)))
                 {
-                    var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
-                    var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
+                    bool requireRestart = false;
+                    flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart);
 
-                    if (remainingTimeMs > 0)
+                    if (requireRestart)
+                        RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");
+
+                    // Throttling
+                    if (Configuration.Throttle_ms > 0)
                     {
-                        _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
-                        Thread.Sleep(remainingTimeMs);
+                        var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
+                        var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
+
+                        if (remainingTimeMs > 0)
+                        {
+                            _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
+                            Thread.Sleep(remainingTimeMs);
+                        }
+                        else
+                        {
+                            _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
+                        }
                     }
-                    else
+
+                    // Stop processing the queue if cancellation was requested
+                    if (CancellationToken.IsCancellationRequested)
                     {
-                        _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
+                        // Raise the cancelling event
+                        RaiseCancelling();
+                        // Clean up here, if necessary
                     }
-                }
 
-                // Stop processing the queue if cancellation was requested
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    // Raise the cancelling event
-                    RaiseCancelling();
-                    // Clean up here, if necessary
+                    // Get the next open job
+                    loadTimeUTC = DateTime.UtcNow;
+                    job = GetNextOpenJob();
                 }
-
-                // Get the next open job
-                loadTimeUTC = DateTime.UtcNow;
-                job = GetNextOpenJob();
             }
         }
 
