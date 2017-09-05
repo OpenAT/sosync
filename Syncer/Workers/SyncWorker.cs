@@ -20,6 +20,7 @@ namespace Syncer.Workers
         private IServiceProvider _svc;
         private FlowService _flowManager;
         private ILogger<SyncWorker> _log;
+        private OdooService _odoo;
         #endregion
 
         #region Constructors
@@ -27,12 +28,13 @@ namespace Syncer.Workers
         /// Creates a new instance of the <see cref="SyncWorker"/> class.
         /// </summary>
         /// <param name="options">Options to be used for data connections etc.</param>
-        public SyncWorker(IServiceProvider svc, SosyncOptions options, FlowService flowManager, ILogger<SyncWorker> logger)
+        public SyncWorker(IServiceProvider svc, SosyncOptions options, FlowService flowManager, ILogger<SyncWorker> logger, OdooService odoo)
             : base(options)
         {
             _svc = svc;
             _flowManager = flowManager;
             _log = logger;
+            _odoo = odoo;
         }
         #endregion
 
@@ -120,6 +122,14 @@ namespace Syncer.Workers
                 job.Job_Log = message;
                 job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
+
+                int? fsoID = _odoo.SendSyncJob(job);
+
+                if (fsoID != null)
+                {
+                    job.Job_Fso_ID = fsoID;
+                    db.UpdateJob(job);
+                }
             }
         }
         #endregion

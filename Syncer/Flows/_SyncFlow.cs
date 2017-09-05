@@ -228,7 +228,7 @@ namespace Syncer.Flows
                         {
                             Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                             _db.CreateJob(childJob);
-                            UpdateJobFso(_job);
+                            SyncJobToFso(_job, _db);
                             entry = childJob;
                        }
 
@@ -558,8 +558,8 @@ namespace Syncer.Flows
                 _job.Sync_Target_Data_Before = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         protected void UpdateSyncSourceData(string data)
@@ -571,8 +571,8 @@ namespace Syncer.Flows
                 _job.Sync_Source_Data = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         protected void UpdateSyncTargetRequest(string requestData)
@@ -584,8 +584,8 @@ namespace Syncer.Flows
                 _job.Sync_Target_Request = requestData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         protected void UpdateSyncTargetAnswer(string answerData)
@@ -597,8 +597,8 @@ namespace Syncer.Flows
                 _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         /// <summary>
@@ -626,8 +626,8 @@ namespace Syncer.Flows
                 job.Job_Log = log;
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         /// <summary>
@@ -701,8 +701,8 @@ namespace Syncer.Flows
                 _job.Job_Run_Count += 1;
                 _job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         /// <summary>
@@ -721,8 +721,8 @@ namespace Syncer.Flows
                 _job.Job_End = DateTime.Now.ToUniversalTime();
                 _job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         /// <summary>
@@ -742,54 +742,27 @@ namespace Syncer.Flows
                 _job.Job_Error_Text = errorText;
                 _job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(_job);
+                SyncJobToFso(_job, db);
             }
-            UpdateJobFso(_job);
         }
 
         /// <summary>
-        /// Synchronizes the specified job to FSO and updates the job_fso_id accordingly.
+        /// Sends the job to FSO. The job_fso_id will be written to the job,
+        /// and the job will besaved using the supplied data service.
         /// </summary>
-        private void UpdateJobFso(SyncJob job)
+        /// <param name="job">The job to be synchronized.</param>
+        /// <param name="db">Data service used to update the job.</param>
+        private void SyncJobToFso(SyncJob job, DataService db)
         {
-            Log.LogDebug($"Updating job {job.Job_ID} in FSOnline");
+            int? fsoID = OdooService.SendSyncJob(_job);
 
-            if (job.Job_Fso_ID.HasValue)
+            if (fsoID != null)
             {
-                // If job_fso_id is already known, just update fso
-                OdooService.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
-            }
-            else
-            {
-                // Without the id, first check if fso already has the job_id.
-                // Create it if it doesn't, else get it and update the id,
-                // then update the job.
-                // If more than one result is returend, SingleOrDefault throws
-                // an exception
-                int foundJobId = OdooService.Client
-                    .SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, job.Job_ID)
-                    .SingleOrDefault();
-
-                if (foundJobId == 0)
-                {
-                    // Job didn't exist yet, create it
-                    int newId = OdooService.Client.CreateModel<SyncJob>("sosync.job", job);
-                    job.Job_Fso_ID = newId;
-
-                    using (var db = Service.GetService<DataService>())
-                        db.UpdateJob(job, x => x.Job_Fso_ID);
-                }
-                else
-                {
-                    // Job was found, update its id in sync_table, then update it
-                    job.Job_Fso_ID = foundJobId;
-
-                    using (var db = Service.GetService<DataService>())
-                        db.UpdateJob(job, x => x.Job_Fso_ID);
-
-                    OdooService.Client.UpdateModel<SyncJob>("sosync.job", job, job.Job_Fso_ID.Value);
-                }
+                job.Job_Fso_ID = fsoID;
+                db.UpdateJob(job);
             }
         }
+
         public void Dispose()
         {
             _db.Dispose();
