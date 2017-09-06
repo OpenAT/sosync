@@ -60,6 +60,12 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "job_source_record_id")]
         public int Job_Source_Record_ID { get; set; }
 
+        [DataMember(Name = "job_source_sosync_write_date")]
+        public DateTime? Job_Source_Sosync_Write_Date { get; set; }
+
+        [DataMember(Name = "job_source_fields")]
+        public string Job_Source_Fields { get; set; }
+
         // SyncJob info
 
         [DataMember(Name = "job_fetched")]

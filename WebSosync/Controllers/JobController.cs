@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Odoo;
 using Syncer.Services;
 using Syncer.Workers;
@@ -54,18 +56,21 @@ namespace WebSosync.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, string> data)
+        public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
         {
+            if (data == null)
+                return new BadRequestResult();
+
             return HandleCreateJob(services, data);
         }
 
         [HttpGet("create")]
-        public IActionResult Get([FromServices]IServiceProvider services, [FromQuery]Dictionary<string, string> data)
+        public IActionResult Get([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
         {
             return HandleCreateJob(services, data);
         }
 
-        private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, string> data)
+        private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)
         {
             var result = new JobResultDto()
             {
@@ -91,11 +96,20 @@ namespace WebSosync.Controllers
             {
                 var job = new SyncJob()
                 {
-                    Job_Date = DateTime.ParseExact(data["job_date"], dateFormat, CultureInfo.InvariantCulture),
-                    Job_Source_System = data["job_source_system"],
-                    Job_Source_Model = data["job_source_model"],
-                    Job_Source_Record_ID = int.Parse(data["job_source_record_id"])
+                    Job_Date = DateTime.Parse((string)data["job_date"], CultureInfo.InvariantCulture),
+                    Job_Source_System = (string)data["job_source_system"],
+                    Job_Source_Model = (string)data["job_source_model"],
+                    Job_Source_Record_ID = (int)(long)data["job_source_record_id"]
                 };
+
+                if (data.ContainsKey("job_source_sosync_write_date"))
+                    job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
+
+                if (data.ContainsKey("job_source_fields"))
+                {
+                    var settings = new JsonSerializerSettings();
+                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
+                }
 
                 job.Job_State = SosyncState.New;
                 job.Job_Fetched = DateTime.UtcNow;

@@ -78,6 +78,9 @@ namespace WebSosync.Data
             // To modify the sync table in production
             // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
+
+            AddColumnIfNotExists("job_source_sosync_write_date", "timestamp without time zone");
+            AddColumnIfNotExists("job_source_fields", "text");
         }
 
         /// <summary>
