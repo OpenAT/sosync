@@ -111,8 +111,12 @@ namespace WebSosync.Controllers
                         job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
                     else if (data["job_source_fields"].GetType() == typeof(JValue))
                         job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
-                    else
+                    else if (data["job_source_fields"].GetType() == typeof(string))
                         job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
+                    else if (data["job_source_fields"].GetType() == typeof(bool))
+                        job.Job_Source_Fields = null;
+                    else
+                        throw new Exception("Content of job_source_fields was not recognized.");
                 }
 
                 job.Job_State = SosyncState.New;
