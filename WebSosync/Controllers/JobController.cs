@@ -107,8 +107,12 @@ namespace WebSosync.Controllers
 
                 if (data.ContainsKey("job_source_fields"))
                 {
-                    var settings = new JsonSerializerSettings();
-                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
+                    if (data["job_source_fields"].GetType() == typeof(string))
+                        job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
+                    else if (data["job_source_fields"].GetType() == typeof(JValue))
+                        job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
+                    else
+                        job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
                 }
 
                 job.Job_State = SosyncState.New;
