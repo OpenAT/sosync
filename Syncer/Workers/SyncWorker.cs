@@ -91,7 +91,7 @@ namespace Syncer.Workers
                 catch(Exception ex)
                 {
                     _log.LogError(ex.Message);
-                    UpdateJobMissingFlow(job, ex.Message);
+                    UpdateJobError(job, ex.Message);
                 }
 
                 // Get the next open job
@@ -114,7 +114,7 @@ namespace Syncer.Workers
             }
         }
 
-        private void UpdateJobMissingFlow(SyncJob job, string message)
+        private void UpdateJobError(SyncJob job, string message)
         {
             using (var db = _svc.GetService<DataService>())
             {

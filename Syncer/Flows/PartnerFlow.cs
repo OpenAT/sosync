@@ -1,4 +1,5 @@
-﻿using dadi_data.Models;
+﻿using dadi_data;
+using dadi_data.Models;
 using Microsoft.Extensions.Logging;
 using Odoo;
 using Odoo.Models;
@@ -8,6 +9,7 @@ using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using WebSosync.Data;
@@ -127,25 +129,59 @@ namespace Syncer.Flows
             return result;
         }
 
-        private void SetdboPersonStack_fso_ids(dboPersonStack person, int onlineID)
-        {
-            using (var personSvc = MdbService.GetDataService<dboPerson>())
-            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
-            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
-            using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
-            {
-                if ((person.person.sosync_fso_id ?? 0) != onlineID)
-                {
-                    person.person.sosync_fso_id = onlineID;
-                    person.person.noSyncJobSwitch = true;
-                    personSvc.Update(person.person);
-                }
+        /*
+using (var personSvc = MdbService.GetDataService<dboPerson>(con, transaction))
+using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>(con, transaction))
+using (var emailSvc = MdbService.GetDataService<dboPersonEmail>(con, transaction))
+using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
+using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
+using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(con, transaction))
+{
+}
+*/
 
-                foreach (dboPersonAdresse iterAddress in addressSvc.Read(new { PersonID = person.person.PersonID }))
+        private void SetdboPersonStack_fso_ids(
+            dboPersonStack person,
+            int onlineID,
+            DataService<dboPerson> personSvc,
+            DataService<dboPersonAdresse> addressSvc,
+            DataService<dboPersonEmail> emailSvc,
+            DataService<dboPersonTelefon> phoneSvc,
+            DataService<dboPersonGruppe> personDonationDeductionOptOutSvc,
+            DataService<dboPersonEmailGruppe> emailNewsletterSvc,
+            SqlConnection con,
+            SqlTransaction transaction)
+        {
+            if ((person.person.sosync_fso_id ?? 0) != onlineID)
+            {
+                person.person.sosync_fso_id = onlineID;
+                person.person.noSyncJobSwitch = true;
+                personSvc.Update(person.person);
+            }
+
+            foreach (dboPersonAdresse iterAddress in addressSvc.Read(new { PersonID = person.person.PersonID }))
+            {
+                if (person.address == null)
                 {
-                    if (person.address == null)
+                    if (iterAddress.sosync_fso_id != null)
+                    {
+                        iterAddress.sosync_fso_id = null;
+                        iterAddress.noSyncJobSwitch = true;
+                        addressSvc.Update(iterAddress);
+                    }
+                }
+                else
+                {
+                    if (iterAddress.PersonAdresseID == person.address.PersonAdresseID)
+                    {
+                        if ((iterAddress.sosync_fso_id ?? 0) != onlineID)
+                        {
+                            iterAddress.sosync_fso_id = onlineID;
+                            iterAddress.noSyncJobSwitch = true;
+                            addressSvc.Update(iterAddress);
+                        }
+                    }
+                    else
                     {
                         if (iterAddress.sosync_fso_id != null)
                         {
@@ -154,32 +190,32 @@ namespace Syncer.Flows
                             addressSvc.Update(iterAddress);
                         }
                     }
-                    else
+                }
+            }
+
+            foreach (dboPersonEmail iterEmail in emailSvc.Read(new { PersonID = person.person.PersonID }))
+            {
+                if (person.email == null)
+                {
+                    if (iterEmail.sosync_fso_id != null)
                     {
-                        if (iterAddress.PersonAdresseID == person.address.PersonAdresseID)
-                        {
-                            if ((iterAddress.sosync_fso_id ?? 0) != onlineID)
-                            {
-                                iterAddress.sosync_fso_id = onlineID;
-                                iterAddress.noSyncJobSwitch = true;
-                                addressSvc.Update(iterAddress);
-                            }
-                        }
-                        else
-                        {
-                            if (iterAddress.sosync_fso_id != null)
-                            {
-                                iterAddress.sosync_fso_id = null;
-                                iterAddress.noSyncJobSwitch = true;
-                                addressSvc.Update(iterAddress);
-                            }
-                        }
+                        iterEmail.sosync_fso_id = null;
+                        iterEmail.noSyncJobSwitch = true;
+                        emailSvc.Update(iterEmail);
                     }
                 }
-
-                foreach (dboPersonEmail iterEmail in emailSvc.Read(new { PersonID = person.person.PersonID }))
+                else
                 {
-                    if (person.email == null)
+                    if (iterEmail.PersonEmailID == person.email.PersonEmailID)
+                    {
+                        if ((iterEmail.sosync_fso_id ?? 0) != onlineID)
+                        {
+                            iterEmail.sosync_fso_id = onlineID;
+                            iterEmail.noSyncJobSwitch = true;
+                            emailSvc.Update(iterEmail);
+                        }
+                    }
+                    else
                     {
                         if (iterEmail.sosync_fso_id != null)
                         {
@@ -188,32 +224,32 @@ namespace Syncer.Flows
                             emailSvc.Update(iterEmail);
                         }
                     }
-                    else
+                }
+            }
+
+            foreach (dboPersonTelefon iterPhone in phoneSvc.Read(new { PersonID = person.person.PersonID }))
+            {
+                if (person.phone == null)
+                {
+                    if (iterPhone.sosync_fso_id != null)
                     {
-                        if (iterEmail.PersonEmailID == person.email.PersonEmailID)
-                        {
-                            if ((iterEmail.sosync_fso_id ?? 0) != onlineID)
-                            {
-                                iterEmail.sosync_fso_id = onlineID;
-                                iterEmail.noSyncJobSwitch = true;
-                                emailSvc.Update(iterEmail);
-                            }
-                        }
-                        else
-                        {
-                            if (iterEmail.sosync_fso_id != null)
-                            {
-                                iterEmail.sosync_fso_id = null;
-                                iterEmail.noSyncJobSwitch = true;
-                                emailSvc.Update(iterEmail);
-                            }
-                        }
+                        iterPhone.sosync_fso_id = null;
+                        iterPhone.noSyncJobSwitch = true;
+                        phoneSvc.Update(iterPhone);
                     }
                 }
-
-                foreach (dboPersonTelefon iterPhone in phoneSvc.Read(new { PersonID = person.person.PersonID }))
+                else
                 {
-                    if (person.phone == null)
+                    if (iterPhone.PersonTelefonID == person.phone.PersonTelefonID)
+                    {
+                        if ((iterPhone.sosync_fso_id ?? 0) != onlineID)
+                        {
+                            iterPhone.sosync_fso_id = onlineID;
+                            iterPhone.noSyncJobSwitch = true;
+                            phoneSvc.Update(iterPhone);
+                        }
+                    }
+                    else
                     {
                         if (iterPhone.sosync_fso_id != null)
                         {
@@ -222,51 +258,28 @@ namespace Syncer.Flows
                             phoneSvc.Update(iterPhone);
                         }
                     }
-                    else
-                    {
-                        if (iterPhone.PersonTelefonID == person.phone.PersonTelefonID)
-                        {
-                            if ((iterPhone.sosync_fso_id ?? 0) != onlineID)
-                            {
-                                iterPhone.sosync_fso_id = onlineID;
-                                iterPhone.noSyncJobSwitch = true;
-                                phoneSvc.Update(iterPhone);
-                            }
-                        }
-                        else
-                        {
-                            if (iterPhone.sosync_fso_id != null)
-                            {
-                                iterPhone.sosync_fso_id = null;
-                                iterPhone.noSyncJobSwitch = true;
-                                phoneSvc.Update(iterPhone);
-                            }
-                        }
-                    }
                 }
+            }
 
-                
-                if (person.personDonationDeductionOptOut != null)
+
+            if (person.personDonationDeductionOptOut != null)
+            {
+                if ((person.personDonationDeductionOptOut.sosync_fso_id ?? 0) != onlineID)
                 {
-                    if ((person.personDonationDeductionOptOut.sosync_fso_id ?? 0) != onlineID)
-                    {
-                        person.personDonationDeductionOptOut.sosync_fso_id = onlineID;
-                        person.personDonationDeductionOptOut.noSyncJobSwitch = true;
-                        personDonationDeductionOptOutSvc.Update(person.personDonationDeductionOptOut);
-                    }
+                    person.personDonationDeductionOptOut.sosync_fso_id = onlineID;
+                    person.personDonationDeductionOptOut.noSyncJobSwitch = true;
+                    personDonationDeductionOptOutSvc.Update(person.personDonationDeductionOptOut);
                 }
+            }
 
-                if (person.emailNewsletter != null)
+            if (person.emailNewsletter != null)
+            {
+                if ((person.emailNewsletter.sosync_fso_id ?? 0) != onlineID)
                 {
-                    if ((person.emailNewsletter.sosync_fso_id ?? 0) != onlineID)
-                    {
-                        person.emailNewsletter.sosync_fso_id = onlineID;
-                        person.emailNewsletter.noSyncJobSwitch = true;
-                        emailNewsletterSvc.Update(person.emailNewsletter);
-                    }
+                    person.emailNewsletter.sosync_fso_id = onlineID;
+                    person.emailNewsletter.noSyncJobSwitch = true;
+                    emailNewsletterSvc.Update(person.emailNewsletter);
                 }
-                
-
             }
         }
 
@@ -400,7 +413,25 @@ namespace Syncer.Flows
                 }
 
                 // Update the remote id in studio
-                SetdboPersonStack_fso_ids(person, odooPartnerId);
+                using (var personSvc = MdbService.GetDataService<dboPerson>())
+                using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+                using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+                using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+                using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+                using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
+                {
+                    SetdboPersonStack_fso_ids(
+                        person, 
+                        odooPartnerId, 
+                        personSvc, 
+                        addressSvc, 
+                        emailSvc, 
+                        phoneSvc, 
+                        personDonationDeductionOptOutSvc, 
+                        emailNewsletterSvc, 
+                        null, 
+                        null);
+                }
             }
             else
             {
@@ -825,7 +856,18 @@ namespace Syncer.Flows
                                 }
                             }
 
-                            SetdboPersonStack_fso_ids(person, onlineID);
+                            SetdboPersonStack_fso_ids(
+                               person,
+                               onlineID,
+                               personSvc,
+                               addressSvc,
+                               emailSvc,
+                               phoneSvc,
+                               personDonationDeductionOptOutSvc,
+                               emailNewsletterSvc,
+                               personSvc.Connection,
+                               transaction);
+
                             UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
                         }
                         catch (Exception ex)
