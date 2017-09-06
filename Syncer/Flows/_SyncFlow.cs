@@ -415,7 +415,7 @@ namespace Syncer.Flows
                 // XML-RPC default format for date/time does not include milliseconds, so
                 // when comparing the difference, up to 999 milliseconds difference is still
                 // considered equal
-                var toleranceMS = 999;
+                var toleranceMS = 0;
 
                 var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
 
