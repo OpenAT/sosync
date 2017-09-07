@@ -49,7 +49,7 @@ namespace Syncer.Flows
             {
                 var acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
                 if (acc != null)
-                    return new ModelInfo(studioID, acc.res_company_id, acc.sosync_write_date, acc.write_date);
+                    return new ModelInfo(studioID, acc.sosync_fso_id, acc.sosync_write_date, acc.write_date);
             }
 
             return null;
@@ -79,7 +79,7 @@ namespace Syncer.Flows
                         var userDic = OdooService.Client.GetDictionary("res.users", OdooService.Client.UserID, new string[] { "company_id" });
                         int odooCompanyId = OdooService.Client.CreateModel("res.company", data, false);
 
-                        acc.res_company_id = odooCompanyId;
+                        acc.sosync_fso_id = odooCompanyId;
                         db.Update(acc);
                     }
                     finally
@@ -90,12 +90,12 @@ namespace Syncer.Flows
                 }
                 else
                 {
-                    var company = OdooService.Client.GetModel<resCompany>("res.company", acc.res_company_id.Value);
+                    var company = OdooService.Client.GetModel<resCompany>("res.company", acc.sosync_fso_id.Value);
 
                     UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
                     try
                     {
-                        OdooService.Client.UpdateModel("res.company", data, acc.res_company_id.Value, false);
+                        OdooService.Client.UpdateModel("res.company", data, acc.sosync_fso_id.Value, false);
                     }
                     finally
                     {
