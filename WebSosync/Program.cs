@@ -156,6 +156,17 @@ namespace WebSosync
 
             try
             {
+                var timeSvc = (TimeService)host.Services.GetService(typeof(TimeService));
+
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message);
+                forceQuit = true;
+            }
+
+            try
+            {
                 // Start the webserver if there is no forced quit
                 if (!forceQuit)
                     host.Run(svc.Token);

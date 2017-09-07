@@ -110,6 +110,7 @@ namespace WebSosync
             services.AddTransient<OdooService>();
             services.AddTransient<OdooFormatService>();
             services.AddTransient<SerializationService>();
+            services.AddTransient<TimeService>();
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);
