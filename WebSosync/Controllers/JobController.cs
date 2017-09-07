@@ -65,9 +65,14 @@ namespace WebSosync.Controllers
         }
 
         [HttpGet("create")]
-        public IActionResult Get([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
+        public IActionResult Get([FromServices]IServiceProvider services, [FromQuery]Dictionary<string, string> data)
         {
-            return HandleCreateJob(services, data);
+            var converted = new Dictionary<string, object>();
+
+            foreach (var entry in data)
+                converted.Add(entry.Key, entry.Value);
+
+            return HandleCreateJob(services, converted);
         }
 
         private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)
@@ -99,7 +104,7 @@ namespace WebSosync.Controllers
                     Job_Date = DateTime.Parse((string)data["job_date"], CultureInfo.InvariantCulture),
                     Job_Source_System = (string)data["job_source_system"],
                     Job_Source_Model = (string)data["job_source_model"],
-                    Job_Source_Record_ID = (int)(long)data["job_source_record_id"]
+                    Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"])
                 };
 
                 if (data.ContainsKey("job_source_sosync_write_date"))
