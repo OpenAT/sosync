@@ -114,6 +114,8 @@ namespace WebSosync.Controllers
                 {
                     if (data["job_source_fields"].GetType() == typeof(string))
                         job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
+                    else if (data["job_source_fields"].GetType() == typeof(JObject))
+                        job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
                     else if (data["job_source_fields"].GetType() == typeof(JValue))
                         job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
                     else if (data["job_source_fields"].GetType() == typeof(string))
