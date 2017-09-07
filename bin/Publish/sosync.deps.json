@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v1.1",
-    "signature": "8315772e9bfac37f56f78f99cad7774d499b99ff"
+    "signature": "a8a569602ebba5de0c60c0ed00740e60d91d39ab"
   },
   "compilationOptions": {
     "defines": [
@@ -1943,6 +1943,14 @@
           "ref/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
+      "Yort.Ntp.Portable/1.0.12": {
+        "runtime": {
+          "lib/netstandard1.3/Yort.Ntp.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.3/Yort.Ntp.dll": {}
+        }
+      },
       "Odoo/1.0.0": {
         "dependencies": {
           "Microsoft.CSharp": "4.4.0",
@@ -1966,6 +1974,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
+          "Yort.Ntp.Portable": "1.0.12",
           "dadi-data": "1.0.13"
         },
         "runtime": {
@@ -4441,6 +4450,13 @@
       "sha512": "sha512-MYoTCP7EZ98RrANESW05J5ZwskKDoN0AuZ06ZflnowE50LTpbR5yRg3tHckTVm5j/m47stuGgCrCHWePyHS70Q==",
       "path": "system.xml.xmlserializer/4.3.0",
       "hashPath": "system.xml.xmlserializer.4.3.0.nupkg.sha512"
+    },
+    "Yort.Ntp.Portable/1.0.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nCE4C3sMX296P2ijliLccUjSWWBfrVs/DWOwvrVzOdDrYRiUyGiaCDqRcg5ZqzKPzcmXe0mUY6i/O1wb5XhNSg==",
+      "path": "yort.ntp.portable/1.0.12",
+      "hashPath": "yort.ntp.portable.1.0.12.nupkg.sha512"
     },
     "Odoo/1.0.0": {
       "type": "project",
