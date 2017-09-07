@@ -30,5 +30,6 @@ namespace WebSosync.Data.Models
         public string Online_Sosync_PW { get; set; }
 
         public int Throttle_ms { get; set; }
+        public int Max_Time_Drift_ms { get; set; }
     }
 }

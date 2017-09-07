@@ -111,6 +111,9 @@ namespace WebSosync
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
 
+            if (sosyncConfig.Max_Time_Drift_ms <= 0)
+                sosyncConfig.Max_Time_Drift_ms = 30;
+
             log.LogInformation(String.Join(" ",
                 $"Sosync started for instance {sosyncConfig.Instance},",
                 $"running on {osNameAndVersion}",
@@ -157,12 +160,11 @@ namespace WebSosync
             try
             {
                 var timeSvc = (TimeService)host.Services.GetService(typeof(TimeService));
-
+                timeSvc.ThrowOnTimeDrift();
             }
             catch (Exception ex)
             {
-                log.LogError(ex.Message);
-                forceQuit = true;
+                log.LogWarning(ex.Message);
             }
 
             try

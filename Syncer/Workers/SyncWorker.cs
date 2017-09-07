@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
 using System.Linq;
 using System.Threading;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Extensions;
 using WebSosync.Data.Models;
-using Yort.Ntp;
 
 namespace Syncer.Workers
 {
@@ -22,6 +23,7 @@ namespace Syncer.Workers
         private FlowService _flowManager;
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
+        private TimeService _timeSvc;
         #endregion
 
         #region Constructors
@@ -29,13 +31,21 @@ namespace Syncer.Workers
         /// Creates a new instance of the <see cref="SyncWorker"/> class.
         /// </summary>
         /// <param name="options">Options to be used for data connections etc.</param>
-        public SyncWorker(IServiceProvider svc, SosyncOptions options, FlowService flowManager, ILogger<SyncWorker> logger, OdooService odoo)
+        public SyncWorker(
+            IServiceProvider svc, 
+            SosyncOptions options, 
+            FlowService flowManager, 
+            ILogger<SyncWorker> logger, 
+            OdooService odoo,
+            TimeService timeSvc
+            )
             : base(options)
         {
             _svc = svc;
             _flowManager = flowManager;
             _log = logger;
             _odoo = odoo;
+            _timeSvc = timeSvc;
         }
         #endregion
 
@@ -50,10 +60,20 @@ namespace Syncer.Workers
             var loadTimeUTC = DateTime.UtcNow;
             var job = GetNextOpenJob();
 
+            DateTime? lastTimeCheck = null;
+
             while (job != null)
             {
                 try
                 {
+                    // Check server drift once per batch (a batch is every job the while loop captures),
+                    // but also check every reCheckMin minutes within a batch
+                    var reCheckMin = 30;
+                    if (lastTimeCheck == null || (DateTime.UtcNow - lastTimeCheck.Value).Minutes > reCheckMin)
+                    {
+                        lastTimeCheck = DateTime.UtcNow;
+                        _timeSvc.ThrowOnTimeDrift();
+                    }
 
                     // Get the flow for the job source model, and start it
                     using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model)))
@@ -89,6 +109,12 @@ namespace Syncer.Workers
                             // Clean up here, if necessary
                         }
                     }
+                }
+                catch(TimeDriftException ex)
+                {
+                    var waitTimeMs = 1000 * 60 * 30; // 30 min
+                    _log.LogError($"{ex.Message} Waiting {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
+                    Thread.Sleep(waitTimeMs);
                 }
                 catch(Exception ex)
                 {
