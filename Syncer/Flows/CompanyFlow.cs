@@ -74,10 +74,11 @@ namespace Syncer.Flows
                 if (action == TransformType.CreateNew)
                 {
                     data.Add("sosync_fs_id", acc.xBPKAccountID);
+                    int odooCompanyId = 0;
                     try
                     {
                         var userDic = OdooService.Client.GetDictionary("res.users", OdooService.Client.UserID, new string[] { "company_id" });
-                        int odooCompanyId = OdooService.Client.CreateModel("res.company", data, false);
+                        odooCompanyId = OdooService.Client.CreateModel("res.company", data, false);
 
                         acc.sosync_fso_id = odooCompanyId;
                         db.Update(acc);
@@ -85,7 +86,7 @@ namespace Syncer.Flows
                     finally
                     {
                         UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooCompanyId);
                     }
                 }
                 else
@@ -100,7 +101,7 @@ namespace Syncer.Flows
                     finally
                     {
                         UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
                     }
                 }
             }
@@ -126,14 +127,16 @@ namespace Syncer.Flows
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
 
+                    var xBPKAccountID = 0;
                     try
                     {
                         db.Create(entry);
-                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                        xBPKAccountID = entry.xBPKAccountID;
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, xBPKAccountID);
                     }
                     catch (Exception ex)
                     {
-                        UpdateSyncTargetAnswer(ex.ToString());
+                        UpdateSyncTargetAnswer(ex.ToString(), xBPKAccountID);
                         throw;
                     }
 
@@ -159,11 +162,11 @@ namespace Syncer.Flows
                     try
                     {
                         db.Update(acc);
-                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
                     }
                     catch (Exception ex)
                     {
-                        UpdateSyncTargetAnswer(ex.ToString());
+                        UpdateSyncTargetAnswer(ex.ToString(), null);
                         throw;
                     }
                 }

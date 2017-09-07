@@ -98,14 +98,16 @@ namespace Syncer.Flows
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
 
+                    var personBPKID = 0;
                     try
                     {
                         db.Create(entry);
-                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                        personBPKID = entry.PersonBPKID;
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, personBPKID);
                     }
                     catch (Exception ex)
                     {
-                        UpdateSyncTargetAnswer(ex.ToString());
+                        UpdateSyncTargetAnswer(ex.ToString(), personBPKID);
                         throw;
                     }
 
@@ -134,11 +136,11 @@ namespace Syncer.Flows
                     try
                     {
                         db.Update(entry);
-                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
                     }
                     catch (Exception ex)
                     {
-                        UpdateSyncTargetAnswer(ex.ToString());
+                        UpdateSyncTargetAnswer(ex.ToString(), null);
                         throw;
                     }
                 }

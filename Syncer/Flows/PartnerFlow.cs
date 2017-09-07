@@ -409,7 +409,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 finally
                 {
                     UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooPartnerId);
                 }
 
                 // Update the remote id in studio
@@ -446,7 +446,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 finally
                 {
                     UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw);
+                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
                 }
             }
             
@@ -556,11 +556,12 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
                         UpdateSyncTargetRequest(Serializer.ToXML(person));
 
+                        var PersonID = 0;
                         try
                         {
                             personSvc.Create(person.person);
 
-                            var PersonID = person.person.PersonID;
+                             PersonID = person.person.PersonID;
 
                             if (person.address != null)
                             {
@@ -596,11 +597,11 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                                 personDonationDeductionOptOutSvc.Create(person.personDonationDeductionOptOut);
                             }
 
-                            UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                            UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, PersonID);
                         }
                         catch (Exception ex)
                         {
-                            UpdateSyncTargetAnswer(ex.ToString());
+                            UpdateSyncTargetAnswer(ex.ToString(), PersonID);
                             throw;
                         }
 
@@ -868,11 +869,11 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                                personSvc.Connection,
                                transaction);
 
-                            UpdateSyncTargetAnswer(MssqlTargetSuccessMessage);
+                            UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
                         }
                         catch (Exception ex)
                         {
-                            UpdateSyncTargetAnswer(ex.ToString());
+                            UpdateSyncTargetAnswer(ex.ToString(), null);
                             throw;
                         }
                     }

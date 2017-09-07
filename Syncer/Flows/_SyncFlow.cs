@@ -588,12 +588,15 @@ namespace Syncer.Flows
             }
         }
 
-        protected void UpdateSyncTargetAnswer(string answerData)
+        protected void UpdateSyncTargetAnswer(string answerData, int? createdID)
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
 
             using (var db = Service.GetService<DataService>())
             {
+                if (createdID.HasValue)
+                    _job.Sync_Target_Record_ID = createdID.Value;
+
                 _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
