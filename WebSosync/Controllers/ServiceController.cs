@@ -93,6 +93,14 @@ namespace WebSosync.Controllers
             return new OkObjectResult(result);
         }
 
+        [HttpGet("forcedriftcheck")]
+        public IActionResult ProcessJobs([FromServices]TimeService timeSvc)
+        {
+            timeSvc.LastDriftCheck = null;
+            timeSvc.DriftLockUntil = null;
+            return new OkResult();
+        }
+
         [HttpGet("processjobs")]
         public IActionResult ProcessJobs([FromServices]IBackgroundJob<SyncWorker> syncJob)
         {

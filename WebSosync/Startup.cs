@@ -97,6 +97,7 @@ namespace WebSosync
             services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<MdbService>();
+            services.AddSingleton<TimeService>();
 
             var flowService = new FlowService();
             services.AddSingleton(flowService);
@@ -110,7 +111,6 @@ namespace WebSosync
             services.AddTransient<OdooService>();
             services.AddTransient<OdooFormatService>();
             services.AddTransient<SerializationService>();
-            services.AddTransient<TimeService>();
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);
