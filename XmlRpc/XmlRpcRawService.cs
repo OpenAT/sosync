@@ -206,6 +206,7 @@ namespace XmlRpc
                         var formats = new string[]
                         {
                             "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ",
+                            "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
                             "yyyy-MM-dd HH:mm:ss.FFFFFFF",
                             "yyyy-MM-dd"
                         };
@@ -268,7 +269,7 @@ namespace XmlRpc
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Property: {prop.Name}, value: \"{Convert.ToString(value)}\"", ex);
+                            throw new Exception($"Could not process property: {prop.Name}, value: \"{Convert.ToString(value)}\"", ex);
                         }
                     }
                 }
