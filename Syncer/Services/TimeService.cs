@@ -36,7 +36,7 @@ namespace Syncer.Services
             var client = new Ntp(server)
             {
                 VersionNumber = 3,
-                Timeout = 3
+                Timeout = 500 // ms
             };
 
             return client.GetTime()
