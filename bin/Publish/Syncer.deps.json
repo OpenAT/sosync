@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.4/",
-    "signature": "41defe38518f1208a262aacd940259a5e0a1c5c2"
+    "signature": "55dafa8b74a3181d624a32e5150fbc06d95614c1"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,6 +9,7 @@
     ".NETStandard,Version=v1.4/": {
       "Syncer/1.0.0": {
         "dependencies": {
+          "Daemaged.NTP": "0.6.6",
           "Microsoft.Extensions.Configuration": "1.1.2",
           "Microsoft.Extensions.DependencyInjection": "1.1.1",
           "NETStandard.Library": "1.6.1",
@@ -16,7 +17,6 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "Yort.Ntp.Portable": "1.0.12",
           "dadi-data": "1.0.13"
         },
         "runtime": {
@@ -36,6 +36,17 @@
         },
         "runtime": {
           "lib/netstandard1.4/dadi-data.dll": {}
+        }
+      },
+      "Daemaged.NTP/0.6.6": {
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Thread": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/Daemaged.NTP.dll": {}
         }
       },
       "Dapper/1.50.2": {
@@ -1301,11 +1312,6 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "Yort.Ntp.Portable/1.0.12": {
-        "runtime": {
-          "lib/netstandard1.3/Yort.Ntp.dll": {}
-        }
-      },
       "Odoo/1.0.0": {
         "dependencies": {
           "Microsoft.CSharp": "4.4.0",
@@ -1365,6 +1371,13 @@
       "sha512": "sha512-/YHceDFGdd5dQyOL4ft8YBs+FLKt5zrpo3E3PZffrFbba5joy13dkWPstUFZbJF4zFVEOgTTBcz3+peHDNCxLA==",
       "path": "dadi-data/1.0.13",
       "hashPath": "dadi-data.1.0.13.nupkg.sha512"
+    },
+    "Daemaged.NTP/0.6.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-puSm9ZCTbQwQiRx9d9KgbmM3YbByya/0RR1q91xbf/H8QCarKVmq6CmLIIz8gMP94KVHpWKjku0PXbC+KZ2IDA==",
+      "path": "daemaged.ntp/0.6.6",
+      "hashPath": "daemaged.ntp.0.6.6.nupkg.sha512"
     },
     "Dapper/1.50.2": {
       "type": "package",
@@ -2163,13 +2176,6 @@
       "sha512": "sha512-MYoTCP7EZ98RrANESW05J5ZwskKDoN0AuZ06ZflnowE50LTpbR5yRg3tHckTVm5j/m47stuGgCrCHWePyHS70Q==",
       "path": "system.xml.xmlserializer/4.3.0",
       "hashPath": "system.xml.xmlserializer.4.3.0.nupkg.sha512"
-    },
-    "Yort.Ntp.Portable/1.0.12": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-nCE4C3sMX296P2ijliLccUjSWWBfrVs/DWOwvrVzOdDrYRiUyGiaCDqRcg5ZqzKPzcmXe0mUY6i/O1wb5XhNSg==",
-      "path": "yort.ntp.portable/1.0.12",
-      "hashPath": "yort.ntp.portable.1.0.12.nupkg.sha512"
     },
     "Odoo/1.0.0": {
       "type": "project",
