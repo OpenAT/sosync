@@ -76,6 +76,7 @@ Before the service can be started, ensure the following (replace **dadi** with t
 port = 5050
 instance = inst
 throttle_ms = 0
+max_time_drift_ms = 30
 
 # Database
 db_host = localhost
