@@ -63,5 +63,23 @@ namespace Odoo.Models
 
         [DataMember(Name = "newsletter_web")]
         public bool EmailNewsletter { get; set; }
+
+        [DataMember(Name = "mobile")]
+        public string Mobile { get; set; }
+
+        [DataMember(Name = "fax")]
+        public string Fax { get; set; }
+
+        [DataMember(Name = "anrede_individuell")]
+        public string AnredeIndividuell { get; set; }
+
+        [DataMember(Name = "donation_receipt_web")]
+        public bool? DonationReceipt { get; set; }
+
+        [DataMember(Name = "BPKForcedZip")]
+        public string BPKForcedZip { get; set; }
+
+        [DataMember(Name = "country_id")]
+        public int? CountryID { get; set; }
     }
 }

@@ -44,12 +44,15 @@ namespace Syncer.Flows
         {
             var query = new DateTime?[]
             {
-                        person.person != null ? person.person.write_date : (DateTime?)null,
-                        person.address != null ? person.address.write_date : (DateTime?)null,
-                        person.email != null ? person.email.write_date : (DateTime?)null,
-                        person.phone != null ? person.phone.write_date : (DateTime?)null,
-                        person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
-                        person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null
+                person.person != null ? person.person.write_date : (DateTime?)null,
+                person.address != null ? person.address.write_date : (DateTime?)null,
+                person.email != null ? person.email.write_date : (DateTime?)null,
+                person.phone != null ? person.phone.write_date : (DateTime?)null,
+                person.mobile != null ? person.mobile.write_date : (DateTime?)null,
+                person.fax != null ? person.fax.write_date : (DateTime?)null,
+                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
+                person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null,
+                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -66,8 +69,11 @@ namespace Syncer.Flows
                 person.address != null ? person.address.sosync_write_date : (DateTime?)null,
                 person.email != null ? person.email.sosync_write_date : (DateTime?)null,
                 person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
+                person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
+                person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
                 person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.sosync_write_date : (DateTime?)null,
-                person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null
+                person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null,
+                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -85,7 +91,10 @@ namespace Syncer.Flows
             using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
             using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
@@ -96,7 +105,7 @@ namespace Syncer.Flows
                                   orderby string.IsNullOrEmpty(iterAddress.GültigMonatArray) ? "111111111111" : iterAddress.GültigMonatArray descending,
                                   iterAddress.PersonAdresseID descending
                                   select iterAddress).FirstOrDefault();
-
+              
                 if (result.address != null)
                 {
                     result.addressAM = addressAMSvc.Read(new { PersonAdresseID = result.address.PersonAdresseID }).FirstOrDefault();
@@ -104,9 +113,24 @@ namespace Syncer.Flows
 
                 result.phone = (from iterPhone in phoneSvc.Read(new { PersonID = PersonID })
                                 where iterPhone.GültigVon <= DateTime.Today &&
-                                    iterPhone.GültigBis >= DateTime.Today
+                                    iterPhone.GültigBis >= DateTime.Today &&
+                                    iterPhone.TelefontypID == 400
                                 orderby string.IsNullOrEmpty(iterPhone.GültigMonatArray) ? "111111111111" : iterPhone.GültigMonatArray descending
                                 select iterPhone).FirstOrDefault();
+
+                result.mobile = (from itermobile in mobileSvc.Read(new { PersonID = PersonID })
+                                where itermobile.GültigVon <= DateTime.Today &&
+                                    itermobile.GültigBis >= DateTime.Today &&
+                                    itermobile.TelefontypID == 401
+                                orderby string.IsNullOrEmpty(itermobile.GültigMonatArray) ? "111111111111" : itermobile.GültigMonatArray descending
+                                select itermobile).FirstOrDefault();
+
+                result.fax = (from iterfax in faxSvc.Read(new { PersonID = PersonID })
+                                where iterfax.GültigVon <= DateTime.Today &&
+                                    iterfax.GültigBis >= DateTime.Today &&
+                                    iterfax.TelefontypID == 403
+                                orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? "111111111111" : iterfax.GültigMonatArray descending
+                                select iterfax).FirstOrDefault();
 
                 result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
                                 where iterEmail.GültigVon <= DateTime.Today &&
@@ -115,6 +139,8 @@ namespace Syncer.Flows
                                 select iterEmail).FirstOrDefault();
 
                 result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
+
+                result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
 
 
                 if (result.email != null)
@@ -128,17 +154,7 @@ namespace Syncer.Flows
 
             return result;
         }
-
-        /*
-using (var personSvc = MdbService.GetDataService<dboPerson>(con, transaction))
-using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>(con, transaction))
-using (var emailSvc = MdbService.GetDataService<dboPersonEmail>(con, transaction))
-using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
-using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
-using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(con, transaction))
-{
-}
-*/
+        
 
         private void SetdboPersonStack_fso_ids(
             dboPersonStack person,
@@ -147,7 +163,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
             DataService<dboPersonAdresse> addressSvc,
             DataService<dboPersonEmail> emailSvc,
             DataService<dboPersonTelefon> phoneSvc,
+            DataService<dboPersonTelefon> mobileSvc,
+            DataService<dboPersonTelefon> faxSvc,
             DataService<dboPersonGruppe> personDonationDeductionOptOutSvc,
+            DataService<dboPersonGruppe> personDonationReceiptSvc,
             DataService<dboPersonEmailGruppe> emailNewsletterSvc,
             SqlConnection con,
             SqlTransaction transaction)
@@ -227,9 +246,25 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 }
             }
 
+            var synced_dboPersonTelefonIDS = new List<int>();
+            if (person.phone != null)
+            {
+                synced_dboPersonTelefonIDS.Add(person.phone.PersonTelefonID);
+            }
+
+            if (person.mobile != null)
+            {
+                synced_dboPersonTelefonIDS.Add(person.mobile.PersonTelefonID);
+            }
+
+            if (person.fax != null)
+            {
+                synced_dboPersonTelefonIDS.Add(person.fax.PersonTelefonID);
+            }
+
             foreach (dboPersonTelefon iterPhone in phoneSvc.Read(new { PersonID = person.person.PersonID }))
             {
-                if (person.phone == null)
+                if (person.phone == null && person.mobile == null && person.fax == null)
                 {
                     if (iterPhone.sosync_fso_id != null)
                     {
@@ -240,7 +275,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 }
                 else
                 {
-                    if (iterPhone.PersonTelefonID == person.phone.PersonTelefonID)
+                    if ( synced_dboPersonTelefonIDS.Contains(iterPhone.PersonTelefonID) )
                     {
                         if ((iterPhone.sosync_fso_id ?? 0) != onlineID)
                         {
@@ -269,6 +304,16 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                     person.personDonationDeductionOptOut.sosync_fso_id = onlineID;
                     person.personDonationDeductionOptOut.noSyncJobSwitch = true;
                     personDonationDeductionOptOutSvc.Update(person.personDonationDeductionOptOut);
+                }
+            }
+
+            if (person.personDonationReceipt != null)
+            {
+                if ((person.personDonationReceipt.sosync_fso_id ?? 0) != onlineID)
+                {
+                    person.personDonationReceipt.sosync_fso_id = onlineID;
+                    person.personDonationReceipt.noSyncJobSwitch = true;
+                    personDonationReceiptSvc.Update(person.personDonationReceipt);
                 }
             }
 
@@ -314,7 +359,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
             var person = GetCurrentdboPersonStack(studioID);
 
-            var sosync_write_date = (person.person.sosync_write_date ?? person.person.write_date.ToUniversalTime());
+            var sosync_write_date = (person.person.sosync_write_date ?? person.person.write_date);
 
             var data = new Dictionary<string, object>()
                 {
@@ -336,6 +381,44 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 data.Add("street_number_web", person.address.Hausnummer);
                 data.Add("zip", person.address.PLZ);
                 data.Add("city", person.address.Ort);
+
+                if (person.address.AnredeformtypID == 324)
+                {
+                    data.Add("anrede_individuell", person.address.IndividuelleAnrede);
+                }
+                else
+                {
+                    data.Add("anrede_individuell", null);
+                }
+
+                string countryCode = null;
+
+                using(var dbSvc = MdbService.GetDataService<dboTypen>())
+                {
+                    countryCode = dbSvc.ExecuteQuery<string>("select sosync.LandID_to_IsoCountryCode2(@LandID)", new { LandID = person.address.LandID }).FirstOrDefault();
+                }
+
+                if (!string.IsNullOrEmpty(countryCode))
+                {
+
+                    var foundCountryID = OdooService.Client.SearchModelByField<resCountry, string>("res.country", x => x.Code, countryCode).FirstOrDefault();
+
+                    if(foundCountryID != 0)
+                    {
+                        data.Add("country_id", foundCountryID);
+                    }
+                    else
+                    {
+                        data.Add("country_id", null);
+                    }
+
+                }
+                else
+                {
+                    data.Add("country_id", null);
+                }
+
+
             }
             else
             {
@@ -343,6 +426,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 data.Add("street_number_web", null);
                 data.Add("zip", null);
                 data.Add("city", null);
+                data.Add("anrede_individuell", null);
             }
 
             if (person.email != null)
@@ -363,6 +447,24 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 data.Add("phone", null);
             }
 
+            if (person.mobile != null)
+            {
+                data.Add("mobile", (person.mobile.Landkennzeichen + " " + person.mobile.Vorwahl + " " + person.mobile.Rufnummer).Trim());
+            }
+            else
+            {
+                data.Add("mobile", null);
+            }
+
+            if (person.fax != null)
+            {
+                data.Add("fax", (person.fax.Landkennzeichen + " " + person.fax.Vorwahl + " " + person.fax.Rufnummer).Trim());
+            }
+            else
+            {
+                data.Add("fax", null);
+            }
+
             if (person.personDonationDeductionOptOut != null)
             {
                 if (person.personDonationDeductionOptOut.GültigVon <= DateTime.Today
@@ -374,6 +476,28 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 {
                     data.Add("donation_deduction_optout_web", false);
                 }
+            }
+            else
+            {
+                data.Add("donation_deduction_optout_web", false);
+            }
+
+            //donation_receipt_web
+            if (person.personDonationReceipt != null)
+            {
+                if (person.personDonationReceipt.GültigVon <= DateTime.Today
+                    && person.personDonationReceipt.GültigBis >= DateTime.Today)
+                {
+                    data.Add("donation_receipt_web", true);
+                }
+                else
+                {
+                    data.Add("donation_receipt_web", false);
+                }
+            }
+            else
+            {
+                data.Add("donation_receipt_web", false);
             }
 
             if (person.emailNewsletter != null)
@@ -387,6 +511,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 {
                     data.Add("newsletter_web", false);
                 }
+            }
+            else
+            {
+                data.Add("newsletter_web", false);
             }
 
             
@@ -417,7 +545,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
                 using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+                using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
+                using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
                 using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+                using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
                 using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
                 {
                     SetdboPersonStack_fso_ids(
@@ -427,7 +558,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                         addressSvc, 
                         emailSvc, 
                         phoneSvc, 
+                        mobileSvc,
+                        faxSvc,
                         personDonationDeductionOptOutSvc, 
+                        personDonationReceiptSvc,
                         emailNewsletterSvc, 
                         null, 
                         null);
@@ -440,8 +574,38 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
                 try
                 {
+
+                    var onlineID = person.person.sosync_fso_id.Value;
+
                     // Update res.partner
-                    OdooService.Client.UpdateModel("res.partner", data, person.person.sosync_fso_id.Value, false);
+                    OdooService.Client.UpdateModel("res.partner", data, onlineID, false);
+
+                    // Update the remote id in studio
+                    using (var personSvc = MdbService.GetDataService<dboPerson>())
+                    using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+                    using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+                    using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+                    using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
+                    using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
+                    using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+                    using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
+                    using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
+                    {
+                        SetdboPersonStack_fso_ids(
+                            person,
+                            onlineID,
+                            personSvc,
+                            addressSvc,
+                            emailSvc,
+                            phoneSvc,
+                            mobileSvc,
+                            faxSvc,
+                            personDonationDeductionOptOutSvc,
+                            personDonationReceiptSvc,
+                            emailNewsletterSvc,
+                            null,
+                            null);
+                    }
                 }
                 finally
                 {
@@ -468,7 +632,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
                 using (var emailSvc = MdbService.GetDataService<dboPersonEmail>(con, transaction))
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
+                using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
+                using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
+                using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
                 using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(con, transaction))
                 {
                     // Load online model, save it to studio
@@ -519,7 +686,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                         //create new dboPersonTelefon if phone is filled
                         if (PartnerHasPhone(partner))
                         {
-                            person.phone = InitDboPersonTelefon();
+                            person.phone = InitDboPersonTelefon(dboPersonTelefontyp.phone);
 
                             person.phone.sosync_fso_id = onlineID;
 
@@ -527,6 +694,34 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                             person.phone.noSyncJobSwitch = true;
 
                             CopyPartnerToPersonTelefon(partner, person.phone);
+
+                        }
+
+                        //create new dboPersonTelefon if mobile is filled
+                        if (PartnerHasMobile(partner))
+                        {
+                            person.mobile = InitDboPersonTelefon(dboPersonTelefontyp.mobile);
+
+                            person.mobile.sosync_fso_id = onlineID;
+
+                            person.mobile.sosync_write_date = sosync_write_date;
+                            person.mobile.noSyncJobSwitch = true;
+
+                            CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+
+                        }
+
+                        //create new dboPersonTelefon if phone is filled
+                        if (PartnerHasFax(partner))
+                        {
+                            person.fax = InitDboPersonTelefon(dboPersonTelefontyp.fax);
+
+                            person.fax.sosync_fso_id = onlineID;
+
+                            person.fax.sosync_write_date = sosync_write_date;
+                            person.fax.noSyncJobSwitch = true;
+
+                            CopyPartnerToPersonTelefonFax(partner, person.fax);
 
                         }
 
@@ -539,6 +734,18 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
                             person.personDonationDeductionOptOut.sosync_write_date = sosync_write_date;
                             person.personDonationDeductionOptOut.noSyncJobSwitch = true;
+
+                        }
+
+                        //create new dboPersonGruppe if don-rec
+                        if (partner.DonationReceipt ?? false)
+                        {
+                            person.personDonationReceipt = InitPersonDonationReceipt();
+
+                            person.personDonationReceipt.sosync_fso_id = onlineID;
+
+                            person.personDonationReceipt.sosync_write_date = sosync_write_date;
+                            person.personDonationReceipt.noSyncJobSwitch = true;
 
                         }
 
@@ -591,10 +798,29 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                                 phoneSvc.Create(person.phone);
                             }
 
+                            if (person.mobile != null)
+                            {
+                                person.mobile.PersonID = PersonID;
+                                mobileSvc.Create(person.mobile);
+                            }
+
+                            if (person.fax != null)
+                            {
+                                person.fax.PersonID = PersonID;
+                                faxSvc.Create(person.fax);
+                            }
+
                             if (person.personDonationDeductionOptOut != null)
                             {
                                 person.personDonationDeductionOptOut.PersonID = PersonID;
                                 personDonationDeductionOptOutSvc.Create(person.personDonationDeductionOptOut);
+                            }
+
+
+                            if(person.personDonationReceipt != null)
+                            {
+                                person.personDonationReceipt.PersonID = PersonID;
+                                personDonationReceiptSvc.Create(person.personDonationReceipt);
                             }
 
                             UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, PersonID);
@@ -687,7 +913,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                         {
                             if (PartnerHasPhone(partner))
                             {
-                                person.phone = InitDboPersonTelefon();
+                                person.phone = InitDboPersonTelefon(dboPersonTelefontyp.phone);
 
                                 person.phone.PersonID = PersonID;
 
@@ -703,9 +929,61 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
                             CopyPartnerToPersonTelefon(partner, person.phone);
 
-                            person.email.sosync_fso_id = onlineID;
-                            person.email.sosync_write_date = sosync_write_date;
-                            person.email.noSyncJobSwitch = true;
+                            person.phone.sosync_fso_id = onlineID;
+                            person.phone.sosync_write_date = sosync_write_date;
+                            person.phone.noSyncJobSwitch = true;
+
+                        }
+
+                        if (person.mobile == null)
+                        {
+                            if (PartnerHasMobile(partner))
+                            {
+                                person.mobile = InitDboPersonTelefon(dboPersonTelefontyp.mobile);
+
+                                person.mobile.PersonID = PersonID;
+
+                                CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+
+                                person.mobile.sosync_fso_id = onlineID;
+                                person.mobile.sosync_write_date = sosync_write_date;
+                                person.mobile.noSyncJobSwitch = true;
+                            }
+                        }
+                        else
+                        {
+
+                            CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+
+                            person.mobile.sosync_fso_id = onlineID;
+                            person.mobile.sosync_write_date = sosync_write_date;
+                            person.mobile.noSyncJobSwitch = true;
+
+                        }
+
+                        if (person.fax == null)
+                        {
+                            if (PartnerHasFax(partner))
+                            {
+                                person.fax = InitDboPersonTelefon(dboPersonTelefontyp.fax);
+
+                                person.fax.PersonID = PersonID;
+
+                                CopyPartnerToPersonTelefonMobil(partner, person.fax);
+
+                                person.fax.sosync_fso_id = onlineID;
+                                person.fax.sosync_write_date = sosync_write_date;
+                                person.fax.noSyncJobSwitch = true;
+                            }
+                        }
+                        else
+                        {
+
+                            CopyPartnerToPersonTelefonMobil(partner, person.fax);
+
+                            person.fax.sosync_fso_id = onlineID;
+                            person.fax.sosync_write_date = sosync_write_date;
+                            person.fax.noSyncJobSwitch = true;
 
                         }
 
@@ -744,6 +1022,43 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                             person.personDonationDeductionOptOut.sosync_fso_id = onlineID;
                             person.personDonationDeductionOptOut.sosync_write_date = sosync_write_date;
                             person.personDonationDeductionOptOut.noSyncJobSwitch = true;
+                        }
+
+                        if (person.personDonationReceipt == null)
+                        {
+                            if (partner.DonationReceipt ?? false)
+                            {
+                                person.personDonationReceipt = InitPersonDonationReceipt();
+
+                                person.personDonationReceipt.PersonID = PersonID;
+
+                                person.personDonationReceipt.sosync_fso_id = onlineID;
+                                person.personDonationReceipt.sosync_write_date = sosync_write_date;
+                                person.personDonationReceipt.noSyncJobSwitch = true;
+                            }
+                        }
+                        else
+                        {
+                            if (partner.DonationReceipt ?? false)
+                            {
+                                if (person.personDonationReceipt.GültigVon > DateTime.Today)
+                                {
+                                    person.personDonationReceipt.GültigVon = DateTime.Today;
+                                }
+                                person.personDonationReceipt.GültigBis = new DateTime(2099, 12, 31);
+                            }
+                            else
+                            {
+                                if (person.personDonationReceipt.GültigVon > DateTime.Today)
+                                {
+                                    person.personDonationReceipt.GültigVon = DateTime.Today;
+                                }
+                                person.personDonationReceipt.GültigBis = DateTime.Today;
+                            }
+
+                            person.personDonationReceipt.sosync_fso_id = onlineID;
+                            person.personDonationReceipt.sosync_write_date = sosync_write_date;
+                            person.personDonationReceipt.noSyncJobSwitch = true;
                         }
 
 
@@ -833,6 +1148,30 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                                 }
                             }
 
+                            if (person.mobile != null)
+                            {
+                                if (person.mobile.PersonTelefonID == 0)
+                                {
+                                    mobileSvc.Create(person.mobile);
+                                }
+                                else
+                                {
+                                    mobileSvc.Update(person.mobile);
+                                }
+                            }
+
+                            if (person.fax != null)
+                            {
+                                if (person.fax.PersonTelefonID == 0)
+                                {
+                                    faxSvc.Create(person.fax);
+                                }
+                                else
+                                {
+                                    faxSvc.Update(person.fax);
+                                }
+                            }
+
                             if (person.personDonationDeductionOptOut != null)
                             {
                                 if (person.personDonationDeductionOptOut.PersonGruppeID == 0)
@@ -864,7 +1203,10 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                                addressSvc,
                                emailSvc,
                                phoneSvc,
+                               mobileSvc,
+                               faxSvc,
                                personDonationDeductionOptOutSvc,
+                               personDonationReceiptSvc,
                                emailNewsletterSvc,
                                personSvc.Connection,
                                transaction);
@@ -893,9 +1235,51 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
             dest.BPKErzwungenVorname = source.BPKForcedFirstname;
             dest.BPKErzwungenNachname = source.BPKForcedLastname;
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
+            dest.BPKErzwungenPLZ = source.BPKForcedZip;
         }
         private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest)
         {
+
+
+
+            if (source.CountryID.HasValue)
+            {
+                var country = OdooService.Client.GetModel<resCountry>("res.country", source.CountryID.Value);
+                if (country != null)
+                {
+
+                    using (var dbSvc = MdbService.GetDataService<dboTypen>())
+                    {
+                        var foundLandID = dbSvc.ExecuteQuery<int?>("select sosync.IsoCountryCode2_to_LandID(@Code)", new { Code = country.Code }).FirstOrDefault();
+
+                        if (foundLandID.HasValue && foundLandID.Value != 0)
+                        {
+                            dest.LandID = foundLandID.Value;
+                        }
+
+                    }
+                }
+            }
+
+
+            if (!string.IsNullOrEmpty(source.AnredeIndividuell))
+            {
+                dest.AnredeformtypID = 324; //individuell
+                dest.IndividuelleAnrede = source.AnredeIndividuell;
+            }
+            else if (dest.AnredeformtypID == 324)
+            {
+
+                int system_default_AnredeformtypID = 0;
+                using (var typenSVC = MdbService.GetDataService<dboTypen>())
+                {
+                    system_default_AnredeformtypID = (int)typenSVC.Read(new { TypenID = 200120 }).FirstOrDefault().Formularwert;
+                }
+
+                dest.AnredeformtypID = system_default_AnredeformtypID;
+
+            }
+
             dest.Strasse = source.Street;
             dest.Hausnummer = source.StreetNumber;
             dest.PLZ = source.Zip;
@@ -920,7 +1304,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                 dest.EmailVor = source.Email;
                 dest.EmailNach = "";
             }
-            
+
         }
 
         private void CopyPartnerToPersonTelefon(resPartner source, dboPersonTelefon dest)
@@ -929,6 +1313,26 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
             dest.Landkennzeichen = "";
             dest.Vorwahl = "";
             dest.Rufnummer = source.Phone;
+
+
+        }
+
+        private void CopyPartnerToPersonTelefonMobil(resPartner source, dboPersonTelefon dest)
+        {
+            //TODO: parse phone into its parts
+            dest.Landkennzeichen = "";
+            dest.Vorwahl = "";
+            dest.Rufnummer = source.Mobile;
+
+
+        }
+
+        private void CopyPartnerToPersonTelefonFax(resPartner source, dboPersonTelefon dest)
+        {
+            //TODO: parse phone into its parts
+            dest.Landkennzeichen = "";
+            dest.Vorwahl = "";
+            dest.Rufnummer = source.Fax;
 
 
         }
@@ -1025,14 +1429,14 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
         }
 
-        private dboPersonTelefon InitDboPersonTelefon()
+        private dboPersonTelefon InitDboPersonTelefon(dboPersonTelefontyp phoneType)
         {
             dboPersonTelefon result = null;
 
 
             result = new dboPersonTelefon
             {
-                TelefontypID = 0,
+                TelefontypID = (int)phoneType,
                 GültigMonatArray = GültigMonatArray,
                 GültigVon = DateTime.Today,
                 GültigBis = new DateTime(2099, 12, 31)
@@ -1052,6 +1456,25 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
             result = new dboPersonGruppe
             {
                 zGruppeDetailID = 110493,
+                Steuerung = true,
+                GültigVon = DateTime.Today,
+                GültigBis = new DateTime(2099, 12, 31),
+                xIDA = 0
+
+            };
+
+
+            return result;
+
+        }
+        private dboPersonGruppe InitPersonDonationReceipt()
+        {
+            dboPersonGruppe result = null;
+
+
+            result = new dboPersonGruppe
+            {
+                zGruppeDetailID = 20168,
                 Steuerung = true,
                 GültigVon = DateTime.Today,
                 GültigBis = new DateTime(2099, 12, 31),
@@ -1096,6 +1519,16 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
         private bool PartnerHasPhone(resPartner partner)
         {
             return (!string.IsNullOrEmpty(partner.Phone));
+        }
+
+        private bool PartnerHasMobile(resPartner partner)
+        {
+            return (!string.IsNullOrEmpty(partner.Mobile));
+        }
+
+        private bool PartnerHasFax(resPartner partner)
+        {
+            return (!string.IsNullOrEmpty(partner.Fax));
         }
 
         #endregion
