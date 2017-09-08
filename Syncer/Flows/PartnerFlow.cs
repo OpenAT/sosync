@@ -383,13 +383,9 @@ namespace Syncer.Flows
                 data.Add("city", person.address.Ort);
 
                 if (person.address.AnredeformtypID == 324)
-                {
                     data.Add("anrede_individuell", person.address.IndividuelleAnrede);
-                }
                 else
-                {
                     data.Add("anrede_individuell", null);
-                }
 
                 string countryCode = null;
 
