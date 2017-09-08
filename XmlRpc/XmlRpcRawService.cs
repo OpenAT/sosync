@@ -206,7 +206,8 @@ namespace XmlRpc
                         var formats = new string[]
                         {
                             "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ",
-                            "yyyy-MM-dd HH:mm:ss.FFFFFFF"
+                            "yyyy-MM-dd HH:mm:ss.FFFFFFF",
+                            "yyyy-MM-dd"
                         };
                         var result = DateTime.ParseExact(
                             e.InnerText,
