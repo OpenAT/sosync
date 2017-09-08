@@ -68,7 +68,7 @@ namespace Syncer.Flows
                 var data = new Dictionary<string, object>()
                 {
                     { "name", acc.Name },
-                    { "sosync_write_date", (acc.sosync_write_date ?? acc.write_date).ToUniversalTime() }
+                    { "sosync_write_date", (acc.sosync_write_date ?? acc.write_date.ToUniversalTime()) }
                 };
 
                 if (action == TransformType.CreateNew)
@@ -120,7 +120,7 @@ namespace Syncer.Flows
                     var entry = new dboxBPKAccount()
                     {
                         Name = company.Name,
-                        sosync_write_date = (company.Sosync_Write_Date ?? company.Write_Date).Value.ToLocalTime(),
+                        sosync_write_date = (company.Sosync_Write_Date ?? company.Write_Date).Value,
                         sosync_fso_id = onlineID,
                         noSyncJobSwitch = true
                     };
@@ -154,7 +154,7 @@ namespace Syncer.Flows
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(acc));
 
                     acc.Name = company.Name;
-                    acc.sosync_write_date = company.Sosync_Write_Date.Value.ToLocalTime();
+                    acc.sosync_write_date = company.Sosync_Write_Date.Value;
                     acc.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(acc));

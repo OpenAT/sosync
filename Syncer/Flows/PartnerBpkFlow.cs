@@ -89,7 +89,7 @@ namespace Syncer.Flows
                         PersonID = personID,
                         xBPKAccountID = xBPKAccountID,
                         Anlagedatum = DateTime.Now,
-                        sosync_write_date = (bpk.Sosync_Write_Date ?? bpk.Write_Date).Value.ToLocalTime(),
+                        sosync_write_date = (bpk.Sosync_Write_Date ?? bpk.Write_Date).Value,
                         sosync_fso_id = bpk.ID
                     };
 
@@ -128,7 +128,7 @@ namespace Syncer.Flows
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(entry));
 
                     CopyPartnerBpkToPersonBpk(bpk, entry);
-                    entry.sosync_write_date = bpk.Sosync_Write_Date.Value.ToLocalTime();
+                    entry.sosync_write_date = bpk.Sosync_Write_Date.Value;
                     entry.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));

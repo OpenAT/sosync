@@ -535,7 +535,7 @@ namespace Syncer.Flows
         private TimeSpan GetWriteDateDifference(string anyModelName, ModelInfo studioInfo, ModelInfo onlineInfo, int toleranceMS)
         {
             var onlineWriteDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate.Value;
-            var studioWriteDate = (studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value).ToUniversalTime();
+            var studioWriteDate = (studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value.ToUniversalTime());
 
             var result = onlineWriteDate - studioWriteDate;
 

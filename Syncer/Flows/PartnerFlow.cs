@@ -314,7 +314,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
 
             var person = GetCurrentdboPersonStack(studioID);
 
-            var sosync_write_date = (person.person.sosync_write_date ?? person.person.write_date).ToUniversalTime();
+            var sosync_write_date = (person.person.sosync_write_date ?? person.person.write_date.ToUniversalTime());
 
             var data = new Dictionary<string, object>()
                 {
@@ -455,7 +455,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
-            var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value.ToLocalTime();
+            var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
@@ -491,7 +491,7 @@ using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(
                             person.address = InitDboPersonAdresse();
 
                             person.address.sosync_fso_id = onlineID;
-                            person.address.sosync_write_date = (sosync_write_date);
+                            person.address.sosync_write_date = sosync_write_date;
                             person.address.noSyncJobSwitch = true;
 
                             CopyPartnerToPersonAddress(partner, person.address);
