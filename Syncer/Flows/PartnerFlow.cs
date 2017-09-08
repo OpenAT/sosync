@@ -401,7 +401,7 @@ namespace Syncer.Flows
                 if (!string.IsNullOrEmpty(countryCode))
                 {
 
-                    var foundCountryID = OdooService.Client.SearchModelByField<resCountry, string>("res.country", x => x.Code, countryCode).FirstOrDefault();
+                    var foundCountryID = (int?)OdooService.Client.SearchModelByField<resCountry, string>("res.country", x => x.Code, countryCode).FirstOrDefault();
 
                     if(foundCountryID != 0)
                     {
