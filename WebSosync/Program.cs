@@ -157,14 +157,20 @@ namespace WebSosync
                 forceQuit = true;
             }
 
+            TimeService timeSvc = null;
             try
             {
-                var timeSvc = (TimeService)host.Services.GetService(typeof(TimeService));
+                timeSvc = (TimeService)host.Services.GetService(typeof(TimeService));
                 timeSvc.ThrowOnTimeDrift();
             }
             catch (Exception ex)
             {
                 log.LogWarning(ex.Message);
+            }
+            finally
+            {
+                if (timeSvc != null)
+                    timeSvc.LastDriftCheck = null; // Don't consider the initial time check
             }
 
             try

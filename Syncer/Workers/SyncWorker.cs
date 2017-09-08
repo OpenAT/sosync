@@ -55,12 +55,12 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
+            var reCheckTimeMin = 30;
+
             // Get only the first open job and its hierarchy,
             // and build the tree in memory
             var loadTimeUTC = DateTime.UtcNow;
             var job = GetNextOpenJob();
-
-            DateTime? lastTimeCheck = null;
 
             while (job != null)
             {
@@ -68,11 +68,18 @@ namespace Syncer.Workers
                 {
                     // Check server drift once per batch (a batch is every job the while loop captures),
                     // but also check every reCheckMin minutes within a batch
-                    var reCheckMin = 30;
-                    if (lastTimeCheck == null || (DateTime.UtcNow - lastTimeCheck.Value).Minutes > reCheckMin)
-                    {
-                        lastTimeCheck = DateTime.UtcNow;
+                    if (_timeSvc.LastDriftCheck == null || (DateTime.UtcNow - _timeSvc.LastDriftCheck.Value).Minutes >= reCheckTimeMin)
                         _timeSvc.ThrowOnTimeDrift();
+
+                    if (_timeSvc.DriftLockUntil.HasValue && _timeSvc.DriftLockUntil > DateTime.UtcNow)
+                    {
+                        var expiresInMs = (int)(_timeSvc.DriftLockUntil.Value - DateTime.UtcNow).TotalMilliseconds;
+
+                        if (expiresInMs < 0)
+                            expiresInMs = 0;
+
+                        _log.LogError($"Synchronization locked due to time drift. Lock expires in {SpecialFormat.FromMilliseconds(expiresInMs)} ({_timeSvc.DriftLockUntil.Value.ToString("o")})");
+                        return;
                     }
 
                     // Get the flow for the job source model, and start it
@@ -112,9 +119,13 @@ namespace Syncer.Workers
                 }
                 catch(TimeDriftException ex)
                 {
-                    var waitTimeMs = 1000 * 60 * 30; // 30 min
-                    _log.LogError($"{ex.Message} Waiting {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
-                    Thread.Sleep(waitTimeMs);
+                    // Set the drift lock to re-check time + 5 seconds
+                    // to make sure another drift check is done before
+                    // the lock expires
+                    _timeSvc.DriftLockUntil = DateTime.UtcNow.AddMinutes(reCheckTimeMin).AddSeconds(5);
+
+                    var waitTimeMs = 1000 * 60 * reCheckTimeMin + 5000;
+                    _log.LogError($"{ex.Message} Locking sync for {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
                 }
                 catch(Exception ex)
                 {

@@ -22,6 +22,8 @@ namespace Syncer.Services
                 "bevtime1.metrologie.at",
                 "0.europe.pool.ntp.org"
             };
+
+            LastDriftCheck = null;
         }
         #endregion
 
@@ -75,6 +77,8 @@ namespace Syncer.Services
 
         public TimeDrift GetTimeDrift()
         {
+            LastDriftCheck = DateTime.UtcNow;
+
             var ntpOffset = (int)Math.Abs(GetOffset());
             var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
 #warning Read FS Offset once it hosts an NTP server
@@ -97,6 +101,18 @@ namespace Syncer.Services
             if (drift.FS > _config.Max_Time_Drift_ms)
                 throw new TimeDriftException($"Time drift tolerance to FS exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.FS}ms).");
         }
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Time stamp of when GetTimeDrict() was last called, in UTC.
+        /// </summary>
+        public DateTime? LastDriftCheck { get; set; }
+
+        /// <summary>
+        /// The time stamp that indidcates a run-lock due to time drift.
+        /// </summary>
+        public DateTime? DriftLockUntil { get; set; }
         #endregion
 
         #region Members
