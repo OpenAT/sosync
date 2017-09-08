@@ -7,6 +7,10 @@ namespace Syncer.Models
     public class TimeDrift
     {
         #region Constructors
+        public TimeDrift()
+        {
+        }
+
         public TimeDrift(int ntp, int fso, int fs)
         {
             NTP = ntp;

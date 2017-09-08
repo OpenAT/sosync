@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Odoo.Models;
+using Syncer.Models;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
 using WebSosync.Common.Interfaces;
+using WebSosync.Data.Models;
 using WebSosync.Interfaces;
 using WebSosync.Models;
 using WebSosync.Services;
@@ -76,6 +78,19 @@ namespace WebSosync.Controllers
                 _log.LogError(ex.ToString());
                 return new BadRequestObjectResult("Could not read version.");
             }
+        }
+
+        [HttpGet("drift")]
+        public IActionResult Drift([FromServices]TimeService timeSvc, [FromServices]SosyncOptions config)
+        {
+            var result = new TimeDriftDto()
+            {
+                Drift = timeSvc.GetTimeDrift(),
+                Tolerance = config.Max_Time_Drift_ms,
+                Unit = "millisecond"
+            };
+
+            return new OkObjectResult(result);
         }
 
         [HttpGet("processjobs")]
