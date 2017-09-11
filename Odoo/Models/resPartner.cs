@@ -80,6 +80,6 @@ namespace Odoo.Models
         public string BPKForcedZip { get; set; }
 
         [DataMember(Name = "country_id")]
-        public int? CountryID { get; set; }
+        public object[] CountryID { get; set; }
     }
 }
