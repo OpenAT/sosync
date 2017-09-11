@@ -79,8 +79,16 @@ namespace WebSosync.Data
             // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
 
+            // New fields for additional logging & optimizations
             AddColumnIfNotExists("job_source_sosync_write_date", "timestamp without time zone");
             AddColumnIfNotExists("job_source_fields", "text");
+
+            // New FK to reference the job responsible for closing a job
+            AddColumnIfNotExists("job_closed_by_job_id", "integer");
+
+            // New fields for job sync to Odoo
+            AddColumnIfNotExists("job_to_fso_can_sync", "boolean");
+            AddColumnIfNotExists("job_to_fso_sync_date", "timestamp without time zone");
         }
 
         /// <summary>
