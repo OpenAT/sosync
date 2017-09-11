@@ -138,7 +138,8 @@ namespace Syncer.Flows
                 result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
                                 where iterEmail.GültigVon <= DateTime.Today &&
                                     iterEmail.GültigBis >= DateTime.Today
-                                orderby string.IsNullOrEmpty(iterEmail.GültigMonatArray) ? "111111111111" : iterEmail.GültigMonatArray descending
+                                orderby string.IsNullOrEmpty(iterEmail.GültigMonatArray) ? "111111111111" : iterEmail.GültigMonatArray descending,
+                                iterEmail.PersonEmailID descending
                                 select iterEmail).FirstOrDefault();
 
                 result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
