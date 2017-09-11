@@ -14,5 +14,6 @@ namespace WebSosync.Data.Constants
         public const string GetFirstOpenSynJobAndChildren = "GetFirstOpenSynJobAndChildren_SELECT";
         public const string SetupAddColumnScript = "SetupAddColumn_SCRIPT";
         public const string SetupDropColumnScript = "SetupDropColumn_SCRIPT";
+        public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
     }
 }

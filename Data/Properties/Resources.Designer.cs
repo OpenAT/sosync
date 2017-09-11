@@ -62,6 +62,22 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to update sync_table
+        ///set job_state = &apos;done&apos;, job_log = @job_log 
+        ///where
+        ///    job_source_sosync_write_date &lt; @job_source_sosync_write_date
+        ///	and job_source_system = @job_source_system
+        ///    and job_source_model = @job_source_model
+        ///    and job_source_record_id = @job_source_record_id
+        ///    and job_state = &apos;new&apos;.
+        /// </summary>
+        internal static string ClosePreviousJobs_Update_SCRIPT {
+            get {
+                return ResourceManager.GetString("ClosePreviousJobs_Update_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select *

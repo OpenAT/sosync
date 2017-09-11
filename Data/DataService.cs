@@ -136,6 +136,28 @@ namespace WebSosync.Data
             }
         }
 
+        public void ClosePreviousJobs(
+            DateTime jobSourceSosyncWriteDate,
+            string jobSourceSystem,
+            string jobSourceModel,
+            int jobSourceRecordId,
+            string jobLog)
+        {
+            var parameters = new
+            {
+                job_source_sosync_write_date = jobSourceSosyncWriteDate,
+                job_source_system = jobSourceSystem,
+                job_source_model = jobSourceModel,
+                job_source_record_id = jobSourceRecordId,
+                job_log = jobLog
+            };
+
+            _con.Execute(
+                Resources.ResourceManager.GetString(ResourceNames.ClosePreviousJobsUpdateScript),
+                parameters
+                );
+        }
+
         /// <summary>
         /// Returns the first unfinished parent job from the sync table and all its children
         /// in the hierarchy as a flat list.

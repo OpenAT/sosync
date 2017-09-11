@@ -88,6 +88,9 @@ namespace Syncer.Workers
                         bool requireRestart = false;
                         flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart);
 
+                        if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                            CloseAllPreviousJobs(job);
+
                         if (requireRestart)
                             RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");
 
@@ -150,6 +153,19 @@ namespace Syncer.Workers
                         .SingleOrDefault();
 
                 return result;
+            }
+        }
+
+        private void CloseAllPreviousJobs(SyncJob job)
+        {
+            using (var db = _svc.GetService<DataService>())
+            {
+                db.ClosePreviousJobs(
+                    job.Job_Source_Sosync_Write_Date.Value,
+                    job.Job_Source_System,
+                    job.Job_Source_Model,
+                    job.Job_Source_Record_ID,
+                    $"Closed because of job_id = {job.Job_ID}");
             }
         }
 
