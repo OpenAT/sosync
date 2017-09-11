@@ -1,4 +1,5 @@
 ﻿using dadi_data;
+using dadi_data.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -27,7 +28,7 @@ namespace Syncer.Services
         /// </summary>
         /// <typeparam name="TModel">The MDB model to create the data service for.</typeparam>
         /// <returns></returns>
-        public DataService<TModel> GetDataService<TModel>(SqlConnection con = null, SqlTransaction transaction = null)
+        public DataService<TModel> GetDataService<TModel>(SqlConnection con = null, SqlTransaction transaction = null) where TModel : MdbModelBase, new()
         {
             //return new DataService<TModel>($"Data Source=mssql1; Initial Catalog=mdb_careseh_test; Integrated Security=True;");
             if (con == null)
