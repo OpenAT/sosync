@@ -36,7 +36,7 @@ namespace ManualTest
 
         static async Task StartRequestsAsync(string identifier, int count)
         {
-            string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13";
+            string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fffffff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13&job_source_sosync_write_date={0:yyyy-MM-dd}T{0:HH:mm:ss.fffffff}Z";
 
             var requests = new List<Task<WebResponse>>(count);
 
