@@ -265,7 +265,11 @@ namespace XmlRpc
                         try
                         {
                             value = destElement.InnerText;
-                            prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
+
+                            if (destElement.FirstChild.Name == "boolean")
+                                prop.SetValue(resultObject, null);
+                            else
+                                prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
                         }
                         catch (Exception ex)
                         {
