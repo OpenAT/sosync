@@ -385,10 +385,7 @@ namespace XmlRpc
             {
                 case "dateTime.iso8601":
                     var date = (DateTime)value;
-                    if (date.Kind == DateTimeKind.Utc)
-                        result = date.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
-                    else
-                        result = date.ToString("yyyy-MM-ddTHH:mm:ss.fffffff");
+                    result = date.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
                     break;
 
                 case "boolean":
