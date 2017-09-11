@@ -1238,9 +1238,9 @@ namespace Syncer.Flows
 
 
 
-            if (source.CountryID.HasValue)
+            if (source.CountryID != null && source.CountryID.Length > 0)
             {
-                var country = OdooService.Client.GetModel<resCountry>("res.country", source.CountryID.Value);
+                var country = OdooService.Client.GetModel<resCountry>("res.country", Convert.ToInt32(source.CountryID[0]));
                 if (country != null)
                 {
 
