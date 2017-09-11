@@ -81,5 +81,8 @@ namespace Odoo.Models
 
         [DataMember(Name = "country_id")]
         public object[] CountryID { get; set; }
+
+        [DataMember(Name = "gender")]
+        public string Gender { get; set; }
     }
 }
