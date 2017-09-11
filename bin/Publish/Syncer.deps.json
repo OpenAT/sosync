@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.4/",
-    "signature": "b2a48473af03480b0ddd6b609fc3752663cafffd"
+    "signature": "68762f9c724d92f89ec2962fbeff688b7d0d37ae"
   },
   "compilationOptions": {},
   "targets": {
@@ -17,13 +17,13 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.0.14"
+          "dadi-data": "1.0.15"
         },
         "runtime": {
           "Syncer.dll": {}
         }
       },
-      "dadi-data/1.0.14": {
+      "dadi-data/1.0.15": {
         "dependencies": {
           "Dapper": "1.50.2",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -31,6 +31,7 @@
           "System.Data.Common": "4.3.0",
           "System.Data.SqlClient": "4.3.1",
           "System.Reflection": "4.3.0",
+          "System.Reflection.Extensions": "4.3.0",
           "System.Reflection.TypeExtensions": "4.4.0",
           "System.Resources.ResourceManager": "4.3.0"
         },
@@ -1365,12 +1366,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.0.14": {
+    "dadi-data/1.0.15": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-S4e+vgS0mSywnw8TpvrNaRi1iD0exCLALOLyQc/YL6qC8wxoPehKZzrFUgAEdxAhQK1BzRBHszt5yo9OnsxxJQ==",
-      "path": "dadi-data/1.0.14",
-      "hashPath": "dadi-data.1.0.14.nupkg.sha512"
+      "sha512": "sha512-7uE7Yw3qo1a9fxuwKctjAOiKdqqfqrArS5UKQSXs/Qb+7bOLUzphJehgAgcYVKoq9QTQBD/A/q63pK/HWk6iCQ==",
+      "path": "dadi-data/1.0.15",
+      "hashPath": "dadi-data.1.0.15.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",

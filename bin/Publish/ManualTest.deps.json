@@ -1,20 +1,20 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v1.1",
-    "signature": "582ab765af0935b8d4b3bc9e911df3b9abb408f2"
+    "signature": "8a91a08c5dfa3f2a3980e822f5d3a06fd6490e1b"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v1.1": {
       "ManualTest/1.0.0": {
         "dependencies": {
-          "dadi-data": "1.0.14"
+          "dadi-data": "1.0.15"
         },
         "runtime": {
           "ManualTest.dll": {}
         }
       },
-      "dadi-data/1.0.14": {
+      "dadi-data/1.0.15": {
         "dependencies": {
           "Dapper": "1.50.2",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -205,12 +205,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.0.14": {
+    "dadi-data/1.0.15": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-S4e+vgS0mSywnw8TpvrNaRi1iD0exCLALOLyQc/YL6qC8wxoPehKZzrFUgAEdxAhQK1BzRBHszt5yo9OnsxxJQ==",
-      "path": "dadi-data/1.0.14",
-      "hashPath": "dadi-data.1.0.14.nupkg.sha512"
+      "sha512": "sha512-7uE7Yw3qo1a9fxuwKctjAOiKdqqfqrArS5UKQSXs/Qb+7bOLUzphJehgAgcYVKoq9QTQBD/A/q63pK/HWk6iCQ==",
+      "path": "dadi-data/1.0.15",
+      "hashPath": "dadi-data.1.0.15.nupkg.sha512"
     },
     "Dapper/1.50.2": {
       "type": "package",
