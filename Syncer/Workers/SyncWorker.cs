@@ -132,8 +132,8 @@ namespace Syncer.Workers
                 }
                 catch(Exception ex)
                 {
-                    _log.LogError(ex.Message);
-                    UpdateJobError(job, ex.Message);
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(job, ex.ToString());
                 }
 
                 // Get the next open job
@@ -158,6 +158,9 @@ namespace Syncer.Workers
 
         private void CloseAllPreviousJobs(SyncJob job)
         {
+            if (!job.Job_Source_Sosync_Write_Date.HasValue)
+                throw new SyncerException($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.Job_ID})");
+
             using (var db = _svc.GetService<DataService>())
             {
                 db.ClosePreviousJobs(
