@@ -115,22 +115,25 @@ namespace Syncer.Flows
                                 where iterPhone.GültigVon <= DateTime.Today &&
                                     iterPhone.GültigBis >= DateTime.Today &&
                                     iterPhone.TelefontypID == 400
-                                orderby string.IsNullOrEmpty(iterPhone.GültigMonatArray) ? "111111111111" : iterPhone.GültigMonatArray descending
+                                orderby string.IsNullOrEmpty(iterPhone.GültigMonatArray) ? "111111111111" : iterPhone.GültigMonatArray descending,
+                                iterPhone.PersonTelefonID descending
                                 select iterPhone).FirstOrDefault();
 
                 result.mobile = (from itermobile in mobileSvc.Read(new { PersonID = PersonID })
                                 where itermobile.GültigVon <= DateTime.Today &&
                                     itermobile.GültigBis >= DateTime.Today &&
                                     itermobile.TelefontypID == 401
-                                orderby string.IsNullOrEmpty(itermobile.GültigMonatArray) ? "111111111111" : itermobile.GültigMonatArray descending
-                                select itermobile).FirstOrDefault();
+                                orderby string.IsNullOrEmpty(itermobile.GültigMonatArray) ? "111111111111" : itermobile.GültigMonatArray descending,
+                                itermobile.PersonTelefonID descending
+                                 select itermobile).FirstOrDefault();
 
                 result.fax = (from iterfax in faxSvc.Read(new { PersonID = PersonID })
                                 where iterfax.GültigVon <= DateTime.Today &&
                                     iterfax.GültigBis >= DateTime.Today &&
                                     iterfax.TelefontypID == 403
-                                orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? "111111111111" : iterfax.GültigMonatArray descending
-                                select iterfax).FirstOrDefault();
+                                orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? "111111111111" : iterfax.GültigMonatArray descending,
+                                iterfax.PersonTelefonID descending
+                              select iterfax).FirstOrDefault();
 
                 result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
                                 where iterEmail.GültigVon <= DateTime.Today &&
@@ -374,6 +377,19 @@ namespace Syncer.Flows
                     { "BPKForcedZip", person.person.BPKErzwungenPLZ },
                     { "sosync_write_date", sosync_write_date }
                 };
+
+            if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
+            {
+                if (person.person.GeschlechttypID == 290)
+                    data.Add("gender", "male");
+                else
+                    data.Add("gender", "female");
+            }
+            else
+            {
+                data.Add("gender", "other");
+            }
+                
 
             if (person.address != null)
             {
@@ -1232,6 +1248,14 @@ namespace Syncer.Flows
             dest.BPKErzwungenNachname = source.BPKForcedLastname;
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
             dest.BPKErzwungenPLZ = source.BPKForcedZip;
+
+            if (new string[] { "male", "female" }.Contains(source.Gender))
+                dest.GeschlechttypID = source.Gender == "male" ? 290 : 291;
+            else if (source.Gender == "other" && !new int[] { 292, 293, 294, 295 }.Contains(dest.GeschlechttypID))
+                dest.GeschlechttypID = 0;
+            else if (string.IsNullOrEmpty(source.Gender))
+                dest.GeschlechttypID = 0;
+
         }
         private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest)
         {
