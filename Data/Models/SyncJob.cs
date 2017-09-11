@@ -38,6 +38,18 @@ namespace WebSosync.Data.Models
         [IgnoreDataMember]
         public DateTime? Job_Last_Change { get; set; }
 
+        [DataMember(Name = "job_closed_by_job_id")]
+        [IgnoreDataMember]
+        public int? Job_Closed_By_Job_ID { get; set; }
+
+        [DataMember(Name = "job_to_fso_can_sync")]
+        [IgnoreDataMember]
+        public bool? Job_To_FSO_Can_Sync { get; set; }
+
+        [DataMember(Name = "job_to_fso_sync_date")]
+        [IgnoreDataMember]
+        public DateTime? Job_To_FSO_Sync_Date { get; set; }
+
         [IgnoreDataMember]
         public List<SyncJob> Children { get; set; }
         
