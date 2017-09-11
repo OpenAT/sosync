@@ -370,7 +370,7 @@ namespace Syncer.Flows
                     { "firstname", person.person.Vorname },
                     { "lastname", person.person.Name },
                     { "name_zwei", person.person.Name2 },
-                    { "birthdate_web", person.person.Geburtsdatum },
+                    { "birthdate_web", OdooConvert.ToStringOrBoolFalse(person.person.Geburtsdatum) },
                     { "title_web", person.person.Titel },
                     { "BPKForcedFirstname", person.person.BPKErzwungenVorname },
                     { "BPKForcedLastname", person.person.BPKErzwungenNachname },
