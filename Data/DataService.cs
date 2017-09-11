@@ -131,6 +131,9 @@ namespace WebSosync.Data
                     commandTimeout: _cmdTimeoutSec)
                     .AsList();
 
+                foreach (var r in result)
+                    SpecifyUTC(r);
+
                 return result;
             }
             else
@@ -140,30 +143,31 @@ namespace WebSosync.Data
                     commandTimeout: _cmdTimeoutSec)
                     .AsList();
 
+                foreach (var r in result)
+                    SpecifyUTC(r);
+
                 return result;
             }
         }
 
-        public void ClosePreviousJobs(
-            DateTime jobSourceSosyncWriteDate,
-            string jobSourceSystem,
-            string jobSourceModel,
-            int jobSourceRecordId,
-            string jobLog)
+        public int ClosePreviousJobs(SyncJob closingSourceJob)
         {
             var parameters = new
             {
-                job_source_sosync_write_date = jobSourceSosyncWriteDate,
-                job_source_system = jobSourceSystem,
-                job_source_model = jobSourceModel,
-                job_source_record_id = jobSourceRecordId,
-                job_log = jobLog
+                job_source_sosync_write_date = closingSourceJob.Job_Source_Sosync_Write_Date.Value,
+                job_source_system = closingSourceJob.Job_Source_System,
+                job_source_model = closingSourceJob.Job_Source_Model,
+                job_source_record_id = closingSourceJob.Job_Source_Record_ID,
+                job_closed_by_job_id = closingSourceJob.Job_ID,
+                job_log = $"Closed by job_id = {closingSourceJob.Job_ID}."
             };
 
-            _con.Execute(
+            var updated_rows = _con.ExecuteScalar<int>(
                 Resources.ResourceManager.GetString(ResourceNames.ClosePreviousJobsUpdateScript),
                 parameters
                 );
+
+            return updated_rows;
         }
 
         /// <summary>
@@ -178,6 +182,9 @@ namespace WebSosync.Data
                 commandTimeout: _cmdTimeoutSec)
                 .AsList();
 
+            foreach (var r in result)
+                SpecifyUTC(r);
+
             return result;
         }
 
@@ -189,6 +196,7 @@ namespace WebSosync.Data
         public SyncJob GetJob(int id)
         {
             var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
+            SpecifyUTC(result);
             return result;
         }
 
@@ -200,7 +208,25 @@ namespace WebSosync.Data
                 commandTimeout: _cmdTimeoutSec)
                 .SingleOrDefault();
 
+            SpecifyUTC(result);
+
             return result;
+        }
+
+        private void SpecifyUTC(SyncJob model)
+        {
+            foreach (var prop in model.GetType().GetProperties())
+            {
+                if (prop.PropertyType == typeof(DateTime))
+                {
+                    prop.SetValue(model, DateTime.SpecifyKind((DateTime)prop.GetValue(model), DateTimeKind.Utc));
+                }
+                else if (prop.PropertyType == typeof(DateTime?))
+                {
+                    if (((DateTime?)prop.GetValue(model)).HasValue)
+                        prop.SetValue(model, DateTime.SpecifyKind(((DateTime?)prop.GetValue(model)).Value, DateTimeKind.Utc));
+                }
+            }
         }
 
         /// <summary>

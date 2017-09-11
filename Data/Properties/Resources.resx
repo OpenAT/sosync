@@ -118,14 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ClosePreviousJobs_Update_SCRIPT" xml:space="preserve">
-    <value>update sync_table
-set job_state = 'done', job_log = @job_log 
-where
-    job_source_sosync_write_date &lt; @job_source_sosync_write_date
-	and job_source_system = @job_source_system
-    and job_source_model = @job_source_model
-    and job_source_record_id = @job_source_record_id
-    and job_state = 'new'</value>
+    <value>with updated_rows as (
+	update sync_table
+	set job_state = 'done', job_log = @job_log 
+	where
+		job_source_sosync_write_date &lt; @job_source_sosync_write_date
+		and job_source_system = @job_source_system
+		and job_source_model = @job_source_model
+		and job_source_record_id = @job_source_record_id
+		and job_state = 'new'
+	returning job_id
+)
+select count(*) affected_rows from updated_rows;</value>
   </data>
   <data name="GetAllOpenSyncJobs_SELECT" xml:space="preserve">
     <value>with recursive children as (

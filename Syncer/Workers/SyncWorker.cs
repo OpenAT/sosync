@@ -163,12 +163,10 @@ namespace Syncer.Workers
 
             using (var db = _svc.GetService<DataService>())
             {
-                db.ClosePreviousJobs(
-                    job.Job_Source_Sosync_Write_Date.Value,
-                    job.Job_Source_System,
-                    job.Job_Source_Model,
-                    job.Job_Source_Record_ID,
-                    $"Closed because of job_id = {job.Job_ID}");
+                var affected = db.ClosePreviousJobs(job);
+
+                if (affected > 0)
+                    _log.LogInformation($"Closed {affected} jobs with job_source_sosync_write_date less than {job.Job_Source_Sosync_Write_Date.Value.ToString("o")}");
             }
         }
 
