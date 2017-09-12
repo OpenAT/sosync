@@ -89,6 +89,7 @@ namespace WebSosync.Data
             // New fields for job sync to Odoo
             AddColumnIfNotExists("job_to_fso_can_sync", "boolean");
             AddColumnIfNotExists("job_to_fso_sync_date", "timestamp without time zone");
+            AddColumnIfNotExists("job_to_fso_sync_version", "timestamp without time zone");
         }
 
         /// <summary>
