@@ -23,9 +23,16 @@ namespace WebSosync.Controllers
     [Route("[controller]")]
     public class JobController : Controller
     {
+        #region Members
+        private ILogger<JobController> _log;
+        private IBackgroundJob<SyncWorker> _jobWorker;
+        #endregion
+
         #region Constructors
-        public JobController()
+        public JobController([FromServices]IBackgroundJob<SyncWorker> worker, [FromServices]ILogger<JobController> logger)
         {
+            _jobWorker = worker;
+            _log = logger;
         }
         #endregion
 
@@ -92,9 +99,6 @@ namespace WebSosync.Controllers
             if (!RequestValidator.ValidateData(result, data, dateFormat))
                 return new BadRequestObjectResult(result);
 
-            var syncJob = (IBackgroundJob<SyncWorker>)services.GetService(typeof(IBackgroundJob<SyncWorker>));
-            var log = (ILogger<JobController>)services.GetService(typeof(ILogger<JobController>));
-
             using (var db = (DataService)services.GetService(typeof(DataService)))
             {
                 var job = new SyncJob()
@@ -144,7 +148,7 @@ namespace WebSosync.Controllers
                 result.JobID = job.Job_ID;
 
                 // Start the sync background job
-                syncJob.Start();
+                _jobWorker.Start();
             }
 
             return new OkObjectResult(result);
