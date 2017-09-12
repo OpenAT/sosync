@@ -18,7 +18,7 @@ namespace ManualTest
 
             Console.WriteLine("Manual testing...");
 
-            int count = 100;
+            int count = 20;
             var tasks = new Task[]
             {
                 StartRequestsAsync("A", count),
