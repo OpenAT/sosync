@@ -205,7 +205,8 @@ namespace Syncer.Workers
             using (var db = _svc.GetService<DataService>())
             {
                 job.Job_State = SosyncState.Error;
-                job.Job_Log = message;
+                // Set the job_log if it's empty, otherwise concatenate it
+                job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
                 job.Job_Last_Change = DateTime.UtcNow;
                 job.Job_End = DateTime.UtcNow;
 
