@@ -217,6 +217,9 @@ namespace WebSosync.Data
 
         private void SpecifyUTC(SyncJob model)
         {
+            if (model == null)
+                return;
+
             foreach (var prop in model.GetType().GetProperties())
             {
                 if (prop.PropertyType == typeof(DateTime))
