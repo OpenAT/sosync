@@ -60,6 +60,14 @@ namespace Syncer.Workers
 
                 count++;
 
+                // Stop processing the queue if cancellation was requested
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    // Raise the cancelling event
+                    RaiseCancelling();
+                    // Clean up here, if necessary
+                }
+
                 job = GetNextJobToSync();
             }
 
