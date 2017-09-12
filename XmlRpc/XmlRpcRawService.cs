@@ -266,7 +266,9 @@ namespace XmlRpc
                         {
                             value = destElement.InnerText;
 
-                            if (destElement.FirstChild.Name == "boolean")
+                            var isBoolProp = prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(bool?);
+
+                            if (!isBoolProp && Convert.ToString(value) == "0" && destElement.FirstChild.Name == "boolean")
                                 prop.SetValue(resultObject, null);
                             else
                                 prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
