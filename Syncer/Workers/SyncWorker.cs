@@ -86,6 +86,8 @@ namespace Syncer.Workers
                         return;
                     }
 
+                    UpdateJobStart(job, loadTimeUTC);
+
                     // Get the flow for the job source model, and start it
                     using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model)))
                     {
@@ -181,6 +183,23 @@ namespace Syncer.Workers
             }
         }
 
+        /// <summary>
+        /// Updates the job, indicating processing started.
+        /// </summary>
+        private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
+        {
+            _log.LogDebug($"Updating job {job.Job_ID}: job start");
+
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Job_State = SosyncState.InProgress;
+                job.Job_Start = loadTimeUTC;
+                job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(job);
+            }
+        }
+
         private void UpdateJobError(SyncJob job, string message)
         {
             using (var db = _svc.GetService<DataService>())
@@ -189,6 +208,7 @@ namespace Syncer.Workers
                 job.Job_Log = message;
                 job.Job_Last_Change = DateTime.UtcNow;
                 job.Job_End = DateTime.UtcNow;
+
                 db.UpdateJob(job);
             }
         }

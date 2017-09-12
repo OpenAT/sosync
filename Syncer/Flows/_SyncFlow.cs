@@ -132,7 +132,7 @@ namespace Syncer.Flows
         {
             _job = job;
 
-            UpdateJobStart(loadTimeUTC);
+            UpdateJobRunCount(_job);
 
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
@@ -239,6 +239,8 @@ namespace Syncer.Flows
                        if (entry.Job_State == SosyncState.New || entry.Job_State == SosyncState.InProgress)
                         { 
                             Log.LogDebug($"Executing child job ({entry.Job_ID})");
+
+                            UpdateJobStart(entry, DateTime.UtcNow);
 
                             // Get the flow for the job source model, and start it
                             SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
@@ -700,18 +702,30 @@ namespace Syncer.Flows
         /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
-        private void UpdateJobStart(DateTime loadTimeUTC)
+        private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: job start");
+            Log.LogDebug($"Updating job {job.Job_ID}: job start");
 
             using (var db = Service.GetService<DataService>())
             {
-                _job.Job_State = SosyncState.InProgress;
-                _job.Job_Start = loadTimeUTC;
-                _job.Job_Run_Count += 1;
-                _job.Job_Last_Change = DateTime.UtcNow;
+                job.Job_State = SosyncState.InProgress;
+                job.Job_Start = loadTimeUTC;
+                job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                db.UpdateJob(job);
+            }
+        }
+
+        private void UpdateJobRunCount(SyncJob job)
+        {
+            Log.LogDebug($"Updating job {job.Job_ID}: run_count");
+
+            using (var db = Service.GetService<DataService>())
+            {
+                job.Job_Run_Count += 1;
+                job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(job);
             }
         }
 
