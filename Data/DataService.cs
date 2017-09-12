@@ -133,7 +133,7 @@ namespace WebSosync.Data
                     .AsList();
 
                 foreach (var r in result)
-                    SpecifyUTC(r);
+                    CleanModel(r);
 
                 return result;
             }
@@ -145,7 +145,7 @@ namespace WebSosync.Data
                     .AsList();
 
                 foreach (var r in result)
-                    SpecifyUTC(r);
+                    CleanModel(r);
 
                 return result;
             }
@@ -185,7 +185,7 @@ namespace WebSosync.Data
                 .AsList();
 
             foreach (var r in result)
-                SpecifyUTC(r);
+                CleanModel(r);
 
             return result;
         }
@@ -198,7 +198,7 @@ namespace WebSosync.Data
         public SyncJob GetJob(int id)
         {
             var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
-            SpecifyUTC(result);
+            CleanModel(result);
             return result;
         }
 
@@ -210,12 +210,12 @@ namespace WebSosync.Data
                 commandTimeout: _cmdTimeoutSec)
                 .SingleOrDefault();
 
-            SpecifyUTC(result);
+            CleanModel(result);
 
             return result;
         }
 
-        private void SpecifyUTC(SyncJob model)
+        private void CleanModel(SyncJob model)
         {
             if (model == null)
                 return;
@@ -224,12 +224,22 @@ namespace WebSosync.Data
             {
                 if (prop.PropertyType == typeof(DateTime))
                 {
+                    // Set UTC flag on any date field of the sync job
                     prop.SetValue(model, DateTime.SpecifyKind((DateTime)prop.GetValue(model), DateTimeKind.Utc));
                 }
                 else if (prop.PropertyType == typeof(DateTime?))
                 {
+                    // Set UTC flag on any date field of the sync job
                     if (((DateTime?)prop.GetValue(model)).HasValue)
                         prop.SetValue(model, DateTime.SpecifyKind(((DateTime?)prop.GetValue(model)).Value, DateTimeKind.Utc));
+                }
+                else if (prop.PropertyType == typeof(string))
+                {
+                    // Override empty strings with null values
+                    var value = (string)prop.GetValue(model);
+
+                    if (string.IsNullOrEmpty(value))
+                        prop.SetValue(model, null);
                 }
             }
         }
@@ -240,6 +250,8 @@ namespace WebSosync.Data
         /// <param name="job">The sync job to be created.</param>
         public void CreateJob(SyncJob job)
         {
+            CleanModel(job);
+
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
             job.Job_ID = _con.Query<int>(DataService.SQL_CreatJob, job).Single();
@@ -251,6 +263,7 @@ namespace WebSosync.Data
         /// <param name="job">The sync job to be updated.</param>
         public void UpdateJob(SyncJob job)
         {
+            CleanModel(job);
             _con.Execute(DataService.SQL_UpdateJob, job, commandTimeout: _cmdTimeoutSec);
         }
 
@@ -261,6 +274,8 @@ namespace WebSosync.Data
         /// <param name="propertySelector">The member expression for which field should be updated in the database.</param>
         public void UpdateJob<TProp>(SyncJob job, Expression<Func<SyncJob, TProp>> propertySelector)
         {
+            CleanModel(job);
+
             var tblAtt = job.GetType().GetTypeInfo().GetCustomAttribute<DataContractAttribute>();
             var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
             var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
