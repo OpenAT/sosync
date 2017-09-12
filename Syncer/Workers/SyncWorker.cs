@@ -215,6 +215,14 @@ namespace Syncer.Workers
 
         private void UpdateJobAllowSync(SyncJob job)
         {
+            // First recursively update all child jobs to be synced
+            if (job.Children != null && job.Children.Count > 0)
+            {
+                foreach (var childJob in job.Children)
+                    UpdateJobAllowSync(childJob);
+            }
+
+            // Then update the job
             using (var db = _svc.GetService<DataService>())
             {
                 // Don't update job_last_change on job-sync related fields
