@@ -1,11 +1,8 @@
-﻿using dadi_data;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Syncer.Flows;
 using Syncer.Services;
 using System;
-using System.Diagnostics;
-using System.Linq;
+using System.Threading;
 using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -39,9 +36,11 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
+            var throttle = Configuration.Protocol_Throttle_ms;
+
             var count = 0;
-            var s = new Stopwatch();
-            s.Start();
+            var protocolStart = DateTime.UtcNow;
+            var syncStart = DateTime.UtcNow;
 
             var job = GetNextJobToSync();
             while (job != null)
@@ -57,8 +56,23 @@ namespace Syncer.Workers
                 }
 
                 UpdateJobSyncInfo(job);
-
                 count++;
+
+                if (throttle > 0)
+                {
+                    var consumedTimeMs = (int)(DateTime.UtcNow - syncStart).TotalMilliseconds;
+                    var remainingTimeMs = throttle - consumedTimeMs;
+
+                    if (remainingTimeMs > 0)
+                    {
+                        _log.LogInformation($"Throttle set to {throttle}ms, updating job in [fso] took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
+                        Thread.Sleep(remainingTimeMs);
+                    }
+                    else
+                    {
+                        _log.LogDebug($"Updatinug job in [fso] ({consumedTimeMs}ms) exceeded throttle time ({throttle}ms), continuing at full speed.");
+                    }
+                }
 
                 // Stop processing the queue if cancellation was requested
                 if (CancellationToken.IsCancellationRequested)
@@ -68,11 +82,12 @@ namespace Syncer.Workers
                     // Clean up here, if necessary
                 }
 
+                syncStart = DateTime.UtcNow;
                 job = GetNextJobToSync();
             }
 
-            s.Stop();
-            _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds((int)s.ElapsedMilliseconds)}.");
+            var elapsedMs = (int)(DateTime.UtcNow - protocolStart).TotalMilliseconds;
+            _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds(elapsedMs)}, throttle at {SpecialFormat.FromMilliseconds(throttle)}.");
         }
 
         private SyncJob GetNextJobToSync()
