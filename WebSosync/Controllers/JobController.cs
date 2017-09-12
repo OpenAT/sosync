@@ -92,8 +92,6 @@ namespace WebSosync.Controllers
             if (!RequestValidator.ValidateData(result, data, dateFormat))
                 return new BadRequestObjectResult(result);
 
-            var config = (SosyncOptions)services.GetService(typeof(SosyncOptions));
-            var odoo = (OdooService)services.GetService(typeof(OdooService));
             var syncJob = (IBackgroundJob<SyncWorker>)services.GetService(typeof(IBackgroundJob<SyncWorker>));
             var log = (ILogger<JobController>)services.GetService(typeof(ILogger<JobController>));
 
