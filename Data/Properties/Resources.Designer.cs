@@ -129,6 +129,24 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to select
+        ///	*
+        ///from
+        ///	sync_table
+        ///where
+        ///	job_to_fso_can_sync = true
+        ///    and (job_to_fso_sync_version is null or job_to_fso_sync_version &lt;&gt; job_last_change)
+        ///order by
+        ///	job_last_change desc
+        ///limit 1;.
+        /// </summary>
+        internal static string GetFirstSyncJobToSync_SELECT {
+            get {
+                return ResourceManager.GetString("GetFirstSyncJobToSync_SELECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DO $$ 
         ///    BEGIN
         ///        BEGIN
