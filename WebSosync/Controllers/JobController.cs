@@ -108,7 +108,19 @@ namespace WebSosync.Controllers
                 };
 
                 if (data.ContainsKey("job_source_sosync_write_date"))
-                    job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
+                {
+                    var val = data["job_source_sosync_write_date"];
+
+                    if (val != null && val.GetType() == typeof(DateTime))
+                        job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
+                    else if (val != null && val.GetType() == typeof(string))
+                        job.Job_Source_Sosync_Write_Date = DateTime.Parse(
+                            (string)data["job_source_sosync_write_date"],
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    else
+                        throw new Exception("Unrecognized format in field job_source_sosync_write_date.");
+                }
 
                 if (data.ContainsKey("job_source_fields"))
                 {

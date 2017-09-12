@@ -64,7 +64,7 @@ namespace WebSosync.Data.Properties {
         /// <summary>
         ///   Looks up a localized string similar to with updated_rows as (
         ///	update sync_table
-        ///	set job_state = &apos;done&apos;, job_log = @job_log 
+        ///	set job_state = &apos;done&apos;, job_log = @job_log, job_closed_by_job_id = @job_closed_by_job_id, job_last_change = @job_last_change
         ///	where
         ///		job_source_sosync_write_date &lt; @job_source_sosync_write_date
         ///		and job_source_system = @job_source_system

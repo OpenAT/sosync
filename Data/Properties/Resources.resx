@@ -120,7 +120,7 @@
   <data name="ClosePreviousJobs_Update_SCRIPT" xml:space="preserve">
     <value>with updated_rows as (
 	update sync_table
-	set job_state = 'done', job_log = @job_log 
+	set job_state = 'done', job_log = @job_log, job_closed_by_job_id = @job_closed_by_job_id, job_last_change = @job_last_change
 	where
 		job_source_sosync_write_date &lt; @job_source_sosync_write_date
 		and job_source_system = @job_source_system
