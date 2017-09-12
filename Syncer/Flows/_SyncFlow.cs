@@ -221,6 +221,7 @@ namespace Syncer.Flows
                             Job_Source_Record_ID = request.JobSourceRecordID
                         };
 
+                        // Try to fetch a child job with the same main properties
                         var entry = _db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
 
                         // If the child job wasn't created yet, create it
@@ -228,6 +229,7 @@ namespace Syncer.Flows
                         {
                             Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                             _db.CreateJob(childJob);
+                            _job.Children.Add(childJob);
 
                             entry = childJob;
                        }
