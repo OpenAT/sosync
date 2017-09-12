@@ -50,6 +50,10 @@ namespace WebSosync.Data.Models
         [IgnoreDataMember]
         public DateTime? Job_To_FSO_Sync_Date { get; set; }
 
+        [DataMember(Name = "job_to_fso_sync_version")]
+        [IgnoreDataMember]
+        public DateTime? Job_To_FSO_Sync_Version { get; set; }
+
         [IgnoreDataMember]
         public List<SyncJob> Children { get; set; }
         
