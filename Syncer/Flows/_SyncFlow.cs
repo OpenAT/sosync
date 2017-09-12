@@ -557,8 +557,8 @@ namespace Syncer.Flows
             {
                 _job.Sync_Target_Data_Before = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -570,8 +570,8 @@ namespace Syncer.Flows
             {
                 _job.Sync_Source_Data = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -583,8 +583,8 @@ namespace Syncer.Flows
             {
                 _job.Sync_Target_Request = requestData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -600,7 +600,6 @@ namespace Syncer.Flows
                 _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -628,8 +627,8 @@ namespace Syncer.Flows
 
                 job.Job_Log = log;
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+
                 db.UpdateJob(job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -645,6 +644,8 @@ namespace Syncer.Flows
             {
                 job.Child_Job_Start = DateTime.UtcNow;
                 job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(_job);
             }
         }
 
@@ -659,6 +660,8 @@ namespace Syncer.Flows
             {
                 _job.Child_Job_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(_job);
             }
         }
 
@@ -673,6 +676,8 @@ namespace Syncer.Flows
             {
                 _job.Sync_Start = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(_job);
             }
         }
 
@@ -687,6 +692,8 @@ namespace Syncer.Flows
             {
                 _job.Sync_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(_job);
             }
         }
 
@@ -703,8 +710,8 @@ namespace Syncer.Flows
                 _job.Job_Start = loadTimeUTC;
                 _job.Job_Run_Count += 1;
                 _job.Job_Last_Change = DateTime.UtcNow;
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -723,8 +730,8 @@ namespace Syncer.Flows
                 _job.Job_State = SosyncState.Done;
                 _job.Job_End = DateTime.Now.ToUniversalTime();
                 _job.Job_Last_Change = DateTime.UtcNow;
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
             }
         }
 
@@ -744,25 +751,8 @@ namespace Syncer.Flows
                 _job.Job_Error_Code = errorCode;
                 _job.Job_Error_Text = errorText;
                 _job.Job_Last_Change = DateTime.UtcNow;
+
                 db.UpdateJob(_job);
-                SyncJobToFso(_job, db);
-            }
-        }
-
-        /// <summary>
-        /// Sends the job to FSO. The job_fso_id will be written to the job,
-        /// and the job will besaved using the supplied data service.
-        /// </summary>
-        /// <param name="job">The job to be synchronized.</param>
-        /// <param name="db">Data service used to update the job.</param>
-        private void SyncJobToFso(SyncJob job, DataService db)
-        {
-            int? fsoID = OdooService.SendSyncJob(_job);
-
-            if (fsoID != null)
-            {
-                job.Job_Fso_ID = fsoID;
-                db.UpdateJob(job);
             }
         }
 
