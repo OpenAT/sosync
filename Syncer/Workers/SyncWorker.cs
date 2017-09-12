@@ -136,6 +136,10 @@ namespace Syncer.Workers
                     UpdateJobError(job, ex.ToString());
                 }
 
+                // All finished jobs get flagged for beeing synced to fso
+                if (job.Job_State == SosyncState.Done || job.Job_State == SosyncState.Error)
+                    UpdateJobAllowSync(job);
+
                 // Get the next open job
                 loadTimeUTC = DateTime.UtcNow;
                 job = GetNextOpenJob();
@@ -178,14 +182,16 @@ namespace Syncer.Workers
                 job.Job_Log = message;
                 job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
+            }
+        }
 
-                int? fsoID = _odoo.SendSyncJob(job);
-
-                if (fsoID != null)
-                {
-                    job.Job_Fso_ID = fsoID;
-                    db.UpdateJob(job);
-                }
+        private void UpdateJobAllowSync(SyncJob job)
+        {
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Job_To_FSO_Can_Sync = true;
+                job.Job_Last_Change = DateTime.UtcNow;
+                db.UpdateJob(job);
             }
         }
         #endregion
