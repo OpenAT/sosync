@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -37,6 +39,10 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
+            var count = 0;
+            var s = new Stopwatch();
+            s.Start();
+
             var job = GetNextJobToSync();
             while (job != null)
             {
@@ -52,8 +58,13 @@ namespace Syncer.Workers
 
                 UpdateJobSyncInfo(job);
 
+                count++;
+
                 job = GetNextJobToSync();
             }
+
+            s.Stop();
+            _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds((int)s.ElapsedMilliseconds)}.");
         }
 
         private SyncJob GetNextJobToSync()
