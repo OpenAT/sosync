@@ -35,6 +35,10 @@ Most routes return either a **json**/**XML** object (depending on the sent "**Ac
   - source_record_id, the ID in the source system
 - **/job/info/{id}** returns the full job row
 - **/job/list** returns the full sync table
+- **/service/processjobs** start the sync background job, if not running already
+- **/service/processprotocol** start the protocol background job, if not running already
+- **/service/forcedriftcheck** clear any sync lock and reset the NTP timer forcing a new NTP check for time drifts
+- **/service/drift** do an NTP check and return the time drift - this NTP check has no time limit
 
 ## Setup
 ### .NET Core SDK on Ubuntu 14.04 trusty main:
