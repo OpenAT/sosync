@@ -191,6 +191,22 @@ namespace WebSosync.Data
         }
 
         /// <summary>
+        /// Returns the first job to be synced to fso.
+        /// </summary>
+        /// <returns></returns>
+        public SyncJob GetJobToSync()
+        {
+            var result = _con.Query<SyncJob>(
+                Resources.ResourceManager.GetString(ResourceNames.GetFirstSyncJobToSyncSelect),
+                commandTimeout: _cmdTimeoutSec)
+                .SingleOrDefault();
+
+            CleanModel(result);
+
+            return result;
+        }
+
+        /// <summary>
         /// Get the specified job by its ID.
         /// </summary>
         /// <param name="id">ID of the job to fetch.</param>
