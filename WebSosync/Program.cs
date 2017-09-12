@@ -111,9 +111,6 @@ namespace WebSosync
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
 
-            if (sosyncConfig.Max_Time_Drift_ms <= 0)
-                sosyncConfig.Max_Time_Drift_ms = 30;
-
             log.LogInformation(String.Join(" ",
                 $"Sosync started for instance {sosyncConfig.Instance},",
                 $"running on {osNameAndVersion}",
@@ -173,6 +170,8 @@ namespace WebSosync
                     timeSvc.LastDriftCheck = null; // Don't consider the initial time check
             }
 
+            SetSosyncDefaultConfig(sosyncConfig, log);
+
             try
             {
                 // Start the webserver if there is no forced quit
@@ -228,6 +227,29 @@ namespace WebSosync
             }
 
             log.LogInformation($"Database check done.");
+        }
+
+        private static void SetSosyncDefaultConfig(SosyncOptions config, ILogger<Program> log)
+        {
+            var text = "not invalid. Setting it to";
+
+            if (config.Throttle_ms < 0)
+            {
+                config.Throttle_ms = 0;
+                log.LogInformation($"{nameof(config.Throttle_ms)} {text} {config.Throttle_ms}");
+            }
+
+            if (config.Protocol_Throttle_ms < 0)
+            {
+                config.Protocol_Throttle_ms = 0;
+                log.LogInformation($"{nameof(config.Protocol_Throttle_ms)} {text} {config.Protocol_Throttle_ms}");
+            }
+
+            if (config.Max_Time_Drift_ms <= 0)
+            {
+                config.Max_Time_Drift_ms = 30;
+                log.LogInformation($"{nameof(config.Max_Time_Drift_ms)} {text} {config.Max_Time_Drift_ms}");
+            }
         }
         #endregion
     }
