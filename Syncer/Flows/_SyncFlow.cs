@@ -202,6 +202,8 @@ namespace Syncer.Flows
                         {
                             // Job is inconsistent, cancel the flow and leave it "in progress",
                             // so it will be restarted later.
+                            UpdateJobInconsistent(_job);
+                            requireRestart = true;
                             return;
                         }
 
@@ -264,6 +266,7 @@ namespace Syncer.Flows
                         // Child jobs are not yet finished, despite just processing them.
                         // Require restart, and stop this job, but leave it open so it is
                         // processed again
+                        UpdateJobInconsistent(_job);
                         requireRestart = true;
                         return;
                     }
@@ -290,7 +293,8 @@ namespace Syncer.Flows
                     // Job is inconsistent, cancel the current flow. Make sure
                     // To do this outside the try-finally block, because we want
                     // the job to stay "in progress".
-                    return;
+                    UpdateJobInconsistent(_job);
+                    requireRestart = true;
                 }
 
                 try
@@ -445,7 +449,7 @@ namespace Syncer.Flows
                         SosyncSystem.FSOnline,
                         onlineAtt.Name,
                         studioInfo.ForeignID,
-                        "");
+                        null);
                 }
                 else
                 {
@@ -459,7 +463,7 @@ namespace Syncer.Flows
                         SosyncSystem.FundraisingStudio,
                         studioAtt.Name,
                         onlineInfo.ForeignID,
-                        "");
+                        null);
                 }
             }
             else if (onlineInfo != null && studioInfo == null)
@@ -474,7 +478,7 @@ namespace Syncer.Flows
                     SosyncSystem.FundraisingStudio,
                     studioAtt.Name,
                     null,
-                    "");
+                    null);
             }
             else if (onlineInfo == null && studioInfo != null)
             {
@@ -488,7 +492,7 @@ namespace Syncer.Flows
                     SosyncSystem.FSOnline,
                     onlineAtt.Name,
                     null,
-                    "");
+                    null);
             }
             else
             {
@@ -629,7 +633,7 @@ namespace Syncer.Flows
                 job.Sync_Target_Model = targetModel;
                 job.Sync_Target_Record_ID = targetId;
 
-                job.Job_Log = log;
+                job.Job_Log = log ?? job.Job_Log; // If log is null, keep whatever is already in Job_Log
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
                 db.UpdateJob(job);
@@ -725,6 +729,19 @@ namespace Syncer.Flows
             using (var db = Service.GetService<DataService>())
             {
                 job.Job_Run_Count += 1;
+                job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(job);
+            }
+        }
+
+        private void UpdateJobInconsistent(SyncJob job)
+        {
+            Log.LogDebug($"Updating job {job.Job_ID}: job_log");
+
+            using (var db = Service.GetService<DataService>())
+            {
+                job.Job_Log = "Consistency check failed, exiting job, leaving it in progress.";
                 job.Job_Last_Change = DateTime.UtcNow;
 
                 db.UpdateJob(job);
