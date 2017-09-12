@@ -228,7 +228,7 @@ namespace Syncer.Flows
                         {
                             Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                             _db.CreateJob(childJob);
-                            SyncJobToFso(_job, _db);
+
                             entry = childJob;
                        }
 
