@@ -160,7 +160,7 @@ namespace WebSosync.Data
                 job_source_record_id = closingSourceJob.Job_Source_Record_ID,
                 job_closed_by_job_id = closingSourceJob.Job_ID,
                 job_last_change = DateTime.UtcNow,
-                job_log = $"Closed by job_id = {closingSourceJob.Job_ID}."
+                job_log = $"Skipped due to job_id = {closingSourceJob.Job_ID}."
             };
 
             var updated_rows = _con.ExecuteScalar<int>(
