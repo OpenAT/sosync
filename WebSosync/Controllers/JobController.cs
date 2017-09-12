@@ -140,6 +140,7 @@ namespace WebSosync.Controllers
 
                 job.Job_State = SosyncState.New;
                 job.Job_Fetched = DateTime.UtcNow;
+                job.Job_To_FSO_Can_Sync = false;
 
                 db.CreateJob(job);
                 result.JobID = job.Job_ID;
