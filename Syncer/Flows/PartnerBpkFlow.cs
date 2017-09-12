@@ -120,7 +120,7 @@ namespace Syncer.Flows
                 else
                 {
                     var sosync_fs_id = bpk.Sosync_FS_ID;
-                    var entry = db.Read(new { xBPKAccountID = sosync_fs_id }).SingleOrDefault();
+                    var entry = db.Read(new { PersonBPKID = sosync_fs_id }).SingleOrDefault();
 
                     if (entry == null)
                         throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, "dbo.PersonBPK", sosync_fs_id);
