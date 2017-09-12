@@ -37,7 +37,49 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
-            _log.LogInformation("Protocol worker START called.");
+            var job = GetNextJobToSync();
+            while (job != null)
+            {
+                _log.LogInformation($"Syncing job_id ({job.Job_ID}) with [fso]");
+
+                int? odooID = _odoo.SendSyncJob(job);
+
+                if (odooID.HasValue)
+                {
+                    job.Job_Fso_ID = odooID.Value;
+                    UpdateJobFsoID(job);
+                }
+
+                UpdateJobSyncInfo(job);
+
+                job = GetNextJobToSync();
+            }
+        }
+
+        private SyncJob GetNextJobToSync()
+        {
+            using (var db = _svc.GetService<DataService>())
+            {
+                return db.GetJobToSync();
+            }
+        }
+
+        private void UpdateJobFsoID(SyncJob job)
+        {
+            using (var db = _svc.GetService<DataService>())
+            {
+                db.UpdateJob(job, x => x.Job_Fso_ID);
+            }
+        }
+
+        private void UpdateJobSyncInfo(SyncJob job)
+        {
+            using (var db = _svc.GetService<DataService>())
+            {
+                job.Job_To_FSO_Sync_Date = DateTime.UtcNow;
+                job.Job_To_FSO_Sync_Version = job.Job_Last_Change;
+                db.UpdateJob(job);
+            }
         }
         #endregion
     }
