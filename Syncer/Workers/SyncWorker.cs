@@ -189,8 +189,8 @@ namespace Syncer.Workers
         {
             using (var db = _svc.GetService<DataService>())
             {
+                // Don't update job_last_change on job-sync related fields
                 job.Job_To_FSO_Can_Sync = true;
-                job.Job_Last_Change = DateTime.UtcNow;
                 db.UpdateJob(job);
             }
         }
