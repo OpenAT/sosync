@@ -40,7 +40,7 @@ namespace WebSosync.Controllers
         #region Methods
         // GET service/status
         [HttpGet("status")]
-        public IActionResult Get()
+        public IActionResult Status()
         {
             var result = new SosyncStatusDto();
 
@@ -54,8 +54,8 @@ namespace WebSosync.Controllers
         }
 
         // service/protocol
-        [HttpGet("protocol")]
-        public IActionResult ProtocolStart()
+        [HttpGet("processprotocol")]
+        public IActionResult ProcessProtocol()
         {
             _protocolWorkerJob.Start();
             return new OkResult();
@@ -94,7 +94,7 @@ namespace WebSosync.Controllers
         }
 
         [HttpGet("forcedriftcheck")]
-        public IActionResult ProcessJobs([FromServices]TimeService timeSvc)
+        public IActionResult ForceDriftCheck([FromServices]TimeService timeSvc)
         {
             timeSvc.LastDriftCheck = null;
             timeSvc.DriftLockUntil = null;
@@ -108,11 +108,11 @@ namespace WebSosync.Controllers
             return new OkResult();
         }
 
-        [HttpGet("debug")]
-        public IActionResult Debug([FromServices]OdooService odoo)
-        {
-            return new OkResult();
-        }
+        //[HttpGet("debug")]
+        //public IActionResult Debug([FromServices]OdooService odoo)
+        //{
+        //    return new OkResult();
+        //}
 
         //// GET api/values/5
         //[HttpGet("{id}")]
