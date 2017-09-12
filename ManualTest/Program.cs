@@ -18,7 +18,7 @@ namespace ManualTest
 
             Console.WriteLine("Manual testing...");
 
-            int count = 20;
+            int count = 100;
             var tasks = new Task[]
             {
                 StartRequestsAsync("A", count),
@@ -28,7 +28,7 @@ namespace ManualTest
                 StartRequestsAsync("E", count)
             };
 
-            Task.WhenAll(tasks);
+            Task.WaitAll(tasks);
 
             Console.WriteLine("Done!");
             Console.ReadKey();
@@ -42,6 +42,8 @@ namespace ManualTest
 
             for (int i = 0; i < count; i++)
             {
+                Console.WriteLine($"{identifier}: Updating mssql {i + 1}...");
+
                 using (var db = new DataService<dboPerson>("Data Source=MSSQL1;Initial Catalog=mdb_demo; Integrated Security=True;"))
                 {
                     db.BeginTransaction();
@@ -51,11 +53,10 @@ namespace ManualTest
                     db.CommitTransaction();
                 }
 
-                Console.WriteLine($"{identifier}: Sending request {i + 1}...");
-                var req = HttpWebRequest.Create(String.Format(template, DateTime.UtcNow));
-                req.Method = "GET";
-                requests.Add(req.GetResponseAsync());
-                await Task.WhenAll(requests);
+                //var req = HttpWebRequest.Create(String.Format(template, DateTime.UtcNow));
+                //req.Method = "GET";
+                //requests.Add(req.GetResponseAsync());
+                //await Task.WhenAll(requests);
             }
         }
     }
