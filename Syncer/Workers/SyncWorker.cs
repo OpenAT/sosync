@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using WebSosync.Common;
+using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Extensions;
 using WebSosync.Data.Models;
@@ -24,7 +25,8 @@ namespace Syncer.Workers
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
         private TimeService _timeSvc;
-        #endregion
+        private IBackgroundJob<ProtocolWorker> _protocolJob;
+   #endregion
 
         #region Constructors
         /// <summary>
@@ -37,7 +39,8 @@ namespace Syncer.Workers
             FlowService flowManager, 
             ILogger<SyncWorker> logger, 
             OdooService odoo,
-            TimeService timeSvc
+            TimeService timeSvc,
+            IBackgroundJob<ProtocolWorker> protocolJob
             )
             : base(options)
         {
@@ -46,6 +49,7 @@ namespace Syncer.Workers
             _log = logger;
             _odoo = odoo;
             _timeSvc = timeSvc;
+            _protocolJob = protocolJob;
         }
         #endregion
 
@@ -140,6 +144,9 @@ namespace Syncer.Workers
                 if (job.Job_State == SosyncState.Done || job.Job_State == SosyncState.Error)
                     UpdateJobAllowSync(job);
 
+                // Start the background job for synchronization of sync jobs to fso
+                _protocolJob.Start();
+
                 // Get the next open job
                 loadTimeUTC = DateTime.UtcNow;
                 job = GetNextOpenJob();
@@ -181,6 +188,7 @@ namespace Syncer.Workers
                 job.Job_State = SosyncState.Error;
                 job.Job_Log = message;
                 job.Job_Last_Change = DateTime.UtcNow;
+                job.Job_End = DateTime.UtcNow;
                 db.UpdateJob(job);
             }
         }
