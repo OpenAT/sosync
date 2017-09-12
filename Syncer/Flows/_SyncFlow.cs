@@ -295,6 +295,7 @@ namespace Syncer.Flows
                     // the job to stay "in progress".
                     UpdateJobInconsistent(_job);
                     requireRestart = true;
+                    return;
                 }
 
                 try
