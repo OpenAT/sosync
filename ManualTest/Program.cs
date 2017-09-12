@@ -30,33 +30,58 @@ namespace ManualTest
 
             Task.WaitAll(tasks);
 
-            Console.WriteLine("Done!");
+            Console.WriteLine($"All tasks finished.");
             Console.ReadKey();
         }
 
         static async Task StartRequestsAsync(string identifier, int count)
         {
-            string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fffffff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13&job_source_sosync_write_date={0:yyyy-MM-dd}T{0:HH:mm:ss.fffffff}Z";
+            //string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fffffff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13&job_source_sosync_write_date={0:yyyy-MM-dd}T{0:HH:mm:ss.fffffff}Z";
 
-            var requests = new List<Task<WebResponse>>(count);
+            var requests = new List<Task>(count);
 
             for (int i = 0; i < count; i++)
             {
-                Console.WriteLine($"{identifier}: Updating mssql {i + 1}...");
+                var myId = identifier;
+                var myNr = i + 1;
 
-                using (var db = new DataService<dboPerson>("Data Source=MSSQL1;Initial Catalog=mdb_demo; Integrated Security=True;"))
+                var t = Task.Run(() =>
                 {
-                    db.BeginTransaction();
-                    var pers = db.Read(new { PersonID = 13 }).SingleOrDefault();
-                    pers.Name = $"Reynoldse-{identifier}-{i + 1}";
-                    db.Update(pers);
-                    db.CommitTransaction();
-                }
+                    UpdateMssql(myId, myNr);
+                });
+
+                requests.Add(t);
+                
+                // requests.Add(Task.Run(() => UpdateMssql(identifier, i + 1)));
+                //requests.Add(factory.StartNew(() => UpdateMssql(identifier, i + 1)));
 
                 //var req = HttpWebRequest.Create(String.Format(template, DateTime.UtcNow));
                 //req.Method = "GET";
                 //requests.Add(req.GetResponseAsync());
-                //await Task.WhenAll(requests);
+            }
+            await Task.WhenAll(requests);
+        }
+
+        private static Random _rnd = new Random();
+
+        private static void UpdateMssql(string id, int nr)
+        {
+            Console.WriteLine($"{id}: Updating mssql {nr}...");
+
+            try
+            {
+                using (var db = new DataService<dboPerson>("Data Source=MSSQL1;Initial Catalog=mdb_demo; Integrated Security=True;"))
+                {
+                    var pers = db.Read(new { PersonID = 13 }).SingleOrDefault();
+                    pers.Name = $"Reynoldse-{id}-{nr}";
+                    db.Update(pers);
+                }
+
+                Console.WriteLine($"{id}: {nr} is done...");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{id}: {nr} error: {ex.Message}");
             }
         }
     }
