@@ -95,6 +95,7 @@ namespace WebSosync.Controllers
             var config = (SosyncOptions)services.GetService(typeof(SosyncOptions));
             var odoo = (OdooService)services.GetService(typeof(OdooService));
             var syncJob = (IBackgroundJob<SyncWorker>)services.GetService(typeof(IBackgroundJob<SyncWorker>));
+            var protocolJob = (IBackgroundJob<ProtocolWorker>)services.GetService(typeof(IBackgroundJob<ProtocolWorker>));
             var log = (ILogger<JobController>)services.GetService(typeof(ILogger<JobController>));
 
             using (var db = (DataService)services.GetService(typeof(DataService)))
@@ -147,6 +148,7 @@ namespace WebSosync.Controllers
 
                 // Start the sync background job
                 syncJob.Start();
+                protocolJob.Start();
             }
 
             return new OkObjectResult(result);

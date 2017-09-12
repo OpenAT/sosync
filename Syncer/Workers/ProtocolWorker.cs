@@ -1,5 +1,6 @@
 ﻿using dadi_data;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
@@ -15,29 +16,28 @@ namespace Syncer.Workers
         private IServiceProvider _svc;
         private OdooService _odoo;
         private FlowService _flowManager;
+        private ILogger<ProtocolWorker> _log;
         #endregion
 
         #region Constructors
-        public ProtocolWorker(IServiceProvider svc, SosyncOptions options, FlowService flowManager)
+        public ProtocolWorker(
+            IServiceProvider svc,
+            SosyncOptions options,
+            FlowService flowManager,
+            ILogger<ProtocolWorker> logger)
             : base(options)
         {
             _svc = svc;
             _odoo = _svc.GetService<OdooService>();
             _flowManager = flowManager;
+            _log = logger;
         }
         #endregion
 
         #region Methods
         public override void Start()
         {
-            //var id = _odoo.Client.SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, 100).SingleOrDefault();
-
-            //if (id > 0)
-            //{
-            //    var result = _odoo.Client.GetModel<SyncJob>("sosync.job", id);
-            //}
-
-            var result = _odoo.Client.GetDictionary("res.partner", 1, new string[] { "id", "company_id", "write_date" });
+            _log.LogInformation("Protocol worker START called.");
         }
         #endregion
     }
