@@ -121,12 +121,13 @@
     <value>with updated_rows as (
 	update sync_table
 	set
-		job_state = 'done'
+		job_state = 'skipped'
 		,job_log = @job_log
 		,job_closed_by_job_id = @job_closed_by_job_id
 		,job_last_change = @job_last_change
 		,job_start = now() at time zone 'utc'
 		,job_end = now() at time zone 'utc'
+		,job_to_fso_can_sync = true
 	where
 		job_source_sosync_write_date &lt; @job_source_sosync_write_date
 		and job_source_system = @job_source_system

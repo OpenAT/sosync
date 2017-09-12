@@ -65,19 +65,19 @@ namespace WebSosync.Data.Properties {
         ///   Looks up a localized string similar to with updated_rows as (
         ///	update sync_table
         ///	set
-        ///		job_state = &apos;done&apos;
+        ///		job_state = &apos;skipped&apos;
         ///		,job_log = @job_log
         ///		,job_closed_by_job_id = @job_closed_by_job_id
         ///		,job_last_change = @job_last_change
         ///		,job_start = now() at time zone &apos;utc&apos;
         ///		,job_end = now() at time zone &apos;utc&apos;
+        ///		,job_to_fso_can_sync = true
         ///	where
         ///		job_source_sosync_write_date &lt; @job_source_sosync_write_date
         ///		and job_source_system = @job_source_system
         ///		and job_source_model = @job_source_model
         ///		and job_source_record_id = @job_source_record_id
-        ///		and job_state = &apos;new&apos;
-        ///	returning [rest of string was truncated]&quot;;.
+        ///	 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClosePreviousJobs_Update_SCRIPT {
             get {
