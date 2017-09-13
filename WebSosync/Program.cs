@@ -247,7 +247,7 @@ namespace WebSosync
 
             if (config.Max_Time_Drift_ms <= 0)
             {
-                config.Max_Time_Drift_ms = 30;
+                config.Max_Time_Drift_ms = 50;
                 log.LogInformation($"{nameof(config.Max_Time_Drift_ms)} {text} {config.Max_Time_Drift_ms}");
             }
         }
