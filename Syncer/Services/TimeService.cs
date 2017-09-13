@@ -17,10 +17,10 @@ namespace Syncer.Services
 
             _servers = new string[]
             {
-                "at.pool.ntp.org",
-                "ptbtime1.ptb.de",
-                "bevtime1.metrologie.at",
-                "0.europe.pool.ntp.org"
+                "0.ubuntu.pool.ntp.org",
+                "1.ubuntu.pool.ntp.org",
+                "2.ubuntu.pool.ntp.org",
+                "3.europe.pool.ntp.org"
             };
 
             LastDriftCheck = null;
