@@ -539,9 +539,9 @@ namespace Syncer.Flows
         /// Checks if the specified write date is still the same in the source system.
         /// </summary>
         /// <param name="job">The job to be checked.</param>
-        /// <param name="writeDate">The write date of the job since the last read.</param>
+        /// <param name="sosyncWriteDate">The write date of the job since the last read.</param>
         /// <returns></returns>
-        private bool IsConsistent(SyncJob job, DateTime? writeDate)
+        private bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate)
         {
             Log.LogDebug($"Checking model consistency");
 
@@ -552,15 +552,9 @@ namespace Syncer.Flows
             else
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
 
-            if (!currentInfo.SosyncWriteDate.HasValue)
-                throw new MissingSosyncWriteDateException(
-                    job.Sync_Source_System,
-                    job.Sync_Source_Model,
-                    job.Sync_Source_Record_ID.Value);
-
             // Do not use any tolerance here. It's a check to see if the provided write date
             // is different from what is currently in the model
-            if (writeDate.HasValue && writeDate.Value == currentInfo.SosyncWriteDate.Value)
+            if (sosyncWriteDate.HasValue && sosyncWriteDate.Value == (currentInfo.SosyncWriteDate ?? currentInfo.WriteDate).Value)
                 return true;
 
             return false;
