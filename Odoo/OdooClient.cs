@@ -182,6 +182,30 @@ namespace Odoo
             }
         }
 
+        public int[] SearchByField(string modelName, string fieldName, string searchOperator, string value)
+        {
+            try
+            {
+                var context = new { lang = Language };
+
+                var result = _rpcObject.execute_kw<int[]>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "search",
+                    new object[] { new object[] { new object[] { fieldName, searchOperator, value } } },
+                    new { context = context });
+
+                return result;
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastResponse;
+            }
+        }
+
         /// <summary>
         /// Creates the specified model in Odoo.
         /// </summary>
