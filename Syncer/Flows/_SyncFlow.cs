@@ -503,7 +503,7 @@ namespace Syncer.Flows
             else if (onlineInfo != null && studioInfo == null)
             {
                 // The online model is not yet in studio
-                writeDate = onlineInfo.SosyncWriteDate;
+                writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FSOnline,
