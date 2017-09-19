@@ -22,7 +22,7 @@ namespace Syncer.Flows
     public class PartnerFlow : SyncFlow
     {
 
-        #region Fields
+        #region Members
         private ILogger<PartnerFlow> _log;
         #endregion
 
@@ -37,7 +37,26 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            return GetDefaultOnlineModelInfo(onlineID, "res.partner");
+            var info = GetDefaultOnlineModelInfo(onlineID, "res.partner");
+
+            // If there was no foreign ID in fso, try to check the mssql side
+            // for the referenced ID too
+            if (!info.ForeignID.HasValue)
+            {
+                // Since we're only running a simple query, the DataService type doesn't matter
+                using (var db = MdbService.GetDataService<dboPerson>())
+                {
+                    var foundStudioID = db.ExecuteQuery<int?>(
+                        $"select PersonID from dbo.Person where sosync_fso_id = @fso_id",
+                        new { fso_id = onlineID })
+                        .SingleOrDefault();
+
+                    if (foundStudioID.HasValue)
+                        info.ForeignID = foundStudioID;
+                }
+            }
+
+            return info;
         }
 
         private DateTime? GetPersonWriteDate(dboPersonStack person)
@@ -98,6 +117,9 @@ namespace Syncer.Flows
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
+
+                if (!result.person.sosync_fso_id.HasValue)
+                    result.person.sosync_fso_id = GetFsoIdByFsId("res.partner", result.person.PersonID);
 
                 result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
                                   where iterAddress.GültigVon <= DateTime.Today &&
@@ -634,6 +656,9 @@ namespace Syncer.Flows
             var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
+            if (!IsValidFsID(partner.Sosync_FS_ID))
+                partner.Sosync_FS_ID = GetFsIdByFsoId("dbo.Person", "PersonID", onlineID);
+
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
             using (var personSvc = MdbService.GetDataService<dboPerson>())
@@ -853,7 +878,7 @@ namespace Syncer.Flows
                     else
                     {
 
-                        var PersonID = partner.Sosync_FS_ID;
+                        var PersonID = partner.Sosync_FS_ID.Value;
 
                         var person = GetCurrentdboPersonStack(PersonID);
 

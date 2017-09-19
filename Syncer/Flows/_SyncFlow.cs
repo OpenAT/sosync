@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using dadi_data.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Odoo;
 using Syncer.Attributes;
@@ -118,10 +119,42 @@ namespace Syncer.Flows
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, model, id);
 
             var fsID = OdooConvert.ToInt32((string)dicModel["sosync_fs_id"]);
+
+            if (fsID == 0)
+                fsID = null;
+
             var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["sosync_write_date"], true);
             var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"], true);
 
             return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
+        }
+
+        protected int? GetFsoIdByFsId(string modelName, int fsId)
+        {
+            var odooPartnerID = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).SingleOrDefault();
+            if (odooPartnerID > 0)
+                return odooPartnerID;
+
+            return null;
+        }
+
+        protected int? GetFsIdByFsoId(string modelName, string idName, int onlineID)
+        {
+            // Since we're only running a simple query, the DataService type doesn't matter
+            using (var db = MdbService.GetDataService<dboPerson>())
+            {
+                var foundStudioID = db.ExecuteQuery<int?>(
+                    $"select {idName} from {modelName} where sosync_fso_id = @fso_id",
+                    new { fso_id = onlineID })
+                    .SingleOrDefault();
+
+                return foundStudioID;
+            }
+        }
+
+        protected bool IsValidFsID(int? sosync_fs_id)
+        {
+            return sosync_fs_id.HasValue && sosync_fs_id.Value > 0;
         }
 
         /// <summary>

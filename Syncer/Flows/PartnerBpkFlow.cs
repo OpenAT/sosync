@@ -1,4 +1,5 @@
 ﻿using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Odoo;
 using Odoo.Models;
 using Syncer.Attributes;
@@ -16,13 +17,29 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.bpk")]
     public class PartnerBpkFlow : SyncFlow
     {
+        #region Members
+        private ILogger<PartnerBpkFlow> _log;
+        #endregion
+
+        #region Constructors
         public PartnerBpkFlow(IServiceProvider svc)
             : base(svc)
-        { }
+        {
+            _log = (ILogger<PartnerBpkFlow>)svc.GetService(typeof(ILogger<PartnerBpkFlow>));
+        }
+        #endregion
 
+        #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            return GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
+            var info = GetDefaultOnlineModelInfo(onlineID, "res.partner.bpk");
+
+            // If there was no foreign ID in fso, try to check the mssql side
+            // for the referenced ID too
+            if (!info.ForeignID.HasValue)
+                info.ForeignID = GetFsIdByFsoId("dbo.PersonBPK", "PersonBPKID", onlineID);
+
+            return info;
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -31,7 +48,12 @@ namespace Syncer.Flows
             {
                 var bpk = db.Read(new { PersonBPKID = studioID }).SingleOrDefault();
                 if (bpk != null)
+                {
+                    if (!bpk.sosync_fso_id.HasValue)
+                        bpk.sosync_fso_id = GetFsoIdByFsId("res.partner.bpk", bpk.PersonBPKID);
+
                     return new ModelInfo(studioID, bpk.sosync_fso_id, bpk.sosync_write_date, bpk.write_date);
+                }
             }
 
             return null;
@@ -60,6 +82,9 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var bpk = OdooService.Client.GetModel<resPartnerBpk>("res.partner.bpk", onlineID);
+
+            if (!IsValidFsID(bpk.Sosync_FS_ID))
+                bpk.Sosync_FS_ID = GetFsIdByFsoId("dbo.PersonBPK", "PersonBPKID", onlineID);
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
@@ -119,7 +144,7 @@ namespace Syncer.Flows
                 }
                 else
                 {
-                    var sosync_fs_id = bpk.Sosync_FS_ID;
+                    var sosync_fs_id = bpk.Sosync_FS_ID.Value;
                     var entry = db.Read(new { PersonBPKID = sosync_fs_id }).SingleOrDefault();
 
                     if (entry == null)
@@ -170,5 +195,6 @@ namespace Syncer.Flows
             dest.FehlerText = source.BPKErrorText;
             dest.FehlerCode = source.BPKErrorCode;
         }
+        #endregion
     }
 }

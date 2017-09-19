@@ -11,6 +11,7 @@ using Odoo.Models;
 using dadi_data.Models;
 using Syncer.Exceptions;
 using WebSosync.Data;
+using Microsoft.Extensions.Logging;
 
 namespace Syncer.Flows
 {
@@ -18,6 +19,10 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.company")]
     public class CompanyFlow : SyncFlow
     {
+        #region Members
+        private ILogger<CompanyFlow> _log;
+        #endregion
+
         #region Constructors
         public CompanyFlow(IServiceProvider svc)
             : base(svc)
@@ -38,7 +43,14 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            return GetDefaultOnlineModelInfo(onlineID, "res.company");
+            var info = GetDefaultOnlineModelInfo(onlineID, "res.company");
+
+            // If there was no foreign ID in fso, try to check the mssql side
+            // for the referenced ID too
+            if (!info.ForeignID.HasValue)
+                info.ForeignID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", onlineID);
+
+            return info;
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -49,7 +61,12 @@ namespace Syncer.Flows
             {
                 var acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
                 if (acc != null)
+                {
+                    if (!acc.sosync_fso_id.HasValue)
+                        acc.sosync_fso_id = GetFsoIdByFsId("res.company", acc.xBPKAccountID);
+
                     return new ModelInfo(studioID, acc.sosync_fso_id, acc.sosync_write_date, acc.write_date);
+                }
             }
 
             return null;
@@ -61,6 +78,9 @@ namespace Syncer.Flows
             using (var db = MdbService.GetDataService<dboxBPKAccount>())
             {
                 acc = db.Read(new { xBPKAccountID = studioID }).SingleOrDefault();
+
+                if (!acc.sosync_fso_id.HasValue)
+                    acc.sosync_fso_id = GetFsoIdByFsId("res.company", acc.xBPKAccountID);
 
                 UpdateSyncSourceData(Serializer.ToXML(acc));
 
@@ -110,6 +130,9 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var company = OdooService.Client.GetModel<resCompany>("res.company", onlineID);
+
+            if (!IsValidFsID(company.Sosync_FS_ID))
+                company.Sosync_FS_ID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", onlineID);
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
             
