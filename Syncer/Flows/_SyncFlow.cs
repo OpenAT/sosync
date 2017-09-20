@@ -159,7 +159,7 @@ namespace Syncer.Flows
         /// Starts the data flow.
         /// </summary>
         /// <param name="_job"></param>
-        public void Start(FlowService flowManager, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart)
+        public void Start(FlowService flowManager, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             _job = job;
 
@@ -235,6 +235,7 @@ namespace Syncer.Flows
                             // so it will be restarted later.
                             UpdateJobInconsistent(_job, 1);
                             requireRestart = true;
+                            restartReason = "Consistency check 1";
                             return;
                         }
 
@@ -283,7 +284,7 @@ namespace Syncer.Flows
 
                             // Get the flow for the job source model, and start it
                             SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
-                            flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart);
+                            flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                             // Be sure to use logic & operator
                             if (entry.Job_State == SosyncState.Done)
@@ -303,6 +304,7 @@ namespace Syncer.Flows
                         // processed again
                         UpdateJobInconsistent(_job, 2);
                         requireRestart = true;
+                        restartReason = "Consistency check 2";
                         return;
                     }
                 }
@@ -330,6 +332,7 @@ namespace Syncer.Flows
                     // the job to stay "in progress".
                     UpdateJobInconsistent(_job, 3);
                     requireRestart = true;
+                    restartReason = "Consistency check 3";
                     return;
                 }
 

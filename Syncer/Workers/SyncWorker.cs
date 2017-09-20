@@ -92,13 +92,14 @@ namespace Syncer.Workers
                     using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model)))
                     {
                         bool requireRestart = false;
-                        flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart);
+                        string restartReason = "";
+                        flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart, ref restartReason);
 
                         if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
                             CloseAllPreviousJobs(job);
 
                         if (requireRestart)
-                            RaiseRequireRestart($"{flow.GetType().Name} has unfinished child jobs");
+                            RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
 
                         // Throttling
                         if (Configuration.Throttle_ms > 0)
