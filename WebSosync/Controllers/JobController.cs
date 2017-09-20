@@ -120,6 +120,8 @@ namespace WebSosync.Controllers
                             (string)data["job_source_sosync_write_date"],
                             CultureInfo.InvariantCulture,
                             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    else if (val != null && val.GetType() == typeof(bool) && (bool)val == false)
+                        job.Job_Source_Sosync_Write_Date = null;
                     else
                         throw new Exception($"Unrecognized format ({val}) in field job_source_sosync_write_date.");
                 }
