@@ -115,7 +115,7 @@ namespace WebSosync.Controllers
 
                     if (val != null && val.GetType() == typeof(DateTime))
                         job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
-                    else if (val != null && !string.IsNullOrEmpty((string)val) && val.GetType() == typeof(string))
+                    else if (val != null && val.GetType() == typeof(string) && !string.IsNullOrEmpty((string)val))
                         job.Job_Source_Sosync_Write_Date = DateTime.Parse(
                             (string)data["job_source_sosync_write_date"],
                             CultureInfo.InvariantCulture,
