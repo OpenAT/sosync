@@ -476,7 +476,7 @@ namespace Syncer.Flows
                 else if(diff.TotalMilliseconds < 0)
                 {
                     // The studio model was newer
-                    writeDate = studioInfo.SosyncWriteDate;
+                    writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FundraisingStudio,
@@ -490,7 +490,7 @@ namespace Syncer.Flows
                 else
                 {
                     // The online model was newer
-                    writeDate = onlineInfo.SosyncWriteDate;
+                    writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FSOnline,
@@ -519,7 +519,7 @@ namespace Syncer.Flows
             else if (onlineInfo == null && studioInfo != null)
             {
                 // The studio model is not yet in online
-                writeDate = studioInfo.SosyncWriteDate;
+                writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FundraisingStudio,
