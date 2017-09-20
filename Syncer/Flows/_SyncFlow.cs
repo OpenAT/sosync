@@ -233,7 +233,7 @@ namespace Syncer.Flows
                         {
                             // Job is inconsistent, cancel the flow and leave it "in progress",
                             // so it will be restarted later.
-                            UpdateJobInconsistent(_job);
+                            UpdateJobInconsistent(_job, 1);
                             requireRestart = true;
                             return;
                         }
@@ -301,7 +301,7 @@ namespace Syncer.Flows
                         // Child jobs are not yet finished, despite just processing them.
                         // Require restart, and stop this job, but leave it open so it is
                         // processed again
-                        UpdateJobInconsistent(_job);
+                        UpdateJobInconsistent(_job, 2);
                         requireRestart = true;
                         return;
                     }
@@ -328,7 +328,7 @@ namespace Syncer.Flows
                     // Job is inconsistent, cancel the current flow. Make sure
                     // To do this outside the try-finally block, because we want
                     // the job to stay "in progress".
-                    UpdateJobInconsistent(_job);
+                    UpdateJobInconsistent(_job, 3);
                     requireRestart = true;
                     return;
                 }
@@ -765,13 +765,13 @@ namespace Syncer.Flows
             }
         }
 
-        private void UpdateJobInconsistent(SyncJob job)
+        private void UpdateJobInconsistent(SyncJob job, int nr)
         {
             Log.LogDebug($"Updating job {job.Job_ID}: job_log");
 
             using (var db = Service.GetService<DataService>())
             {
-                job.Job_Log = "Consistency check failed, exiting job, leaving it in progress.";
+                job.Job_Log = $"Consistency check {nr} failed, exiting job, leaving it in progress.";
                 job.Job_Last_Change = DateTime.UtcNow;
 
                 db.UpdateJob(job);
