@@ -26,7 +26,7 @@ namespace Syncer.Workers
         private OdooService _odoo;
         private TimeService _timeSvc;
         private IBackgroundJob<ProtocolWorker> _protocolJob;
-   #endregion
+        #endregion
 
         #region Constructors
         /// <summary>
