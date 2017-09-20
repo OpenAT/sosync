@@ -30,7 +30,6 @@ namespace Syncer.Flows
         #region Members
         private List<ChildJobRequest> _requiredChildJobs;
         private SyncJob _job;
-        private DataService _db;
         #endregion
 
         #region Properties
@@ -55,7 +54,6 @@ namespace Syncer.Flows
             Serializer = Service.GetService<SerializationService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
-            _db = Service.GetService<DataService>();
         }
         #endregion
 
@@ -257,17 +255,21 @@ namespace Syncer.Flows
                         };
 
                         // Try to fetch a child job with the same main properties
-                        var entry = _db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
-
-                        // If the child job wasn't created yet, create it
-                        if (entry == null)
+                        SyncJob entry = null;
+                        using (var db = Service.GetService<DataService>())
                         {
-                            Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
-                            _db.CreateJob(childJob);
-                            _job.Children.Add(childJob);
+                            entry = db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
+                            
+                            // If the child job wasn't created yet, create it
+                            if (entry == null)
+                            {
+                                Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
+                                db.CreateJob(childJob);
+                                _job.Children.Add(childJob);
 
-                            entry = childJob;
-                       }
+                                entry = childJob;
+                            }
+                        }
 
                         if (entry.Job_State == SosyncState.Error)
                             throw new SyncerException($"Child job ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
@@ -819,7 +821,7 @@ namespace Syncer.Flows
 
         public void Dispose()
         {
-            _db.Dispose();
+
         }
         #endregion
     }
