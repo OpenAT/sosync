@@ -43,7 +43,7 @@ namespace Syncer.Workers
             var syncStart = DateTime.UtcNow;
 
             var job = GetNextJobToSync();
-            while (job != null)
+            while (job != null && !CancellationToken.IsCancellationRequested)
             {
                 _log.LogInformation($"Syncing job_id ({job.Job_ID}) with [fso]");
 

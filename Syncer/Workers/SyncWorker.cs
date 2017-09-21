@@ -66,7 +66,7 @@ namespace Syncer.Workers
             var loadTimeUTC = DateTime.UtcNow;
             var job = GetNextOpenJob();
 
-            while (job != null)
+            while (job != null && !CancellationToken.IsCancellationRequested)
             {
                 try
                 {

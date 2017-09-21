@@ -195,14 +195,18 @@ namespace WebSosync
         private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
         {
             IBackgroundJob<SyncWorker> job = (IBackgroundJob<SyncWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<SyncWorker>));
-            log.LogInformation($"Process termination requested (job status: {job.Status})");
+            IBackgroundJob<ProtocolWorker> protocolJob = (IBackgroundJob<ProtocolWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<ProtocolWorker>));
+            log.LogInformation($"Process termination requested (job status: {job.Status}, protocol status: {protocolJob.Status})");
+
             job.ShutdownPending = true;
+            protocolJob.ShutdownPending = true;
 
             // As logn the job status isn't stopped or error, keep requesting to stop it
             while (job.Status != BackgoundJobState.Idle && job.Status != BackgoundJobState.Error)
             {
-                log.LogInformation("Asking job to stop");
+                log.LogInformation("Asking jobs to stop");
                 job.Stop();
+                protocolJob.Stop();
                 System.Threading.Thread.Sleep(1000);
             }
 
