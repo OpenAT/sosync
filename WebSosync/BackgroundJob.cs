@@ -79,6 +79,9 @@ namespace WebSosync
         /// </summary>
         public void Start()
         {
+            if (ShutdownPending)
+                return;
+
             lock (_lockObj)
             {
                 if (_task == null)
@@ -95,11 +98,8 @@ namespace WebSosync
                 }
                 else
                 {
-                    if (!ShutdownPending)
-                    {
-                        RestartOnFinish = true;
-                        Status = BackgoundJobState.RunningRestartRequested;
-                    }
+                    RestartOnFinish = true;
+                    Status = BackgoundJobState.RunningRestartRequested;
                 }
             }
         }
@@ -186,7 +186,7 @@ namespace WebSosync
                 }
 
                 // If a restart was requested, immediately start again
-                if (RestartOnFinish)
+                if (!ShutdownPending && RestartOnFinish)
                     Start();
             }
             catch (Exception ex)
