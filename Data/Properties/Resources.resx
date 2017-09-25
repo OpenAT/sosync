@@ -162,16 +162,16 @@ select * from children;</value>
 		from sync_table
 		where parent_job_id is null and job_state in ('new', 'inprogress')
 		limit 1
-	) as first_parent
+	) first_parent
 
 	union all
 	
 	-- children
-	select child.*
-	from sync_table as child
-	inner join sync_table parent on child.parent_job_id = parent.job_id
+	select jobs.*
+	from sync_table jobs
+	inner join children c on c.job_id = jobs.parent_job_id
 )
-select * from children order by job_date desc;</value>
+select * from children order by job_date asc;</value>
   </data>
   <data name="GetFirstSyncJobToSync_SELECT" xml:space="preserve">
     <value>select
