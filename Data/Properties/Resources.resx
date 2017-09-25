@@ -161,6 +161,7 @@ select * from children;</value>
 		select *
 		from sync_table
 		where parent_job_id is null and job_state in ('new', 'inprogress')
+        order by job_date desc
 		limit 1
 	) first_parent
 

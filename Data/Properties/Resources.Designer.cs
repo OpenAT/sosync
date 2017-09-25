@@ -114,6 +114,7 @@ namespace WebSosync.Data.Properties {
         ///		select *
         ///		from sync_table
         ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///        order by job_date desc
         ///		limit 1
         ///	) first_parent
         ///
