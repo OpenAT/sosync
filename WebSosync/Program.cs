@@ -235,7 +235,7 @@ namespace WebSosync
 
         private static void SetSosyncDefaultConfig(SosyncOptions config, ILogger<Program> log)
         {
-            var text = "not invalid. Setting it to";
+            var text = " is invalid. Setting it to";
 
             if (config.Throttle_ms < 0)
             {
