@@ -5,15 +5,11 @@ using Odoo;
 using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
-using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using WebSosync.Data;
-using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
