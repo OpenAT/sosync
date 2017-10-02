@@ -9,6 +9,7 @@ using Syncer.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Syncer.Flows
@@ -99,6 +100,9 @@ namespace Syncer.Flows
 
         private dboPersonStack GetCurrentdboPersonStack(int PersonID)
         {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
             dboPersonStack result = new dboPersonStack();
 
             using (var personSvc = MdbService.GetDataService<dboPerson>())
@@ -173,6 +177,9 @@ namespace Syncer.Flows
 
             result.write_date = GetPersonWriteDate(result);
             result.sosync_write_date = GetPersonSosyncWriteDate(result);
+
+            s.Stop();
+            _log.LogWarning($"GetPersonStack elapsed: {s.ElapsedMilliseconds} ms");
 
             return result;
         }

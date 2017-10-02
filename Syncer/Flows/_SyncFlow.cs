@@ -183,7 +183,7 @@ namespace Syncer.Flows
             }
 
             s.Stop();
-            Log.LogWarning($"RunCount elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs("RunCount", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -194,7 +194,6 @@ namespace Syncer.Flows
             try
             {
                 SetSyncSource(_job, out initialWriteDate);
-
 
                 if (string.IsNullOrEmpty(_job.Sync_Source_System))
                 {
@@ -210,7 +209,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            Log.LogWarning($"SetSyncSource elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs("SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -334,7 +333,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            Log.LogWarning($"ChildJobs elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs("ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -356,7 +355,6 @@ namespace Syncer.Flows
 
                 try
                 {
-
                     // try-finally to ensure the sync_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
 
@@ -387,7 +385,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            Log.LogWarning($"Transformation elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs("Transformation", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -430,6 +428,7 @@ namespace Syncer.Flows
             if (job.Job_Source_System == SosyncSystem.FSOnline)
             {
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
+                LogMs("GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
 
                 if (onlineInfo == null)
                     throw new ModelNotFoundException(
@@ -438,11 +437,21 @@ namespace Syncer.Flows
                         job.Job_Source_Record_ID);
 
                 if (onlineInfo.ForeignID != null)
+                {
+                    Stopwatch s = new Stopwatch();
+                    s.Start();
                     studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
+                    s.Stop();
+                    LogMs($"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
+                }
             }
             else
             {
+                Stopwatch s = new Stopwatch();
+                s.Start();
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
+                s.Stop();
+                LogMs("GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
 
                 if (studioInfo == null)
                     throw new ModelNotFoundException(
@@ -451,7 +460,10 @@ namespace Syncer.Flows
                         job.Job_Source_Record_ID);
 
                 if (studioInfo.ForeignID != null)
+                {
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
+                    LogMs("GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
+                }
             }
 
             writeDate = null;
@@ -850,12 +862,16 @@ namespace Syncer.Flows
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            db.UpdateJob(_job);
+            db.UpdateJob(job);
 
             s.Stop();
-            Log.LogWarning($"{method} elapsed: {s.ElapsedMilliseconds} ms");
+            Log.LogWarning($"Job {job.Job_ID}: {method} elapsed: {s.ElapsedMilliseconds} ms");
         }
 
+        private void LogMs(string name, int jobId, long ms)
+        {
+            Log.LogWarning($"Job {jobId}: {name} elapsed: {ms} ms");
+        }
 
         public void Dispose()
         {
