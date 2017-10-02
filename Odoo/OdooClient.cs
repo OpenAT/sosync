@@ -27,6 +27,11 @@ namespace Odoo
         public string LastRequestRaw { get; private set; }
         public string LastResponseRaw { get; private set; }
 
+        /// <summary>
+        /// Last RPC Request and Response time in milliseconds.
+        /// </summary>
+        public long LastRpcTime { get; private set; }
+
         public int UserID { get { return _uid; } }
         #endregion
 
@@ -81,6 +86,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcCommon.LastRequest;
                 LastResponseRaw = _rpcCommon.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -118,6 +124,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -142,6 +149,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -179,6 +187,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -203,6 +212,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -234,6 +244,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -258,6 +269,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -292,6 +304,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 
@@ -319,6 +332,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
             }
         }
 

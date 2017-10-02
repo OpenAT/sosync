@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
+using System.Diagnostics;
 
 namespace XmlRpc
 {
@@ -20,6 +21,11 @@ namespace XmlRpc
         public bool DateTimeAsString { get; set; }
         public string LastRequest { get; set; }
         public string LastResponse { get; set; }
+
+        /// <summary>
+        /// Last time from request to response, in milliseconds.
+        /// </summary>
+        public long LastRpcTime { get; set; }
         #endregion
 
         public XmlRpcRawService(string requestUri, string address, bool datetimeAsString)
@@ -31,6 +37,9 @@ namespace XmlRpc
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
             try
             {
                 HttpClient client = new HttpClient()
@@ -92,9 +101,14 @@ namespace XmlRpc
                 }
 
                 //result = int.Parse(doc["methodResponse"]["params"]["param"]["value"]["int"].InnerText);
+                s.Stop();
+                LastRpcTime = s.ElapsedMilliseconds;
             }
             catch (Exception ex)
             {
+                s.Stop();
+                LastRpcTime = s.ElapsedMilliseconds;
+
                 result = ex.ToString();
                 throw;
             }
