@@ -4,6 +4,7 @@ using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using WebSosync.Common;
@@ -158,6 +159,9 @@ namespace Syncer.Workers
 
         private SyncJob GetNextOpenJob()
         {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
             using (var db = _svc.GetService<DataService>())
             {
                 var result = db.GetFirstOpenJobHierarchy().ToTree(
@@ -166,8 +170,12 @@ namespace Syncer.Workers
                         x => x.Children)
                         .SingleOrDefault();
 
+                s.Stop();
+                _log.LogWarning($"{nameof(GetNextOpenJob)} elapsed: {s.ElapsedMilliseconds} ms");
+
                 return result;
             }
+
         }
 
         private void CloseAllPreviousJobs(SyncJob job)

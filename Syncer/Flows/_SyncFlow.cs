@@ -9,6 +9,7 @@ using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -165,9 +166,12 @@ namespace Syncer.Flows
 
             UpdateJobRunCount(_job);
 
+            Stopwatch s = new Stopwatch();
+
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
             // -----------------------------------------------------------------------
+            s.Start();
             try
             {
                 CheckRunCount(5);
@@ -178,13 +182,19 @@ namespace Syncer.Flows
                 throw;
             }
 
+            s.Stop();
+            Log.LogWarning($"RunCount elapsed: {s.ElapsedMilliseconds} ms");
+            s.Reset();
+
             // -----------------------------------------------------------------------
             // 2) Determine the sync direction and update the job
             // -----------------------------------------------------------------------
+            s.Start();
             DateTime? initialWriteDate = null;
             try
             {
                 SetSyncSource(_job, out initialWriteDate);
+
 
                 if (string.IsNullOrEmpty(_job.Sync_Source_System))
                 {
@@ -199,10 +209,14 @@ namespace Syncer.Flows
                 UpdateJobError(SosyncError.SyncSource, $"2) Sync direction:\n{ex.ToString()}");
                 throw;
             }
+            s.Stop();
+            Log.LogWarning($"SetSyncSource elapsed: {s.ElapsedMilliseconds} ms");
+            s.Reset();
 
             // -----------------------------------------------------------------------
             // 3) Now check the child jobs
             // -----------------------------------------------------------------------
+            s.Start();
             try
             {
                 // The derived sync flows can use RequestChildJob() method to
@@ -319,12 +333,16 @@ namespace Syncer.Flows
                 UpdateJobError(SosyncError.ChildJob, $"3) Child jobs:\n{ex.ToString()}");
                 throw;
             }
+            s.Stop();
+            Log.LogWarning($"ChildJobs elapsed: {s.ElapsedMilliseconds} ms");
+            s.Reset();
 
+            // -----------------------------------------------------------------------
+            // 4) Transformation
+            // -----------------------------------------------------------------------
+            s.Start();
             try
             {
-                // -----------------------------------------------------------------------
-                // 4) Transformation
-                // -----------------------------------------------------------------------
                 if (!IsConsistent(_job, initialWriteDate))
                 {
                     // Job is inconsistent, cancel the current flow. Make sure
@@ -338,6 +356,7 @@ namespace Syncer.Flows
 
                 try
                 {
+
                     // try-finally to ensure the sync_end date is written.
                     // Actual errors should still bubble up, NOT be caught here.
 
@@ -367,6 +386,9 @@ namespace Syncer.Flows
                 UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
                 throw;
             }
+            s.Stop();
+            Log.LogWarning($"Transformation elapsed: {s.ElapsedMilliseconds} ms");
+            s.Reset();
         }
 
         /// <summary>
@@ -599,7 +621,7 @@ namespace Syncer.Flows
                 _job.Sync_Target_Data_Before = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateSyncTargetDataBeforeUpdate), db, _job);
             }
         }
 
@@ -612,7 +634,7 @@ namespace Syncer.Flows
                 _job.Sync_Source_Data = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateSyncSourceData), db, _job);
             }
         }
 
@@ -625,7 +647,7 @@ namespace Syncer.Flows
                 _job.Sync_Target_Request = requestData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateSyncTargetRequest), db, _job);
             }
         }
 
@@ -640,7 +662,8 @@ namespace Syncer.Flows
 
                 _job.Sync_Target_Answer = answerData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
-                db.UpdateJob(_job);
+
+                UpdateJob(nameof(UpdateSyncTargetAnswer), db, _job);
             }
         }
 
@@ -669,7 +692,7 @@ namespace Syncer.Flows
                 job.Job_Log = log ?? job.Job_Log; // If log is null, keep whatever is already in Job_Log
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
-                db.UpdateJob(job);
+                UpdateJob(nameof(UpdateJobSourceAndTarget), db, _job);
             }
         }
 
@@ -686,7 +709,7 @@ namespace Syncer.Flows
                 job.Child_Job_Start = DateTime.UtcNow;
                 job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobChildStart), db, _job);
             }
         }
 
@@ -702,7 +725,7 @@ namespace Syncer.Flows
                 _job.Child_Job_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobChildEnd), db, _job);
             }
         }
 
@@ -718,7 +741,7 @@ namespace Syncer.Flows
                 _job.Sync_Start = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobSyncStart), db, _job);
             }
         }
 
@@ -734,7 +757,7 @@ namespace Syncer.Flows
                 _job.Sync_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobSyncEnd), db, _job);
             }
         }
 
@@ -751,7 +774,7 @@ namespace Syncer.Flows
                 job.Job_Start = loadTimeUTC;
                 job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(job);
+                UpdateJob(nameof(UpdateJobStart), db, _job);
             }
         }
 
@@ -764,7 +787,7 @@ namespace Syncer.Flows
                 job.Job_Run_Count += 1;
                 job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(job);
+                UpdateJob(nameof(UpdateJobRunCount), db, _job);
             }
         }
 
@@ -777,7 +800,7 @@ namespace Syncer.Flows
                 job.Job_Log = $"Consistency check {nr} failed, exiting job, leaving it in progress.";
                 job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(job);
+                UpdateJob(nameof(UpdateJobInconsistent), db, _job);
             }
         }
 
@@ -797,7 +820,7 @@ namespace Syncer.Flows
                 _job.Job_End = DateTime.Now.ToUniversalTime();
                 _job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobSuccess), db, _job);
             }
         }
 
@@ -818,9 +841,21 @@ namespace Syncer.Flows
                 _job.Job_Error_Text = errorText;
                 _job.Job_Last_Change = DateTime.UtcNow;
 
-                db.UpdateJob(_job);
+                UpdateJob(nameof(UpdateJobError), db, _job);
             }
         }
+
+        private void UpdateJob(string method, DataService db, SyncJob job)
+        {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            db.UpdateJob(_job);
+
+            s.Stop();
+            Log.LogWarning($"{method} elapsed: {s.ElapsedMilliseconds} ms");
+        }
+
 
         public void Dispose()
         {
