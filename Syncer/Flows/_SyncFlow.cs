@@ -868,9 +868,9 @@ namespace Syncer.Flows
             Log.LogWarning($"Job {job.Job_ID}: {method} elapsed: {s.ElapsedMilliseconds} ms");
         }
 
-        private void LogMs(string name, int jobId, long ms)
+        protected void LogMs(string name, int? jobId, long ms)
         {
-            Log.LogWarning($"Job {jobId}: {name} elapsed: {ms} ms");
+            Log.LogWarning($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
         }
 
         public void Dispose()

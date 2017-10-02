@@ -179,7 +179,7 @@ namespace Syncer.Flows
             result.sosync_write_date = GetPersonSosyncWriteDate(result);
 
             s.Stop();
-            _log.LogWarning($"GetPersonStack elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs("GetPersonStack", null, s.ElapsedMilliseconds);
 
             return result;
         }
