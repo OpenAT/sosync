@@ -120,6 +120,10 @@ namespace Odoo
 
                 return result;
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in {nameof(OdooClient)}.", ex);
+            }
             finally
             {
                 LastRequestRaw = _rpcObject.LastRequest;
