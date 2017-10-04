@@ -255,42 +255,49 @@ namespace XmlRpc
 
                 foreach (var prop in properties)
                 {
-                    var attIgnore = prop.GetCustomAttribute<IgnoreDataMemberAttribute>();
-
-                    if (attIgnore == null)
+                    try
                     {
-                        var name = prop.Name;
-                        var att = prop.GetCustomAttribute<DataMemberAttribute>();
+                        var attIgnore = prop.GetCustomAttribute<IgnoreDataMemberAttribute>();
 
-                        if (att != null)
-                            name = att.Name;
-
-                        XmlElement destElement = null;
-                        foreach (XmlNode childNode in e.FirstChild.ChildNodes)
+                        if (attIgnore == null)
                         {
-                            if (childNode.FirstChild.LocalName == "name" && childNode.FirstChild.InnerText == name)
+                            var name = prop.Name;
+                            var att = prop.GetCustomAttribute<DataMemberAttribute>();
+
+                            if (att != null)
+                                name = att.Name;
+
+                            XmlElement destElement = null;
+                            foreach (XmlNode childNode in e.FirstChild.ChildNodes)
                             {
-                                destElement = (XmlElement)childNode.ChildNodes[1];
-                                break;
+                                if (childNode.FirstChild.LocalName == "name" && childNode.FirstChild.InnerText == name)
+                                {
+                                    destElement = (XmlElement)childNode.ChildNodes[1];
+                                    break;
+                                }
+                            }
+
+                            object value = null;
+                            try
+                            {
+                                value = destElement.InnerText;
+
+                                var isBoolProp = prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(bool?);
+
+                                if (!isBoolProp && Convert.ToString(value) == "0" && destElement.FirstChild.Name == "boolean")
+                                    prop.SetValue(resultObject, null);
+                                else
+                                    prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new Exception($"Could not process property: {prop.Name}, value: \"{Convert.ToString(value)}\"", ex);
                             }
                         }
-
-                        object value = null;
-                        try
-                        {
-                            value = destElement.InnerText;
-
-                            var isBoolProp = prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(bool?);
-
-                            if (!isBoolProp && Convert.ToString(value) == "0" && destElement.FirstChild.Name == "boolean")
-                                prop.SetValue(resultObject, null);
-                            else
-                                prop.SetValue(resultObject, GetXmlRpcResult(prop.PropertyType, destElement));
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"Could not process property: {prop.Name}, value: \"{Convert.ToString(value)}\"", ex);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Could not set property \"{prop.Name}\"", ex);
                     }
                 }
 
