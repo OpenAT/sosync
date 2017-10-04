@@ -315,34 +315,41 @@ namespace XmlRpc
             StringBuilder content = new StringBuilder();
             string paramType = "";
 
-            if (arg != null)
+            try
             {
-                Type t = arg.GetType();
-
-                paramType = GetXmlRpcType(arg);
-
-                content.Append($"<{paramType}>");
-
-                if (t.GetTypeInfo().IsClass && t != typeof(string) && !t.IsArray)
+                if (arg != null)
                 {
-                    if (t == typeof(Dictionary<string, object>))
-                        FillContentFromDictionary((Dictionary<string, object> )arg, content);
-                    else
-                        FillContentFromProperties(arg, content);
-                }
-                else if (t.GetTypeInfo().IsClass && t.IsArray)
-                {
-                    foreach (var subItem in arg as Array)
+                    Type t = arg.GetType();
+
+                    paramType = GetXmlRpcType(arg);
+
+                    content.Append($"<{paramType}>");
+
+                    if (t.GetTypeInfo().IsClass && t != typeof(string) && !t.IsArray)
                     {
-                        content.Append(GetXmlRpcValueNode(subItem));
+                        if (t == typeof(Dictionary<string, object>))
+                            FillContentFromDictionary((Dictionary<string, object>)arg, content);
+                        else
+                            FillContentFromProperties(arg, content);
                     }
-                }
-                else
-                {
-                    content.Append(GetXmlRpcValue(paramType, arg));
-                }
+                    else if (t.GetTypeInfo().IsClass && t.IsArray)
+                    {
+                        foreach (var subItem in arg as Array)
+                        {
+                            content.Append(GetXmlRpcValueNode(subItem));
+                        }
+                    }
+                    else
+                    {
+                        content.Append(GetXmlRpcValue(paramType, arg));
+                    }
 
-                content.Append($"</{paramType}>");
+                    content.Append($"</{paramType}>");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(GetXmlRpcValueNode)} Value: {arg}", ex);
             }
 
             return content.ToString();
