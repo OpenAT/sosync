@@ -295,17 +295,9 @@ namespace Syncer.Flows
 
                             UpdateJobStart(entry, DateTime.UtcNow);
 
-                            try
-                            {
-                                // Get the flow for the job source model, and start it
-                                SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
-                                flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.LogError($"Error starting child job: {ex.ToString()}");
-                                throw;
-                            }
+                            // Get the flow for the job source model, and start it
+                            SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
+                            flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                             // Be sure to use logic & operator
                             if (entry.Job_State == SosyncState.Done)
