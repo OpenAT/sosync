@@ -20,8 +20,8 @@ namespace Odoo
         #region Properties
         public string Address { get; set; }
         public string Database { get; set; }
-        public string User { get; set; }
-        public string Password { get; set; }
+        public string User { get; private set; }
+        public string Password { get; private set; }
         public string Language { get; set; }
 
         public string LastRequestRaw { get; private set; }
