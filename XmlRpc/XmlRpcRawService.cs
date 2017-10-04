@@ -89,10 +89,17 @@ namespace XmlRpc
 
                 if (typeArgs.Count > 0)
                 {
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(response.Content.ReadAsStringAsync().Result);
-                    ThrowOnFaultResponse(doc);
-                    result = GetXmlRpcResult(typeArgs[0], doc["methodResponse"]["params"]["param"]["value"]);
+                    try
+                    {
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(response.Content.ReadAsStringAsync().Result);
+                        ThrowOnFaultResponse(doc);
+                        result = GetXmlRpcResult(typeArgs[0], doc["methodResponse"]["params"]["param"]["value"]);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Could not parse XML-RPC response.", ex);
+                    }
                 }
                 else
                 {
