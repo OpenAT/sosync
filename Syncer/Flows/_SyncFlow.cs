@@ -365,6 +365,8 @@ namespace Syncer.Flows
                     var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
                     Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
 
+                    Log.LogWarning($"job.Sync_Source_Record_ID has value = {job.Sync_Source_Record_ID.HasValue}");
+
                     if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                         TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
                     else
