@@ -1,7 +1,10 @@
 ﻿using dadi_data;
 using dadi_data.Models;
+using Odoo;
+using Odoo.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -12,6 +15,21 @@ namespace ManualTest
     class Program
     {
         static void Main(string[] args)
+        {
+            Console.WriteLine("Started.");
+
+            Stopwatch s = new Stopwatch();
+            var client = new OdooClient($"http://wwfa.datadialog.net/xmlrpc/2/", "wwfa");
+            client.Authenticate("sosync", "YWGXlaB5cfPUDs9a");
+
+            s.Start();
+            var company = client.GetModel<resCompany>("res.company", 1);
+            s.Stop();
+
+            Console.ReadKey();
+        }
+
+        private static void Threads()
         {
             // Give sosync2 server some time to start up
             Thread.Sleep(5000);
@@ -61,7 +79,6 @@ namespace ManualTest
             //Task.WhenAll(tasks);
 
             Console.WriteLine($"All tasks finished.");
-            Console.ReadKey();
         }
 
         //static async Task StartRequestsAsync(string identifier, int count)

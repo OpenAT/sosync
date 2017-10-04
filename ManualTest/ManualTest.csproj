@@ -9,4 +9,8 @@
     <PackageReference Include="dadi-data" Version="1.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Odoo\Odoo.csproj" />
+  </ItemGroup>
+
 </Project>
