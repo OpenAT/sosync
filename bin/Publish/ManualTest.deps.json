@@ -1,13 +1,14 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v1.1",
-    "signature": "8a91a08c5dfa3f2a3980e822f5d3a06fd6490e1b"
+    "signature": "6af8657844cddf5c27b6bcdf9b64f41fda8ea57d"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v1.1": {
       "ManualTest/1.0.0": {
         "dependencies": {
+          "Odoo": "1.0.0",
           "dadi-data": "1.0.15"
         },
         "runtime": {
@@ -19,7 +20,8 @@
           "Dapper": "1.50.2",
           "Microsoft.EntityFrameworkCore": "1.1.2",
           "System.Data.Common": "4.3.0",
-          "System.Data.SqlClient": "4.3.1"
+          "System.Data.SqlClient": "4.3.1",
+          "System.Reflection.TypeExtensions": "4.4.0"
         },
         "runtime": {
           "lib/netstandard1.4/dadi-data.dll": {}
@@ -28,10 +30,20 @@
       "Dapper/1.50.2": {
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.1",
-          "System.Data.SqlClient": "4.3.1"
+          "System.Data.SqlClient": "4.3.1",
+          "System.Reflection.TypeExtensions": "4.4.0",
+          "System.Xml.XmlDocument": "4.3.0"
         },
         "runtime": {
           "lib/netstandard1.3/Dapper.dll": {}
+        }
+      },
+      "Microsoft.CSharp/4.4.0": {
+        "dependencies": {
+          "System.Reflection.TypeExtensions": "4.4.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/Microsoft.CSharp.dll": {}
         }
       },
       "Microsoft.EntityFrameworkCore/1.1.2": {
@@ -149,6 +161,7 @@
         "dependencies": {
           "System.Data.Common": "4.3.0",
           "System.IO.Pipes": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.4.0",
           "System.Text.Encoding.CodePages": "4.3.0",
           "runtime.native.System.Data.SqlClient.sni": "4.3.0"
         },
@@ -180,9 +193,19 @@
           }
         }
       },
+      "System.Reflection.TypeExtensions/4.4.0": {
+        "runtime": {
+          "lib/netcoreapp1.0/System.Reflection.TypeExtensions.dll": {}
+        }
+      },
       "System.Runtime.CompilerServices.Unsafe/4.3.0": {
         "runtime": {
           "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll": {}
+        }
+      },
+      "System.Runtime.Serialization.Primitives/4.3.0": {
+        "runtime": {
+          "lib/netstandard1.3/System.Runtime.Serialization.Primitives.dll": {}
         }
       },
       "System.Text.Encoding.CodePages/4.3.0": {
@@ -195,6 +218,31 @@
             "rid": "win",
             "assetType": "runtime"
           }
+        }
+      },
+      "System.Xml.XmlDocument/4.3.0": {
+        "runtime": {
+          "lib/netstandard1.3/System.Xml.XmlDocument.dll": {}
+        }
+      },
+      "Odoo/1.0.0": {
+        "dependencies": {
+          "Microsoft.CSharp": "4.4.0",
+          "System.Reflection.TypeExtensions": "4.4.0",
+          "XmlRpc": "1.0.0"
+        },
+        "runtime": {
+          "Odoo.dll": {}
+        }
+      },
+      "XmlRpc/1.0.0": {
+        "dependencies": {
+          "System.Reflection.TypeExtensions": "4.4.0",
+          "System.Runtime.Serialization.Primitives": "4.3.0",
+          "System.Xml.XmlDocument": "4.3.0"
+        },
+        "runtime": {
+          "XmlRpc.dll": {}
         }
       }
     }
@@ -218,6 +266,13 @@
       "sha512": "sha512-31Ju5VGyNNc66OAsw+SCp1TWPBuyw8ZBdkMG5pSUPChZcy27s2GhVz5B9INP4f25mPqfiJ+mfeHy9JAJyyT+LQ==",
       "path": "dapper/1.50.2",
       "hashPath": "dapper.1.50.2.nupkg.sha512"
+    },
+    "Microsoft.CSharp/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vvVR/B08YVghQ4jHEloxqw2ZWzEGE1AOA5E0DioUM3ujbXz6FD3AfB/0Jl2ohJPd0nXYGwmPe1En6HTsSriq1A==",
+      "path": "microsoft.csharp/4.4.0",
+      "hashPath": "microsoft.csharp.4.4.0.nupkg.sha512"
     },
     "Microsoft.EntityFrameworkCore/1.1.2": {
       "type": "package",
@@ -345,6 +400,13 @@
       "path": "system.io.pipes/4.3.0",
       "hashPath": "system.io.pipes.4.3.0.nupkg.sha512"
     },
+    "System.Reflection.TypeExtensions/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dkmh/ySlwnXJp/1qYP9uyKkCK1CXR/REFzl7abHcArxBcV91mY2CgrrzSRA5Z/X4MevJWwXsklGRdR3A7K9zbg==",
+      "path": "system.reflection.typeextensions/4.4.0",
+      "hashPath": "system.reflection.typeextensions.4.4.0.nupkg.sha512"
+    },
     "System.Runtime.CompilerServices.Unsafe/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -352,12 +414,36 @@
       "path": "system.runtime.compilerservices.unsafe/4.3.0",
       "hashPath": "system.runtime.compilerservices.unsafe.4.3.0.nupkg.sha512"
     },
+    "System.Runtime.Serialization.Primitives/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LlR6H2R9IcNvUC7vRFA+fCKrWCOnie9IuTYfG7ZPITYCFsdqT9DMmXCiwLq/9HGERBcAwl1FDkxvzgcERdqqzg==",
+      "path": "system.runtime.serialization.primitives/4.3.0",
+      "hashPath": "system.runtime.serialization.primitives.4.3.0.nupkg.sha512"
+    },
     "System.Text.Encoding.CodePages/4.3.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-IRiEFUa5b/Gs5Egg8oqBVoywhtOeaO2KOx3j0RfcYY/raxqBuEK7NXRDgOwtYM8qbi+7S4RPXUbNt+ZxyY0/NQ==",
       "path": "system.text.encoding.codepages/4.3.0",
       "hashPath": "system.text.encoding.codepages.4.3.0.nupkg.sha512"
+    },
+    "System.Xml.XmlDocument/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lJ8AxvkX7GQxpC6GFCeBj8ThYVyQczx2+f/cWHJU8tjS7YfI6Cv6bon70jVEgs2CiFbmmM8b9j1oZVx0dSI2Ww==",
+      "path": "system.xml.xmldocument/4.3.0",
+      "hashPath": "system.xml.xmldocument.4.3.0.nupkg.sha512"
+    },
+    "Odoo/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "XmlRpc/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }
