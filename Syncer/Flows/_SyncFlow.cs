@@ -183,7 +183,7 @@ namespace Syncer.Flows
             }
 
             s.Stop();
-            LogMs("RunCount", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, "RunCount", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -209,7 +209,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs("SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, "SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -333,7 +333,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs("ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, "ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
 
             // -----------------------------------------------------------------------
@@ -385,7 +385,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs("Transformation", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, "Transformation", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -428,7 +428,7 @@ namespace Syncer.Flows
             if (job.Job_Source_System == SosyncSystem.FSOnline)
             {
                 onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-                LogMs("GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
+                LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
 
                 if (onlineInfo == null)
                     throw new ModelNotFoundException(
@@ -442,7 +442,7 @@ namespace Syncer.Flows
                     s.Start();
                     studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
                     s.Stop();
-                    LogMs($"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
+                    LogMs(1, $"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
                 }
             }
             else
@@ -451,7 +451,7 @@ namespace Syncer.Flows
                 s.Start();
                 studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
                 s.Stop();
-                LogMs("GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
+                LogMs(1, "GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
 
                 if (studioInfo == null)
                     throw new ModelNotFoundException(
@@ -462,7 +462,7 @@ namespace Syncer.Flows
                 if (studioInfo.ForeignID != null)
                 {
                     onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-                    LogMs("GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
+                    LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
                 }
             }
 
@@ -865,10 +865,10 @@ namespace Syncer.Flows
             db.UpdateJob(job);
 
             s.Stop();
-            Log.LogWarning($"Job {job.Job_ID}: {method} elapsed: {s.ElapsedMilliseconds} ms");
+            LogMs(1, method, job.Job_ID, s.ElapsedMilliseconds);
         }
 
-        protected void LogMs(string name, int? jobId, long ms)
+        protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
             Log.LogWarning($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
         }
