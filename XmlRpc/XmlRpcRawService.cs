@@ -58,11 +58,18 @@ namespace XmlRpc
                 StringBuilder content = new StringBuilder();
                 content.AppendLine($"<methodCall><methodName>{binder.Name}</methodName><params>");
 
-                foreach (var arg in args)
+                try
                 {
-                    content.Append("<param>");
-                    content.Append(GetXmlRpcValueNode(arg));
-                    content.AppendLine("</param>");
+                    foreach (var arg in args)
+                    {
+                        content.Append("<param>");
+                        content.Append(GetXmlRpcValueNode(arg));
+                        content.AppendLine("</param>");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error creating XML-RPC Request.", ex);
                 }
 
                 content.AppendLine("</params></methodCall>");
