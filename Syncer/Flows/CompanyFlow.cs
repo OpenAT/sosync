@@ -129,16 +129,7 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            resCompany company;
-
-            try
-            {
-                company = OdooService.Client.GetModel<resCompany>("res.company", onlineID);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error getting company {onlineID}", ex);
-            }
+            resCompany company = OdooService.Client.GetModel<resCompany>("res.company", onlineID);
 
             if (!IsValidFsID(company.Sosync_FS_ID))
                 company.Sosync_FS_ID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", onlineID);
