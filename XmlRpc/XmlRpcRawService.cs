@@ -124,7 +124,7 @@ namespace XmlRpc
                 LastRpcTime = s.ElapsedMilliseconds;
 
                 result = ex.ToString();
-                throw;
+                throw new Exception("Error in XML-RPC.", ex);
             }
 
             return true;
