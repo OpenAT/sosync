@@ -365,8 +365,6 @@ namespace Syncer.Flows
                     var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
                     Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
 
-                    Log.LogWarning($"job.Sync_Source_Record_ID has value = {job.Sync_Source_Record_ID.HasValue}");
-
                     if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                         TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
                     else
@@ -872,7 +870,7 @@ namespace Syncer.Flows
 
         protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
-            Log.LogWarning($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
+            Log.LogDebug($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
         }
 
         public void Dispose()
