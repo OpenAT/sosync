@@ -78,7 +78,7 @@ namespace XmlRpc
                     content.Replace("dateTime.iso8601", "string");
 
                 // Set the last request property before executing
-                LastRequest = content.ToString();
+                LastRequest = content.ToString().Replace((string)args[2], "*****");
 
                 HttpResponseMessage response = null;
                 try
@@ -105,7 +105,7 @@ namespace XmlRpc
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Could not parse XML-RPC response {Environment.NewLine}{LastResponse}{Environment.NewLine}", ex);
+                        throw new Exception($"Could not parse XML-RPC response {Environment.NewLine}{LastResponse}{Environment.NewLine}{LastRequest}{Environment.NewLine}", ex);
                     }
                 }
                 else
