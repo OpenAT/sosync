@@ -129,6 +129,7 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            Log.LogWarning($"onlineID = {onlineID}, action = {action}");
             resCompany company = OdooService.Client.GetModel<resCompany>("res.company", onlineID);
 
             if (!IsValidFsID(company.Sosync_FS_ID))
