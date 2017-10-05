@@ -105,7 +105,7 @@ namespace XmlRpc
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception("Could not parse XML-RPC response.", ex);
+                        throw new Exception($"Could not parse XML-RPC response {Environment.NewLine}{LastResponse}{Environment.NewLine}", ex);
                     }
                 }
                 else
