@@ -22,10 +22,8 @@ namespace ManualTest
             var client = new OdooClient($"http://wwfa.datadialog.net/xmlrpc/2/", "wwfa");
             client.Authenticate("sosync", "YWGXlaB5cfPUDs9a");
 
-            int? b = null;
-
             s.Start();
-            var company = client.GetModel<resCompany>("res.company", b.Value);
+            var company = client.GetModel<resCompany>("res.company", 1);
             s.Stop();
 
             Console.ReadKey();
