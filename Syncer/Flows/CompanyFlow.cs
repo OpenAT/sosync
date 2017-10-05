@@ -179,7 +179,7 @@ namespace Syncer.Flows
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(acc));
 
                     acc.Name = company.Name;
-                    acc.sosync_write_date = company.Sosync_Write_Date.Value;
+                    acc.sosync_write_date = company.Sosync_Write_Date ?? company.Write_Date;
                     acc.noSyncJobSwitch = true;
 
                     UpdateSyncTargetRequest(Serializer.ToXML(acc));
