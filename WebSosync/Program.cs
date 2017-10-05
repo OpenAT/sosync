@@ -176,7 +176,8 @@ namespace WebSosync
             {
                 // Start the webserver if there is no forced quit
                 if (!forceQuit)
-                    host.Run(svc.Token);
+                    host.Run();
+                    //host.Run(svc.Token);
             }
             catch (IOException ex)
             {
@@ -196,6 +197,7 @@ namespace WebSosync
         {
             IBackgroundJob<SyncWorker> job = (IBackgroundJob<SyncWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<SyncWorker>));
             IBackgroundJob<ProtocolWorker> protocolJob = (IBackgroundJob<ProtocolWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<ProtocolWorker>));
+            IWebHost host = (IWebHost)ioc.GetService(typeof(IWebHost));
             log.LogInformation($"Process termination requested (job status: {job.Status}, protocol status: {protocolJob.Status})");
 
             job.ShutdownPending = true;
@@ -213,6 +215,7 @@ namespace WebSosync
             // The job terminated cleanly, graceful exit by requesting the host thread to shut down
             log.LogInformation($"Exiting gracefully.");
 
+            host.StopAsync();
             svc.RequestShutdown();
         }
 
