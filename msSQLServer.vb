@@ -456,9 +456,9 @@
             stopw(s, e, 5)
             'db.Connection.Close()
 
-            If record_exists Then
-                    insert.SyncMessage = "record already inserted"
-                Else
+            If record_exists AndAlso Not insert.Tabelle.ToLower().EndsWith("rel") Then
+                insert.SyncMessage = "record already inserted"
+            Else
 
 
                 Dim command As String = String.Format(
