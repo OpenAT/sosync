@@ -19,17 +19,34 @@ namespace ManualTest
         static void Main(string[] args)
         {
             Console.WriteLine("Started.");
-            /*
-                70544
-                70866
-                72070
-                74186
-            */
 
-            var ps = GetCurrentdboPersonStack(70544);
+            var prepareServer = GetCurrentdboPersonStack(1);
 
-            var svc = new SerializationService();
-            var outStr = svc.ToXML(ps);
+            long sum = 0;
+            for (int i = 1; i <= 7; i++)
+            {
+                Stopwatch s = new Stopwatch();
+                s.Start();
+                var m = GetCurrentdboPersonStack(1210972 + i);
+                s.Stop();
+                Console.WriteLine($"{1210972 + i}: Load time: {s.ElapsedMilliseconds}ms");
+                sum += s.ElapsedMilliseconds;
+            }
+            Console.WriteLine($"Average: Load time: {sum / 7}ms");
+
+            Console.WriteLine("--------------------------------------------------");
+
+            sum = 0;
+            for (int i = 1; i <= 7; i++)
+            {
+                Stopwatch s = new Stopwatch();
+                s.Start();
+                var m = GetCurrentdboPersonStack_new(1210972 + i);
+                s.Stop();
+                Console.WriteLine($"{1210972 + i}: Load time: {s.ElapsedMilliseconds}ms");
+                sum += s.ElapsedMilliseconds;
+            }
+            Console.WriteLine($"Average: Load time: {sum / 7}ms");
 
             Console.ReadKey();
         }
@@ -154,8 +171,76 @@ namespace ManualTest
         {
             public static DataService<TModel> GetDataService<TModel>() where TModel : MdbModelBase, new()
             {
-                return new DataService<TModel>("Data Source=MSSQL1;Initial Catalog=mdb_wwfa; Integrated Security=True;");
+                return new DataService<TModel>("Data Source=MSSQL1;Initial Catalog=mdb_bsvw; Integrated Security=True;");
             }
+        }
+
+        private static dboPersonStack GetCurrentdboPersonStack_new(int PersonID)
+        {
+            dboPersonStack result = new dboPersonStack();
+
+            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
+            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
+            {
+                result.person = personSvc.Read(new { PersonID = PersonID }).SingleOrDefault();
+
+                var ids = personSvc.ExecuteQuery<IdRow>(Properties.Resources.ResourceManager.GetString("SqlTest1"), new { PersonID = PersonID }).SingleOrDefault();
+
+                if (ids == null)
+                {
+                    Console.Write("No Data - ");
+                }
+                else
+                {
+                    if (ids.PersonAdresseID.HasValue)
+                    {
+                        result.address = addressSvc.Read(new { PersonAdresseID = ids.PersonAdresseID }).SingleOrDefault();
+                        result.addressAM = addressAMSvc.Read(new { PersonAdresseID = ids.PersonAdresseID }).SingleOrDefault();
+                    }
+
+                    if (ids.Phone_PersonTelefonID.HasValue)
+                        result.phone = phoneSvc.Read(new { PersonTelefonID = ids.Phone_PersonTelefonID }).SingleOrDefault();
+
+                    if (ids.Mobile_PersonTelefonID.HasValue)
+                        result.mobile = phoneSvc.Read(new { PersonTelefonID = ids.Mobile_PersonTelefonID }).SingleOrDefault();
+
+                    if (ids.Fax_PersonTelefonID.HasValue)
+                        result.fax = phoneSvc.Read(new { PersonTelefonID = ids.Fax_PersonTelefonID }).SingleOrDefault();
+
+                    if (ids.PersonEmailID.HasValue)
+                        result.email = emailSvc.Read(new { PersonEmailID = ids.PersonEmailID }).SingleOrDefault();
+
+                    result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
+                    result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
+
+                    if (result.email != null)
+                    {
+                        result.emailNewsletter = emailNewsletterSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
+                    }
+                }
+            }
+
+            result.write_date = GetPersonWriteDate(result);
+            result.sosync_write_date = GetPersonSosyncWriteDate(result);
+
+            return result;
+        }
+
+        public class IdRow
+        {
+            public int? PersonAdresseID { get; set; }
+            public int? Phone_PersonTelefonID { get; set; }
+            public int? Mobile_PersonTelefonID { get; set; }
+            public int? Fax_PersonTelefonID { get; set; }
+            public int? PersonEmailID { get; set; }
         }
 
         private static dboPersonStack GetCurrentdboPersonStack(int PersonID)
