@@ -555,7 +555,38 @@ namespace Syncer.Flows
                 data.Add("newsletter_web", false);
             }
 
-            
+            _log.LogWarning($"PERSONID = {person.person.PersonID}");
+
+            _log.LogWarning("person.person");
+            var debug1 = Serializer.ToXML(person.person);
+
+            _log.LogWarning("person.address");
+            var debug2 = Serializer.ToXML(person.address);
+
+            _log.LogWarning("person.addressAM");
+            var debug3 = Serializer.ToXML(person.addressAM);
+
+            _log.LogWarning("person.email");
+            var debug4 = Serializer.ToXML(person.email);
+
+            _log.LogWarning("person.phone");
+            var debug5 = Serializer.ToXML(person.phone);
+
+            _log.LogWarning("person.mobile");
+            var debug6 = Serializer.ToXML(person.mobile);
+
+            _log.LogWarning("person.fax");
+            var debug7 = Serializer.ToXML(person.fax);
+
+            _log.LogWarning("person.personDonationDeductionOptOut");
+            var debug8 = Serializer.ToXML(person.personDonationDeductionOptOut);
+
+            _log.LogWarning("person.emailNewsletter");
+            var debug9 = Serializer.ToXML(person.emailNewsletter);
+
+            _log.LogWarning("person.personDonationReceipt");
+            var debug10 = Serializer.ToXML(person.personDonationReceipt);
+
             UpdateSyncSourceData(Serializer.ToXML(person));
             
 
