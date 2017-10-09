@@ -584,7 +584,7 @@ namespace Syncer.Flows
         /// <returns></returns>
         private bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate, Stopwatch consistencyWatch)
         {
-            var maxMS = 200;
+            var maxMS = 250;
 
             if (consistencyWatch.ElapsedMilliseconds < maxMS)
             {
