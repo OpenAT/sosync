@@ -172,7 +172,7 @@ namespace Syncer.Workers
 
                 s.Stop();
                 if (result != null)
-                    _log.LogWarning($"Job {result.Job_ID}: {nameof(GetNextOpenJob)} elapsed: {s.ElapsedMilliseconds} ms");
+                    _log.LogDebug($"Job {result.Job_ID}: {nameof(GetNextOpenJob)} elapsed: {s.ElapsedMilliseconds} ms");
 
                 return result;
             }
