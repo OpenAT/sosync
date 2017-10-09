@@ -138,6 +138,9 @@
 )
 select count(*) affected_rows from updated_rows;</value>
   </data>
+  <data name="CreateIndex_SCRIPT" xml:space="preserve">
+    <value>create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);</value>
+  </data>
   <data name="GetAllOpenSyncJobs_SELECT" xml:space="preserve">
     <value>with recursive children as (
 	-- roots
@@ -253,10 +256,7 @@ $$</value>
 )
 with (
   OIDS=false
-);
-
--- Index for faster open job selection
-create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);</value>
+);</value>
   </data>
   <data name="SetupDropColumn_SCRIPT" xml:space="preserve">
     <value>DO $$ 

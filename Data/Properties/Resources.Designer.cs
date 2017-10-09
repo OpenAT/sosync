@@ -85,6 +85,15 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);.
+        /// </summary>
+        internal static string CreateIndex_SCRIPT {
+            get {
+                return ResourceManager.GetString("CreateIndex_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select *

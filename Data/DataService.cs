@@ -75,6 +75,18 @@ namespace WebSosync.Data
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
+            try
+            {
+                _con.Execute(Resources.ResourceManager.GetString(ResourceNames.CreateIndexScript), commandTimeout: 60);
+            }
+            catch (NpgsqlException ex)
+            {
+                // If the exception happened because the index already exists, ignore it.
+                // Rethrow any other exception
+                if (ex.ErrorCode != -2147467259)
+                    throw ex;
+            }
+
             // To modify the sync table in production
             // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
