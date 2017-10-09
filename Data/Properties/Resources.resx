@@ -253,7 +253,10 @@ $$</value>
 )
 with (
   OIDS=false
-);</value>
+);
+
+-- Index for faster open job selection
+create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);</value>
   </data>
   <data name="SetupDropColumn_SCRIPT" xml:space="preserve">
     <value>DO $$ 
