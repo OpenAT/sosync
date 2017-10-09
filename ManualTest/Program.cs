@@ -2,6 +2,7 @@
 using dadi_data.Models;
 using Odoo;
 using Odoo.Models;
+using Syncer.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSosync.Common;
 
 namespace ManualTest
 {
@@ -17,7 +19,23 @@ namespace ManualTest
         static void Main(string[] args)
         {
             Console.WriteLine("Started.");
+            /*
+                70544
+                70866
+                72070
+                74186
+            */
 
+            var ps = GetCurrentdboPersonStack(70544);
+
+            var svc = new SerializationService();
+            var outStr = svc.ToXML(ps);
+
+            Console.ReadKey();
+        }
+
+        private void OdooQuery()
+        {
             Stopwatch s = new Stopwatch();
             var client = new OdooClient($"http://wwfa.datadialog.net/xmlrpc/2/", "wwfa");
             client.Authenticate("sosync", "YWGXlaB5cfPUDs9a");
@@ -26,7 +44,7 @@ namespace ManualTest
             var company = client.GetModel<resCompany>("res.company", 1);
             s.Stop();
 
-            Console.ReadKey();
+            Console.WriteLine(client.LastRequestRaw);
         }
 
         private static void Threads()
@@ -81,34 +99,6 @@ namespace ManualTest
             Console.WriteLine($"All tasks finished.");
         }
 
-        //static async Task StartRequestsAsync(string identifier, int count)
-        //{
-        //    //string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fffffff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13&job_source_sosync_write_date={0:yyyy-MM-dd}T{0:HH:mm:ss.fffffff}Z";
-
-        //    var requests = new List<Task>(count);
-
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        var myId = identifier;
-        //        var myNr = i + 1;
-
-        //        var t = Task.Run(() =>
-        //        {
-        //            UpdateMssql(myId, myNr);
-        //        });
-
-        //        requests.Add(t);
-
-        //        // requests.Add(Task.Run(() => UpdateMssql(identifier, i + 1)));
-        //        //requests.Add(factory.StartNew(() => UpdateMssql(identifier, i + 1)));
-
-        //        //var req = HttpWebRequest.Create(String.Format(template, DateTime.UtcNow));
-        //        //req.Method = "GET";
-        //        //requests.Add(req.GetResponseAsync());
-        //    }
-        //    await Task.WhenAll(requests);
-        //}
-
         static void StartRequestsAsync(string identifier, int count)
         {
             //string template = "http://localhost:5050/job/create?job_date={0:yyyy-MM-dd}%20{0:HH:mm:ss.fffffff}&job_source_system=fs&job_source_model=dbo.Person&job_source_record_id=13&job_source_sosync_write_date={0:yyyy-MM-dd}T{0:HH:mm:ss.fffffff}Z";
@@ -159,5 +149,143 @@ namespace ManualTest
                 Console.WriteLine($"{id}: {nr} error: {ex.Message}");
             }
         }
+
+        private static class MdbService
+        {
+            public static DataService<TModel> GetDataService<TModel>() where TModel : MdbModelBase, new()
+            {
+                return new DataService<TModel>("Data Source=MSSQL1;Initial Catalog=mdb_wwfa; Integrated Security=True;");
+            }
+        }
+
+        private static dboPersonStack GetCurrentdboPersonStack(int PersonID)
+        {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            dboPersonStack result = new dboPersonStack();
+
+            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
+            using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
+            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
+            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
+            {
+                result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
+
+                result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
+                                  where iterAddress.GültigVon <= DateTime.Today &&
+                                      iterAddress.GültigBis >= DateTime.Today
+                                  orderby string.IsNullOrEmpty(iterAddress.GültigMonatArray) ? "111111111111" : iterAddress.GültigMonatArray descending,
+                                  iterAddress.PersonAdresseID descending
+                                  select iterAddress).FirstOrDefault();
+
+                if (result.address != null)
+                {
+                    result.addressAM = addressAMSvc.Read(new { PersonAdresseID = result.address.PersonAdresseID }).FirstOrDefault();
+                }
+
+                result.phone = (from iterPhone in phoneSvc.Read(new { PersonID = PersonID })
+                                where iterPhone.GültigVon <= DateTime.Today &&
+                                    iterPhone.GültigBis >= DateTime.Today &&
+                                    iterPhone.TelefontypID == 400
+                                orderby string.IsNullOrEmpty(iterPhone.GültigMonatArray) ? "111111111111" : iterPhone.GültigMonatArray descending,
+                                iterPhone.PersonTelefonID descending
+                                select iterPhone).FirstOrDefault();
+
+                result.mobile = (from itermobile in mobileSvc.Read(new { PersonID = PersonID })
+                                 where itermobile.GültigVon <= DateTime.Today &&
+                                     itermobile.GültigBis >= DateTime.Today &&
+                                     itermobile.TelefontypID == 401
+                                 orderby string.IsNullOrEmpty(itermobile.GültigMonatArray) ? "111111111111" : itermobile.GültigMonatArray descending,
+                                 itermobile.PersonTelefonID descending
+                                 select itermobile).FirstOrDefault();
+
+                result.fax = (from iterfax in faxSvc.Read(new { PersonID = PersonID })
+                              where iterfax.GültigVon <= DateTime.Today &&
+                                  iterfax.GültigBis >= DateTime.Today &&
+                                  iterfax.TelefontypID == 403
+                              orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? "111111111111" : iterfax.GültigMonatArray descending,
+                              iterfax.PersonTelefonID descending
+                              select iterfax).FirstOrDefault();
+
+                result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
+                                where iterEmail.GültigVon <= DateTime.Today &&
+                                    iterEmail.GültigBis >= DateTime.Today
+                                orderby string.IsNullOrEmpty(iterEmail.GültigMonatArray) ? "111111111111" : iterEmail.GültigMonatArray descending,
+                                iterEmail.PersonEmailID descending
+                                select iterEmail).FirstOrDefault();
+
+                result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
+
+                result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
+
+
+                if (result.email != null)
+                {
+                    result.emailNewsletter = emailNewsletterSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
+                }
+            }
+
+            result.write_date = GetPersonWriteDate(result);
+            result.sosync_write_date = GetPersonSosyncWriteDate(result);
+
+            s.Stop();
+
+            return result;
+        }
+
+        private static DateTime? GetPersonWriteDate(dboPersonStack person)
+        {
+            var query = new DateTime?[]
+            {
+                person.person != null ? person.person.write_date : (DateTime?)null,
+                person.address != null ? person.address.write_date : (DateTime?)null,
+                person.email != null ? person.email.write_date : (DateTime?)null,
+                person.phone != null ? person.phone.write_date : (DateTime?)null,
+                person.mobile != null ? person.mobile.write_date : (DateTime?)null,
+                person.fax != null ? person.fax.write_date : (DateTime?)null,
+                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
+                person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null,
+                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null
+            }.Where(x => x.HasValue);
+
+            if (query.Any())
+                return query.Max();
+
+            return null;
+        }
+
+        private static DateTime? GetPersonSosyncWriteDate(dboPersonStack person)
+        {
+            var query = new DateTime?[]
+            {
+                person.person != null ? person.person.sosync_write_date : (DateTime?)null,
+                person.address != null ? person.address.sosync_write_date : (DateTime?)null,
+                person.email != null ? person.email.sosync_write_date : (DateTime?)null,
+                person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
+                person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
+                person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
+                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.sosync_write_date : (DateTime?)null,
+                person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null,
+                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null
+            }.Where(x => x.HasValue);
+
+            if (query.Any())
+                return query.Max();
+
+            return null;
+        }
+
+    }
+
+    public class Dummy
+    {
+        public string StringProp { get; set; }
     }
 }
