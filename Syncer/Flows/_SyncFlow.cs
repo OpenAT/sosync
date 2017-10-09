@@ -191,9 +191,11 @@ namespace Syncer.Flows
             // -----------------------------------------------------------------------
             s.Start();
             DateTime? initialWriteDate = null;
+            Stopwatch consistencyWatch = new Stopwatch();
             try
             {
                 SetSyncSource(_job, out initialWriteDate);
+                consistencyWatch.Start();
 
                 if (string.IsNullOrEmpty(_job.Sync_Source_System))
                 {
@@ -242,7 +244,7 @@ namespace Syncer.Flows
 
                     foreach (ChildJobRequest request in _requiredChildJobs)
                     {
-                        if (!IsConsistent(_job, initialWriteDate))
+                        if (!IsConsistent(_job, initialWriteDate, consistencyWatch))
                         {
                             // Job is inconsistent, cancel the flow and leave it "in progress",
                             // so it will be restarted later.
@@ -342,7 +344,7 @@ namespace Syncer.Flows
             s.Start();
             try
             {
-                if (!IsConsistent(_job, initialWriteDate))
+                if (!IsConsistent(_job, initialWriteDate, consistencyWatch))
                 {
                     // Job is inconsistent, cancel the current flow. Make sure
                     // To do this outside the try-finally block, because we want
@@ -580,9 +582,17 @@ namespace Syncer.Flows
         /// <param name="job">The job to be checked.</param>
         /// <param name="sosyncWriteDate">The write date of the job since the last read.</param>
         /// <returns></returns>
-        private bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate)
+        private bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate, Stopwatch consistencyWatch)
         {
-            Log.LogDebug($"Checking model consistency");
+            var maxMS = 200;
+
+            if (consistencyWatch.ElapsedMilliseconds < maxMS)
+            {
+                Log.LogInformation($"Job ({job.Job_ID}) Skipping consistency check, last check under {maxMS}ms.");
+                return true;
+            }
+
+            Log.LogInformation($"Job ({job.Job_ID}) Checking model consistency");
 
             ModelInfo currentInfo = null;
 
@@ -590,6 +600,10 @@ namespace Syncer.Flows
                 currentInfo = GetOnlineInfo(job.Sync_Source_Record_ID.Value);
             else
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
+
+            consistencyWatch.Stop();
+            consistencyWatch.Reset();
+            consistencyWatch.Start();
 
             // Do not use any tolerance here. It's a check to see if the provided write date
             // is different from what is currently in the model
