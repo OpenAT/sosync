@@ -77,6 +77,8 @@ namespace XmlRpc
                 if (DateTimeAsString)
                     content.Replace("dateTime.iso8601", "string");
 
+                content.Replace("&#x1F;", "");
+
                 // Set the last request property before executing
                 LastRequest = content.ToString().Replace((string)args[2], "*****");
 
