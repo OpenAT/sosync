@@ -14,6 +14,15 @@ namespace WebSosync.Common
         #endregion
 
         #region Methods
+        private string RemoveInvalidCharacters(string input)
+        {
+            var sb = new StringBuilder(input);
+
+            sb.Replace("&#x1F;", "");
+
+            return sb.ToString();
+        }
+
         public string ToXML(object o)
         {
             if (o == null)
@@ -25,7 +34,7 @@ namespace WebSosync.Common
                 XmlSerializer serializer = new XmlSerializer(o.GetType());
                 serializer.Serialize(ms, o);
                 ms.Seek(0, SeekOrigin.Begin);
-                return sr.ReadToEnd();
+                return RemoveInvalidCharacters(sr.ReadToEnd());
             }
         }
         #endregion
