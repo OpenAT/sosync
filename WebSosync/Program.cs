@@ -99,7 +99,11 @@ namespace WebSosync
 #warning TODO: Implement it, so that INI configuration overrides default behaviour
 
             var host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(x =>
+                {
+                    x.Limits.MaxConcurrentConnections = 2;
+                    x.Limits.MaxConcurrentUpgradedConnections = 2;
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseUrls(defaultUrls.ToArray())
