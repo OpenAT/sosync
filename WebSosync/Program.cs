@@ -176,8 +176,12 @@ namespace WebSosync
             {
                 // Start the webserver if there is no forced quit
                 if (!forceQuit)
+                {
+                    var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
+                    jobWorker.Start();
                     host.Run();
                     //host.Run(svc.Token);
+                }
             }
             catch (IOException ex)
             {
