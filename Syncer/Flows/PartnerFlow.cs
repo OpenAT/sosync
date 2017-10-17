@@ -110,11 +110,8 @@ namespace Syncer.Flows
             using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
             using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
-            using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
-            using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
-            using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
+            using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
+            using (var emailGroupSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
@@ -141,7 +138,7 @@ namespace Syncer.Flows
                                 iterPhone.PersonTelefonID descending
                                 select iterPhone).FirstOrDefault();
 
-                result.mobile = (from itermobile in mobileSvc.Read(new { PersonID = PersonID })
+                result.mobile = (from itermobile in phoneSvc.Read(new { PersonID = PersonID })
                                 where itermobile.GültigVon <= DateTime.Today &&
                                     itermobile.GültigBis >= DateTime.Today &&
                                     itermobile.TelefontypID == 401
@@ -149,7 +146,7 @@ namespace Syncer.Flows
                                 itermobile.PersonTelefonID descending
                                  select itermobile).FirstOrDefault();
 
-                result.fax = (from iterfax in faxSvc.Read(new { PersonID = PersonID })
+                result.fax = (from iterfax in phoneSvc.Read(new { PersonID = PersonID })
                                 where iterfax.GültigVon <= DateTime.Today &&
                                     iterfax.GültigBis >= DateTime.Today &&
                                     iterfax.TelefontypID == 403
@@ -164,14 +161,14 @@ namespace Syncer.Flows
                                 iterEmail.PersonEmailID descending
                                 select iterEmail).FirstOrDefault();
 
-                result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
+                result.personDonationDeductionOptOut = personGroupSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
 
-                result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
+                result.personDonationReceipt = personGroupSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
 
 
                 if (result.email != null)
                 {
-                    result.emailNewsletter = emailNewsletterSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
+                    result.emailNewsletter = emailGroupSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
                 }
             }
 
