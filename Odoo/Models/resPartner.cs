@@ -84,5 +84,8 @@ namespace Odoo.Models
 
         [DataMember(Name = "gender")]
         public string Gender { get; set; }
+
+        [DataMember(Name = "donation_deduction_disabled")]
+        public bool? DonationDeductionDisabled { get; set; }
     }
 }

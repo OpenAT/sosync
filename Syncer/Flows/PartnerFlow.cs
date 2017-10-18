@@ -68,7 +68,8 @@ namespace Syncer.Flows
                 person.fax != null ? person.fax.write_date : (DateTime?)null,
                 person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
                 person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null
+                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null,
+                person.SystemDeactivateBPK != null ? person.SystemDeactivateBPK.write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -89,7 +90,8 @@ namespace Syncer.Flows
                 person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
                 person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.sosync_write_date : (DateTime?)null,
                 person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null
+                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null,
+                person.SystemDeactivateBPK != null ? person.SystemDeactivateBPK.sosync_write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -170,6 +172,10 @@ namespace Syncer.Flows
                 {
                     result.emailNewsletter = emailGroupSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
                 }
+
+                // Select the first active "bPK deactivated by system" group
+                result.SystemDeactivateBPK = personGroupSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 128782 })
+                    .FirstOrDefault();
             }
 
             result.write_date = GetPersonWriteDate(result);
@@ -191,8 +197,7 @@ namespace Syncer.Flows
             DataService<dboPersonTelefon> phoneSvc,
             DataService<dboPersonTelefon> mobileSvc,
             DataService<dboPersonTelefon> faxSvc,
-            DataService<dboPersonGruppe> personDonationDeductionOptOutSvc,
-            DataService<dboPersonGruppe> personDonationReceiptSvc,
+            DataService<dboPersonGruppe> personGroupSvc,
             DataService<dboPersonEmailGruppe> emailNewsletterSvc,
             SqlConnection con,
             SqlTransaction transaction)
@@ -329,7 +334,7 @@ namespace Syncer.Flows
                 {
                     person.personDonationDeductionOptOut.sosync_fso_id = onlineID;
                     person.personDonationDeductionOptOut.noSyncJobSwitch = true;
-                    personDonationDeductionOptOutSvc.Update(person.personDonationDeductionOptOut);
+                    personGroupSvc.Update(person.personDonationDeductionOptOut);
                 }
             }
 
@@ -339,7 +344,7 @@ namespace Syncer.Flows
                 {
                     person.personDonationReceipt.sosync_fso_id = onlineID;
                     person.personDonationReceipt.noSyncJobSwitch = true;
-                    personDonationReceiptSvc.Update(person.personDonationReceipt);
+                    personGroupSvc.Update(person.personDonationReceipt);
                 }
             }
 
@@ -350,6 +355,16 @@ namespace Syncer.Flows
                     person.emailNewsletter.sosync_fso_id = onlineID;
                     person.emailNewsletter.noSyncJobSwitch = true;
                     emailNewsletterSvc.Update(person.emailNewsletter);
+                }
+            }
+
+            if (person.SystemDeactivateBPK != null)
+            {
+                if ((person.SystemDeactivateBPK.sosync_fso_id ?? 0) != onlineID)
+                {
+                    person.SystemDeactivateBPK.sosync_fso_id = onlineID;
+                    person.SystemDeactivateBPK.noSyncJobSwitch = true;
+                    personGroupSvc.Update(person.SystemDeactivateBPK);
                 }
             }
         }
@@ -552,6 +567,23 @@ namespace Syncer.Flows
                 data.Add("newsletter_web", false);
             }
 
+            if (person.SystemDeactivateBPK != null)
+            {
+                if (person.SystemDeactivateBPK.GültigVon <= DateTime.Today
+                    && person.SystemDeactivateBPK.GültigBis >= DateTime.Today)
+                {
+                    data.Add("donation_deduction_disabled", true);
+                }
+                else
+                {
+                    data.Add("donation_deduction_disabled", false);
+                }
+            }
+            else
+            {
+                data.Add("donation_deduction_disabled", false);
+            }
+
             UpdateSyncSourceData(Serializer.ToXML(person));
             
             // --> Country_ID --> über ISO-Code 
@@ -580,8 +612,7 @@ namespace Syncer.Flows
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
                 using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
                 using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
-                using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-                using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
+                using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
                 using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
                 {
                     SetdboPersonStack_fso_ids(
@@ -593,8 +624,7 @@ namespace Syncer.Flows
                         phoneSvc, 
                         mobileSvc,
                         faxSvc,
-                        personDonationDeductionOptOutSvc, 
-                        personDonationReceiptSvc,
+                        personGroupSvc,
                         emailNewsletterSvc, 
                         null, 
                         null);
@@ -620,8 +650,7 @@ namespace Syncer.Flows
                     using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
                     using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
                     using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
-                    using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-                    using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
+                    using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
                     using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
                     {
                         SetdboPersonStack_fso_ids(
@@ -633,8 +662,7 @@ namespace Syncer.Flows
                             phoneSvc,
                             mobileSvc,
                             faxSvc,
-                            personDonationDeductionOptOutSvc,
-                            personDonationReceiptSvc,
+                            personGroupSvc,
                             emailNewsletterSvc,
                             null,
                             null);
@@ -670,8 +698,7 @@ namespace Syncer.Flows
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
-                using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
-                using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
+                using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>(con, transaction))
                 using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(con, transaction))
                 {
                     // Load online model, save it to studio
@@ -796,6 +823,13 @@ namespace Syncer.Flows
 
                         }
 
+                        if (partner.DonationDeductionDisabled ?? false)
+                        {
+                            person.SystemDeactivateBPK = InitSystemDeactivateBPK();
+                            person.SystemDeactivateBPK.sosync_fso_id = onlineID;
+                            person.SystemDeactivateBPK.sosync_write_date = sosync_write_date;
+                            person.SystemDeactivateBPK.noSyncJobSwitch = true;
+                        }
 
                         UpdateSyncTargetRequest(Serializer.ToXML(person));
 
@@ -849,14 +883,14 @@ namespace Syncer.Flows
                             if (person.personDonationDeductionOptOut != null)
                             {
                                 person.personDonationDeductionOptOut.PersonID = PersonID;
-                                personDonationDeductionOptOutSvc.Create(person.personDonationDeductionOptOut);
+                                personGroupSvc.Create(person.personDonationDeductionOptOut);
                             }
 
 
                             if(person.personDonationReceipt != null)
                             {
                                 person.personDonationReceipt.PersonID = PersonID;
-                                personDonationReceiptSvc.Create(person.personDonationReceipt);
+                                personGroupSvc.Create(person.personDonationReceipt);
                             }
 
                             UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, PersonID);
@@ -1138,6 +1172,37 @@ namespace Syncer.Flows
                             person.emailNewsletter.noSyncJobSwitch = true;
                         }
 
+                        if (person.SystemDeactivateBPK == null)
+                        {
+                            if (partner.DonationDeductionDisabled.HasValue && partner.DonationDeductionDisabled == true)
+                            {
+                                person.SystemDeactivateBPK = InitSystemDeactivateBPK();
+
+                                person.SystemDeactivateBPK.PersonID = person.person.PersonID;
+
+                                person.SystemDeactivateBPK.sosync_fso_id = onlineID;
+                                person.SystemDeactivateBPK.sosync_write_date = sosync_write_date;
+                                person.SystemDeactivateBPK.noSyncJobSwitch = true;
+                            }
+                        }
+                        else
+                        {
+                            if (partner.DonationDeductionDisabled ?? false == true)
+                            {
+                                if (person.SystemDeactivateBPK.GültigVon > DateTime.Today)
+                                    person.SystemDeactivateBPK.GültigVon = DateTime.Today;
+
+                                person.SystemDeactivateBPK.GültigBis = new DateTime(2099, 12, 31);
+                            }
+                            else
+                            {
+                                if (person.SystemDeactivateBPK.GültigVon > DateTime.Today)
+                                    person.SystemDeactivateBPK.GültigVon = DateTime.Today;
+
+                                person.SystemDeactivateBPK.GültigBis = DateTime.Today;
+                            }
+                        }
+
                         UpdateSyncTargetRequest(Serializer.ToXML(person));
 
                         try
@@ -1212,11 +1277,11 @@ namespace Syncer.Flows
                             {
                                 if (person.personDonationDeductionOptOut.PersonGruppeID == 0)
                                 {
-                                    personDonationDeductionOptOutSvc.Create(person.personDonationDeductionOptOut);
+                                    personGroupSvc.Create(person.personDonationDeductionOptOut);
                                 }
                                 else
                                 {
-                                    personDonationDeductionOptOutSvc.Update(person.personDonationDeductionOptOut);
+                                    personGroupSvc.Update(person.personDonationDeductionOptOut);
                                 }
                             }
 
@@ -1232,6 +1297,14 @@ namespace Syncer.Flows
                                 }
                             }
 
+                            if (person.SystemDeactivateBPK != null)
+                            {
+                                if (person.SystemDeactivateBPK.PersonGruppeID == 0)
+                                    personGroupSvc.Create(person.SystemDeactivateBPK);
+                                else
+                                    personGroupSvc.Update(person.SystemDeactivateBPK);
+                            }
+
                             SetdboPersonStack_fso_ids(
                                person,
                                onlineID,
@@ -1241,8 +1314,7 @@ namespace Syncer.Flows
                                phoneSvc,
                                mobileSvc,
                                faxSvc,
-                               personDonationDeductionOptOutSvc,
-                               personDonationReceiptSvc,
+                               personGroupSvc,
                                emailNewsletterSvc,
                                personSvc.Connection,
                                transaction);
@@ -1529,6 +1601,20 @@ namespace Syncer.Flows
 
             return result;
 
+        }
+
+        private dboPersonGruppe InitSystemDeactivateBPK()
+        {
+            var result = new dboPersonGruppe()
+            {
+                zGruppeDetailID = 128782,
+                Steuerung = true,
+                GültigVon = DateTime.Today,
+                GültigBis = new DateTime(2099, 12, 31),
+                xIDA = 0
+            };
+
+            return result;
         }
 
         private dboPersonEmailGruppe InitEmailNewsletter()

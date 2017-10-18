@@ -23,6 +23,6 @@ namespace Syncer.Models
         public DateTime? sosync_write_date { get; set; }
         public DateTime? write_date { get; set; }
         public dboPersonGruppe personDonationReceipt { get; set; }
-
+        public dboPersonGruppe SystemDeactivateBPK { get; set; }
     }
 }
