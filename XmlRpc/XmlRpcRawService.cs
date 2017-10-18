@@ -435,8 +435,9 @@ namespace XmlRpc
                     break;
 
                 case "boolean":
-                    // Empty strings are treated as boolean false
-                    if (string.IsNullOrEmpty(value as string))
+                    if (value != null && value.GetType().Equals(typeof(bool)))
+                        result = (bool)value ? "1" : "0";
+                    else if (string.IsNullOrEmpty(value as string))
                         result = "0";
                     else
                         result = ((bool)value ? 1 : 0).ToString();
