@@ -389,7 +389,7 @@ end_block:
                         If table.Key.ToLower().EndsWith("_rel") Then 'only insert
                             initial_syncs.Add(table.Key, "i")
                         Else
-                            initial_syncs.Add(table.Key, "r") 'resync!
+                            'initial_syncs.Add(table.Key, "r") 'resync! KEIN resync mehr nach neuem feld hinzufügen!
                         End If
 
                         renew_triggers.Add(table.Key)
