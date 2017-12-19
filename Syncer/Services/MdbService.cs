@@ -34,7 +34,7 @@ namespace Syncer.Services
             if (con == null)
             {
                 var conStr = $"Data Source={_config.Studio_MSSQL_Host}; Initial Catalog=mdb_{_config.Instance}; User ID={_config.Studio_Sosync_User}; Password={_config.Studio_Sosync_PW}";
-                return new DataService<TModel>(conStr, transaction);
+                return new DataService<TModel>(conStr);
             }
             else
             {
