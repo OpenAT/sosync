@@ -106,7 +106,8 @@ namespace WebSosync.Controllers
                     Job_Date = DateTime.Parse((string)data["job_date"], CultureInfo.InvariantCulture),
                     Job_Source_System = (string)data["job_source_system"],
                     Job_Source_Model = (string)data["job_source_model"],
-                    Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"])
+                    Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"]),
+                    Job_Last_Change = DateTime.UtcNow
                 };
 
                 if (data.ContainsKey("job_source_sosync_write_date"))
