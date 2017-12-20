@@ -179,6 +179,10 @@ namespace WebSosync
                 {
                     var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
                     jobWorker.Start();
+
+                    var protocolWorker = (IBackgroundJob<ProtocolWorker>)host.Services.GetService(typeof(IBackgroundJob<ProtocolWorker>));
+                    protocolWorker.Start();
+
                     host.Run();
                     //host.Run(svc.Token);
                 }
