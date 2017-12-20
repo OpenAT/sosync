@@ -267,7 +267,8 @@ namespace Syncer.Flows
                             Job_Fetched = DateTime.UtcNow,
                             Job_Source_System = request.JobSourceSystem,
                             Job_Source_Model = request.JobSourceModel,
-                            Job_Source_Record_ID = request.JobSourceRecordID
+                            Job_Source_Record_ID = request.JobSourceRecordID,
+                            Job_Last_Change = DateTime.UtcNow
                         };
 
                         // Try to fetch a child job with the same main properties
