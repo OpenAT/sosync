@@ -1,7 +1,9 @@
 ﻿using dadi_data;
 using dadi_data.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Odoo;
 using Odoo.Models;
+using Syncer.Flows;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,17 @@ namespace ManualTest
     class Program
     {
         static void Main(string[] args)
+        {
+            var sc = new ServiceCollection();
+            var svc = sc.BuildServiceProvider();
+
+            var f = new ProductTemplateFlow(svc);
+
+            Console.WriteLine("Done");
+            Console.ReadKey();
+        }
+
+        private void LoadTest()
         {
             Console.WriteLine("Started.");
 
@@ -47,8 +60,6 @@ namespace ManualTest
                 sum += s.ElapsedMilliseconds;
             }
             Console.WriteLine($"Average: Load time: {sum / 7}ms");
-
-            Console.ReadKey();
         }
 
         private void OdooQuery()
