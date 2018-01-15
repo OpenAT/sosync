@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using WebSosync.Data.Constants;
 using WebSosync.Enumerations;
 using WebSosync.Models;
 
@@ -10,6 +11,8 @@ namespace WebSosync.Services
 {
     public static class RequestValidator
     {
+        public static object SosyncJobState { get; private set; }
+
         public static bool ValidateInterface(JobResultDto result, Dictionary<string, object> data)
         {
             var validationResult = true;
@@ -51,6 +54,15 @@ namespace WebSosync.Services
 
             if (!dataErrors.ContainsKey("job_source_record_id"))
                 CheckInteger("job_source_record_id", data, dataErrors, 1, null);
+
+            if (data.ContainsKey("job_source_type"))
+            {
+                var type = ((string)data["job_source_type"] ?? "").ToLower();
+                if (type == SosyncJobSourceType.MergeInto)
+                {
+                    CheckInteger("job_source_merge_into_id", data, dataErrors, 1, null);
+                }
+            }
 
             if (dataErrors.Count > 0)
             {
