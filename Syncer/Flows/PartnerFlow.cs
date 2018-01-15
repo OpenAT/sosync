@@ -400,10 +400,10 @@ namespace Syncer.Flows
                     { "name_zwei", person.person.Name2 },
                     { "birthdate_web", OdooConvert.ToStringOrBoolFalse(person.person.Geburtsdatum) },
                     { "title_web", person.person.Titel },
-                    { "BPKForcedFirstname", person.person.BPKErzwungenVorname },
-                    { "BPKForcedLastname", person.person.BPKErzwungenNachname },
-                    { "BPKForcedBirthdate", person.person.BPKErzwungenGeburtsdatum },
-                    { "BPKForcedZip", person.person.BPKErzwungenPLZ },
+                    { "bpk_forced_firstname", person.person.BPKErzwungenVorname },
+                    { "bpk_forced_lastname", person.person.BPKErzwungenNachname },
+                    { "bpk_forced_birthdate", person.person.BPKErzwungenGeburtsdatum },
+                    { "bpk_forced_zip", person.person.BPKErzwungenPLZ },
                     { "sosync_write_date", sosync_write_date }
                 };
 
