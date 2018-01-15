@@ -22,16 +22,16 @@ namespace Odoo.Models
         [DataMember(Name = "title_web")]
         public string Title_Web { get; set; }
 
-        [DataMember(Name = "BPKForcedFirstname")]
+        [DataMember(Name = "bpk_forced_firstname")]
         public string BPKForcedFirstname { get; set; }
 
-        [DataMember(Name = "BPKForcedLastname")]
+        [DataMember(Name = "bpk_forced_lastname")]
         public string BPKForcedLastname { get; set; }
 
-        [DataMember(Name = "BPKForcedBirthdate")]
+        [DataMember(Name = "bpk_forced_birthdate")]
         public string BPKForcedBirthdate { get; set; }
 
-        [DataMember(Name = "BPKForcedZip")]
+        [DataMember(Name = "bpk_forced_zip")]
         public string BPKForcedZip { get; set; }
 
         [DataMember(Name = "sosync_fs_id")]
