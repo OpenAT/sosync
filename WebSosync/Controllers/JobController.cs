@@ -110,7 +110,9 @@ namespace WebSosync.Controllers
                     Job_Last_Change = DateTime.UtcNow
                 };
 
-                if (data.ContainsKey("job_source_type"))
+                if (data.ContainsKey("job_source_type")
+                    && data["job_source_type"].GetType() == typeof(string)
+                    && !string.IsNullOrEmpty((string)data["job_source_type"]))
                 {
                     job.Job_Source_Type = (string)data["job_source_type"];
                     job.Job_Source_Merge_Into_ID = int.Parse((string)data["job_source_merge_into_id"]);

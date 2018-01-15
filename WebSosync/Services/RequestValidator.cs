@@ -57,10 +57,19 @@ namespace WebSosync.Services
 
             if (data.ContainsKey("job_source_type"))
             {
-                var type = ((string)data["job_source_type"] ?? "").ToLower();
+                var type = (data["job_source_type"] ?? "").ToString().ToLower();
+
+                if (type == "false")
+                    type = "";
+
+                CheckJobSourceValue(type, dataErrors);
+
                 if (type == SosyncJobSourceType.MergeInto)
                 {
-                    CheckInteger("job_source_merge_into_id", data, dataErrors, 1, null);
+                    if (data.ContainsKey("job_source_merge_into_id"))
+                        CheckInteger("job_source_merge_into_id", data, dataErrors, 1, null);
+                    else
+                        dataErrors.Add("job_source_merge_into_id", "job_source_merge_into_id is required");
                 }
             }
 
@@ -74,6 +83,17 @@ namespace WebSosync.Services
             }
 
             return true;
+        }
+
+        private static void CheckJobSourceValue(string value, Dictionary<string, string> errorList)
+        {
+            if (!string.IsNullOrEmpty(value)
+                && value != SosyncJobSourceType.MergeInto
+                && value != SosyncJobSourceType.Delete
+                )
+            {
+                errorList.Add("job_source_type", $"job_source_type must be NULL, '', 'merge_into' or 'delete'");
+            }
         }
 
         private static void CheckFieldExists(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList)
