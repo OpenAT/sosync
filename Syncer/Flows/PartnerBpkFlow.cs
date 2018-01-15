@@ -98,14 +98,14 @@ namespace Syncer.Flows
                     // Expected to exist due to child jobs
                     using (var dbPers = MdbService.GetDataService<dboPerson>())
                     {
-                        var person = dbPers.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.BPKRequestPartnerID[0]) }).Single();
+                        var person = dbPers.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.bpk_request_partner_id[0]) }).Single();
                         personID = person.PersonID;
                     }
 
                     // Expected to exist due to child jobs
                     using (var dbAcc = MdbService.GetDataService<dboxBPKAccount>())
                     {
-                        var acc = dbAcc.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.BPKRequestCompanyID[0]) }).Single();
+                        var acc = dbAcc.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)bpk.bpk_request_company_id[0]) }).Single();
                         xBPKAccountID = acc.xBPKAccountID;
                     }
 
@@ -176,24 +176,24 @@ namespace Syncer.Flows
         {
             dest.Anlagedatum = source.Create_Date.ToLocalTime();
 
-            dest.BPKPrivat = source.BPKPrivate;
-            dest.BPKOeffentlich = source.BPKPublic;
+            dest.BPKPrivat = source.bpk_private;
+            dest.BPKOeffentlich = source.bpk_public;
 
-            dest.Vorname = source.BPKRequestFirstname;
-            dest.Nachname = source.BPKRequestLastname;
-            dest.Geburtsdatum = source.BPKRequestBirthdate;
+            dest.Vorname = source.bpk_request_firstname;
+            dest.Nachname = source.bpk_request_lastname;
+            dest.Geburtsdatum = source.bpk_request_birthdate;
 
-            dest.PositivAmUm = source.BPKRequestDate;
-            dest.PositivDaten = source.BPKResponseData;
+            dest.PositivAmUm = source.bpk_request_date;
+            dest.PositivDaten = source.bpk_response_data;
 
-            dest.FehlerAmUm = source.BPKErrorRequestDate;
-            dest.FehlerDaten = source.BPKErrorRequestData;
-            dest.FehlerAntwortDaten = source.BPKErrorResponseData;
-            dest.FehlerNachname = source.BPKErrorRequestLastname;
-            dest.FehlerVorname = source.BPKErrorRequestFirstname;
-            dest.FehlerGeburtsdatum = source.BPKErrorRequestBirthdate;
-            dest.FehlerText = source.BPKErrorText;
-            dest.FehlerCode = source.BPKErrorCode;
+            dest.FehlerAmUm = source.bpk_error_request_date;
+            dest.FehlerDaten = source.bpk_error_request_data;
+            dest.FehlerAntwortDaten = source.bpk_error_response_data;
+            dest.FehlerNachname = source.bpk_error_request_lastname;
+            dest.FehlerVorname = source.bpk_eror_request_firstname;
+            dest.FehlerGeburtsdatum = source.bpk_error_request_birthdate;
+            dest.FehlerText = source.bpk_error_text;
+            dest.FehlerCode = source.bpk_error_code;
         }
         #endregion
     }
