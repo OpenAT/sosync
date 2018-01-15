@@ -116,7 +116,7 @@ namespace Syncer.Services
                 .GetTypeInfo()
                 .Assembly
                 .GetTypes()
-                .Where(x => typeof(SyncFlow) != x && typeof(SyncFlow).IsAssignableFrom(x));
+                .Where(x => typeof(SyncFlow) != x && x.IsAbstract == false && typeof(SyncFlow).IsAssignableFrom(x));
         }
         #endregion
     }
