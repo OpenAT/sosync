@@ -26,18 +26,6 @@ namespace WebSosync.Data.Models
         #region Properties
         // Sosync only
 
-        [DataMember(Name = "job_source_type")]
-        [IgnoreDataMember]
-        public string Job_Source_Type { get; set; }
-
-        [DataMember(Name = "job_source_merge_into_id")]
-        [IgnoreDataMember]
-        public int? Job_Source_Merge_Into_ID { get; set; }
-
-        [DataMember(Name = "sync_target_merge_into_id")]
-        [IgnoreDataMember]
-        public int? Sync_Target_Merge_Into_ID { get; set; }
-
         [DataMember(Name = "job_fs_id")]
         [IgnoreDataMember]
         public int? Job_Fs_ID { get; set; }
@@ -78,6 +66,12 @@ namespace WebSosync.Data.Models
         public DateTime Job_Date { get; set; }
 
         // SyncJob source
+
+        [DataMember(Name = "job_source_type")]
+        public string Job_Source_Type { get; set; }
+
+        [DataMember(Name = "job_source_merge_into_id")]
+        public int? Job_Source_Merge_Into_ID { get; set; }
 
         [DataMember(Name = "job_source_system")]
         public string Job_Source_System { get; set; }
@@ -166,6 +160,9 @@ namespace WebSosync.Data.Models
 
         [DataMember(Name = "sync_target_record_id")]
         public int? Sync_Target_Record_ID { get; set; }
+
+        [DataMember(Name = "sync_target_merge_into_id")]
+        public int? Sync_Target_Merge_Into_ID { get; set; }
 
         // Synchronization info
 
