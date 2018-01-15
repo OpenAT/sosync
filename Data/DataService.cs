@@ -102,6 +102,11 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_to_fso_can_sync", "boolean");
             AddColumnIfNotExists("job_to_fso_sync_date", "timestamp without time zone");
             AddColumnIfNotExists("job_to_fso_sync_version", "timestamp without time zone");
+
+            // New fields for doublet & deletion handling
+            AddColumnIfNotExists("job_source_type", "text");
+            AddColumnIfNotExists("job_source_merge_into_id", "integer");
+            AddColumnIfNotExists("sync_target_merge_into_id", "integer");
         }
 
         /// <summary>
