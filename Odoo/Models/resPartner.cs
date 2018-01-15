@@ -31,6 +31,9 @@ namespace Odoo.Models
         [DataMember(Name = "BPKForcedBirthdate")]
         public string BPKForcedBirthdate { get; set; }
 
+        [DataMember(Name = "BPKForcedZip")]
+        public string BPKForcedZip { get; set; }
+
         [DataMember(Name = "sosync_fs_id")]
         public int? Sosync_FS_ID { get; set; }
 
@@ -75,9 +78,6 @@ namespace Odoo.Models
 
         [DataMember(Name = "donation_receipt_web")]
         public bool? DonationReceipt { get; set; }
-
-        [DataMember(Name = "BPKForcedZip")]
-        public string BPKForcedZip { get; set; }
 
         [DataMember(Name = "country_id")]
         public object[] CountryID { get; set; }
