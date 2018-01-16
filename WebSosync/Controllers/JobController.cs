@@ -111,12 +111,19 @@ namespace WebSosync.Controllers
                 };
 
                 if (data.ContainsKey("job_source_type")
+                    && data["job_source_type"] != null
                     && data["job_source_type"].GetType() == typeof(string)
                     && !string.IsNullOrEmpty((string)data["job_source_type"]))
                 {
                     job.Job_Source_Type = (string)data["job_source_type"];
-                    job.Job_Source_Merge_Into_ID = int.Parse((string)data["job_source_merge_into_id"]);
+                    job.Job_Source_Merge_Into_Record_ID = int.Parse((string)data["job_source_merge_into_record_id"]);
+
+                    if (data.ContainsKey("job_source_target_merge_into_record_id"))
+                        job.Job_Source_Target_Merge_Into_Record_ID = int.Parse((string)data["job_source_target_merge_into_record_id"]);
                 }
+
+                if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
+                    job.Job_Source_Target_Record_ID = Convert.ToInt32(data["job_source_target_record_id"]);
 
                 if (data.ContainsKey("job_source_sosync_write_date"))
                 {

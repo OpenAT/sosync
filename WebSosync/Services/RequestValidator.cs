@@ -66,10 +66,18 @@ namespace WebSosync.Services
 
                 if (type == SosyncJobSourceType.MergeInto)
                 {
-                    if (data.ContainsKey("job_source_merge_into_id"))
-                        CheckInteger("job_source_merge_into_id", data, dataErrors, 1, null);
+                    if (data.ContainsKey("job_source_merge_into_record_id"))
+                        CheckInteger("job_source_merge_into_record_id", data, dataErrors, 1, null);
                     else
-                        dataErrors.Add("job_source_merge_into_id", "job_source_merge_into_id is required");
+                        dataErrors.Add("job_source_merge_into_record_id", "job_source_merge_into_record_id is required for job_source_type = merge_into");
+
+                    if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
+                        CheckInteger("job_source_target_record_id", data, dataErrors, 1, null);
+                    else
+                        dataErrors.Add("job_source_target_record_id", "job_source_target_record_id is required for job_source_type = merge_into");
+
+                    if (data.ContainsKey("job_source_target_merge_into_record_id"))
+                        CheckInteger("job_source_target_merge_into_record_id", data, dataErrors, 1, null);
                 }
             }
 
@@ -134,6 +142,12 @@ namespace WebSosync.Services
         {
             bool check = false;
             long i = -1;
+
+            if (data[fieldName] == null)
+            {
+                errorList.Add(fieldName, $"Field {fieldName} is null.");
+                return;
+            }
 
             if (data[fieldName].GetType() == typeof(string))
             {
