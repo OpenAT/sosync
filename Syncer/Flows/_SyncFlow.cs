@@ -204,7 +204,7 @@ namespace Syncer.Flows
 
                     foreach (ChildJobRequest request in _requiredChildJobs)
                     {
-                        if (!IsConsistent(_job, initialWriteDate, consistencyWatch))
+                        if (initialWriteDate.HasValue && !IsConsistent(_job, initialWriteDate, consistencyWatch))
                         {
                             // Job is inconsistent, cancel the flow and leave it "in progress",
                             // so it will be restarted later.
