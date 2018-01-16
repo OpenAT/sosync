@@ -209,54 +209,7 @@ namespace Syncer.Flows
             // -----------------------------------------------------------------------
             // 4) Transformation
             // -----------------------------------------------------------------------
-            s.Start();
-            try
-            {
-                if (!IsConsistent(_job, initialWriteDate, consistencyWatch))
-                {
-                    // Job is inconsistent, cancel the current flow. Make sure
-                    // To do this outside the try-finally block, because we want
-                    // the job to stay "in progress".
-                    UpdateJobInconsistent(_job, 3);
-                    requireRestart = true;
-                    restartReason = "Consistency check 3";
-                    return;
-                }
-
-                try
-                {
-                    // try-finally to ensure the sync_end date is written.
-                    // Actual errors should still bubble up, NOT be caught here.
-
-                    UpdateJobSyncStart();
-
-                    var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
-
-                    var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
-                    Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
-
-                    if (_job.Sync_Source_System == SosyncSystem.FSOnline)
-                        TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
-                    else
-                        TransformToOnline(_job.Sync_Source_Record_ID.Value, action);
-                }
-                finally
-                {
-                    // In any case, log the transformation/sync end at this point
-                    UpdateJobSyncEnd();
-                }
-
-                // Done - update job success
-                UpdateJobSuccess(false);
-            }
-            catch (Exception ex)
-            {
-                UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
-                throw;
-            }
-            s.Stop();
-            LogMs(0, "Transformation", _job.Job_ID, s.ElapsedMilliseconds);
-            s.Reset();
+            HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
         }
 
         private void HandleChildJobs(FlowService flowManager, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
@@ -382,6 +335,59 @@ namespace Syncer.Flows
             }
             s.Stop();
             LogMs(0, "ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
+            s.Reset();
+        }
+
+        private void HandleTransformation(DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        {
+            var s = new Stopwatch();
+            s.Start();
+            try
+            {
+                if (!IsConsistent(_job, initialWriteDate, consistencyWatch))
+                {
+                    // Job is inconsistent, cancel the current flow. Make sure
+                    // To do this outside the try-finally block, because we want
+                    // the job to stay "in progress".
+                    UpdateJobInconsistent(_job, 3);
+                    requireRestart = true;
+                    restartReason = "Consistency check 3";
+                    return;
+                }
+
+                try
+                {
+                    // try-finally to ensure the sync_end date is written.
+                    // Actual errors should still bubble up, NOT be caught here.
+
+                    UpdateJobSyncStart();
+
+                    var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
+
+                    var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
+                    Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
+
+                    if (_job.Sync_Source_System == SosyncSystem.FSOnline)
+                        TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
+                    else
+                        TransformToOnline(_job.Sync_Source_Record_ID.Value, action);
+                }
+                finally
+                {
+                    // In any case, log the transformation/sync end at this point
+                    UpdateJobSyncEnd();
+                }
+
+                // Done - update job success
+                UpdateJobSuccess(false);
+            }
+            catch (Exception ex)
+            {
+                UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
+                throw;
+            }
+            s.Stop();
+            LogMs(0, "Transformation", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
