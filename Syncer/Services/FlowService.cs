@@ -99,7 +99,7 @@ namespace Syncer.Services
 
                 if (string.IsNullOrEmpty(jobType))
                 {
-                    if (type == typeof(ReplicateSyncFlow))
+                    if (typeof(ReplicateSyncFlow).IsAssignableFrom(type))
                     {
                         if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
                             return type;
@@ -109,7 +109,7 @@ namespace Syncer.Services
                 }
                 else if (jobType == SosyncJobSourceType.MergeInto)
                 {
-                    if (type == typeof(MergeSyncFlow))
+                    if (typeof(MergeSyncFlow).IsAssignableFrom(type))
                     {
                         if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
                             return type;
