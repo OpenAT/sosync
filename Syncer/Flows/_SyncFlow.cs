@@ -189,7 +189,7 @@ namespace Syncer.Flows
             HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
         }
 
-        private void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        protected void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
             var s = new Stopwatch();
             s.Start();
@@ -315,7 +315,7 @@ namespace Syncer.Flows
             s.Reset();
         }
 
-        private void HandleTransformation(DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        protected void HandleTransformation(DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
             var s = new Stopwatch();
             s.Start();
@@ -386,7 +386,7 @@ namespace Syncer.Flows
         /// if the maximum value is reached or exceeded.
         /// </summary>
         /// <param name="maxRuns">The number of runs upon an exception is raised.</param>
-        private void CheckRunCount(int maxRuns)
+        protected void CheckRunCount(int maxRuns)
         {
             Stopwatch s = new Stopwatch();
             s.Start();
@@ -409,7 +409,7 @@ namespace Syncer.Flows
         /// and compares the write dates to determine the sync direction.
         /// </summary>
         /// <param name="job">The job to be updated with the sync source.</param>
-        private void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
+        protected void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
         {
             Stopwatch s = new Stopwatch();
             s.Start();
@@ -595,7 +595,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be checked.</param>
         /// <param name="sosyncWriteDate">The write date of the job since the last read.</param>
         /// <returns></returns>
-        private bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate, Stopwatch consistencyWatch)
+        protected bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate, Stopwatch consistencyWatch)
         {
             var maxMS = 250;
 
