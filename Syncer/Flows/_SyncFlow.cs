@@ -163,19 +163,13 @@ namespace Syncer.Flows
         public void Start(FlowService flowManager, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             _job = job;
-
             UpdateJobRunCount(_job);
 
-            // -----------------------------------------------------------------------
-            // 1) First off, check run count (and eventually throw exception)
-            // -----------------------------------------------------------------------
             CheckRunCount(5);
 
-            // -----------------------------------------------------------------------
-            // 2) Determine the sync direction and update the job
-            // -----------------------------------------------------------------------
             DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();
+
             SetSyncSource(_job, out initialWriteDate, consistencyWatch);
 
             if (string.IsNullOrEmpty(_job.Sync_Source_System))
@@ -186,14 +180,7 @@ namespace Syncer.Flows
                 return;
             }
 
-            // -----------------------------------------------------------------------
-            // 3) Now check the child jobs
-            // -----------------------------------------------------------------------
             HandleChildJobs(flowManager, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
-
-            // -----------------------------------------------------------------------
-            // 4) Transformation
-            // -----------------------------------------------------------------------
             HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
         }
 
