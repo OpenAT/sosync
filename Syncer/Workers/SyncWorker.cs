@@ -90,7 +90,7 @@ namespace Syncer.Workers
                     UpdateJobStart(job, loadTimeUTC);
 
                     // Get the flow for the job source model, and start it
-                    using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Model)))
+                    using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Type, job.Job_Source_Model)))
                     {
                         bool requireRestart = false;
                         string restartReason = "";
