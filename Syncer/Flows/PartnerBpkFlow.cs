@@ -15,7 +15,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.PersonBPK")]
     [OnlineModel(Name = "res.partner.bpk")]
-    public class PartnerBpkFlow : SyncFlow
+    public class PartnerBpkFlow : ReplicateSyncFlow
     {
         #region Members
         private ILogger<PartnerBpkFlow> _log;

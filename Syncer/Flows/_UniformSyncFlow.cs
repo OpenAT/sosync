@@ -17,7 +17,7 @@ namespace Syncer.Flows
     /// Populate the <see cref="Fields"/> property to specify which
     /// fields to synchronize.
     /// </summary>
-    public abstract class UniformSyncFlow : SyncFlow
+    public abstract class UniformSyncFlow : ReplicateSyncFlow
     {
         #region Constructors
         public UniformSyncFlow(IServiceProvider svc) : base(svc)

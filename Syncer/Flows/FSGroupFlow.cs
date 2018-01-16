@@ -10,7 +10,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.zGruppeDetail")]
     [OnlineModel(Name = "fs.group")]
-    public class FSGroupFlow : SyncFlow
+    public class FSGroupFlow : ReplicateSyncFlow
     {
         #region Constructors
         public FSGroupFlow(IServiceProvider svc)

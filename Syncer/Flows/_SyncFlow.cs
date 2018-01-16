@@ -41,6 +41,12 @@ namespace Syncer.Flows
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
         
+        protected SyncJob Job
+        {
+            get => _job;
+            set => _job = value;
+        }
+
         public CancellationToken CancelToken { get; set; }
         #endregion
 
@@ -156,38 +162,17 @@ namespace Syncer.Flows
             return sosync_fs_id.HasValue && sosync_fs_id.Value > 0;
         }
 
-
-        /// <summary>
-        /// Starts the sync flow.
-        /// </summary>
-        /// <param name="flowService">The flow service for handling child jobs.</param>
-        /// <param name="job">The job that initiated this sync flow.</param>
-        /// <param name="loadTimeUTC">The loading time of the job.</param>
-        /// <param name="requireRestart">Reference parameter to indicate that the syncer should restart immediately after this flow ends.</param>
-        /// <param name="restartReason">Reference parameter to indicate the reason why the restart was requested.</param>
         public void Start(FlowService flowService, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            _job = job;
-            UpdateJobRunCount(_job);
+            if (job == null)
+                throw new SyncerException($"Parameter '{nameof(job)}' cannot be null.");
 
-            CheckRunCount(5);
+            Job = job;
 
-            DateTime? initialWriteDate = null;
-            Stopwatch consistencyWatch = new Stopwatch();
-
-            SetSyncSource(_job, out initialWriteDate, consistencyWatch);
-
-            if (string.IsNullOrEmpty(_job.Sync_Source_System))
-            {
-                // Model is up to date in both systems. Close
-                // the job, and stop this flow
-                UpdateJobSuccess(true);
-                return;
-            }
-
-            HandleChildJobs(flowService, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
-            HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+            StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
         }
+
+        protected abstract void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason);
 
         protected void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
@@ -817,7 +802,7 @@ namespace Syncer.Flows
             }
         }
 
-        private void UpdateJobRunCount(SyncJob job)
+        protected void UpdateJobRunCount(SyncJob job)
         {
             Log.LogDebug($"Updating job {job.Job_ID}: run_count");
 
@@ -849,7 +834,7 @@ namespace Syncer.Flows
         /// </summary>
         /// <param name="wasInSync">Set to true, if the job was
         /// finished because it was already in sync.</param>
-        private void UpdateJobSuccess(bool wasInSync)
+        protected void UpdateJobSuccess(bool wasInSync)
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 

@@ -16,7 +16,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.Person")]
     [OnlineModel(Name = "res.partner")]
-    public class PartnerFlow : SyncFlow
+    public class PartnerFlow : ReplicateSyncFlow
     {
 
         #region Members
