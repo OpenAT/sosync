@@ -73,10 +73,8 @@ namespace WebSosync.Services
 
                     if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
                         CheckInteger("job_source_target_record_id", data, dataErrors, 1, null);
-                    else
-                        dataErrors.Add("job_source_target_record_id", "job_source_target_record_id is required for job_source_type = merge_into");
 
-                    if (data.ContainsKey("job_source_target_merge_into_record_id"))
+                    if (data.ContainsKey("job_source_target_merge_into_record_id") && data["job_source_target_merge_into_record_id"] != null)
                         CheckInteger("job_source_target_merge_into_record_id", data, dataErrors, 1, null);
                 }
             }
