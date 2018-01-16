@@ -156,11 +156,16 @@ namespace Syncer.Flows
             return sosync_fs_id.HasValue && sosync_fs_id.Value > 0;
         }
 
+
         /// <summary>
-        /// Starts the data flow.
+        /// Starts the sync flow.
         /// </summary>
-        /// <param name="_job"></param>
-        public void Start(FlowService flowManager, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
+        /// <param name="flowService">The flow service for handling child jobs.</param>
+        /// <param name="job">The job that initiated this sync flow.</param>
+        /// <param name="loadTimeUTC">The loading time of the job.</param>
+        /// <param name="requireRestart">Reference parameter to indicate that the syncer should restart immediately after this flow ends.</param>
+        /// <param name="restartReason">Reference parameter to indicate the reason why the restart was requested.</param>
+        public void Start(FlowService flowService, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             _job = job;
             UpdateJobRunCount(_job);
@@ -180,11 +185,11 @@ namespace Syncer.Flows
                 return;
             }
 
-            HandleChildJobs(flowManager, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleChildJobs(flowService, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
             HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
         }
 
-        private void HandleChildJobs(FlowService flowManager, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        private void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
             var s = new Stopwatch();
             s.Start();
@@ -269,8 +274,8 @@ namespace Syncer.Flows
                             UpdateJobStart(entry, DateTime.UtcNow);
 
                             // Get the flow for the job source model, and start it
-                            SyncFlow flow = (SyncFlow)Service.GetService(flowManager.GetFlow(entry.Job_Source_Model));
-                            flow.Start(flowManager, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
+                            SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Model));
+                            flow.Start(flowService, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                             // Be sure to use logic & operator
                             if (entry.Job_State == SosyncState.Done)
