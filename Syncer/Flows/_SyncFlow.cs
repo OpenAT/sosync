@@ -166,8 +166,6 @@ namespace Syncer.Flows
 
             UpdateJobRunCount(_job);
 
-            Stopwatch s = new Stopwatch();
-
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
             // -----------------------------------------------------------------------
@@ -176,30 +174,17 @@ namespace Syncer.Flows
             // -----------------------------------------------------------------------
             // 2) Determine the sync direction and update the job
             // -----------------------------------------------------------------------
-            s.Start();
             DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();
-            try
-            {
-                SetSyncSource(_job, out initialWriteDate);
-                consistencyWatch.Start();
+            SetSyncSource(_job, out initialWriteDate, consistencyWatch);
 
-                if (string.IsNullOrEmpty(_job.Sync_Source_System))
-                {
-                    // Model is up to date in both systems. Close
-                    // the job, and stop this flow
-                    UpdateJobSuccess(true);
-                    return;
-                }
-            }
-            catch (Exception ex)
+            if (string.IsNullOrEmpty(_job.Sync_Source_System))
             {
-                UpdateJobError(SosyncError.SyncSource, $"2) Sync direction:\n{ex.ToString()}");
-                throw;
+                // Model is up to date in both systems. Close
+                // the job, and stop this flow
+                UpdateJobSuccess(true);
+                return;
             }
-            s.Stop();
-            LogMs(0, "SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
-            s.Reset();
 
             // -----------------------------------------------------------------------
             // 3) Now check the child jobs
@@ -432,115 +417,134 @@ namespace Syncer.Flows
         /// and compares the write dates to determine the sync direction.
         /// </summary>
         /// <param name="job">The job to be updated with the sync source.</param>
-        private void SetSyncSource(SyncJob job, out DateTime? writeDate)
+        private void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
         {
-            ModelInfo onlineInfo = null;
-            ModelInfo studioInfo = null;
-
-            // First off, get the model info from the system that
-            // initiated the sync job
-            if (job.Job_Source_System == SosyncSystem.FSOnline)
+            Stopwatch s = new Stopwatch();
+            s.Start();
+            try
             {
-                onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-                LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
+                ModelInfo onlineInfo = null;
+                ModelInfo studioInfo = null;
 
-                if (onlineInfo == null)
-                    throw new ModelNotFoundException(
-                        SosyncSystem.FSOnline,
-                        job.Job_Source_Model,
-                        job.Job_Source_Record_ID);
-
-                if (onlineInfo.ForeignID != null)
+                // First off, get the model info from the system that
+                // initiated the sync job
+                if (job.Job_Source_System == SosyncSystem.FSOnline)
                 {
-                    Stopwatch s = new Stopwatch();
-                    s.Start();
-                    studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
-                    s.Stop();
-                    LogMs(1, $"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
-                }
-            }
-            else
-            {
-                Stopwatch s = new Stopwatch();
-                s.Start();
-                studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
-                s.Stop();
-                LogMs(1, "GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
+                    onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
+                    LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
 
-                if (studioInfo == null)
-                    throw new ModelNotFoundException(
-                        SosyncSystem.FundraisingStudio,
-                        job.Job_Source_Model,
-                        job.Job_Source_Record_ID);
+                    if (onlineInfo == null)
+                        throw new ModelNotFoundException(
+                            SosyncSystem.FSOnline,
+                            job.Job_Source_Model,
+                            job.Job_Source_Record_ID);
 
-                if (studioInfo.ForeignID != null)
-                {
-                    onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-                    LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
-                }
-            }
-
-            writeDate = null;
-
-            // Get the attributes for the model names
-            var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
-            var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
-
-            if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
-                throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
-
-            if (studioInfo != null && studioInfo.ForeignID.HasValue && !(studioInfo.SosyncWriteDate ?? studioInfo.WriteDate).HasValue)
-                throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fs]: sosync_fso_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
-
-            // Now update the job information depending on the available
-            // model infos
-            if (onlineInfo != null && studioInfo != null)
-            {
-                // Both systems already have the model, check write date
-                // and decide source. If any sosync_write_date is null,
-                // use the write_date instead. If both are null, an exception
-                // is thrown to abort the synchronization
-
-                if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
-                    throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
-
-                if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
-                    throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
-
-                // XML-RPC default format for date/time does not include milliseconds, so
-                // when comparing the difference, up to 999 milliseconds difference is still
-                // considered equal
-                var toleranceMS = 0;
-
-                var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
-
-                if (diff.TotalMilliseconds == 0)
-                {
-                    // Both models are within tolerance, and considered up to date.
-                    writeDate = null;
-
-                    // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
-                    UpdateJobSourceAndTarget(
-                        job, "", "", null, "", "", null,
-                        $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
-                }
-                else if(diff.TotalMilliseconds < 0)
-                {
-                    // The studio model was newer
-                    writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
-                    UpdateJobSourceAndTarget(
-                        job,
-                        SosyncSystem.FundraisingStudio,
-                        studioAtt.Name,
-                        studioInfo.ID,
-                        SosyncSystem.FSOnline,
-                        onlineAtt.Name,
-                        studioInfo.ForeignID,
-                        null);
+                    if (onlineInfo.ForeignID != null)
+                    {
+                        Stopwatch s2 = new Stopwatch();
+                        s2.Start();
+                        studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
+                        s2.Stop();
+                        LogMs(1, $"GetStudioInfo 1", job.Job_ID, s2.ElapsedMilliseconds);
+                    }
                 }
                 else
                 {
-                    // The online model was newer
+                    Stopwatch s2 = new Stopwatch();
+                    s2.Start();
+                    studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
+                    s2.Stop();
+                    LogMs(1, "GetStudioInfo 2", job.Job_ID, s2.ElapsedMilliseconds);
+
+                    if (studioInfo == null)
+                        throw new ModelNotFoundException(
+                            SosyncSystem.FundraisingStudio,
+                            job.Job_Source_Model,
+                            job.Job_Source_Record_ID);
+
+                    if (studioInfo.ForeignID != null)
+                    {
+                        onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
+                        LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
+                    }
+                }
+
+                writeDate = null;
+
+                // Get the attributes for the model names
+                var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+                var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+
+                if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
+                    throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
+
+                if (studioInfo != null && studioInfo.ForeignID.HasValue && !(studioInfo.SosyncWriteDate ?? studioInfo.WriteDate).HasValue)
+                    throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fs]: sosync_fso_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
+
+                // Now update the job information depending on the available
+                // model infos
+                if (onlineInfo != null && studioInfo != null)
+                {
+                    // Both systems already have the model, check write date
+                    // and decide source. If any sosync_write_date is null,
+                    // use the write_date instead. If both are null, an exception
+                    // is thrown to abort the synchronization
+
+                    if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
+                        throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
+
+                    if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
+                        throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
+
+                    // XML-RPC default format for date/time does not include milliseconds, so
+                    // when comparing the difference, up to 999 milliseconds difference is still
+                    // considered equal
+                    var toleranceMS = 0;
+
+                    var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
+
+                    if (diff.TotalMilliseconds == 0)
+                    {
+                        // Both models are within tolerance, and considered up to date.
+                        writeDate = null;
+
+                        // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+                        UpdateJobSourceAndTarget(
+                            job, "", "", null, "", "", null,
+                            $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
+                    }
+                    else if (diff.TotalMilliseconds < 0)
+                    {
+                        // The studio model was newer
+                        writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+                        UpdateJobSourceAndTarget(
+                            job,
+                            SosyncSystem.FundraisingStudio,
+                            studioAtt.Name,
+                            studioInfo.ID,
+                            SosyncSystem.FSOnline,
+                            onlineAtt.Name,
+                            studioInfo.ForeignID,
+                            null);
+                    }
+                    else
+                    {
+                        // The online model was newer
+                        writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
+                        UpdateJobSourceAndTarget(
+                            job,
+                            SosyncSystem.FSOnline,
+                            onlineAtt.Name,
+                            onlineInfo.ID,
+                            SosyncSystem.FundraisingStudio,
+                            studioAtt.Name,
+                            onlineInfo.ForeignID,
+                            null);
+                    }
+                }
+                else if (onlineInfo != null && studioInfo == null)
+                {
+                    // The online model is not yet in studio
                     writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
                     UpdateJobSourceAndTarget(
                         job,
@@ -549,43 +553,38 @@ namespace Syncer.Flows
                         onlineInfo.ID,
                         SosyncSystem.FundraisingStudio,
                         studioAtt.Name,
-                        onlineInfo.ForeignID,
+                        null,
                         null);
                 }
+                else if (onlineInfo == null && studioInfo != null)
+                {
+                    // The studio model is not yet in online
+                    writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+                    UpdateJobSourceAndTarget(
+                        job,
+                        SosyncSystem.FundraisingStudio,
+                        studioAtt.Name,
+                        studioInfo.ID,
+                        SosyncSystem.FSOnline,
+                        onlineAtt.Name,
+                        null,
+                        null);
+                }
+                else
+                {
+                    throw new SyncerException(
+                        $"Invalid state, could find {nameof(ModelInfo)} for either system.");
+                }
+                consistencyWatch.Start();
             }
-            else if (onlineInfo != null && studioInfo == null)
+            catch (Exception ex)
             {
-                // The online model is not yet in studio
-                writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
-                UpdateJobSourceAndTarget(
-                    job,
-                    SosyncSystem.FSOnline,
-                    onlineAtt.Name,
-                    onlineInfo.ID,
-                    SosyncSystem.FundraisingStudio,
-                    studioAtt.Name,
-                    null,
-                    null);
+                UpdateJobError(SosyncError.SyncSource, $"2) Sync direction:\n{ex.ToString()}");
+                throw;
             }
-            else if (onlineInfo == null && studioInfo != null)
-            {
-                // The studio model is not yet in online
-                writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
-                UpdateJobSourceAndTarget(
-                    job,
-                    SosyncSystem.FundraisingStudio,
-                    studioAtt.Name,
-                    studioInfo.ID,
-                    SosyncSystem.FSOnline,
-                    onlineAtt.Name,
-                    null,
-                    null);
-            }
-            else
-            {
-                throw new SyncerException(
-                    $"Invalid state, could find {nameof(ModelInfo)} for either system.");
-            }
+            s.Stop();
+            LogMs(0, "SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
+            s.Reset();
         }
 
         /// <summary>
