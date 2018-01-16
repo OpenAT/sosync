@@ -429,45 +429,9 @@ namespace Syncer.Flows
                 // First off, get the model info from the system that
                 // initiated the sync job
                 if (job.Job_Source_System == SosyncSystem.FSOnline)
-                {
-                    onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-                    LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
-
-                    if (onlineInfo == null)
-                        throw new ModelNotFoundException(
-                            SosyncSystem.FSOnline,
-                            job.Job_Source_Model,
-                            job.Job_Source_Record_ID);
-
-                    if (onlineInfo.ForeignID != null)
-                    {
-                        Stopwatch s2 = new Stopwatch();
-                        s2.Start();
-                        studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
-                        s2.Stop();
-                        LogMs(1, $"GetStudioInfo 1", job.Job_ID, s2.ElapsedMilliseconds);
-                    }
-                }
+                    GetModelInfosViaOnline(job, out onlineInfo, out studioInfo);
                 else
-                {
-                    Stopwatch s2 = new Stopwatch();
-                    s2.Start();
-                    studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
-                    s2.Stop();
-                    LogMs(1, "GetStudioInfo 2", job.Job_ID, s2.ElapsedMilliseconds);
-
-                    if (studioInfo == null)
-                        throw new ModelNotFoundException(
-                            SosyncSystem.FundraisingStudio,
-                            job.Job_Source_Model,
-                            job.Job_Source_Record_ID);
-
-                    if (studioInfo.ForeignID != null)
-                    {
-                        onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-                        LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
-                    }
-                }
+                    GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
 
                 writeDate = null;
 
@@ -585,6 +549,52 @@ namespace Syncer.Flows
             s.Stop();
             LogMs(0, "SetSyncSource", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
+        }
+
+        private void GetModelInfosViaOnline(SyncJob job, out ModelInfo onlineInfo, out ModelInfo studioInfo)
+        {
+            studioInfo = null;
+
+            onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
+            LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
+
+            if (onlineInfo == null)
+                throw new ModelNotFoundException(
+                    SosyncSystem.FSOnline,
+                    job.Job_Source_Model,
+                    job.Job_Source_Record_ID);
+
+            if (onlineInfo.ForeignID != null)
+            {
+                Stopwatch s = new Stopwatch();
+                s.Start();
+                studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
+                s.Stop();
+                LogMs(1, $"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
+            }
+        }
+
+        private void GetModelInfosViaStudio(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
+        {
+            onlineInfo = null;
+
+            Stopwatch s = new Stopwatch();
+            s.Start();
+            studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
+            s.Stop();
+            LogMs(1, "GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
+
+            if (studioInfo == null)
+                throw new ModelNotFoundException(
+                    SosyncSystem.FundraisingStudio,
+                    job.Job_Source_Model,
+                    job.Job_Source_Record_ID);
+
+            if (studioInfo.ForeignID != null)
+            {
+                onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
+                LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
+            }
         }
 
         /// <summary>
