@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
 using WebSosync.Models;
@@ -116,10 +117,14 @@ namespace WebSosync.Controllers
                     && !string.IsNullOrEmpty((string)data["job_source_type"]))
                 {
                     job.Job_Source_Type = (string)data["job_source_type"];
-                    job.Job_Source_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_merge_into_record_id"]);
 
-                    if (data.ContainsKey("job_source_target_merge_into_record_id") && data["job_source_target_merge_into_record_id"] != null)
-                        job.Job_Source_Target_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_target_merge_into_record_id"]);
+                    if (job.Job_Source_Type == SosyncJobSourceType.MergeInto)
+                    {
+                        job.Job_Source_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_merge_into_record_id"]);
+
+                        if (data.ContainsKey("job_source_target_merge_into_record_id") && data["job_source_target_merge_into_record_id"] != null)
+                            job.Job_Source_Target_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_target_merge_into_record_id"]);
+                    }
                 }
 
                 if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
