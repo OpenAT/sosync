@@ -10,7 +10,7 @@ using System.Diagnostics;
 namespace Syncer.Flows
 {
     /// <summary>
-    /// Base class for sync flows that deal 
+    /// Base class for sync flows that replicated models.
     /// </summary>
     public abstract class ReplicateSyncFlow : SyncFlow
     {
