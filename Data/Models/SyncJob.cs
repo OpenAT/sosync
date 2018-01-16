@@ -70,8 +70,11 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "job_source_type")]
         public string Job_Source_Type { get; set; }
 
-        [DataMember(Name = "job_source_merge_into_id")]
-        public int? Job_Source_Merge_Into_ID { get; set; }
+        [DataMember(Name = "job_source_merge_into_record_id")]
+        public int? Job_Source_Merge_Into_Record_ID { get; set; }
+
+        [DataMember(Name = "job_source_target_merge_into_record_id")]
+        public int? Job_Source_Target_Merge_Into_Record_ID { get; set; }
 
         [DataMember(Name = "job_source_system")]
         public string Job_Source_System { get; set; }
@@ -81,6 +84,9 @@ namespace WebSosync.Data.Models
 
         [DataMember(Name = "job_source_record_id")]
         public int Job_Source_Record_ID { get; set; }
+
+        [DataMember(Name = "job_source_target_record_id")]
+        public int Job_Source_Target_Record_ID { get; set; }
 
         [DataMember(Name = "job_source_sosync_write_date")]
         public DateTime? Job_Source_Sosync_Write_Date { get; set; }
@@ -147,6 +153,9 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "sync_source_record_id")]
         public int? Sync_Source_Record_ID { get; set; }
 
+        [DataMember(Name = "sync_source_merge_into_record_id")]
+        public int? Sync_Source_Merge_Into_Record_ID { get; set; }
+
         // Synchronization target
 
         /// <summary>
@@ -161,8 +170,8 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "sync_target_record_id")]
         public int? Sync_Target_Record_ID { get; set; }
 
-        [DataMember(Name = "sync_target_merge_into_id")]
-        public int? Sync_Target_Merge_Into_ID { get; set; }
+        [DataMember(Name = "sync_target_merge_into_record_id")]
+        public int? Sync_Target_Merge_Into_Record_ID { get; set; }
 
         // Synchronization info
 

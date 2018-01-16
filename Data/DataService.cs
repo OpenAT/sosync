@@ -105,8 +105,11 @@ namespace WebSosync.Data
 
             // New fields for doublet & deletion handling
             AddColumnIfNotExists("job_source_type", "text");
-            AddColumnIfNotExists("job_source_merge_into_id", "integer");
-            AddColumnIfNotExists("sync_target_merge_into_id", "integer");
+            AddColumnIfNotExists("job_source_target_record_id", "integer");
+            AddColumnIfNotExists("job_source_merge_into_record_id", "integer");
+            AddColumnIfNotExists("job_source_target_merge_into_record_id", "integer");
+            AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
+            AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
         }
 
         /// <summary>
