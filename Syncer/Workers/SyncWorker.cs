@@ -22,7 +22,7 @@ namespace Syncer.Workers
     {
         #region Members
         private IServiceProvider _svc;
-        private FlowService _flowManager;
+        private FlowService _flowService;
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
         private TimeService _timeSvc;
@@ -37,7 +37,7 @@ namespace Syncer.Workers
         public SyncWorker(
             IServiceProvider svc, 
             SosyncOptions options, 
-            FlowService flowManager, 
+            FlowService flowService, 
             ILogger<SyncWorker> logger, 
             OdooService odoo,
             TimeService timeSvc,
@@ -46,7 +46,7 @@ namespace Syncer.Workers
             : base(options)
         {
             _svc = svc;
-            _flowManager = flowManager;
+            _flowService = flowService;
             _log = logger;
             _odoo = odoo;
             _timeSvc = timeSvc;
@@ -90,11 +90,11 @@ namespace Syncer.Workers
                     UpdateJobStart(job, loadTimeUTC);
 
                     // Get the flow for the job source model, and start it
-                    using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowManager.GetFlow(job.Job_Source_Type, job.Job_Source_Model)))
+                    using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model)))
                     {
                         bool requireRestart = false;
                         string restartReason = "";
-                        flow.Start(_flowManager, job, loadTimeUTC, ref requireRestart, ref restartReason);
+                        flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
 
                         if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
                             CloseAllPreviousJobs(job);
