@@ -86,7 +86,7 @@ namespace WebSosync.Data.Models
         public int Job_Source_Record_ID { get; set; }
 
         [DataMember(Name = "job_source_target_record_id")]
-        public int Job_Source_Target_Record_ID { get; set; }
+        public int? Job_Source_Target_Record_ID { get; set; }
 
         [DataMember(Name = "job_source_sosync_write_date")]
         public DateTime? Job_Source_Sosync_Write_Date { get; set; }
