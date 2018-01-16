@@ -259,7 +259,7 @@ namespace Syncer.Flows
                             UpdateJobStart(entry, DateTime.UtcNow);
 
                             // Get the flow for the job source model, and start it
-                            SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Model));
+                            SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model));
                             flow.Start(flowService, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                             // Be sure to use logic & operator

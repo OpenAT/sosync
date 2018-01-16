@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using WebSosync.Data.Constants;
 
 namespace Syncer.Services
 {
@@ -85,7 +86,7 @@ namespace Syncer.Services
         /// </summary>
         /// <param name="modelName">The model name to find a flow for. Can be FS modle name, or FSO model name.</param>
         /// <returns></returns>
-        public Type GetFlow(string modelName)
+        public Type GetFlow(string jobType, string modelName)
         {
             CheckFlowRegistration();
 
@@ -96,13 +97,33 @@ namespace Syncer.Services
                 var fsAtt = type.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
                 var fsoAtt = type.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
 
-                if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
-                    return type;
-                else if (fsoAtt != null && fsoAtt.Name.ToLower() == modelName)
-                    return type;
+                if (string.IsNullOrEmpty(jobType))
+                {
+                    if (type == typeof(ReplicateSyncFlow))
+                    {
+                        if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                            return type;
+                        else if (fsoAtt != null && fsoAtt.Name.ToLower() == modelName)
+                            return type;
+                    }
+                }
+                else if (jobType == SosyncJobSourceType.MergeInto)
+                {
+                    if (type == typeof(MergeSyncFlow))
+                    {
+                        if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                            return type;
+                        else if (fsoAtt != null && fsoAtt.Name.ToLower() == modelName)
+                            return type;
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException($"Could not find appropriate sync flow for job_source_type '{jobType}'.");
+                }
             }
 
-            throw new NotSupportedException($"No sync flow found for model \"{modelName}\"");
+            throw new NotSupportedException($"No sync flow found for model '{modelName}' of type '{jobType}'");
         }
 
         /// <summary>
