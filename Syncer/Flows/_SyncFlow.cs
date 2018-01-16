@@ -171,20 +171,7 @@ namespace Syncer.Flows
             // -----------------------------------------------------------------------
             // 1) First off, check run count (and eventually throw exception)
             // -----------------------------------------------------------------------
-            s.Start();
-            try
-            {
-                CheckRunCount(5);
-            }
-            catch (Exception ex)
-            {
-                UpdateJobError(SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
-                throw;
-            }
-
-            s.Stop();
-            LogMs(0, "RunCount", _job.Job_ID, s.ElapsedMilliseconds);
-            s.Reset();
+            CheckRunCount(5);
 
             // -----------------------------------------------------------------------
             // 2) Determine the sync direction and update the job
@@ -412,8 +399,20 @@ namespace Syncer.Flows
         /// <param name="maxRuns">The number of runs upon an exception is raised.</param>
         private void CheckRunCount(int maxRuns)
         {
-            if (_job.Job_Run_Count >= maxRuns)
-                throw new RunCountException(_job.Job_Run_Count, maxRuns);
+            Stopwatch s = new Stopwatch();
+            s.Start();
+            try
+            {
+                if (_job.Job_Run_Count >= maxRuns)
+                    throw new RunCountException(_job.Job_Run_Count, maxRuns);
+            }
+            catch (Exception ex)
+            {
+                UpdateJobError(SosyncError.RunCounter, $"1) Run counter:\n{ex.ToString()}");
+                throw;
+            }
+            s.Stop();
+            LogMs(0, "RunCount", _job.Job_ID, s.ElapsedMilliseconds);
         }
 
         /// <summary>
