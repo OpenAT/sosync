@@ -6,6 +6,8 @@ using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Data.Models;
 using System.Diagnostics;
+using WebSosync.Data;
+using Syncer.Exceptions;
 
 namespace Syncer.Flows
 {
@@ -31,10 +33,28 @@ namespace Syncer.Flows
             UpdateJobRunCount(Job);
             CheckRunCount(5);
 
+            SetMergeIDs(Job);
+
             Stopwatch consistencyWatch = new Stopwatch();
 
             HandleChildJobs(flowService, null, consistencyWatch, ref requireRestart, ref restartReason);
             HandleTransformation(null, consistencyWatch, ref requireRestart, ref restartReason);
+        }
+
+        private void SetMergeIDs(SyncJob job)
+        {
+            using (var db = (DataService)Service.GetService(typeof(DataService)))
+            {
+                if (job.Job_Source_System == SosyncSystem.FSOnline)
+                {
+                    throw new SyncerException("Merging from 'fso' to 'fs' currently not supported.");
+                }
+                else
+                {
+
+
+                }
+            }
         }
     }
 }
