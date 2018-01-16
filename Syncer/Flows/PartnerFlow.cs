@@ -391,7 +391,7 @@ namespace Syncer.Flows
 
             var person = GetCurrentdboPersonStack(studioID);
 
-            var sosync_write_date = (person.person.sosync_write_date ?? person.person.write_date);
+            var sosync_write_date = (person.sosync_write_date ?? person.write_date);
 
             var data = new Dictionary<string, object>()
                 {
