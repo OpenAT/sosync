@@ -29,14 +29,12 @@ namespace Syncer.Flows
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             UpdateJobRunCount(Job);
-
             CheckRunCount(5);
 
-            DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();
 
-            HandleChildJobs(flowService, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
-            HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleChildJobs(flowService, null, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleTransformation(null, consistencyWatch, ref requireRestart, ref restartReason);
         }
     }
 }

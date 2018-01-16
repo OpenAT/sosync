@@ -35,7 +35,6 @@ namespace Syncer.Flows
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             UpdateJobRunCount(Job);
-
             CheckRunCount(5);
 
             DateTime? initialWriteDate = null;
