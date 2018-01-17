@@ -344,6 +344,31 @@ namespace Odoo
             }
         }
 
+        public void MergeModel(string modelName, int removeID, int keepID, bool? create_sync_job = null)
+        {
+            try
+            {
+                create_sync_job = false;
+
+                object additional = CreateAdditional(create_sync_job);
+
+                var result = _rpcObject.execute_kw<int>(
+                    Database,
+                    _uid,
+                    Password,
+                    modelName,
+                    "merge_partner",
+                    new int[] { removeID, keepID },
+                    additional);
+            }
+            finally
+            {
+                LastRequestRaw = _rpcObject.LastRequest;
+                LastResponseRaw = _rpcObject.LastResponse;
+                LastRpcTime = _rpcCommon.LastRpcTime;
+            }
+        }
+
         public bool IsValidResult(Dictionary<string, object> dic)
         {
             if (dic == null)
