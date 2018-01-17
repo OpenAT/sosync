@@ -51,7 +51,10 @@ namespace Syncer.Flows
             }
 
             HandleChildJobs(flowService, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
-            HandleTransformation(initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+
+            var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
+            var description = $"Trasnforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
+            HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
         }
 
         /// <summary>
