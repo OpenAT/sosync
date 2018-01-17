@@ -48,6 +48,9 @@ namespace Syncer.Flows
         }
 
         public CancellationToken CancelToken { get; set; }
+
+        public string StudioModelName { get; set; }
+        public string OnlineModelName { get; set; }
         #endregion
 
         #region Constructors
@@ -61,10 +64,24 @@ namespace Syncer.Flows
             Serializer = Service.GetService<SerializationService>();
 
             _requiredChildJobs = new List<ChildJobRequest>();
+
+            SetModelNames();
         }
         #endregion
 
         #region Methods
+        private void SetModelNames()
+        {
+            var studioAtt = this.GetType().GetCustomAttribute<StudioModelAttribute>();
+            var onlineAtt = this.GetType().GetCustomAttribute<OnlineModelAttribute>();
+
+            if (studioAtt != null)
+                StudioModelName = studioAtt.Name;
+
+            if (onlineAtt != null)
+                OnlineModelName = onlineAtt.Name;
+        }
+
         /// <summary>
         /// Get IDs and write date for the model in online.
         /// </summary>
