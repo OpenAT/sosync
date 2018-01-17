@@ -4,6 +4,7 @@ using System.Text;
 using Syncer.Enumerations;
 using Syncer.Models;
 using Syncer.Attributes;
+using WebSosync.Data;
 
 namespace Syncer.Flows
 {
@@ -22,13 +23,15 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            // No child jobs
+            RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, Job.Job_Source_Merge_Into_Record_ID.Value);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            // Make XML-RPC-Call for Merge here!
-            throw new NotImplementedException();
+            OdooService.Client.MergeModel(
+                OnlineModelName,
+                Job.Sync_Target_Record_ID.Value,
+                Job.Sync_Target_Merge_Into_Record_ID.Value);
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
