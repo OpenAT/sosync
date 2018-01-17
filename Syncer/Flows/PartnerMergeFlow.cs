@@ -27,6 +27,7 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
+            // Make XML-RPC-Call for Merge here!
             throw new NotImplementedException();
         }
 
