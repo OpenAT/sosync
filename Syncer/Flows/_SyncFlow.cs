@@ -153,7 +153,15 @@ namespace Syncer.Flows
 
         protected int? GetFsoIdByFsId(string modelName, int fsId)
         {
-            var odooID = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).SingleOrDefault();
+            var odooID = 0;
+
+            var results = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).ToList();
+
+            if (results.Count == 1)
+                odooID = results[0];
+            else if (results.Count > 1)
+                throw new SyncerException($"{nameof(GetFsoIdByFsId)}(): Multiple Odoo-IDs found.");
+
             if (odooID > 0)
                 return odooID;
 
@@ -317,7 +325,7 @@ namespace Syncer.Flows
             s.Reset();
         }
 
-        protected void HandleTransformation(DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        protected void HandleTransformation(string description, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
             var s = new Stopwatch();
             s.Start();
@@ -343,8 +351,7 @@ namespace Syncer.Flows
 
                     var action = _job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
 
-                    var targetIdText = _job.Sync_Target_Record_ID.HasValue ? _job.Sync_Target_Record_ID.Value.ToString() : "new";
-                    Log.LogInformation($"Transforming [{_job.Sync_Source_System}] {_job.Sync_Source_Model} ({_job.Sync_Source_Record_ID}) to [{_job.Sync_Target_System}] {_job.Sync_Target_Model} ({targetIdText})");
+                    Log.LogInformation(description);
 
                     if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                         TransformToStudio(_job.Sync_Source_Record_ID.Value, action);
@@ -414,6 +421,12 @@ namespace Syncer.Flows
         /// <returns></returns>
         protected bool IsConsistent(SyncJob job, DateTime? sosyncWriteDate, Stopwatch consistencyWatch)
         {
+            if (sosyncWriteDate == null)
+            {
+                Log.LogInformation($"Job ({job.Job_ID}) Skipping consistency check, no {nameof(sosyncWriteDate)} present.");
+                return true;
+            }
+
             var maxMS = 250;
 
             if (consistencyWatch.ElapsedMilliseconds < maxMS)
@@ -541,6 +554,18 @@ namespace Syncer.Flows
                 job.Job_Last_Change = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobChildStart), db, _job);
+            }
+        }
+
+        protected void UpdateJob(SyncJob job, string description)
+        {
+            Log.LogDebug($"Updating job { _job.Job_ID}: {description}");
+
+            using (var db = Service.GetService<DataService>())
+            {
+                Job.Job_Last_Change = DateTime.UtcNow;
+
+                UpdateJob(description, db, _job);
             }
         }
 
