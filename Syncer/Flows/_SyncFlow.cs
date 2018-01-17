@@ -136,9 +136,9 @@ namespace Syncer.Flows
 
         protected int? GetFsoIdByFsId(string modelName, int fsId)
         {
-            var odooPartnerID = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).SingleOrDefault();
-            if (odooPartnerID > 0)
-                return odooPartnerID;
+            var odooID = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).SingleOrDefault();
+            if (odooID > 0)
+                return odooID;
 
             return null;
         }
