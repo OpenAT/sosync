@@ -292,16 +292,16 @@ namespace Syncer.Flows
                 dest.AnlageAmUm = source.anlage_am_um;
 
             dest.Status = source.state;
-            // source.info;
-            // source.submission_id;
-            // source.submission_id_state;
+            // source.info; // Info FS zu FSO optional
+            // -- source.submission_id;
+            // -- source.submission_id_state;
             dest.SubmissionDate = source.submission_id_datetime;
             dest.SubmissionUrl = source.submission_id_url;
-            // source.submission_id_fa_dr_type;
+            // -- source.submission_id_fa_dr_type;
             // source.submission_env;
             dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", (int)source.partner_id[0]).Value;
             dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", (int)source.bpk_company_id[0]).Value;
-            dest.SubmissionBPKCompanyName = (string)source.bpk_company_id[1];
+            dest.SubmissionBPKCompanyName = (string)source.bpk_company_id[1]; // ?
             dest.AnlageAmUm = source.anlage_am_um;
             dest.ZEDatumVon = source.ze_datum_von;
             dest.ZEDatumBis = source.ze_datum_bis;
@@ -314,20 +314,19 @@ namespace Syncer.Flows
             dest.SubmissionBPKLastname = source.submission_lastname;
             dest.SubmissionBPKBirthdate = source.submission_birthdate_web;
             dest.SubmissionBPKZip = source.submission_zip;
-            // source.submission_bpk_request_id;
+            // source.submission_bpk_request_id; // 1:1 speichern
             dest.SubmissionBPKPublic = source.submission_bpk_public;
             dest.SubmissionBPKPrivate = source.submission_bpk_private;
-            // source.submission_sosync_fs_id;
             dest.SubmissionResponse = source.response_content;
             // source.response_error_code;
             // source.response_error_detail;
             // source.error_type;
             dest.ErrorCode = source.error_code;
             dest.ErrorInformation = source.error_detail;
-            // source.report_erstmeldung_id;
-            // source.report_follow_up_ids;
-            // source.skipped_by_id;
-            // source.skipped;
+            // -- source.report_erstmeldung_id;
+            // -- source.report_follow_up_ids;
+            // -- source.skipped_by_id;
+            // -- source.skipped;
 
 
             using (var db = MdbService.GetDataService<dboPerson>())

@@ -39,7 +39,6 @@ namespace Odoo.Models
         public object[] submission_bpk_request_id { get; set; }
         public string submission_bpk_public { get; set; }
         public string submission_bpk_private { get; set; }
-        public object[] submission_sosync_fs_id { get; set; }
         public string response_content { get; set; }
         public string response_error_code { get; set; }
         public string response_error_detail { get; set; }
