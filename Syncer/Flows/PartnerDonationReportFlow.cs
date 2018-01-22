@@ -33,28 +33,12 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-
             var info = GetDefaultOnlineModelInfo(onlineID, "res.partner.donation_report");
 
             if (!info.ForeignID.HasValue)
-            {
-
-                using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-                {
-                    var foundStudioID = db.ExecuteQuery<int?>(
-                        $"select AktionsID from dbo.AktionSpendenmeldungBPK where sosync_fso_id = @fso_id",
-                        new { fso_id = onlineID })
-                        .SingleOrDefault();
-
-                    if (foundStudioID.HasValue)
-                        info.ForeignID = foundStudioID;
-
-                }
-
-            }
+                info.ForeignID = GetFsIdByFsoId("dbo.AktionSpendenmeldungBPK", "AktionSpendenmeldungBPK", onlineID);
 
             return info;
-
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -323,7 +307,7 @@ namespace Syncer.Flows
             dest.ZEDatumBis = source.ze_datum_bis;
             dest.MeldungsJahr =  source.meldungs_jahr.Value;
             dest.Betrag = source.betrag.Value;
-            // source.bpk_public_forced; <- Different name! cancellation_bpk_public or bpk_public_cancellation
+            // source.cancellation_for_bpk_private;
             dest.SubmissionType = source.submission_type;
             // source.submission_refnr;
             dest.SubmissionBPKFirstname = source.submission_firstname;
