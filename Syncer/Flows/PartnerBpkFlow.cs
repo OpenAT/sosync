@@ -63,7 +63,7 @@ namespace Syncer.Flows
         {
             var bpk = OdooService.Client.GetDictionary("res.partner.bpk", onlineID, new string[] { "bpk_request_partner_id", "bpk_request_company_id" });
             var partnerID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_partner_id"])[0]);
-            var companyID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_equest_company_id"])[0]);
+            var companyID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_company_id"])[0]);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
