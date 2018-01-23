@@ -190,7 +190,7 @@ namespace Syncer.Flows
             dest.FehlerDaten = source.bpk_error_request_data;
             dest.FehlerAntwortDaten = source.bpk_error_response_data;
             dest.FehlerNachname = source.bpk_error_request_lastname;
-            dest.FehlerVorname = source.bpk_eror_request_firstname;
+            dest.FehlerVorname = source.bpk_error_request_firstname;
             dest.FehlerGeburtsdatum = source.bpk_error_request_birthdate;
             dest.FehlerText = source.bpk_error_text;
             dest.FehlerCode = source.bpk_error_code;

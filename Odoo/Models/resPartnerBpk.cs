@@ -19,7 +19,7 @@ namespace Odoo.Models
         public string bpk_error_request_data { get; set; }
         public string bpk_error_text { get; set; }
         public DateTime? bpk_request_birthdate { get; set; }
-        public string bpk_eror_request_firstname { get; set; }
+        public string bpk_error_request_firstname { get; set; }
         public DateTime? bpk_error_request_birthdate { get; set; }
         public string bpk_private { get; set; }
         public string bpk_error_code { get; set; }
