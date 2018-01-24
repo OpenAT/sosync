@@ -36,6 +36,8 @@ namespace Odoo.Models
         public object[] bpk_request_partner_id { get; set; }
         public object[] bpk_request_company_id { get; set; }
 
+        public string state { get; set; }
+
         [DataMember(Name = "sosync_fs_id")]
         public int? Sosync_FS_ID { get; set; }
 

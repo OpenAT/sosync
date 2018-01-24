@@ -34,6 +34,9 @@ namespace Odoo.Models
         [DataMember(Name = "bpk_forced_zip")]
         public string BPKForcedZip { get; set; }
 
+        [DataMember(Name = "bpk_state")]
+        public string BPKState { get; set; }
+
         [DataMember(Name = "sosync_fs_id")]
         public int? Sosync_FS_ID { get; set; }
 

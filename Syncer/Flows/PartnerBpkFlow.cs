@@ -194,6 +194,8 @@ namespace Syncer.Flows
             dest.FehlerGeburtsdatum = source.bpk_error_request_birthdate;
             dest.FehlerText = source.bpk_error_text;
             dest.FehlerCode = source.bpk_error_code;
+
+            dest.fso_state = source.state;
         }
         #endregion
     }
