@@ -405,6 +405,7 @@ namespace Syncer.Flows
                     { "bpk_forced_birthdate", person.person.BPKErzwungenGeburtsdatum },
                     { "bpk_forced_zip", person.person.BPKErzwungenPLZ },
                     { "sosync_write_date", sosync_write_date }
+                    // Do NOT sync bpk_state back!
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -1229,7 +1230,6 @@ namespace Syncer.Flows
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
             dest.BPKErzwungenPLZ = source.BPKForcedZip;
             dest.fso_bpk_state = source.BPKState;
-            // Do not sync fso_bpk_state back to Odoo!
 
             if (new string[] { "male", "female" }.Contains(source.Gender))
                 dest.GeschlechttypID = source.Gender == "male" ? 290 : 291;
