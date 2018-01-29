@@ -101,7 +101,6 @@ namespace Syncer.Flows
             dboAktion aktion = null;
             dboPerson person = null;
             dboxBPKAccount bpkAccount = null;
-            dboPersonBPK bpk = null;
 
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
@@ -132,21 +131,6 @@ namespace Syncer.Flows
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
                 { "info", meldung.Info },
                 { "sosync_write_date", meldung.sosync_write_date }
-
-                //{ "submission_id_datetime", meldung.SubmissionIdDate },
-                //{ "submission_id_url", meldung.SubmissionIdUrl },
-                //{ "submission_type", meldung.SubmissionType },
-                //{ "response_content", meldung.ResponseContent },
-                //{ "submission_bpk_private", meldung.SubmissionBPKPrivate },
-                //{ "submission_bpk_public", meldung.SubmissionBPKPublic },
-                //{ "submission_firstname", meldung.SubmissionFirstname },
-                //{ "submission_lastname", meldung.SubmissionLastname },
-                //{ "submission_birthdate_web", meldung.SubmissionBirthdateWeb },
-                //{ "submission_zip", meldung.SubmissionZip },
-                //{ "error_code", meldung.ErrorCode },
-                //{ "error_type", meldung.ErrorType },
-                //{ "error_detail", meldung.ErrorDetail },
-                //{ "state", meldung.Status }
             };
 
             if (action == TransformType.CreateNew)
@@ -204,8 +188,9 @@ namespace Syncer.Flows
 
             if (action == TransformType.CreateNew)
             {
-                dest = new dboAktionSpendenmeldungBPK();
-                dest2 = CreateAktionSpendenmeldungBPKAktion();
+                //dest = new dboAktionSpendenmeldungBPK();
+                //dest2 = CreateAktionSpendenmeldungBPKAktion();
+                throw new SyncerException($"{OnlineModelName} can only be updated, not created.");
             }
             else
             {
@@ -239,21 +224,20 @@ namespace Syncer.Flows
             }
         }
 
-        private dboAktion CreateAktionSpendenmeldungBPKAktion()
-        {
-            var res = new dboAktion();
-            res.AktionsdetailtypID = 2300;
-            res.AktionstypID = 2005746; //Aktion_AktionstypID.AktionSpendemeldungBPK
-            res.Durchführungstag = DateTime.Today.Date;
-            res.Durchführungszeit = DateTime.Today.TimeOfDay;
-#warning TODO: Get a zMarketingID to use here
-            res.zMarketingID = 0; //TODO: match better zMarketingID!
-            res.zThemaID = 0;
-            res.VertragID = 0;
-            res.IDHierarchie = 0;
+        //private dboAktion CreateAktionSpendenmeldungBPKAktion()
+        //{
+        //    var res = new dboAktion();
+        //    res.AktionsdetailtypID = 2300;
+        //    res.AktionstypID = 2005746; //Aktion_AktionstypID.AktionSpendemeldungBPK
+        //    res.Durchführungstag = DateTime.Today.Date;
+        //    res.Durchführungszeit = DateTime.Today.TimeOfDay;
+        //    res.zMarketingID = 0; //TODO: match better zMarketingID!
+        //    res.zThemaID = 0;
+        //    res.VertragID = 0;
+        //    res.IDHierarchie = 0;
 
-            return res;
-        }
+        //    return res;
+        //}
 
         private void CopyDonationReportToAktionSpendenmeldungBPK(resPartnerDonationReport source, dboAktionSpendenmeldungBPK dest, dboAktion dest2)
         {
