@@ -130,7 +130,8 @@ namespace Syncer.Flows
                 { "meldungs_jahr", meldung.MeldungsJahr.ToString("0") },
                 { "betrag", meldung.Betrag },
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
-                { "info", meldung.Info }
+                { "info", meldung.Info },
+                { "sosync_write_date", meldung.sosync_write_date }
 
                 //{ "submission_id_datetime", meldung.SubmissionIdDate },
                 //{ "submission_id_url", meldung.SubmissionIdUrl },
