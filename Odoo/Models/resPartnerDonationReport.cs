@@ -36,7 +36,7 @@ namespace Odoo.Models
         public string submission_lastname { get; set; }
         public DateTime? submission_birthdate_web { get; set; }
         public string submission_zip { get; set; }
-        public object[] submission_bpk_request_id { get; set; }
+        public string submission_bpk_request_id { get; set; }
         public string submission_bpk_public { get; set; }
         public string submission_bpk_private { get; set; }
         public string response_content { get; set; }

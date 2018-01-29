@@ -116,18 +116,18 @@ namespace Syncer.Flows
             }
 
             // Never synchronize test entries
-            if ((meldung.SubmissionEnv ?? "").ToLower() != "p")
-                throw new SyncerException($"{StudioModelName} can only be synchronized with submission_env = 'p' for production. Test entries cannot be synchronized.");
+            if ((meldung.SubmissionEnv ?? "").ToUpper() != "P")
+                throw new SyncerException($"{StudioModelName} can only be synchronized with submission_env = 'P' for production. Test entries cannot be synchronized.");
 
             var data = new Dictionary<string, object>()
             {
-                { "submission_env", "p" },
+                { "submission_env", meldung.SubmissionEnv },
                 { "partner_id", person.sosync_fso_id },
                 { "bpk_company_id", bpkAccount.sosync_fso_id },
                 { "anlage_am_um", meldung.AnlageAmUm },
                 { "ze_datum_von", meldung.ZEDatumVon },
                 { "ze_datum_bis", meldung.ZEDatumBis },
-                { "meldungs_jahr", meldung.MeldungsJahr },
+                { "meldungs_jahr", meldung.MeldungsJahr.ToString("0") },
                 { "betrag", meldung.Betrag },
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
                 { "info", meldung.Info }
@@ -195,8 +195,8 @@ namespace Syncer.Flows
             var source_sosync_write_date = (source.sosync_write_date ?? source.write_date).Value;
 
             // Never synchronize test entries
-            if ((source.submission_env ?? "").ToLower() != "p")
-                throw new SyncerException($"{OnlineModelName} can only be synchronized with submission_env = 'p' for production. Test entries cannot be synchronized.");
+            if ((source.submission_env ?? "").ToUpper() != "P")
+                throw new SyncerException($"{OnlineModelName} can only be synchronized with submission_env = 'P' for production. Test entries cannot be synchronized.");
 
             dboAktionSpendenmeldungBPK dest = null;
             dboAktion dest2 = null;
@@ -267,8 +267,8 @@ namespace Syncer.Flows
             dest.SubmissionIdUrl = source.submission_id_url;
             // -- source.submission_id_fa_dr_type;
             dest.SubmissionEnv = source.submission_env;
-            dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", (int)source.partner_id[0]).Value;
-            dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", (int)source.bpk_company_id[0]).Value;
+            dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
+            dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;
             dest.SubmissionCompanyName = (string)source.bpk_company_id[1];
             dest.AnlageAmUm = source.anlage_am_um;
             dest.ZEDatumVon = source.ze_datum_von;
@@ -282,7 +282,10 @@ namespace Syncer.Flows
             dest.SubmissionLastname = source.submission_lastname;
             dest.SubmissionBirthdateWeb = source.submission_birthdate_web;
             dest.SubmissionZip = source.submission_zip;
-            dest.SubmissionBPKRequestID = (int?)source.submission_bpk_request_id[0]; // 1:1 speichern
+
+            if (!string.IsNullOrEmpty(source.submission_bpk_request_id))
+                dest.SubmissionBPKRequestID = Convert.ToInt32(source.submission_bpk_request_id); // 1:1 speichern
+
             dest.SubmissionBPKPublic = source.submission_bpk_public;
             dest.SubmissionBPKPrivate = source.submission_bpk_private;
             dest.ResponseContent = source.response_content;
