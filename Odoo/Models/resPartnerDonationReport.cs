@@ -29,7 +29,7 @@ namespace Odoo.Models
         public DateTime? ze_datum_bis { get; set; }
         public int? meldungs_jahr { get; set; }
         public decimal? betrag { get; set; }
-        public string bpk_public_forced { get; set; }
+        public string cancellation_for_bpk_private { get; set; }
         public string submission_type { get; set; }
         public string submission_refnr { get; set; }
         public string submission_firstname { get; set; }

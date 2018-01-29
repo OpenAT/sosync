@@ -4,6 +4,7 @@ using Odoo;
 using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,6 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
             var info = GetDefaultOnlineModelInfo(onlineID, "res.partner.donation_report");
@@ -43,7 +43,6 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-
             ModelInfo result = null;
             dboAktionSpendenmeldungBPK meldung = null;
 
@@ -62,12 +61,10 @@ namespace Syncer.Flows
             }
 
             return result;
-
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-
             var meldung = OdooService.Client.GetDictionary("res.partner.donation_report", onlineID, new string[] { "bpk_company_id", "partner_id", "sub_bpk_id" });
 
             var bpk_company_id = OdooConvert.ToInt32((string)((List<object>)meldung["bpk_company_id"])[0]);
@@ -82,14 +79,10 @@ namespace Syncer.Flows
                 if (sub_bpk_id.HasValue)
                     RequestChildJob(SosyncSystem.FSOnline, "res.partner.bpk", sub_bpk_id.Value);
             }
-
-
-
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
             //using (var db3 = MdbService.GetDataService<dboPersonBPK()>)
@@ -99,19 +92,11 @@ namespace Syncer.Flows
 
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", meldung.xBPKAccountID);
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", aktion.PersonID);
-
-                if (meldung.SubmissionPersonBPKID != null)
-                {
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonBPK", meldung.SubmissionPersonBPKID.Value);
-                }
-
             }
-
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-
             dboAktionSpendenmeldungBPK meldung = null;
             dboAktion aktion = null;
             dboPerson person = null;
@@ -128,58 +113,49 @@ namespace Syncer.Flows
                 aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
                 person = db3.Read(new { PersonID = aktion.PersonID }).FirstOrDefault();
                 bpkAccount = db4.Read(new { xBPKAccountID = meldung.xBPKAccountID }).FirstOrDefault();
-
-                if (meldung.SubmissionPersonBPKID.HasValue)
-                {
-                    bpk = db5.Read(new { PersonBPKID = meldung.SubmissionPersonBPKID.Value }).FirstOrDefault();
-                }
-
-
             }
+
+            // Never synchronize test entries
+            if ((meldung.SubmissionEnv ?? "").ToLower() != "p")
+                throw new SyncerException($"{StudioModelName} can only be synchronized with submission_env = 'p' for production. Test entries cannot be synchronized.");
 
             var data = new Dictionary<string, object>()
             {
-                {"partner_id", person.sosync_fso_id},
-                {"bpk_company_id", bpkAccount.sosync_fso_id},
-                {"anlage_am_um", meldung.AnlageAmUm },
-                {"ze_datum_von", meldung.ZEDatumVon },
-                {"ze_datum_bis", meldung.ZEDatumBis },
-                {"meldungs_jahr", meldung.MeldungsJahr },
-                {"betrag", meldung.Betrag },
-                {"sub_datetime", meldung.SubmissionDate },
-                {"sub_url", meldung.SubmissionUrl },
-                {"sub_typ", meldung.SubmissionType },
-                {"sub_data", meldung.SubmissionData },
-                {"sub_response", meldung.SubmissionResponse },
-                {"sub_request_time", meldung.SubmissionRequestTime },
-                {"sub_log", meldung.SubmissionLog },
-                {"sub_bpk_company_name", meldung.SubmissionBPKCompanyName },
-                {"sub_bpk_company_stammzahl", meldung.SubmissionBPKCompanyStammzahl },
-                {"sub_bpk_private", meldung.SubmissionBPKPrivate },
-                {"sub_bpk_public", meldung.SubmissionBPKPublic },
-                {"sub_bpk_firstname", meldung.SubmissionBPKFirstname },
-                {"sub_bpk_lastname", meldung.SubmissionBPKLastname },
-                {"sub_bpk_birthdate", meldung.SubmissionBPKBirthdate },
-                {"sub_bpk_zip", meldung.SubmissionBPKZip },
-                {"error_code", meldung.ErrorCode },
-                {"error_text", meldung.ErrorInformation },
-                {"state", meldung.Status }
-            };
+                { "submission_env", "p" },
+                { "partner_id", person.sosync_fso_id },
+                { "bpk_company_id", bpkAccount.sosync_fso_id },
+                { "anlage_am_um", meldung.AnlageAmUm },
+                { "ze_datum_von", meldung.ZEDatumVon },
+                { "ze_datum_bis", meldung.ZEDatumBis },
+                { "meldungs_jahr", meldung.MeldungsJahr },
+                { "betrag", meldung.Betrag },
+                { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
+                { "info", meldung.Info }
 
-            if (meldung.SubmissionPersonBPKID.HasValue)
-            {
-                data.Add("sub_bpk_id", bpk.sosync_fso_id);
-            }
+                //{ "submission_id_datetime", meldung.SubmissionIdDate },
+                //{ "submission_id_url", meldung.SubmissionIdUrl },
+                //{ "submission_type", meldung.SubmissionType },
+                //{ "response_content", meldung.ResponseContent },
+                //{ "submission_bpk_private", meldung.SubmissionBPKPrivate },
+                //{ "submission_bpk_public", meldung.SubmissionBPKPublic },
+                //{ "submission_firstname", meldung.SubmissionFirstname },
+                //{ "submission_lastname", meldung.SubmissionLastname },
+                //{ "submission_birthdate_web", meldung.SubmissionBirthdateWeb },
+                //{ "submission_zip", meldung.SubmissionZip },
+                //{ "error_code", meldung.ErrorCode },
+                //{ "error_type", meldung.ErrorType },
+                //{ "error_detail", meldung.ErrorDetail },
+                //{ "state", meldung.Status }
+            };
 
             if (action == TransformType.CreateNew)
             {
                 data.Add("sosync_fs_id", meldung.AktionsID);
-
                 int onlineMeldungID = 0;
 
                 try
                 {
-                    onlineMeldungID = OdooService.Client.CreateModel("res.partner.donation_report", data, false);
+                    onlineMeldungID = OdooService.Client.CreateModel(OnlineModelName, data, false);
                 }
                 finally
                 {
@@ -187,45 +163,40 @@ namespace Syncer.Flows
                     UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, onlineMeldungID);
                 }
 
-
                 using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
                 {
-
                     meldung.sosync_fso_id = onlineMeldungID;
                     meldung.noSyncJobSwitch = true;
                     db.Update(meldung);
                 }
-
             }
             else
             {
                 var onlineID = meldung.sosync_fso_id.Value;
 
-                OdooService.Client.GetModel<resPartnerDonationReport>("res.partner.donation_report", onlineID);
+                OdooService.Client.GetModel<resPartnerDonationReport>(OnlineModelName, onlineID);
                 UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
 
                 try
                 {
-
-                    OdooService.Client.UpdateModel("res.partner.donation_report", data, onlineID, false);
+                    OdooService.Client.UpdateModel(OnlineModelName, data, onlineID, false);
                 }
                 finally
                 {
                     UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
                     UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
                 }
-
-
             }
-
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-
-            var source = OdooService.Client.GetModel<resPartnerDonationReport>("res.partner.donation_report", onlineID);
-
+            var source = OdooService.Client.GetModel<resPartnerDonationReport>(OnlineModelName, onlineID);
             var source_sosync_write_date = (source.sosync_write_date ?? source.write_date).Value;
+
+            // Never synchronize test entries
+            if ((source.submission_env ?? "").ToLower() != "p")
+                throw new SyncerException($"{OnlineModelName} can only be synchronized with submission_env = 'p' for production. Test entries cannot be synchronized.");
 
             dboAktionSpendenmeldungBPK dest = null;
             dboAktion dest2 = null;
@@ -234,7 +205,6 @@ namespace Syncer.Flows
             {
                 dest = new dboAktionSpendenmeldungBPK();
                 dest2 = CreateAktionSpendenmeldungBPKAktion();
-
             }
             else
             {
@@ -266,9 +236,6 @@ namespace Syncer.Flows
                     db2.Update(dest2);
                 }
             }
-
-
-
         }
 
         private dboAktion CreateAktionSpendenmeldungBPKAktion()
@@ -278,6 +245,7 @@ namespace Syncer.Flows
             res.AktionstypID = 2005746; //Aktion_AktionstypID.AktionSpendemeldungBPK
             res.Durchführungstag = DateTime.Today.Date;
             res.Durchführungszeit = DateTime.Today.TimeOfDay;
+#warning TODO: Get a zMarketingID to use here
             res.zMarketingID = 0; //TODO: match better zMarketingID!
             res.zThemaID = 0;
             res.VertragID = 0;
@@ -292,54 +260,50 @@ namespace Syncer.Flows
                 dest.AnlageAmUm = source.anlage_am_um;
 
             dest.Status = source.state;
-            // source.info; // Info FS zu FSO optional
+            dest.Info = source.info;
             // -- source.submission_id;
             // -- source.submission_id_state;
-            dest.SubmissionDate = source.submission_id_datetime;
-            dest.SubmissionUrl = source.submission_id_url;
+            dest.SubmissionIdDate = source.submission_id_datetime;
+            dest.SubmissionIdUrl = source.submission_id_url;
             // -- source.submission_id_fa_dr_type;
-            // source.submission_env;
+            dest.SubmissionEnv = source.submission_env;
             dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", (int)source.partner_id[0]).Value;
             dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", (int)source.bpk_company_id[0]).Value;
-            dest.SubmissionBPKCompanyName = (string)source.bpk_company_id[1]; // ?
+            dest.SubmissionCompanyName = (string)source.bpk_company_id[1];
             dest.AnlageAmUm = source.anlage_am_um;
             dest.ZEDatumVon = source.ze_datum_von;
             dest.ZEDatumBis = source.ze_datum_bis;
             dest.MeldungsJahr =  source.meldungs_jahr.Value;
             dest.Betrag = source.betrag.Value;
-            // source.cancellation_for_bpk_private;
+            dest.CancellationForBpkPrivate = source.cancellation_for_bpk_private;
             dest.SubmissionType = source.submission_type;
-            // source.submission_refnr;
-            dest.SubmissionBPKFirstname = source.submission_firstname;
-            dest.SubmissionBPKLastname = source.submission_lastname;
-            dest.SubmissionBPKBirthdate = source.submission_birthdate_web;
-            dest.SubmissionBPKZip = source.submission_zip;
-            // source.submission_bpk_request_id; // 1:1 speichern
+            dest.SubmissionRefnr = source.submission_refnr;
+            dest.SubmissionFirstname = source.submission_firstname;
+            dest.SubmissionLastname = source.submission_lastname;
+            dest.SubmissionBirthdateWeb = source.submission_birthdate_web;
+            dest.SubmissionZip = source.submission_zip;
+            dest.SubmissionBPKRequestID = (int?)source.submission_bpk_request_id[0]; // 1:1 speichern
             dest.SubmissionBPKPublic = source.submission_bpk_public;
             dest.SubmissionBPKPrivate = source.submission_bpk_private;
-            dest.SubmissionResponse = source.response_content;
-            // source.response_error_code;
-            // source.response_error_detail;
-            // source.error_type;
+            dest.ResponseContent = source.response_content;
+            dest.ResponseErrorCode = source.response_error_code;
+            dest.ResponseErrorDetail = source.response_error_detail;
+            dest.ErrorType = source.error_type;
             dest.ErrorCode = source.error_code;
-            dest.ErrorInformation = source.error_detail;
+            dest.ErrorDetail = source.error_detail;
             // -- source.report_erstmeldung_id;
             // -- source.report_follow_up_ids;
             // -- source.skipped_by_id;
             // -- source.skipped;
-
-
+            
             using (var db = MdbService.GetDataService<dboPerson>())
             using (var db2 = MdbService.GetDataService<dboxBPKAccount>())
             {
                 var pers = db.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)source.partner_id[0]) }).FirstOrDefault();
-
                 dest2.PersonID = pers.PersonID;
 
                 var bpkAcc = db2.Read(new { sosync_fso_id = OdooConvert.ToInt32((string)source.bpk_company_id[0]) }).FirstOrDefault();
-
                 dest.xBPKAccountID = bpkAcc.xBPKAccountID;
-
             }
         }
 
