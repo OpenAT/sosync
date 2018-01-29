@@ -250,6 +250,14 @@ namespace XmlRpc
                 else
                     return null;
             }
+            else if (t == typeof(Decimal) || t == typeof(Decimal?))
+            {
+                return Decimal.Parse(e.InnerText, CultureInfo.GetCultureInfo("en-US"));
+            }
+            else if (t == typeof(Double) || t == typeof(Double))
+            {
+                return Double.Parse(e.InnerText, CultureInfo.GetCultureInfo("en-US"));
+            }
             else if (t.IsArray && (t.GetElementType().GetTypeInfo().IsPrimitive || t.GetElementType() == typeof(string)) || t.GetElementType() == typeof(object))
             {
                 // Create and parse primitive type arrays
