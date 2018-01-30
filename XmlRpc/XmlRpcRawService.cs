@@ -250,6 +250,14 @@ namespace XmlRpc
                 else
                     return null;
             }
+            else if (t == typeof(Decimal) || t == typeof(Decimal?))
+            {
+                return Decimal.Parse(e.InnerText, CultureInfo.GetCultureInfo("en-US"));
+            }
+            else if (t == typeof(Double) || t == typeof(Double))
+            {
+                return Double.Parse(e.InnerText, CultureInfo.GetCultureInfo("en-US"));
+            }
             else if (t.IsArray && (t.GetElementType().GetTypeInfo().IsPrimitive || t.GetElementType() == typeof(string)) || t.GetElementType() == typeof(object))
             {
                 // Create and parse primitive type arrays
@@ -443,6 +451,18 @@ namespace XmlRpc
                         result = ((bool)value ? 1 : 0).ToString();
                     break;
 
+                case "double":
+                    var dbl = value as double?;
+                    var dec = value as decimal?;
+
+                    if (dbl.HasValue)
+                        result = dbl.Value.ToString("0.###", CultureInfo.GetCultureInfo("en-US"));
+                    else if (dec.HasValue)
+                        result = dec.Value.ToString("0.###", CultureInfo.GetCultureInfo("en-US"));
+                    else
+                        result = "0";
+                    break;
+
                 default:
                     result = XmlHelper.ToXmlString(Convert.ToString(value));
                     break;
@@ -465,6 +485,11 @@ namespace XmlRpc
 
             if (t == typeof(int))
                 return "int";
+
+            if (t == typeof(double) || t == typeof(double?)
+                || t == typeof(decimal) || t == typeof(decimal?)
+                )
+                return "double";
 
             if (t == typeof(DateTime) || t == typeof(DateTime?))
                 return "dateTime.iso8601";
