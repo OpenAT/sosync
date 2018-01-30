@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "6b29c4468e34c7480611ce848f6b0cb732fdcfb9"
+    "signature": "ffe3d5e9bd0f23b5f9e5ca19811e8bcf828b35cb"
   },
   "compilationOptions": {
     "defines": [
@@ -70,7 +70,7 @@
           "lib/netstandard1.3/AutoMapper.dll": {}
         }
       },
-      "dadi-data/1.1.5": {
+      "dadi-data/1.1.7": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -2748,7 +2748,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.1.5"
+          "dadi-data": "1.1.7"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -2988,12 +2988,12 @@
       "path": "automapper/6.2.2",
       "hashPath": "automapper.6.2.2.nupkg.sha512"
     },
-    "dadi-data/1.1.5": {
+    "dadi-data/1.1.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-56hqEltIBROojfBt3+kjdvxYdOrFyda0dyO2t1pIGH3sW/ldOx2XM4+f1+gnbHd/IhaXYnjmWlGcPlhJFxvNpA==",
-      "path": "dadi-data/1.1.5",
-      "hashPath": "dadi-data.1.1.5.nupkg.sha512"
+      "sha512": "sha512-hgIEJ72cBsjVjevFinp8C01KSTJtqYbs6yFGurql/VNG2eOVXyLvLa9WQtBGUHlxK+OlOlHkeHHJIAWoNdXHxA==",
+      "path": "dadi-data/1.1.7",
+      "hashPath": "dadi-data.1.1.7.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",
