@@ -101,11 +101,17 @@ sync_block:
 
         Dim schema = msSQLHost.get_Schema()
 
+        Dim online_field_mapping = msSQLHost.get_online_field_mapping()
+
         ' After reading the MSSQL schema, also read the pgSQL schema.
         ' Remove columns from the MSSQL schema if there is no corresponding
         ' column in the pgSQL schema
         For Each scm In schema
-            Dim pg_columns = pgSQLHost.get_table_columns(scm.Key)
+
+
+            If scm.Key <> "res_partner_bpk" Then
+
+                Dim pg_columns = pgSQLHost.get_table_columns(scm.Key)
 
             Dim fields_list = scm.Value("fields")
             For i As Integer = fields_list.Count - 1 To 0 Step -1
@@ -113,6 +119,14 @@ sync_block:
                     fields_list.Remove(fields_list(i))
                 End If
             Next
+
+            Dim online_fields_list = scm.Value("online_fields")
+                For i As Integer = online_fields_list.Count - 1 To 0 Step -1
+                    If Not pg_columns.Contains(online_fields_list(i)) Then
+                        online_fields_list.Remove(online_fields_list(i))
+                    End If
+                Next
+            End If
         Next
         '--------------------
 
@@ -132,7 +146,7 @@ sync_block:
 
         Dim api = New odooXMLRPCWrapper(state.instance, odoo_user_id, online_sosync_pw, msSQLHost)
 
-        sync_work(pgSQLHost, msSQLHost, api, schema, field_types, state)
+        sync_work(pgSQLHost, msSQLHost, api, schema, field_types, state, online_field_mapping)
 
 
 end_block:
@@ -157,11 +171,15 @@ end_block:
     End Sub
 
 
-    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), state As sosyncState)
+    Private Sub sync_work(pgSQLHost As pgSQLServer, msSQLHost As msSQLServer, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), state As sosyncState, online_field_mapping As Dictionary(Of String, Dictionary(Of String, String)))
 
         Dim work = msSQLHost.get_sync_work()
 
+        Dim online_field_mapping_table As Dictionary(Of String, String) = Nothing
+
         For Each record In work
+
+            online_field_mapping_table = online_field_mapping(record.Tabelle)
 
             msSQLHost.get_new_ids(record)
 
@@ -193,9 +211,9 @@ end_block:
                         Case True 'online to studio
                             Select Case record.Operation
                                 Case "i"
-                                    result = msSQLHost.work_insert(record, api, schema, field_types, pgSQLHost)
+                                    result = msSQLHost.work_insert(record, api, schema, field_types, pgSQLHost, online_field_mapping_table)
                                 Case "u"
-                                    result = msSQLHost.work_update(record, api, schema, field_types)
+                                    result = msSQLHost.work_update(record, api, schema, field_types, online_field_mapping_table)
                                 Case "d"
                                     result = msSQLHost.work_delete(record, api, schema)
 
@@ -381,7 +399,7 @@ end_block:
 
             Else
 
-                For Each field In table.Value("fields")
+                For Each field In table.Value("online_fields")
 
                     If Not watched_schema(table.Key)("fields").Contains(field) Then
 
@@ -414,7 +432,7 @@ end_block:
 
                 For Each field In table.Value("fields")
 
-                    If Not origin_schema(table.Key)("fields").Contains(field) Then
+                    If Not origin_schema(table.Key)("online_fields").Contains(field) Then
 
                         renew_triggers.Add(table.Key)
                         Exit For
@@ -433,7 +451,7 @@ end_block:
 
                 For Each template In templates.templates("04_per_rel_table")
 
-                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("online_fields"), origin_schema(table)("id_fields"))
 
                     If Not pgSQLHost.execute(cmd) Then Return False
 
@@ -443,7 +461,7 @@ end_block:
 
                 For Each template In templates.templates("05_per_wo_write_uid_table")
 
-                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("online_fields"), origin_schema(table)("id_fields"))
 
                     If Not pgSQLHost.execute(cmd) Then Return False
 
@@ -453,7 +471,7 @@ end_block:
 
                 For Each template In templates.templates("03_per_table")
 
-                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+                    Dim cmd = templates.render(template.Value, table, origin_schema(table)("online_fields"), origin_schema(table)("id_fields"))
 
                     If Not pgSQLHost.execute(cmd) Then Return False
 
@@ -475,7 +493,7 @@ end_block:
 
             Dim table = resync.Key
 
-            Dim cmd = templates.render(init_sync_resync_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+            Dim cmd = templates.render(init_sync_resync_template, table, origin_schema(table)("online_fields"), origin_schema(table)("id_fields"))
 
             If Not pgSQLHost.execute(cmd) Then Return False
 
@@ -495,7 +513,7 @@ end_block:
 
             Dim table = insert.Key
 
-            Dim cmd = templates.render(init_sync_insert_template, table, origin_schema(table)("fields"), origin_schema(table)("id_fields"))
+            Dim cmd = templates.render(init_sync_insert_template, table, origin_schema(table)("online_fields"), origin_schema(table)("id_fields"))
 
             If Not pgSQLHost.execute(cmd) Then Return False
 

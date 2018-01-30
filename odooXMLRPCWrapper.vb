@@ -382,11 +382,11 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Dictionary(Of String, Object)
+    Public Function get_data(item As sync_table_record, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), online_field_mapping As Dictionary(Of String, String)) As Dictionary(Of String, Object)
 
         Dim res As New Dictionary(Of String, Object)
 
-        Dim l = schema(item.Tabelle)("fields").ToList()
+        Dim l = schema(item.Tabelle)("online_fields").ToList()
 
         If Not l.Contains(schema(item.Tabelle)("id_fields")(0)) Then
             l.Add(schema(item.Tabelle)("id_fields")(0))
@@ -408,6 +408,8 @@ Public Class odooXMLRPCWrapper
         For Each field In l
 
             Dim val_raw = record(field)
+
+            field = online_field_mapping(field)
 
             If field_types.ContainsKey(item.Tabelle) AndAlso field_types(item.Tabelle)(field) <> "bit" Then
                 If val_raw.GetType() Is GetType(Boolean) AndAlso Not CType(val_raw, Boolean) Then

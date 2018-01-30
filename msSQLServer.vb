@@ -80,6 +80,25 @@
 
     End Function
 
+    Public Function get_online_field_mapping() As Dictionary(Of String, Dictionary(Of String, String))
+
+        Dim res As New Dictionary(Of String, Dictionary(Of String, String))
+
+        Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
+
+        Dim schema = (From el In db.ft_sosyncSchema_get() Select el Order By el.TableName, el.FieldName).ToList()
+
+        For Each item In schema
+            If Not res.ContainsKey(item.TableName) Then
+                res.Add(item.TableName, New Dictionary(Of String, String))
+            End If
+            res(item.TableName).Add(item.online_field_name, item.FieldName)
+        Next
+
+        Return res
+
+    End Function
+
     Public Function get_Schema() As Dictionary(Of String, Dictionary(Of String, List(Of String)))
 
         Dim res As New Dictionary(Of String, Dictionary(Of String, List(Of String)))
@@ -101,11 +120,12 @@
                     res(item.TableName).Add("online_model_rel_ids", New List(Of String))
                     res(item.TableName).Add("online_model_rel_fields", New List(Of String))
 
-                    res(item.TableName).Add("id_fields", New List(Of String))
-                    res(item.TableName).Add("fields", New List(Of String))
+                res(item.TableName).Add("id_fields", New List(Of String))
+                res(item.TableName).Add("fields", New List(Of String))
+                res(item.TableName).Add("online_fields", New List(Of String))
 
 
-                End If
+            End If
 
                 If item.TableName.EndsWith("_rel") Then
                     res(item.TableName)("online_model_rel_ids").Add(item.FieldName)
@@ -116,9 +136,10 @@
                     res(item.TableName)("id_fields").Add(item.FieldName)
                 End If
 
-                If item.FieldName <> "id" Then
-                    res(item.TableName)("fields").Add(item.FieldName)
-                End If
+            If item.FieldName <> "id" Then
+                res(item.TableName)("fields").Add(item.FieldName)
+                res(item.TableName)("online_fields").Add(item.online_field_name)
+            End If
 
             Next
 
@@ -340,7 +361,7 @@
     End Sub
 
 
-    Public Function work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), pgSQLHost As pgSQLServer) As Boolean
+    Public Function work_insert(insert As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), pgSQLHost As pgSQLServer, online_field_mapping As Dictionary(Of String, String)) As Boolean
 
         insert.SyncStart = Now
 
@@ -352,23 +373,23 @@
 
             Dim data As Dictionary(Of String, Object) = Nothing
 
-                If insert.Tabelle.ToLower().EndsWith("_rel") Then
-                    data = pgSQLHost.get_data(insert, schema)
-                Else
-                    data = api.get_data(insert, schema, field_types)
-                End If
+            If insert.Tabelle.ToLower().EndsWith("_rel") Then
+                data = pgSQLHost.get_data(insert, schema)
+            Else
+                data = api.get_data(insert, schema, field_types, online_field_mapping)
+            End If
 
 
-                If data.Count = 0 Then
-                    insert.SyncEnde = Now
-                    insert.SyncResult = True
-                    insert.SyncMessage = "no data available at insert - the record may be already deleted in odoo"
-                    Me.save_sync_table_record(insert)
-                    Return True
-                End If
+            If data.Count = 0 Then
+                insert.SyncEnde = Now
+                insert.SyncResult = True
+                insert.SyncMessage = "no data available at insert - the record may be already deleted in odoo"
+                Me.save_sync_table_record(insert)
+                Return True
+            End If
 
-                If insert.Tabelle.ToLower().EndsWith("_rel") Then
-                    Dim rel_record_exists_script As String = String.Format(
+            If insert.Tabelle.ToLower().EndsWith("_rel") Then
+                Dim rel_record_exists_script As String = String.Format(
 "
                     if exists(select
                                 *
@@ -389,12 +410,12 @@
                             String.Format("@{0}", data.Keys(1)))
 
 
-                    Dim rel_record_exists_cmd As New SqlClient.SqlCommand(rel_record_exists_script, db.Connection)
+                Dim rel_record_exists_cmd As New SqlClient.SqlCommand(rel_record_exists_script, db.Connection)
 
-                    For Each item In data
-                        Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
-                        rel_record_exists_cmd.Parameters.Add(param)
-                    Next
+                For Each item In data
+                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                    rel_record_exists_cmd.Parameters.Add(param)
+                Next
 
                 ' db.Connection.Open()
                 Dim s1 As DateTime
@@ -408,18 +429,18 @@
                 '    db.Connection.Close()
 
                 If rel_rec_exists Then
-                        insert.SyncEnde = Now
-                        insert.SyncResult = True
-                        insert.SyncMessage = "rel_record already in db"
-                        Me.save_sync_table_record(insert)
-                        Return True
-                    End If
-
+                    insert.SyncEnde = Now
+                    insert.SyncResult = True
+                    insert.SyncMessage = "rel_record already in db"
+                    Me.save_sync_table_record(insert)
+                    Return True
                 End If
 
-                'neue abfrage: wenn record bereits geinserted, dann syncresult = true, message = 'record already inserted'
+            End If
 
-                Dim record_exists_stm As String =
+            'neue abfrage: wenn record bereits geinserted, dann syncresult = true, message = 'record already inserted'
+
+            Dim record_exists_stm As String =
                     String.Format(
     "
                 if exists(select
@@ -439,11 +460,11 @@
                     String.Format("@{0}", schema(insert.Tabelle)("id_fields")(0)))
 
 
-                Dim record_exists_cmd As New SqlClient.SqlCommand(record_exists_stm, db.Connection)
+            Dim record_exists_cmd As New SqlClient.SqlCommand(record_exists_stm, db.Connection)
 
-                Dim id_param As New SqlClient.SqlParameter(String.Format("@{0}", schema(insert.Tabelle)("id_fields")(0)), data(schema(insert.Tabelle)("id_fields")(0)))
+            Dim id_param As New SqlClient.SqlParameter(String.Format("@{0}", schema(insert.Tabelle)("id_fields")(0)), data(schema(insert.Tabelle)("id_fields")(0)))
 
-                record_exists_cmd.Parameters.Add(id_param)
+            record_exists_cmd.Parameters.Add(id_param)
 
             'db.Connection.Open()  
             Dim s As DateTime
@@ -485,10 +506,10 @@
                 Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
 
-                    For Each item In data
-                        Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
-                        cmd.Parameters.Add(param)
-                    Next
+                For Each item In data
+                    Dim param = New SqlClient.SqlParameter(String.Format("@{0}", item.Key), item.Value)
+                    cmd.Parameters.Add(param)
+                Next
                 Dim s2 As DateTime
                 Dim e2 As DateTime
                 s2 = Now
@@ -525,7 +546,7 @@
         Return True
 
     End Function
-    Public Function work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String))) As Boolean
+    Public Function work_update(update As sync_table_record, api As odooXMLRPCWrapper, schema As Dictionary(Of String, Dictionary(Of String, List(Of String))), field_types As Dictionary(Of String, Dictionary(Of String, String)), online_field_mapping As Dictionary(Of String, String)) As Boolean
 
         update.SyncStart = Now
 
@@ -541,20 +562,20 @@
             'Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
             Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
-                'using etc.
-                Dim data = api.get_data(update, schema, field_types)
+            'using etc.
+            Dim data = api.get_data(update, schema, field_types, online_field_mapping)
 
-                If data.Count = 0 Then
-                    update.SyncEnde = Now
-                    update.SyncResult = True
-                    update.SyncMessage = "no data available at update - the record may be already deleted in odoo"
-                    Me.save_sync_table_record(update)
-                    Return True
-                End If
+            If data.Count = 0 Then
+                update.SyncEnde = Now
+                update.SyncResult = True
+                update.SyncMessage = "no data available at update - the record may be already deleted in odoo"
+                Me.save_sync_table_record(update)
+                Return True
+            End If
 
 
-                Dim command As String = String.Format(
-    "           update odoo.{0}
+            Dim command As String = String.Format(
+"           update odoo.{0}
                 set %columns%, TriggerFlag = 0
                 where {1} = {2}
                 if exists(select * 
@@ -568,19 +589,19 @@
                         declare @{0}ID int = (select top 1 {0}ID from odoo.{0} where {1} = {2})
                         exec odoo.stp_{0}_updated @{0}ID
                     end",
-                        update.Tabelle,
-                        schema(update.Tabelle)("id_fields")(0),
-                        update.odoo_id)
+                    update.Tabelle,
+                    schema(update.Tabelle)("id_fields")(0),
+                    update.odoo_id)
 
-                Dim columns As New List(Of String)
+            Dim columns As New List(Of String)
 
-                For Each field In schema(update.Tabelle)("fields")
-                    columns.Add(String.Format("{1} = @{1}{0}", Environment.NewLine, field))
-                Next
+            For Each field In schema(update.Tabelle)("fields")
+                columns.Add(String.Format("{1} = @{1}{0}", Environment.NewLine, field))
+            Next
 
-                command = command.Replace("%columns%", String.Join(", ", columns.ToArray()))
+            command = command.Replace("%columns%", String.Join(", ", columns.ToArray()))
 
-                Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
+            Dim cmd As New SqlClient.SqlCommand(command, db.Connection)
 
 
             For Each item In data

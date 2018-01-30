@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Database Name="MDB_ASBL" Class="mdbDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="AppSettings" ConnectionString="Data Source=mssql1;Initial Catalog=MDB_ASBL;Integrated Security=True" SettingsObjectName="sosync.My.MySettings" SettingsPropertyName="MDB_ASBLConnectionString" Provider="System.Data.SqlClient" />
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="MDB_GL2K" Class="mdbDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=mssql1;Initial Catalog=MDB_GL2K;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True" SettingsObjectName="sosync.My.MySettings" SettingsPropertyName="MDB_GL2KConnectionString" Provider="System.Data.SqlClient" />
   <Function Name="odoo.ft_sosyncSchema_get" Method="ft_sosyncSchema_get" IsComposable="true">
     <ElementType Name="ft_sosyncSchema_getResult">
       <Column Name="TableName" Type="System.String" DbType="NVarChar(128) NOT NULL" CanBeNull="false" />
@@ -8,6 +8,7 @@
       <Column Name="online_model_name" Type="System.Object" DbType="Variant" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="online_model_rel_field_name" Type="System.Object" DbType="Variant" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="datatype" Type="System.String" DbType="NVarChar(128) NOT NULL" CanBeNull="false" />
+      <Column Name="online_field_name" Type="System.String" DbType="VarChar(27)" CanBeNull="true" />
     </ElementType>
   </Function>
 </Database>
