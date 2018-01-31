@@ -239,11 +239,6 @@ namespace Syncer.Flows
 
             dest.Status = source.state;
             dest.Info = source.info;
-            // -- source.submission_id;
-            // -- source.submission_id_state;
-            dest.SubmissionIdDate = source.submission_id_datetime;
-            dest.SubmissionIdUrl = source.submission_id_url;
-            // -- source.submission_id_fa_dr_type;
             dest.SubmissionEnv = source.submission_env;
             dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
             dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;

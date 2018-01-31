@@ -16,11 +16,6 @@ namespace Odoo.Models
 
         public string state { get; set; }
         public string info { get; set; }
-        public object[] submission_id { get; set; }
-        public string submission_id_state { get; set; }
-        public DateTime? submission_id_datetime { get; set; }
-        public string submission_id_url { get; set; }
-        public string submission_id_fa_dr_type { get; set; }
         public string submission_env { get; set; }
         public object[] partner_id { get; set; }
         public object[] bpk_company_id { get; set; }
