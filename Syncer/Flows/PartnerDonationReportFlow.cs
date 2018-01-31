@@ -65,20 +65,13 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var meldung = OdooService.Client.GetDictionary("res.partner.donation_report", onlineID, new string[] { "bpk_company_id", "partner_id", "sub_bpk_id" });
+            var meldung = OdooService.Client.GetDictionary("res.partner.donation_report", onlineID, new string[] { "bpk_company_id", "partner_id" });
 
             var bpk_company_id = OdooConvert.ToInt32((string)((List<object>)meldung["bpk_company_id"])[0]);
             var partner_id = OdooConvert.ToInt32((string)((List<object>)meldung["partner_id"])[0]);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", bpk_company_id.Value);
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", partner_id.Value);
-
-            if (meldung.ContainsKey("sub_bpk_id"))
-            {
-                var sub_bpk_id = OdooConvert.ToInt32((string)((List<object>)meldung["sub_bpk_id"])[0]);
-                if (sub_bpk_id.HasValue)
-                    RequestChildJob(SosyncSystem.FSOnline, "res.partner.bpk", sub_bpk_id.Value);
-            }
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
