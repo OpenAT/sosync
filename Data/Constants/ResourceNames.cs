@@ -17,5 +17,6 @@ namespace WebSosync.Data.Constants
         public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
         public const string GetFirstSyncJobToSyncSelect = "GetFirstSyncJobToSync_SELECT";
         public const string CreateIndexScript = "CreateIndex_SCRIPT";
+        public const string SyncJobToSyncIndex = "SyncJobToSyncIndex";
     }
 }

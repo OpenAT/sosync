@@ -220,5 +220,16 @@ namespace WebSosync.Data.Properties {
                 return ResourceManager.GetString("SetupDropColumn_SCRIPT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to create index syncjob_sync_index1 on sync_table (job_to_fso_can_sync);
+        ///create index syncjob_sync_index2 on sync_table (job_to_fso_sync_version NULLS FIRST);
+        ///create index syncjob_sync_index3 on sync_table (job_last_change);.
+        /// </summary>
+        internal static string SyncJobToSyncIndex {
+            get {
+                return ResourceManager.GetString("SyncJobToSyncIndex", resourceCulture);
+            }
+        }
     }
 }

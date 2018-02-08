@@ -110,14 +110,26 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_source_target_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
+
+            try
+            {
+                _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex), commandTimeout: 60);
+            }
+            catch (NpgsqlException ex)
+            {
+                // If the exception happened because the index already exists, ignore it.
+                // Rethrow any other exception
+                if (ex.ErrorCode != -2147467259)
+                    throw ex;
+            }
         }
 
-        /// <summary>
-        /// Used for database setup, in case new columns are needed in production.
-        /// </summary>
-        /// <param name="column">The column name.</param>
-        /// <param name="dataType">The pgSQL data type.</param>
-        private void AddColumnIfNotExists(string column, string dataType)
+            /// <summary>
+            /// Used for database setup, in case new columns are needed in production.
+            /// </summary>
+            /// <param name="column">The column name.</param>
+            /// <param name="dataType">The pgSQL data type.</param>
+            private void AddColumnIfNotExists(string column, string dataType)
         {
             _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), "sync_table", column, dataType), commandTimeout: _cmdTimeoutSec);
         }
