@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -24,8 +25,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public PartnerFlow(IServiceProvider svc)
-            : base(svc)
+        public PartnerFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
             _log = (ILogger<PartnerFlow>)svc.GetService(typeof(ILogger<PartnerFlow>));
         }

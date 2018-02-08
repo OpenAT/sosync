@@ -20,7 +20,9 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class ReplicateSyncFlow : SyncFlow
     {
-        public ReplicateSyncFlow(IServiceProvider svc) : base(svc)
+        private IServiceProvider svc;
+
+        public ReplicateSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
         }
 

@@ -24,8 +24,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public CompanyFlow(IServiceProvider svc)
-            : base(svc)
+        public CompanyFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
         #endregion

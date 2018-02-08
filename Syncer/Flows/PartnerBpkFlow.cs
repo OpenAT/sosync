@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using WebSosync.Data;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -22,8 +23,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public PartnerBpkFlow(IServiceProvider svc)
-            : base(svc)
+        public PartnerBpkFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
             _log = (ILogger<PartnerBpkFlow>)svc.GetService(typeof(ILogger<PartnerBpkFlow>));
         }

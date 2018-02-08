@@ -22,6 +22,7 @@ namespace Syncer.Workers
     {
         #region Members
         private IServiceProvider _svc;
+        private SosyncOptions _conf;
         private FlowService _flowService;
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
@@ -46,6 +47,7 @@ namespace Syncer.Workers
             : base(options)
         {
             _svc = svc;
+            _conf = options;
             _flowService = flowService;
             _log = logger;
             _odoo = odoo;
@@ -90,7 +92,8 @@ namespace Syncer.Workers
                     UpdateJobStart(job, loadTimeUTC);
 
                     // Get the flow for the job source model, and start it
-                    using (SyncFlow flow = (SyncFlow)_svc.GetService(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model)))
+                    var constructorParams = new object[] { _svc, _conf };
+                    using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
                     {
                         bool requireRestart = false;
                         string restartReason = "";
@@ -157,12 +160,17 @@ namespace Syncer.Workers
             }
         }
 
+        private DataService GetDb()
+        {
+            return new DataService(_conf);
+        }
+
         private SyncJob GetNextOpenJob()
         {
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 var result = db.GetFirstOpenJobHierarchy().ToTree(
                         x => x.Job_ID,
@@ -184,7 +192,7 @@ namespace Syncer.Workers
             if (!job.Job_Source_Sosync_Write_Date.HasValue)
                 throw new SyncerException($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.Job_ID})");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 var affected = db.ClosePreviousJobs(job);
 
@@ -200,7 +208,7 @@ namespace Syncer.Workers
         {
             _log.LogDebug($"Updating job {job.Job_ID}: job start");
 
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
@@ -212,7 +220,7 @@ namespace Syncer.Workers
 
         private void UpdateJobError(SyncJob job, string message)
         {
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_State = SosyncState.Error;
                 // Set the job_log if it's empty, otherwise concatenate it
@@ -234,7 +242,7 @@ namespace Syncer.Workers
             }
 
             // Then update the job
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 // Don't update job_last_change on job-sync related fields
                 job.Job_To_FSO_Can_Sync = true;

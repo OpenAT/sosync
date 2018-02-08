@@ -17,7 +17,7 @@ namespace Syncer.Services
     {
         #region Members
         private OdooClient _client;
-        private ILogger<OdooService> _log;
+        private ILogger _log;
         #endregion
 
         #region Properties

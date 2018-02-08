@@ -5,6 +5,7 @@ using Syncer.Models;
 using System;
 using System.Linq;
 using WebSosync.Data;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -13,8 +14,8 @@ namespace Syncer.Flows
     public class FSGroupFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public FSGroupFlow(IServiceProvider svc)
-            : base(svc)
+        public FSGroupFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
         #endregion

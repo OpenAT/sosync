@@ -17,7 +17,7 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class MergeSyncFlow : SyncFlow
     {
-        public MergeSyncFlow(IServiceProvider svc) : base(svc)
+        public MergeSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
         }
 
@@ -51,7 +51,7 @@ namespace Syncer.Flows
 
         private void SetMergeInfos(string modelName, SyncJob job)
         {
-            using (var db = (DataService)Service.GetService(typeof(DataService)))
+            using (var db = GetDb())
             {
                 if (job.Job_Source_System == SosyncSystem.FSOnline)
                 {

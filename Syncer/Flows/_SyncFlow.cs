@@ -31,6 +31,7 @@ namespace Syncer.Flows
         #region Members
         private List<ChildJobRequest> _requiredChildJobs;
         private SyncJob _job;
+        private SosyncOptions _conf;
         #endregion
 
         #region Properties
@@ -54,14 +55,15 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public SyncFlow(IServiceProvider svc)
+        public SyncFlow(IServiceProvider svc, SosyncOptions conf)
         {
             Service = svc;
+            _conf = conf;
             Log = Service.GetService<ILogger<SyncFlow>>();
             OdooService = Service.GetService<OdooService>();
-            MdbService = Service.GetService<MdbService>();
-            OdooFormat = Service.GetService<OdooFormatService>();
-            Serializer = Service.GetService<SerializationService>();
+            MdbService = new MdbService(conf);
+            OdooFormat = new OdooFormatService();
+            Serializer = new SerializationService();
 
             _requiredChildJobs = new List<ChildJobRequest>();
 
@@ -70,6 +72,11 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected DataService GetDb()
+        {
+            return new DataService(_conf);
+        }
+
         private void SetModelNames()
         {
             var studioAtt = this.GetType().GetCustomAttribute<StudioModelAttribute>();
@@ -258,7 +265,7 @@ namespace Syncer.Flows
 
                         // Try to fetch a child job with the same main properties
                         SyncJob entry = null;
-                        using (var db = Service.GetService<DataService>())
+                        using (var db = GetDb())
                         {
                             entry = db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
 
@@ -460,7 +467,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Sync_Target_Data_Before = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -473,7 +480,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Source_Data");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Sync_Source_Data = data;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -486,7 +493,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Request");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Sync_Target_Request = requestData;
                 _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
@@ -499,7 +506,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 if (createdID.HasValue)
                     _job.Sync_Target_Record_ID = createdID.Value;
@@ -523,7 +530,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {job.Job_ID}: check source");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Sync_Source_System = srcSystem;
                 job.Sync_Source_Model = srcModel;
@@ -548,7 +555,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job { job.Job_ID}: child start");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Child_Job_Start = DateTime.UtcNow;
                 job.Job_Last_Change = DateTime.UtcNow;
@@ -561,7 +568,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job { _job.Job_ID}: {description}");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 Job.Job_Last_Change = DateTime.UtcNow;
 
@@ -576,7 +583,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job { _job.Job_ID}: child end");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Child_Job_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -592,7 +599,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: transformation/sync start");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Sync_Start = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -608,7 +615,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job { _job.Job_ID}: transformation/sync end");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Sync_End = DateTime.UtcNow;
                 _job.Job_Last_Change = DateTime.UtcNow;
@@ -624,7 +631,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {job.Job_ID}: job start");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
@@ -638,7 +645,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {job.Job_ID}: run_count");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_Run_Count += 1;
                 job.Job_Last_Change = DateTime.UtcNow;
@@ -651,7 +658,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {job.Job_ID}: job_log");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_Log = $"Consistency check {nr} failed, exiting job, leaving it in progress.";
                 job.Job_Last_Change = DateTime.UtcNow;
@@ -670,7 +677,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Job_State = SosyncState.Done;
                 _job.Job_End = DateTime.Now.ToUniversalTime();
@@ -689,7 +696,7 @@ namespace Syncer.Flows
         {
             Log.LogDebug($"Updating job {_job.Job_ID}: job error");
 
-            using (var db = Service.GetService<DataService>())
+            using (var db = GetDb())
             {
                 _job.Job_State = SosyncState.Error;
                 _job.Job_End = DateTime.UtcNow;

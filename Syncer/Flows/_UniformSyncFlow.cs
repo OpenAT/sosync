@@ -9,6 +9,7 @@ using dadi_data;
 using dadi_data.Models;
 using System.Linq;
 using Syncer.Exceptions;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -20,7 +21,7 @@ namespace Syncer.Flows
     public abstract class UniformSyncFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public UniformSyncFlow(IServiceProvider svc) : base(svc)
+        public UniformSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
             var t = this.GetType();
             var attStudio = t.GetCustomAttribute<StudioModelAttribute>();

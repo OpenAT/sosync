@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -10,7 +11,7 @@ namespace Syncer.Flows
     public class ProductTemplateFlow : UniformSyncFlow
     {
         #region Constructors
-        public ProductTemplateFlow(IServiceProvider svc) : base(svc)
+        public ProductTemplateFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
             Fields.AddRange(new string[] {
                 "id",

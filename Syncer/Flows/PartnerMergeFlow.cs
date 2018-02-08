@@ -2,6 +2,7 @@
 using Syncer.Enumerations;
 using System;
 using WebSosync.Data;
+using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
@@ -9,7 +10,7 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner")]
     public class PartnerMergeFlow : MergeSyncFlow
     {
-        public PartnerMergeFlow(IServiceProvider svc) : base(svc)
+        public PartnerMergeFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
         }
 

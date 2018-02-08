@@ -13,6 +13,7 @@ namespace Syncer.Workers
     {
         #region Members
         private IServiceProvider _svc;
+        private SosyncOptions _conf;
         private OdooService _odoo;
         private FlowService _flowManager;
         private ILogger<ProtocolWorker> _log;
@@ -27,6 +28,7 @@ namespace Syncer.Workers
             : base(options)
         {
             _svc = svc;
+            _conf = options;
             _odoo = _svc.GetService<OdooService>();
             _flowManager = flowManager;
             _log = logger;
@@ -90,9 +92,14 @@ namespace Syncer.Workers
             _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds(elapsedMs)}, throttle at {SpecialFormat.FromMilliseconds(throttle)}.");
         }
 
+        private DataService GetDb()
+        {
+            return new DataService(_conf);
+        }
+
         private SyncJob GetNextJobToSync()
         {
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 return db.GetJobToSync();
             }
@@ -100,7 +107,7 @@ namespace Syncer.Workers
 
         private void UpdateJobFsoID(SyncJob job)
         {
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 db.UpdateJob(job, x => x.Job_Fso_ID);
             }
@@ -108,7 +115,7 @@ namespace Syncer.Workers
 
         private void UpdateJobSyncInfo(SyncJob job)
         {
-            using (var db = _svc.GetService<DataService>())
+            using (var db = GetDb())
             {
                 job.Job_To_FSO_Sync_Date = DateTime.UtcNow;
                 job.Job_To_FSO_Sync_Version = job.Job_Last_Change;
