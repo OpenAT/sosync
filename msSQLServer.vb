@@ -766,11 +766,13 @@
 
             If r.Read() Then
 
-                For i As Integer = 0 To r.FieldCount - 1
+            For i As Integer = 0 To r.FieldCount - 1
+                If Not (item.Tabelle = "res_partner_donation_report" AndAlso r.GetName(i) = "state") Then
                     data.Add(r.GetName(i), r(i))
-                Next
+                End If
+            Next
 
-            End If
+        End If
 
         r.Close()
 
