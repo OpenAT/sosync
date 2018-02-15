@@ -101,9 +101,8 @@ namespace Syncer.Services
                 {
                     if (typeof(ReplicateSyncFlow).IsAssignableFrom(type))
                     {
-                        if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
-                            return type;
-                        else if (fsoAtt != null && fsoAtt.Name.ToLower() == modelName)
+                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
                             return type;
                     }
                 }
@@ -111,9 +110,17 @@ namespace Syncer.Services
                 {
                     if (typeof(MergeSyncFlow).IsAssignableFrom(type))
                     {
-                        if (fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
                             return type;
-                        else if (fsoAtt != null && fsoAtt.Name.ToLower() == modelName)
+                    }
+                }
+                else if (jobType == SosyncJobSourceType.Delete)
+                {
+                    if (typeof(DeleteSyncFlow).IsAssignableFrom(type))
+                    {
+                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
                             return type;
                     }
                 }
@@ -123,7 +130,7 @@ namespace Syncer.Services
                 }
             }
 
-            throw new NotSupportedException($"No sync flow found for model '{modelName}' of type '{jobType}'");
+            throw new NotSupportedException($"No sync flow found for model '{modelName}' of job_source_type '{jobType}'");
         }
 
         /// <summary>
