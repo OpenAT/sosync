@@ -41,6 +41,11 @@ namespace Syncer.Services
                 return new DataService<TModel>(con, transaction);
             }
         }
+
+        public string GetStudioModelIdentity(string modelName)
+        {
+            return $"{modelName.Split('.')[1]}ID";
+        }
         #endregion
     }
 }
