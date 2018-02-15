@@ -20,10 +20,10 @@ namespace ManualTest
     {
         static void Main(string[] args)
         {
-            var sc = new ServiceCollection();
-            var svc = sc.BuildServiceProvider();
+            //var sc = new ServiceCollection();
+            //var svc = sc.BuildServiceProvider();
 
-            var f = new ProductTemplateFlow(svc);
+            //var f = new ProductTemplateFlow(svc);
 
             Console.WriteLine("Done");
             Console.ReadKey();
