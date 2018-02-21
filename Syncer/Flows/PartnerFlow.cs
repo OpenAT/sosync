@@ -182,7 +182,7 @@ namespace Syncer.Flows
             result.sosync_write_date = GetPersonSosyncWriteDate(result);
 
             s.Stop();
-            LogMs(0, "GetPersonStack", null, s.ElapsedMilliseconds);
+            LogMs(0, nameof(GetCurrentdboPersonStack), null, s.ElapsedMilliseconds);
 
             return result;
         }

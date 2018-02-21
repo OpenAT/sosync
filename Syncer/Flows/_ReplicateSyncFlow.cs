@@ -194,7 +194,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, "SetSyncSource", Job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, nameof(SetSyncSource), Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
         }
 
@@ -228,7 +228,7 @@ namespace Syncer.Flows
             studioInfo = null;
 
             onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-            LogMs(1, "GetOnlineInfo 1", job.Job_ID, OdooService.Client.LastRpcTime);
+            LogMs(1, nameof(GetModelInfosViaOnline) + "-1", job.Job_ID, OdooService.Client.LastRpcTime);
 
             if (onlineInfo == null)
                 throw new ModelNotFoundException(
@@ -242,7 +242,7 @@ namespace Syncer.Flows
                 s.Start();
                 studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
                 s.Stop();
-                LogMs(1, $"GetStudioInfo 1", job.Job_ID, s.ElapsedMilliseconds);
+                LogMs(1, nameof(GetModelInfosViaOnline) + "-2", job.Job_ID, s.ElapsedMilliseconds);
             }
         }
 
@@ -254,7 +254,7 @@ namespace Syncer.Flows
             s.Start();
             studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
             s.Stop();
-            LogMs(1, "GetStudioInfo 2", job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(1, nameof(GetModelInfosViaStudio) + "-1", job.Job_ID, s.ElapsedMilliseconds);
 
             if (studioInfo == null)
                 throw new ModelNotFoundException(
@@ -265,7 +265,7 @@ namespace Syncer.Flows
             if (studioInfo.ForeignID != null)
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-                LogMs(1, "GetOnlineInfo 2", job.Job_ID, OdooService.Client.LastRpcTime);
+               LogMs(1, nameof(GetModelInfosViaStudio) + "-2", job.Job_ID, OdooService.Client.LastRpcTime);
             }
         }
     }
