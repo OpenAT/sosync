@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using WebSosync.Common;
 using WebSosync.Data;
@@ -41,7 +42,9 @@ namespace Syncer.Flows
         protected MdbService MdbService { get; private set; }
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
-        
+
+        private StringBuilder _timeLog;
+
         protected SyncJob Job
         {
             get => _job;
@@ -64,6 +67,7 @@ namespace Syncer.Flows
             MdbService = new MdbService(conf);
             OdooFormat = new OdooFormatService();
             Serializer = new SerializationService();
+            _timeLog = new StringBuilder();
 
             _requiredChildJobs = new List<ChildJobRequest>();
 
@@ -72,6 +76,16 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected void LogMilliseconds(string operation, double ms)
+        {
+            _timeLog.AppendLine($"{operation}: {ms} ms");
+        }
+
+        public string GetTimeLog()
+        {
+            return _timeLog.ToString();
+        }
+
         protected DataService GetDb()
         {
             return new DataService(_conf);
@@ -380,7 +394,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, "Transformation", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, nameof(HandleTransformation), _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -722,6 +736,7 @@ namespace Syncer.Flows
         protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
             Log.LogDebug($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
+            LogMilliseconds(name, ms);
         }
 
         public void Dispose()
