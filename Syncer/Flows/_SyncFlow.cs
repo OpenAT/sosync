@@ -78,7 +78,7 @@ namespace Syncer.Flows
         #region Methods
         protected void LogMilliseconds(string operation, double ms)
         {
-            _timeLog.AppendLine($"{operation}: {ms} ms");
+            _timeLog.AppendLine($"{operation}: {ms.ToString("0")} ms");
         }
 
         public string GetTimeLog()
