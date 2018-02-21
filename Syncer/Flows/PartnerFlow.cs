@@ -852,6 +852,7 @@ namespace Syncer.Flows
                             new { sosync_fs_id = person.person.PersonID },
                             onlineID,
                             false);
+                        LogMilliseconds($"{nameof(TransformToStudio)} update res.partner", OdooService.Client.LastRpcTime);
                     }
                     else
                     {
@@ -1131,76 +1132,126 @@ namespace Syncer.Flows
                         try
                         {
                             personSvc.Update(person.person);
+                            LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
 
                             if (person.address != null)
                             {
                                 if (person.address.PersonAdresseID == 0)
                                 {
                                     addressSvc.Create(person.address);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonAdresse", addressSvc.LastQueryExecutionTimeMS);
+
                                     person.addressAM.PersonAdresseID = person.address.PersonAdresseID;
+
                                     addressAMSvc.Create(person.addressAM);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonAdresseAM", addressAMSvc.LastQueryExecutionTimeMS);
                                 }
                                 else
                                 {
                                     addressSvc.Update(person.address);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonAdresse", addressSvc.LastQueryExecutionTimeMS);
+
                                     addressAMSvc.Update(person.addressAM);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonAdresseAM", addressSvc.LastQueryExecutionTimeMS);
                                 }
                             }
 
                             if (person.email != null)
                             {
                                 if (person.email.PersonEmailID == 0)
+                                {
                                     emailSvc.Create(person.email);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonEmail", emailSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     emailSvc.Update(person.email);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonEmail", emailSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.phone != null)
                             {
                                 if (person.phone.PersonTelefonID == 0)
+                                {
                                     phoneSvc.Create(person.phone);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonTelefon (Festnetz)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     phoneSvc.Update(person.phone);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonTelefon (Festnetz)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.mobile != null)
                             {
                                 if (person.mobile.PersonTelefonID == 0)
+                                {
                                     phoneSvc.Create(person.mobile);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonTelefon (Mobil)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     phoneSvc.Update(person.mobile);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonTelefon (Mobil)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.fax != null)
                             {
                                 if (person.fax.PersonTelefonID == 0)
+                                {
                                     phoneSvc.Create(person.fax);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonTelefon (Fax)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     phoneSvc.Update(person.fax);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonTelefon (Fax)", phoneSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.personDonationDeductionOptOut != null)
                             {
                                 if (person.personDonationDeductionOptOut.PersonGruppeID == 0)
+                                {
                                     personGroupSvc.Create(person.personDonationDeductionOptOut);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonGruppe (DonationDeductionOptOut)", personGroupSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     personGroupSvc.Update(person.personDonationDeductionOptOut);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonGruppe (DonationDeductionOptOut)", personGroupSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.emailNewsletter != null)
                             {
                                 if (person.emailNewsletter.PersonEmailGruppeID == 0)
+                                {
                                     emailNewsletterSvc.Create(person.emailNewsletter);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonEmailGruppe", emailNewsletterSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     emailNewsletterSvc.Update(person.emailNewsletter);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonEmailGruppe", emailNewsletterSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             if (person.SystemDeactivateBPK != null)
                             {
                                 if (person.SystemDeactivateBPK.PersonGruppeID == 0)
+                                {
                                     personGroupSvc.Create(person.SystemDeactivateBPK);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} create dbo.PersonGruppe (DeactivateBPK)", personGroupSvc.LastQueryExecutionTimeMS);
+                                }
                                 else
+                                {
                                     personGroupSvc.Update(person.SystemDeactivateBPK);
+                                    LogMilliseconds($"{nameof(TransformToStudio)} update dbo.PersonGruppe (DeactivateBPK)", personGroupSvc.LastQueryExecutionTimeMS);
+                                }
                             }
 
                             SetdboPersonStack_fso_ids(
@@ -1224,6 +1275,7 @@ namespace Syncer.Flows
                         }
                     }
                     personSvc.CommitTransaction();
+                    LogMilliseconds($"{nameof(TransformToStudio)} commit transaction dbo.Person", personSvc.LastQueryExecutionTimeMS);
                 }
             }
         }
