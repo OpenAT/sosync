@@ -103,6 +103,7 @@ namespace Syncer.Flows
 
         private dboPersonStack GetCurrentdboPersonStack(int PersonID)
         {
+            LogMilliseconds($"{nameof(GetCurrentdboPersonStack)} start", 0);
             Stopwatch s = new Stopwatch();
             s.Start();
 
@@ -182,7 +183,7 @@ namespace Syncer.Flows
             result.sosync_write_date = GetPersonSosyncWriteDate(result);
 
             s.Stop();
-            LogMs(0, nameof(GetCurrentdboPersonStack), null, s.ElapsedMilliseconds);
+            LogMs(0, $"{nameof(GetCurrentdboPersonStack)} done", null, s.ElapsedMilliseconds);
 
             return result;
         }
@@ -200,6 +201,10 @@ namespace Syncer.Flows
             SqlConnection con,
             SqlTransaction transaction)
         {
+            LogMilliseconds($"{nameof(SetdboPersonStack_fso_ids)} start", 0);
+            var s = new Stopwatch();
+            s.Start();
+
             if ((person.person.sosync_fso_id ?? 0) != onlineID)
             {
                 person.person.sosync_fso_id = onlineID;
@@ -359,6 +364,8 @@ namespace Syncer.Flows
                     personGroupSvc.Update(person.SystemDeactivateBPK);
                 }
             }
+            s.Stop();
+            LogMs(1, $"{nameof(SetdboPersonStack_fso_ids)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -593,6 +600,7 @@ namespace Syncer.Flows
             else
             {
                 OdooService.Client.GetModel<resPartner>("res.partner", person.person.sosync_fso_id.Value);
+                LogMilliseconds($"{nameof(TransformToOnline)} read full res.partner", OdooService.Client.LastRpcTime);
 
                 UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
                 try
@@ -636,6 +644,8 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
+            LogMilliseconds($"{nameof(TransformToStudio)} read full res.partner", OdooService.Client.LastRpcTime);           
+
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
             if (!IsValidFsID(partner.Sosync_FS_ID))

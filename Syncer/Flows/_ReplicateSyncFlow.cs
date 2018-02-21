@@ -66,6 +66,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated with the sync source.</param>
         private void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
         {
+            LogMs(0, $"\n{nameof(SetSyncSource)} start", job.Job_ID, 0);
             Stopwatch s = new Stopwatch();
             s.Start();
             try
@@ -194,7 +195,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, nameof(SetSyncSource), Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
+            LogMs(0, $"{nameof(SetSyncSource)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
         }
 
@@ -228,7 +229,7 @@ namespace Syncer.Flows
             studioInfo = null;
 
             onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-            LogMs(1, nameof(GetModelInfosViaOnline) + "-1", job.Job_ID, OdooService.Client.LastRpcTime);
+            LogMs(1, nameof(GetModelInfosViaOnline) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
 
             if (onlineInfo == null)
                 throw new ModelNotFoundException(
@@ -242,7 +243,7 @@ namespace Syncer.Flows
                 s.Start();
                 studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
                 s.Stop();
-                LogMs(1, nameof(GetModelInfosViaOnline) + "-2", job.Job_ID, s.ElapsedMilliseconds);
+                LogMs(1, nameof(GetModelInfosViaOnline) + "-MSSQL", job.Job_ID, s.ElapsedMilliseconds);
             }
         }
 
@@ -254,7 +255,7 @@ namespace Syncer.Flows
             s.Start();
             studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
             s.Stop();
-            LogMs(1, nameof(GetModelInfosViaStudio) + "-1", job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(1, nameof(GetModelInfosViaStudio) + "-MSSQL", job.Job_ID, s.ElapsedMilliseconds);
 
             if (studioInfo == null)
                 throw new ModelNotFoundException(
@@ -265,7 +266,7 @@ namespace Syncer.Flows
             if (studioInfo.ForeignID != null)
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-               LogMs(1, nameof(GetModelInfosViaStudio) + "-2", job.Job_ID, OdooService.Client.LastRpcTime);
+               LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
             }
         }
     }

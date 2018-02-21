@@ -222,6 +222,8 @@ namespace Syncer.Flows
 
         protected void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
+            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
+
             var s = new Stopwatch();
             s.Start();
             try
@@ -348,6 +350,8 @@ namespace Syncer.Flows
 
         protected void HandleTransformation(string description, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
+            LogMs(0, $"\n{nameof(HandleTransformation)} start", _job.Job_ID, 0);
+
             var s = new Stopwatch();
             s.Start();
             try
@@ -394,7 +398,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, nameof(HandleTransformation), _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, $"{nameof(HandleTransformation)} done", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -730,7 +734,7 @@ namespace Syncer.Flows
             db.UpdateJob(job);
 
             s.Stop();
-            LogMs(1, method, job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(1, $"Local DB: {method}", job.Job_ID, s.ElapsedMilliseconds);
         }
 
         protected void LogMs(int lvl, string name, int? jobId, long ms)
