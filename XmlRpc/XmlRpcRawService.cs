@@ -118,12 +118,12 @@ namespace XmlRpc
 
                 //result = int.Parse(doc["methodResponse"]["params"]["param"]["value"]["int"].InnerText);
                 s.Stop();
-                LastRpcTime = s.ElapsedMilliseconds;
+                LastRpcTime = Convert.ToInt64(s.Elapsed.TotalMilliseconds);
             }
             catch (Exception ex)
             {
                 s.Stop();
-                LastRpcTime = s.ElapsedMilliseconds;
+                LastRpcTime = Convert.ToInt64(s.Elapsed.TotalMilliseconds);
 
                 result = ex.ToString();
                 throw new Exception("Error in XML-RPC.", ex);
