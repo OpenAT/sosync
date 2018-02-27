@@ -18,7 +18,7 @@ namespace WebSosync.Data
     public class DataService : IDisposable
     {
         #region Members
-        private static string SQL_CreatJob;
+        private static string SQL_CreateJob;
         private static string SQL_UpdateJob;
 
         private NpgsqlConnection _con;
@@ -39,7 +39,7 @@ namespace WebSosync.Data
 
             // Generate the insert statement
             //   insert into sync_table (prop1, prop2, ...) values (@prop1, @prop2, ...)
-            SQL_CreatJob = $"insert into sync_table (\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()))}\n) values (\n\t{string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"))}\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id'));";
+            SQL_CreateJob = $"insert into sync_table (\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()))}\n) values (\n\t{string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"))}\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id'));";
 
             // Update statement
             //   update sync_table set prop1 = @prop1, prop2 = @prop2, ... where job_id = @job_id
@@ -302,7 +302,7 @@ namespace WebSosync.Data
 
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
-            job.Job_ID = _con.Query<int>(DataService.SQL_CreatJob, job).Single();
+            job.Job_ID = _con.Query<int>(DataService.SQL_CreateJob, job).Single();
         }
 
         /// <summary>
