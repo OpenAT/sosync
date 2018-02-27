@@ -644,7 +644,7 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
-            LogMilliseconds($"{nameof(TransformToStudio)} read full res.partner", OdooService.Client.LastRpcTime);           
+            LogMilliseconds($"{nameof(TransformToStudio)} read res.partner", OdooService.Client.LastRpcTime);           
 
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
@@ -1307,11 +1307,14 @@ namespace Syncer.Flows
             if (source.CountryID != null && source.CountryID.Length > 0)
             {
                 var country = OdooService.Client.GetModel<resCountry>("res.country", Convert.ToInt32(source.CountryID[0]));
+                LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} read res.country", OdooService.Client.LastRpcTime);
+
                 if (country != null)
                 {
                     using (var dbSvc = MdbService.GetDataService<dboTypen>())
                     {
                         var foundLandID = dbSvc.ExecuteQuery<int?>("select sosync.IsoCountryCode2_to_LandID(@Code)", new { Code = country.Code }).FirstOrDefault();
+                        LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} get LandID for ISO Code", dbSvc.LastQueryExecutionTimeMS);
 
                         if (foundLandID.HasValue && foundLandID.Value != 0)
                             dest.LandID = foundLandID.Value;
@@ -1331,6 +1334,7 @@ namespace Syncer.Flows
                 using (var typenSVC = MdbService.GetDataService<dboTypen>())
                 {
                     system_default_AnredeformtypID = (int)typenSVC.Read(new { TypenID = 200120 }).FirstOrDefault().Formularwert;
+                    LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} get Type<200120>", typenSVC.LastQueryExecutionTimeMS);
                 }
 
                 dest.AnredeformtypID = system_default_AnredeformtypID;
@@ -1395,6 +1399,7 @@ namespace Syncer.Flows
             using (var typenSvc = MdbService.GetDataService<dboTypen>())
             {  
                 var defaultLandID = (int)typenSvc.Read(new { TypenID = 200525 }).FirstOrDefault().Formularwert;
+                LogMilliseconds($"{nameof(InitDboPerson)} get Type<200525>", typenSvc.LastQueryExecutionTimeMS);
 
                 result = new dboPerson
                 {
@@ -1416,7 +1421,10 @@ namespace Syncer.Flows
             using (var typenSvc = MdbService.GetDataService<dboTypen>())
             {
                 var defaultAnredefromtypID = (int)typenSvc.Read(new { TypenID = 200120 }).FirstOrDefault().Formularwert;
+                LogMilliseconds($"{nameof(InitDboPersonAdresse)} get Type<200120>", typenSvc.LastQueryExecutionTimeMS);
+
                 var defaultLandID = (int)typenSvc.Read(new { TypenID = 200525 }).FirstOrDefault().Formularwert;
+                LogMilliseconds($"{nameof(InitDboPersonAdresse)} get Type<200525>", typenSvc.LastQueryExecutionTimeMS);
 
                 result = new dboPersonAdresse
                 {
@@ -1439,7 +1447,6 @@ namespace Syncer.Flows
 
             result = new dboPersonAdresseAM
             {
-
                 PAC = 0,
                 xIDA = 0
             };
@@ -1455,6 +1462,7 @@ namespace Syncer.Flows
             {
 
                 var defaultEmailAnredefromtypID = (int)typenSvc.Read(new { TypenID = 200122 }).FirstOrDefault().Formularwert;
+                LogMilliseconds($"{nameof(InitDboPersonEmail)} get Type<200122>", typenSvc.LastQueryExecutionTimeMS);
 
                 result = new dboPersonEmail
                 {

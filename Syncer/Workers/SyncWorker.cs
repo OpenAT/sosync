@@ -67,7 +67,11 @@ namespace Syncer.Workers
             // Get only the first open job and its hierarchy,
             // and build the tree in memory
             var loadTimeUTC = DateTime.UtcNow;
+
+            var s = new Stopwatch();
+            s.Start();
             var job = GetNextOpenJob();
+            s.Stop();
 
             while (job != null && !CancellationToken.IsCancellationRequested)
             {
@@ -89,6 +93,7 @@ namespace Syncer.Workers
                         return;
                     }
 
+                    job.Job_Log += $"GetNextOpenJob: {s.Elapsed.TotalMilliseconds.ToString("0")} ms\n";
                     UpdateJobStart(job, loadTimeUTC);
 
                     // Get the flow for the job source model, and start it
@@ -158,7 +163,10 @@ namespace Syncer.Workers
 
                 // Get the next open job
                 loadTimeUTC = DateTime.UtcNow;
+                s.Reset();
+                s.Start();
                 job = GetNextOpenJob();
+                s.Stop();
             }
         }
 
@@ -186,7 +194,6 @@ namespace Syncer.Workers
 
                 return result;
             }
-
         }
 
         private void CloseAllPreviousJobs(SyncJob job)
