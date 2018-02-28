@@ -79,7 +79,6 @@ namespace Syncer.Flows
         {
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
-            //using (var db3 = MdbService.GetDataService<dboPersonBPK()>)
             {
                 var meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
                 var aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
@@ -92,19 +91,16 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboAktionSpendenmeldungBPK meldung = null;
-            dboAktion aktion = null;
-            dboPerson person = null;
             dboxBPKAccount bpkAccount = null;
+            var partnerID = 0;
 
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-            using (var db2 = MdbService.GetDataService<dboAktion>())
-            using (var db3 = MdbService.GetDataService<dboPerson>())
             using (var db4 = MdbService.GetDataService<dboxBPKAccount>())
             using (var db5 = MdbService.GetDataService<dboPersonBPK>())
             {
                 meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
-                aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
-                person = db3.Read(new { PersonID = aktion.PersonID }).FirstOrDefault();
+                var personID = db.ExecuteQuery<int>("select PersonID from dbo.Aktion where AktionsID = @AktionsID", new { AktionsID = studioID }).Single(); 
+                partnerID = db.ExecuteQuery<int>("select sosync_fso_id from dbo.Person where PersonID = @PersonID", new { PersonID = personID }).Single();
                 bpkAccount = db4.Read(new { xBPKAccountID = meldung.xBPKAccountID }).FirstOrDefault();
             }
 
@@ -115,7 +111,7 @@ namespace Syncer.Flows
             var data = new Dictionary<string, object>()
             {
                 { "submission_env", meldung.SubmissionEnv },
-                { "partner_id", person.sosync_fso_id },
+                { "partner_id", partnerID },
                 { "bpk_company_id", bpkAccount.sosync_fso_id },
                 { "anlage_am_um", meldung.AnlageAmUm },
                 { "ze_datum_von", meldung.ZEDatumVon },
