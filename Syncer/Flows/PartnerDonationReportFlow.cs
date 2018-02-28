@@ -113,9 +113,9 @@ namespace Syncer.Flows
                 { "submission_env", meldung.SubmissionEnv },
                 { "partner_id", partnerID },
                 { "bpk_company_id", bpkAccount.sosync_fso_id },
-                { "anlage_am_um", meldung.AnlageAmUm },
-                { "ze_datum_von", meldung.ZEDatumVon },
-                { "ze_datum_bis", meldung.ZEDatumBis },
+                { "anlage_am_um", meldung.AnlageAmUm.Value.ToUniversalTime() },
+                { "ze_datum_von", meldung.ZEDatumVon.Value.ToUniversalTime() },
+                { "ze_datum_bis", meldung.ZEDatumBis.Value.ToUniversalTime() },
                 { "meldungs_jahr", meldung.MeldungsJahr.ToString("0") },
                 { "betrag", meldung.Betrag },
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
@@ -240,9 +240,9 @@ namespace Syncer.Flows
             dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
             dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;
             dest.SubmissionCompanyName = (string)source.bpk_company_id[1];
-            dest.AnlageAmUm = source.anlage_am_um;
-            dest.ZEDatumVon = source.ze_datum_von;
-            dest.ZEDatumBis = source.ze_datum_bis;
+            dest.AnlageAmUm = source.anlage_am_um.Value.ToLocalTime();
+            dest.ZEDatumVon = source.ze_datum_von.Value.ToLocalTime();
+            dest.ZEDatumBis = source.ze_datum_bis.Value.ToLocalTime();
             dest.MeldungsJahr =  source.meldungs_jahr.Value;
             dest.Betrag = source.betrag.Value;
             dest.CancellationForBpkPrivate = source.cancellation_for_bpk_private;
