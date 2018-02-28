@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "f2f72cd27123bcac6515879f5ea1b72c4750709d"
+    "signature": "509abe4a954c2055d8099455541dee8f6b7e7481"
   },
   "compilationOptions": {},
   "targets": {
@@ -11,13 +11,13 @@
           "Odoo": "1.0.0",
           "Syncer": "1.0.0",
           "WebSosync.Common": "1.0.0",
-          "dadi-data": "1.1.8"
+          "dadi-data": "1.1.13"
         },
         "runtime": {
           "ManualTest.dll": {}
         }
       },
-      "dadi-data/1.1.8": {
+      "dadi-data/1.1.13": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -767,7 +767,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.1.8"
+          "dadi-data": "1.1.13"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -812,12 +812,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.1.8": {
+    "dadi-data/1.1.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Tw1Sfvc4xkhoMWV3u6cK/ZEQ+dEYmQDhghBJX4hAs/GQWMmmOEHUOy4vSHdWbCmIy/jNA/fBJunzd/K29SpMVA==",
-      "path": "dadi-data/1.1.8",
-      "hashPath": "dadi-data.1.1.8.nupkg.sha512"
+      "sha512": "sha512-YGtH/SCWNkoBpAQ9radD5EIHHCsMVRWyEFVM04/jJwzCIaofYilZ4/Ycw8qRqXfj83HDDRWwrUqwmwbMooA+lw==",
+      "path": "dadi-data/1.1.13",
+      "hashPath": "dadi-data.1.1.13.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",

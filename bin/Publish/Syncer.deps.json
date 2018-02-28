@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "79db00e25eed802a4a667052d5002075b7e3613c"
+    "signature": "b635c9955662548c030250854872f650ef6ba045"
   },
   "compilationOptions": {},
   "targets": {
@@ -17,13 +17,13 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.1.8"
+          "dadi-data": "1.1.13"
         },
         "runtime": {
           "Syncer.dll": {}
         }
       },
-      "dadi-data/1.1.8": {
+      "dadi-data/1.1.13": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -865,12 +865,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.1.8": {
+    "dadi-data/1.1.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Tw1Sfvc4xkhoMWV3u6cK/ZEQ+dEYmQDhghBJX4hAs/GQWMmmOEHUOy4vSHdWbCmIy/jNA/fBJunzd/K29SpMVA==",
-      "path": "dadi-data/1.1.8",
-      "hashPath": "dadi-data.1.1.8.nupkg.sha512"
+      "sha512": "sha512-YGtH/SCWNkoBpAQ9radD5EIHHCsMVRWyEFVM04/jJwzCIaofYilZ4/Ycw8qRqXfj83HDDRWwrUqwmwbMooA+lw==",
+      "path": "dadi-data/1.1.13",
+      "hashPath": "dadi-data.1.1.13.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",
