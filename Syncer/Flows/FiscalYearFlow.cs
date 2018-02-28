@@ -92,8 +92,8 @@ namespace Syncer.Flows
                     { "company_id", companyID },
                     { "name", spanne.Bezeichnung },
                     { "code", spanne.Kurzbezeichnung },
-                    { "date_start", DateTimeHelper.ToUtc(spanne.FiskaljahrVon) },
-                    { "date_stop", DateTimeHelper.ToUtc(spanne.FiskaljahrBis) },
+                    { "date_start", spanne.FiskaljahrVon }, // No UTC conversion, because this is a date field in Odoo
+                    { "date_stop", spanne.FiskaljahrBis },  // No UTC conversion, because this is a date field in Odoo
                     { "ze_datum_von", DateTimeHelper.ToUtc(spanne.ZE_Datum_Von) },
                     { "ze_datum_bis", DateTimeHelper.ToUtc(spanne.ZE_Datum_Bis) },
                     { "meldezeitraum_start", DateTimeHelper.ToUtc(spanne.MeldespanneVon) },
