@@ -767,7 +767,10 @@
             If r.Read() Then
 
             For i As Integer = 0 To r.FieldCount - 1
-                If Not (item.Tabelle = "res_partner_donation_report" AndAlso r.GetName(i) = "state") Then
+                If Not (item.Tabelle = "res_partner_donation_report" AndAlso r.GetName(i) = "state") AndAlso
+                   Not (item.Tabelle = "res_partner" AndAlso r.GetName(i) = "bpk_state") AndAlso
+                   Not (item.Tabelle = "res_partner_bpk" AndAlso r.GetName(i) = "state") AndAlso
+                   Not (item.Tabelle = "res_partner" AndAlso r.GetName(i) = "country_id" AndAlso CType(r(i), Integer) = 0) Then
                     data.Add(r.GetName(i), r(i))
                 End If
             Next

@@ -255,6 +255,10 @@ end_block:
                                     Case "d"
                                         result = api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
 
+
+                                    Case "m"
+                                        result = api.merge_partner(record, record.odoo_id, record.odoo_id2, msSQLHost)
+
                                 End Select
 
                             End If

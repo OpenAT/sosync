@@ -51,6 +51,7 @@ Public Class odooXMLRPCWrapper
 
             Try
                 Dim s As DateTime = Now
+
                 result = proxy.execute_kw(db, uid, password, model_name, method_name, args, additional)
                 Dim e As DateTime = Now
                 stopw(s, e, cmdid)
@@ -217,6 +218,35 @@ Public Class odooXMLRPCWrapper
         End Try
 
         Return True
+    End Function
+
+    Public Function merge_partner(record As sync_table_record, partner_to_keep_id As Integer, partner_to_remove_id As Integer, msSQLHost As msSQLServer) As Boolean
+
+        'Dim data As New Dictionary(Of String, Object)
+        'data.Add("partner_to_remove_id", partner_to_remove_id)
+        'data.Add("partner_to_keep_id", partner_to_keep_id)
+
+        record.SyncStart = Now
+
+        Dim res As Object = Nothing
+
+        Try
+
+            Dim retVal = int_execute_kw(db, uid, password, "res.partner", "merge_partner", create_args(Nothing, partner_to_remove_id, partner_to_keep_id), get_de_de_locale())
+
+            record.SyncEnde = Now
+            record.SyncResult = True
+            msSQLHost.save_sync_table_record(record)
+
+        Catch ex As Exception
+
+            Logging.log("odoo-api", ex.ToString)
+            Return False
+
+        End Try
+
+        Return True
+
     End Function
 
     Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer) As Boolean
