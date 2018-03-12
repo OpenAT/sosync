@@ -714,7 +714,7 @@ namespace Syncer.Flows
                             person.phone.sosync_write_date = sosync_write_date;
                             person.phone.noSyncJobSwitch = true;
 
-                            CopyPartnerToPersonTelefon(partner, person.phone);
+                            CopyPartnerToPersonTelefon(partner, person.phone, phoneSvc);
                         }
 
                         //create new dboPersonTelefon if mobile is filled
@@ -726,7 +726,7 @@ namespace Syncer.Flows
                             person.mobile.sosync_write_date = sosync_write_date;
                             person.mobile.noSyncJobSwitch = true;
 
-                            CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+                            CopyPartnerToPersonTelefonMobil(partner, person.mobile, phoneSvc);
                         }
 
                         //create new dboPersonTelefon if phone is filled
@@ -738,7 +738,7 @@ namespace Syncer.Flows
                             person.fax.sosync_write_date = sosync_write_date;
                             person.fax.noSyncJobSwitch = true;
 
-                            CopyPartnerToPersonTelefonFax(partner, person.fax);
+                            CopyPartnerToPersonTelefonFax(partner, person.fax, phoneSvc);
                         }
 
                         //create new dboPersonGruppe if don-de-oo
@@ -927,7 +927,7 @@ namespace Syncer.Flows
 
                                 person.phone.PersonID = PersonID;
 
-                                CopyPartnerToPersonTelefon(partner, person.phone);
+                                CopyPartnerToPersonTelefon(partner, person.phone, phoneSvc);
 
                                 person.phone.sosync_fso_id = onlineID;
                                 person.phone.sosync_write_date = sosync_write_date;
@@ -936,7 +936,7 @@ namespace Syncer.Flows
                         }
                         else
                         {
-                            CopyPartnerToPersonTelefon(partner, person.phone);
+                            CopyPartnerToPersonTelefon(partner, person.phone, phoneSvc);
 
                             person.phone.sosync_fso_id = onlineID;
                             person.phone.sosync_write_date = sosync_write_date;
@@ -951,7 +951,7 @@ namespace Syncer.Flows
 
                                 person.mobile.PersonID = PersonID;
 
-                                CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+                                CopyPartnerToPersonTelefonMobil(partner, person.mobile, phoneSvc);
 
                                 person.mobile.sosync_fso_id = onlineID;
                                 person.mobile.sosync_write_date = sosync_write_date;
@@ -960,7 +960,7 @@ namespace Syncer.Flows
                         }
                         else
                         {
-                            CopyPartnerToPersonTelefonMobil(partner, person.mobile);
+                            CopyPartnerToPersonTelefonMobil(partner, person.mobile, phoneSvc);
 
                             person.mobile.sosync_fso_id = onlineID;
                             person.mobile.sosync_write_date = sosync_write_date;
@@ -975,7 +975,7 @@ namespace Syncer.Flows
 
                                 person.fax.PersonID = PersonID;
 
-                                CopyPartnerToPersonTelefonMobil(partner, person.fax);
+                                CopyPartnerToPersonTelefonMobil(partner, person.fax, phoneSvc);
 
                                 person.fax.sosync_fso_id = onlineID;
                                 person.fax.sosync_write_date = sosync_write_date;
@@ -984,7 +984,7 @@ namespace Syncer.Flows
                         }
                         else
                         {
-                            CopyPartnerToPersonTelefonMobil(partner, person.fax);
+                            CopyPartnerToPersonTelefonMobil(partner, person.fax, phoneSvc);
 
                             person.fax.sosync_fso_id = onlineID;
                             person.fax.sosync_write_date = sosync_write_date;
@@ -1367,28 +1367,50 @@ namespace Syncer.Flows
 
         }
 
-        private void CopyPartnerToPersonTelefon(resPartner source, dboPersonTelefon dest)
+        private PhoneCorrection QueryPhoneCorrection(string number, DataService<dboPersonTelefon> db)
         {
-#warning TODO: parse phone into its parts
-            dest.Landkennzeichen = "";
-            dest.Vorwahl = "";
-            dest.Rufnummer = source.Phone;
+            var p = db.ExecuteQuery<PhoneCorrection>(
+                "select * from dbo.FT_900_DBSystem_0060_TelefonnummernKorrektur(@tel)",
+                new { tel = number })
+                .SingleOrDefault();
+
+            return p;
         }
 
-        private void CopyPartnerToPersonTelefonMobil(resPartner source, dboPersonTelefon dest)
+        private void CopyPartnerToPersonTelefon(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
         {
 #warning TODO: parse phone into its parts
-            dest.Landkennzeichen = "";
-            dest.Vorwahl = "";
-            dest.Rufnummer = source.Mobile;
+            dest.RufnummerGesamt = source.Phone;
+
+            var p = QueryPhoneCorrection(source.Phone, db);
+
+            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
+            dest.Vorwahl = p.Vorwahl_mit_Null;
+            dest.Rufnummer = p.Rufnummer;
         }
 
-        private void CopyPartnerToPersonTelefonFax(resPartner source, dboPersonTelefon dest)
+        private void CopyPartnerToPersonTelefonMobil(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
         {
 #warning TODO: parse phone into its parts
-            dest.Landkennzeichen = "";
-            dest.Vorwahl = "";
-            dest.Rufnummer = source.Fax;
+            dest.RufnummerGesamt = source.Mobile;
+
+            var p = QueryPhoneCorrection(source.Mobile, db);
+
+            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
+            dest.Vorwahl = p.Vorwahl_mit_Null;
+            dest.Rufnummer = p.Rufnummer;
+        }
+
+        private void CopyPartnerToPersonTelefonFax(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
+        {
+#warning TODO: parse phone into its parts
+            dest.RufnummerGesamt = source.Fax;
+
+            var p = QueryPhoneCorrection(source.Fax, db);
+
+            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
+            dest.Vorwahl = p.Vorwahl_mit_Null;
+            dest.Rufnummer = p.Rufnummer;
         }
 
         private const string GültigMonatArray = "111111111111";
