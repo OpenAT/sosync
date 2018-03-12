@@ -770,7 +770,7 @@
                 If Not (item.Tabelle = "res_partner_donation_report" AndAlso r.GetName(i) = "state") AndAlso
                    Not (item.Tabelle = "res_partner" AndAlso r.GetName(i) = "bpk_state") AndAlso
                    Not (item.Tabelle = "res_partner_bpk" AndAlso r.GetName(i) = "state") AndAlso
-                   Not (item.Tabelle = "res_partner" AndAlso r.GetName(i) = "country_id" AndAlso CType(r(i), Integer) = 0) Then
+                   Not (item.Tabelle = "res_partner" AndAlso r.GetName(i) = "country_id" AndAlso r(i) IsNot Nothing AndAlso r(i).GetType IsNot GetType(System.DBNull) AndAlso CType(r(i), Integer) = 0) Then
                     data.Add(r.GetName(i), r(i))
                 End If
             Next

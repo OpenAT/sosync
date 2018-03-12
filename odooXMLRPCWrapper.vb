@@ -232,7 +232,7 @@ Public Class odooXMLRPCWrapper
 
         Try
 
-            Dim retVal = int_execute_kw(db, uid, password, "res.partner", "merge_partner", create_args(Nothing, partner_to_remove_id, partner_to_keep_id), get_de_de_locale())
+            Dim retVal = int_execute_kw(db, uid, password, "res.partner", "merge_partner", create_args(Nothing, Nothing, partner_to_remove_id, partner_to_keep_id), get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -249,7 +249,7 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer) As Boolean
+    Public Function insert_object(record As sync_table_record, model_name As String, data As Dictionary(Of String, Object), msSQLHost As msSQLServer, online_field_mapping As Dictionary(Of String, String)) As Boolean
 
 
         record.SyncStart = Now
@@ -266,7 +266,7 @@ Public Class odooXMLRPCWrapper
 
             Else
 
-                Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data), get_de_de_locale())
+                Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data, online_field_mapping), get_de_de_locale())
 
                 If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
                     ret = retVal
@@ -328,13 +328,13 @@ Public Class odooXMLRPCWrapper
         End If
         sw(cmdid).childs.Add(New tschild With {.start = start, .ende = ende})
     End Sub
-    Public Function update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object)) As Boolean
+    Public Function update_object(record As sync_table_record, model_name As String, id As Integer, data As Dictionary(Of String, Object), online_field_mapping As Dictionary(Of String, String)) As Boolean
 
         Try
 
             record.SyncStart = Now
 
-            Dim call_data = create_args(data, id)
+            Dim call_data = create_args(data, online_field_mapping, id)
 
             int_execute_kw(db, uid, password, model_name, "write", call_data, get_de_de_locale())
 
@@ -364,7 +364,7 @@ Public Class odooXMLRPCWrapper
 
             record.SyncStart = Now
 
-            int_execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, id), get_de_de_locale())
+            int_execute_kw(db, uid, password, model_name, "unlink", create_args(Nothing, Nothing, id), get_de_de_locale())
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -485,13 +485,14 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
-    Private Function create_args(data As Dictionary(Of String, Object), ParamArray additionalArgs() As Object) As Object()
+    Private Function create_args(data As Dictionary(Of String, Object), online_field_mapping As Dictionary(Of String, String), ParamArray additionalArgs() As Object) As Object()
 
         'TODO: hier nur provisorisch gelöst, muss noch schön programmiert werden:
         Dim date_list As New List(Of String)
         date_list.Add("birthdate_web")
         date_list.Add("expiration_date")
         date_list.Add("BPKForcedBirthdate")
+        date_list.Add("bpk_forced_birthdate")
 
         ' data.Add("test", "")
 
@@ -517,7 +518,9 @@ Public Class odooXMLRPCWrapper
                     value = Nothing
                 End If
 
-                xml_args.Add(item.Key, value)
+                Dim key = online_field_mapping(item.Key)
+
+                xml_args.Add(key, value)
             Next
 
         End If

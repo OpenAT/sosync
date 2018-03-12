@@ -108,24 +108,30 @@ sync_block:
         ' column in the pgSQL schema
         For Each scm In schema
 
+            Dim res_partner_mapped_fields As New List(Of String)
+            res_partner_mapped_fields.Add("BPKForcedFirstname")
+            res_partner_mapped_fields.Add("BPKForcedLastname")
+            res_partner_mapped_fields.Add("BPKForcedBirthdate")
+            res_partner_mapped_fields.Add("BPKForcedZip")
 
             If scm.Key <> "res_partner_bpk" Then
 
                 Dim pg_columns = pgSQLHost.get_table_columns(scm.Key)
 
-            Dim fields_list = scm.Value("fields")
-            For i As Integer = fields_list.Count - 1 To 0 Step -1
-                If Not pg_columns.Contains(fields_list(i)) Then
-                    fields_list.Remove(fields_list(i))
-                End If
-            Next
+                Dim fields_list = scm.Value("fields")
+                For i As Integer = fields_list.Count - 1 To 0 Step -1
+                    If Not pg_columns.Contains(fields_list(i)) AndAlso Not res_partner_mapped_fields.Contains(fields_list(i)) Then
+                        fields_list.Remove(fields_list(i))
+                    End If
+                Next
 
-            Dim online_fields_list = scm.Value("online_fields")
+                Dim online_fields_list = scm.Value("online_fields")
                 For i As Integer = online_fields_list.Count - 1 To 0 Step -1
                     If Not pg_columns.Contains(online_fields_list(i)) Then
                         online_fields_list.Remove(online_fields_list(i))
                     End If
                 Next
+
             End If
         Next
         '--------------------
@@ -180,6 +186,12 @@ end_block:
         For Each record In work
 
             online_field_mapping_table = online_field_mapping(record.Tabelle)
+
+            Dim mssql_field_mapping_table As New Dictionary(Of String, String)
+
+            For Each item In online_field_mapping_table
+                mssql_field_mapping_table.Add(item.Value, item.Key)
+            Next
 
             msSQLHost.get_new_ids(record)
 
@@ -242,7 +254,7 @@ end_block:
                                     Case "i"
 
 
-                                        result = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema), msSQLHost)
+                                        result = api.insert_object(record, schema(record.Tabelle)("online_model_name")(0), msSQLHost.get_data(record, schema), msSQLHost, mssql_field_mapping_table)
 
                                     'If new_id.HasValue Then
                                     '    msSQLHost.save_new_odoo_id(record, new_id.Value)
@@ -250,7 +262,7 @@ end_block:
 
 
                                     Case "u"
-                                        result = api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, msSQLHost.get_data(record, schema))
+                                        result = api.update_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id, msSQLHost.get_data(record, schema), mssql_field_mapping_table)
 
                                     Case "d"
                                         result = api.delete_object(record, schema(record.Tabelle)("online_model_name")(0), record.odoo_id)
