@@ -183,6 +183,7 @@ namespace Syncer.Flows
             dest.Vorname = source.bpk_request_firstname;
             dest.Nachname = source.bpk_request_lastname;
             dest.Geburtsdatum = source.bpk_request_birthdate;
+            dest.PLZ = source.bpk_request_zip;
 
             dest.PositivAmUm = source.bpk_request_date;
             dest.PositivDaten = source.bpk_response_data;
@@ -190,11 +191,20 @@ namespace Syncer.Flows
             dest.FehlerAmUm = source.bpk_error_request_date;
             dest.FehlerDaten = source.bpk_error_request_data;
             dest.FehlerAntwortDaten = source.bpk_error_response_data;
+
             dest.FehlerNachname = source.bpk_error_request_lastname;
             dest.FehlerVorname = source.bpk_error_request_firstname;
             dest.FehlerGeburtsdatum = source.bpk_error_request_birthdate;
+            dest.FehlerPLZ = source.bpk_error_request_zip;
+
             dest.FehlerText = source.bpk_error_text;
             dest.FehlerCode = source.bpk_error_code;
+
+            dest.RequestLog = source.bpk_request_log;
+            dest.LastRequest = source.last_bpk_request;
+
+            dest.RequestURL = source.bpk_request_url;
+            dest.ErrorRequestURL = source.bpk_error_request_url;
 
             dest.fso_state = source.state;
         }
