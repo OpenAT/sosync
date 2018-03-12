@@ -34,6 +34,7 @@ namespace Odoo.Models
         public string submission_bpk_request_id { get; set; }
         public string submission_bpk_public { get; set; }
         public string submission_bpk_private { get; set; }
+        public DateTime? submission_id_datetime { get; set; }
         public string response_content { get; set; }
         public string response_error_code { get; set; }
         public string response_error_detail { get; set; }
@@ -44,5 +45,6 @@ namespace Odoo.Models
         public object[] report_follow_up_ids { get; set; }
         public object[] skipped_by_id { get; set; }
         public bool? skipped { get; set; }
+        public string response_error_orig_refnr { get; set; }
     }
 }

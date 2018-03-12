@@ -252,6 +252,7 @@ namespace Syncer.Flows
             dest.SubmissionLastname = source.submission_lastname;
             dest.SubmissionBirthdateWeb = source.submission_birthdate_web;
             dest.SubmissionZip = source.submission_zip;
+            dest.SubmissionIdDate = source.submission_id_datetime;
 
             if (!string.IsNullOrEmpty(source.submission_bpk_request_id))
                 dest.SubmissionBPKRequestID = Convert.ToInt32(source.submission_bpk_request_id); // 1:1 speichern
@@ -264,6 +265,9 @@ namespace Syncer.Flows
             dest.ErrorType = source.error_type;
             dest.ErrorCode = source.error_code;
             dest.ErrorDetail = source.error_detail;
+
+            dest.ResponseErrorOrigRefnr = source.response_error_orig_refnr;
+
             // -- source.report_erstmeldung_id;
             // -- source.report_follow_up_ids;
             // -- source.skipped_by_id;
