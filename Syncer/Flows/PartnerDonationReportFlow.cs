@@ -252,7 +252,11 @@ namespace Syncer.Flows
             dest.SubmissionLastname = source.submission_lastname;
             dest.SubmissionBirthdateWeb = source.submission_birthdate_web;
             dest.SubmissionZip = source.submission_zip;
-            dest.SubmissionIdDate = source.submission_id_datetime;
+
+            if (source.submission_id_datetime.HasValue)
+                dest.SubmissionIdDate = source.submission_id_datetime.Value.ToLocalTime();
+            else
+                dest.SubmissionIdDate = null;
 
             if (!string.IsNullOrEmpty(source.submission_bpk_request_id))
                 dest.SubmissionBPKRequestID = Convert.ToInt32(source.submission_bpk_request_id); // 1:1 speichern
