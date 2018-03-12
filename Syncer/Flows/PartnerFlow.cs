@@ -488,17 +488,17 @@ namespace Syncer.Flows
                 data.Add("email", null);
 
             if (person.phone != null)
-                data.Add("phone", (person.phone.Landkennzeichen + " " + person.phone.Vorwahl + " " + person.phone.Rufnummer).Trim());
+                data.Add("phone", CombinePhone(person.phone.Landkennzeichen, person.phone.Vorwahl, person.phone.Rufnummer));
             else
                 data.Add("phone", null);
 
             if (person.mobile != null)
-                data.Add("mobile", (person.mobile.Landkennzeichen + " " + person.mobile.Vorwahl + " " + person.mobile.Rufnummer).Trim());
+                data.Add("mobile", CombinePhone(person.mobile.Landkennzeichen, person.mobile.Vorwahl, person.mobile.Rufnummer));
             else
                 data.Add("mobile", null);
 
             if (person.fax != null)
-                data.Add("fax", (person.fax.Landkennzeichen + " " + person.fax.Vorwahl + " " + person.fax.Rufnummer).Trim());
+                data.Add("fax", CombinePhone(person.fax.Landkennzeichen, person.fax.Vorwahl, person.fax.Rufnummer));
             else
                 data.Add("fax", null);
 
@@ -639,6 +639,17 @@ namespace Syncer.Flows
                 }
             }
             
+        }
+
+        private string CombinePhone(string countryCodeWithZeros, string areaCodeWithZero, string number)
+        {
+            var country = (countryCodeWithZeros ?? "").Trim();
+            var area = (areaCodeWithZero ?? "").Trim();
+
+            if (area.StartsWith("0"))
+                area = area.Substring(1);
+
+            return $"{country} {area} {number}".Trim();
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
