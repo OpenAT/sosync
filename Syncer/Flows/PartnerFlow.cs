@@ -1,5 +1,6 @@
 ﻿using dadi_data;
 using dadi_data.Models;
+using Dapper;
 using Microsoft.Extensions.Logging;
 using Odoo;
 using Odoo.Models;
@@ -1380,12 +1381,29 @@ namespace Syncer.Flows
 
         private PhoneCorrection QueryPhoneCorrection(string number, DataService<dboPersonTelefon> db)
         {
-            var p = db.ExecuteQuery<PhoneCorrection>(
-                "select * from dbo.FT_900_DBSystem_0060_TelefonnummernKorrektur(@tel)",
-                new { tel = number })
-                .SingleOrDefault();
+            var parameters = new DynamicParameters();
+            parameters.Add("Telefonnummer", number, size: 200);
+            parameters.Add("Telefonlandkennzeichen", direction: System.Data.ParameterDirection.Output, size: 10);
+            parameters.Add("Telefonvorwahl", direction: System.Data.ParameterDirection.Output, size: 50);
+            parameters.Add("Telefonrufnummer", direction: System.Data.ParameterDirection.Output, size: 50);
+            parameters.Add("TelefontypID", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+            parameters.Add("TelefonLandname", direction: System.Data.ParameterDirection.Output, size: 100);
+            parameters.Add("ReturnValue", direction: System.Data.ParameterDirection.Output, size: 200);
 
-            return p;
+            db.ExecuteProcedure(
+                "[dbo].[stp_860_WebService_06000_sysbst_820_TelefonAufbereiten]",
+                parameters);
+
+            var result = new PhoneCorrection()
+            {
+                Telefonlandkennzeichen = parameters.Get<string>("Telefonlandkennzeichen"),
+                Telefonvorwahl = parameters.Get<string>("Telefonvorwahl"),
+                Telefonrufnummer = parameters.Get<string>("Telefonrufnummer"),
+                TelefontypID = parameters.Get<int>("TelefontypID"),
+                TelefonLandname = parameters.Get<string>("TelefonLandname")
+            };
+
+            return result;
         }
 
         private void CopyPartnerToPersonTelefon(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
@@ -1395,9 +1413,9 @@ namespace Syncer.Flows
 
             var p = QueryPhoneCorrection(source.Phone, db);
 
-            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
-            dest.Vorwahl = p.Vorwahl_mit_Null;
-            dest.Rufnummer = p.Rufnummer;
+            dest.Landkennzeichen = p.Telefonlandkennzeichen;
+            dest.Vorwahl = p.Telefonvorwahl;
+            dest.Rufnummer = p.Telefonrufnummer;
         }
 
         private void CopyPartnerToPersonTelefonMobil(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
@@ -1407,9 +1425,9 @@ namespace Syncer.Flows
 
             var p = QueryPhoneCorrection(source.Mobile, db);
 
-            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
-            dest.Vorwahl = p.Vorwahl_mit_Null;
-            dest.Rufnummer = p.Rufnummer;
+            dest.Landkennzeichen = p.Telefonlandkennzeichen;
+            dest.Vorwahl = p.Telefonvorwahl;
+            dest.Rufnummer = p.Telefonrufnummer;
         }
 
         private void CopyPartnerToPersonTelefonFax(resPartner source, dboPersonTelefon dest, DataService<dboPersonTelefon> db)
@@ -1419,9 +1437,9 @@ namespace Syncer.Flows
 
             var p = QueryPhoneCorrection(source.Fax, db);
 
-            dest.Landkennzeichen = p.Landkennzeichen_mit_Nullen;
-            dest.Vorwahl = p.Vorwahl_mit_Null;
-            dest.Rufnummer = p.Rufnummer;
+            dest.Landkennzeichen = p.Telefonlandkennzeichen;
+            dest.Vorwahl = p.Telefonvorwahl;
+            dest.Rufnummer = p.Telefonrufnummer;
         }
 
         private const string GültigMonatArray = "111111111111";
