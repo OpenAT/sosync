@@ -60,6 +60,12 @@ namespace Syncer.Services
         /// <param name="flowType">The type that is checked to be a correct flow.</param>
         private void CheckFlowAttributes(Type flowType)
         {
+            var attDisabled = flowType.GetTypeInfo().GetCustomAttribute<DisableFlowAttribute>();
+
+            // Do not check Flows, that are disabled.
+            if (attDisabled != null)
+                return;
+
             var attOnline = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
             var attStudio = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
 
@@ -94,43 +100,57 @@ namespace Syncer.Services
 
             foreach (var type in FlowTypes)
             {
-                var fsAtt = type.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
-                var fsoAtt = type.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+                var disabledAtt = type.GetTypeInfo().GetCustomAttribute<DisableFlowAttribute>();
 
-                if (string.IsNullOrEmpty(jobType))
+                if (disabledAtt == null)
                 {
-                    if (typeof(ReplicateSyncFlow).IsAssignableFrom(type))
+                    var fsAtt = type.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+                    var fsoAtt = type.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+
+                    if (string.IsNullOrEmpty(jobType))
                     {
-                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
-                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
-                            return type;
+                        if (typeof(ReplicateSyncFlow).IsAssignableFrom(type))
+                        {
+                            if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                                || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
+                                return type;
+                        }
                     }
-                }
-                else if (jobType == SosyncJobSourceType.MergeInto)
-                {
-                    if (typeof(MergeSyncFlow).IsAssignableFrom(type))
+                    else if (jobType == SosyncJobSourceType.MergeInto)
                     {
-                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
-                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
-                            return type;
+                        if (typeof(MergeSyncFlow).IsAssignableFrom(type))
+                        {
+                            if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                                || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
+                                return type;
+                        }
                     }
-                }
-                else if (jobType == SosyncJobSourceType.Delete)
-                {
-                    if (typeof(DeleteSyncFlow).IsAssignableFrom(type))
+                    else if (jobType == SosyncJobSourceType.Delete)
                     {
-                        if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
-                            || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
-                            return type;
+                        if (typeof(DeleteSyncFlow).IsAssignableFrom(type))
+                        {
+                            if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                                || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
+                                return type;
+                        }
                     }
-                }
-                else
-                {
-                    throw new NotSupportedException($"Could not find appropriate sync flow for job_source_type '{jobType}'.");
+                    else if (jobType == SosyncJobSourceType.Temp)
+                    {
+                        if (typeof(TempSyncFlow).IsAssignableFrom(type))
+                        {
+                            if ((fsAtt != null && fsAtt.Name.ToLower() == modelName)
+                                || (fsoAtt != null && fsoAtt.Name.ToLower() == modelName))
+                                return type;
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Could not find appropriate sync flow for job_source_type '{jobType}'.");
+                    }
                 }
             }
 
-            throw new NotSupportedException($"No sync flow found for model '{modelName}' of job_source_type '{jobType}'");
+            throw new NotSupportedException($"No active sync flow found for model '{modelName}' of job_source_type '{jobType}'");
         }
 
         /// <summary>
