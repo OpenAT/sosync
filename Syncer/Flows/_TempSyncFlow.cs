@@ -43,10 +43,27 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
-            HandleChildJobs(flowService, null, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleChildJobs(
+                "Child Job",
+                RequiredChildJobs, 
+                flowService, 
+                null, 
+                consistencyWatch, 
+                ref requireRestart,
+                ref restartReason);
 
             var description = $"Processing [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} and {Job.Sync_Target_Merge_Into_Record_ID}";
+
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
+
+            HandleChildJobs(
+                "Post Transformation Child Job",
+                RequiredChildJobs,
+                flowService,
+                null,
+                consistencyWatch,
+                ref requireRestart,
+                ref restartReason);
         }
 
         private void SetProcessInfos(string modelName, SyncJob job)

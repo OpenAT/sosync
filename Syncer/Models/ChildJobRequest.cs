@@ -10,14 +10,16 @@ namespace Syncer.Models
         public string JobSourceSystem { get; set; }
         public string JobSourceModel { get; set; }
         public int JobSourceRecordID { get; set; }
+        public bool ForceDirection { get; set; }
         #endregion
 
         #region Constructors
-        public ChildJobRequest(string system, string model, int recordID)
+        public ChildJobRequest(string system, string model, int recordID, bool forceDirection)
         {
             JobSourceSystem = system;
             JobSourceModel = model;
             JobSourceRecordID = recordID;
+            ForceDirection = forceDirection;
         }
         #endregion
     }

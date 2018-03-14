@@ -20,12 +20,17 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class ReplicateSyncFlow : SyncFlow
     {
+        #region Fields
         private IServiceProvider svc;
+        #endregion
 
+        #region Constructors
         public ReplicateSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
         }
+        #endregion
 
+        #region Methods
         /// <summary>
         /// Starts the sync flow.
         /// </summary>
@@ -42,7 +47,26 @@ namespace Syncer.Flows
             DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();
 
-            SetSyncSource(Job, out initialWriteDate, consistencyWatch);
+            if (!SkipAutoSyncSource)
+            {
+                SetSyncSource(Job, out initialWriteDate, consistencyWatch);
+            }
+            else
+            {
+                // If automatic sync source detection is disabled,
+                // just fetch the initial write dates depending on
+                // the job values
+                if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
+                {
+                    var info = GetStudioInfo(Job.Job_Source_Record_ID);
+                    initialWriteDate = info.SosyncWriteDate ?? info.WriteDate;
+                }
+                else
+                {
+                    var info = GetOnlineInfo(Job.Job_Source_Record_ID);
+                    initialWriteDate = info.SosyncWriteDate ?? info.WriteDate;
+                }
+            }
 
             if (string.IsNullOrEmpty(Job.Sync_Source_System))
             {
@@ -52,11 +76,27 @@ namespace Syncer.Flows
                 return;
             }
 
-            HandleChildJobs(flowService, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleChildJobs(
+                "Child Job",
+                RequiredChildJobs,
+                flowService,
+                initialWriteDate, 
+                consistencyWatch, 
+                ref requireRestart,
+                ref restartReason);
 
             var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
             var description = $"Trasnforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
             HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+
+            HandleChildJobs(
+                "Post Transformation Child Job",
+                RequiredPostTransformChildJobs,
+                flowService,
+                initialWriteDate, 
+                consistencyWatch, 
+                ref requireRestart,
+                ref restartReason);
         }
 
         /// <summary>
@@ -269,5 +309,6 @@ namespace Syncer.Flows
                LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
             }
         }
+        #endregion
     }
 }

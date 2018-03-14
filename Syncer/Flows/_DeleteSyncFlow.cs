@@ -28,10 +28,26 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
-            HandleChildJobs(flowService, null, consistencyWatch, ref requireRestart, ref restartReason);
+            HandleChildJobs(
+                "Child Job",
+                RequiredChildJobs, 
+                flowService, 
+                null, 
+                consistencyWatch,
+                ref requireRestart, 
+                ref restartReason);
 
             var description = $"Deleting [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} (Source: [{Job.Sync_Source_System}] {Job.Sync_Source_Model} {Job.Sync_Source_Record_ID})";
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
+
+            HandleChildJobs(
+                "Post Transformation Child Job",
+                RequiredPostTransformChildJobs,
+                flowService,
+                null,
+                consistencyWatch,
+                ref requireRestart,
+                ref restartReason);
         }
 
         private void SetDeleteInfos(string modelName, SyncJob job)

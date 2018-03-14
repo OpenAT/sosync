@@ -31,6 +31,7 @@ namespace Syncer.Flows
 
         #region Members
         private List<ChildJobRequest> _requiredChildJobs;
+        private List<ChildJobRequest> _requiredPostChildJobs;
         private SyncJob _job;
         private SosyncOptions _conf;
         #endregion
@@ -42,6 +43,11 @@ namespace Syncer.Flows
         protected MdbService MdbService { get; private set; }
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
+
+        protected IReadOnlyList<ChildJobRequest> RequiredChildJobs { get { return _requiredChildJobs.AsReadOnly(); } }
+        protected IReadOnlyList<ChildJobRequest> RequiredPostTransformChildJobs { get { return _requiredPostChildJobs.AsReadOnly(); } }
+
+        public bool SkipAutoSyncSource { get; set; }
 
         private StringBuilder _timeLog;
 
@@ -67,9 +73,11 @@ namespace Syncer.Flows
             MdbService = new MdbService(conf);
             OdooFormat = new OdooFormatService();
             Serializer = new SerializationService();
+            SkipAutoSyncSource = false;
             _timeLog = new StringBuilder();
 
             _requiredChildJobs = new List<ChildJobRequest>();
+            _requiredPostChildJobs = new List<ChildJobRequest>();
 
             SetModelNames();
         }
@@ -220,12 +228,28 @@ namespace Syncer.Flows
 
         protected abstract void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason);
 
-        protected void HandleChildJobs(FlowService flowService, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
+        protected void HandleChildJobs(
+            string childDescription,
+            IEnumerable<ChildJobRequest> requestedChildJobs,
+            FlowService flowService,
+            DateTime? initialWriteDate,
+            Stopwatch consistencyWatch,
+            ref bool requireRestart,
+            ref string restartReason)
         {
             LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
 
             var s = new Stopwatch();
             s.Start();
+
+            if (requestedChildJobs.Count() == 0)
+            {
+                s.Stop();
+                LogMs(0, "ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
+
+                return;
+            }
+
             try
             {
                 // The derived sync flows can use RequestChildJob() method to
@@ -250,7 +274,7 @@ namespace Syncer.Flows
 
                     var allChildJobsFinished = true;
 
-                    foreach (ChildJobRequest request in _requiredChildJobs)
+                    foreach (ChildJobRequest request in requestedChildJobs)
                     {
                         if (initialWriteDate.HasValue && !IsConsistent(_job, initialWriteDate, consistencyWatch))
                         {
@@ -279,6 +303,30 @@ namespace Syncer.Flows
                             Job_Last_Change = DateTime.UtcNow
                         };
 
+                        if (request.ForceDirection)
+                        {
+                            childJob.Sync_Source_System = request.JobSourceSystem;
+                            childJob.Sync_Source_Model = request.JobSourceModel;
+                            childJob.Sync_Source_Record_ID = request.JobSourceRecordID;
+
+                            childJob.Sync_Target_System =
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
+                                ? SosyncSystem.FSOnline
+                                : SosyncSystem.FundraisingStudio;
+
+                            childJob.Sync_Target_Model =
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
+                                ? OnlineModelName
+                                : StudioModelName;
+
+                            childJob.Sync_Target_Record_ID =
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
+                                ? GetFsoIdByFsId(OnlineModelName, request.JobSourceRecordID)
+                                : GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
+
+                            childJob.Job_Log += $"Forcing direction: {request.JobSourceModel} ({request.JobSourceRecordID}) --> {childJob.Sync_Target_Model} ({childJob.Sync_Target_Record_ID})\n";
+                        }
+
                         // Try to fetch a child job with the same main properties
                         SyncJob entry = null;
                         using (var db = GetDb())
@@ -288,7 +336,7 @@ namespace Syncer.Flows
                             // If the child job wasn't created yet, create it
                             if (entry == null)
                             {
-                                Log.LogInformation($"Creating child job for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
+                                Log.LogInformation($"Creating {childDescription} for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                                 db.CreateJob(childJob);
                                 _job.Children.Add(childJob);
 
@@ -297,17 +345,21 @@ namespace Syncer.Flows
                         }
 
                         if (entry.Job_State == SosyncState.Error)
-                            throw new SyncerException($"Child job ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
+                            throw new SyncerException($"{childDescription} ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
 
                         // If the job is new or marked as "in progress", run it
                         if (entry.Job_State == SosyncState.New || entry.Job_State == SosyncState.InProgress)
                         {
-                            Log.LogDebug($"Executing child job ({entry.Job_ID})");
+                            Log.LogDebug($"Executing {childDescription} ({entry.Job_ID})");
 
                             UpdateJobStart(entry, DateTime.UtcNow);
 
                             // Get the flow for the job source model, and start it
                             SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model));
+
+                            if (request.ForceDirection)
+                                flow.SkipAutoSyncSource = true;
+
                             flow.Start(flowService, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                             // Be sure to use logic & operator
@@ -344,7 +396,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, "ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, $"ChildJobs ({childDescription})", _job.Job_ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -411,7 +463,19 @@ namespace Syncer.Flows
         /// <param name="id">The requested source ID for the model.</param>
         protected void RequestChildJob(string system, string model, int id)
         {
-            _requiredChildJobs.Add(new ChildJobRequest(system, model, id));
+            _requiredChildJobs.Add(new ChildJobRequest(system, model, id, false));
+        }
+
+        /// <summary>
+        /// Inform the sync flow that a specific model is needed as a child job
+        /// after the transformation is finished.
+        /// </summary>
+        /// <param name="system">The job source system, use <see cref="SosyncSystem"/> constants.</param>
+        /// <param name="model">The requested source model.</param>
+        /// <param name="id">The requested source ID for the model.</param>
+        protected void RequestPostTransformChildJob(string system, string model, int id, bool forceDirection)
+        {
+            _requiredPostChildJobs.Add(new ChildJobRequest(system, model, id, forceDirection));
         }
 
         /// <summary>
