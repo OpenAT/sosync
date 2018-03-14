@@ -104,6 +104,8 @@ namespace Syncer.Flows
                 bpkAccount = db4.Read(new { xBPKAccountID = meldung.xBPKAccountID }).FirstOrDefault();
             }
 
+            UpdateSyncSourceData(Serializer.ToXML(meldung));
+
             // Never synchronize test entries
             if ((meldung.SubmissionEnv ?? "").ToUpper() != "P")
                 throw new SyncerException($"{StudioModelName} can only be synchronized with submission_env = 'P' for production. Test entries cannot be synchronized.");
@@ -131,18 +133,16 @@ namespace Syncer.Flows
                 try
                 {
                     onlineMeldungID = OdooService.Client.CreateModel(OnlineModelName, data, false);
+                    meldung.sosync_fso_id = onlineMeldungID;
+                    using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
+                    {
+                        db.Update(meldung);
+                    }
                 }
                 finally
                 {
                     UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
                     UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, onlineMeldungID);
-                }
-
-                using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-                {
-                    meldung.sosync_fso_id = onlineMeldungID;
-                    meldung.noSyncJobSwitch = true;
-                    db.Update(meldung);
                 }
             }
             else
@@ -173,6 +173,8 @@ namespace Syncer.Flows
             if ((source.submission_env ?? "").ToUpper() != "P")
                 throw new SyncerException($"{OnlineModelName} can only be synchronized with submission_env = 'P' for production. Test entries cannot be synchronized.");
 
+            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+
             dboAktionSpendenmeldungBPK dest = null;
             dboAktion dest2 = null;
 
@@ -192,42 +194,55 @@ namespace Syncer.Flows
                 }
             }
 
+            UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(dest2));
+
             CopyDonationReportToAktionSpendenmeldungBPK(source, dest, dest2);
 
             dest.sosync_write_date = source_sosync_write_date;
             dest.noSyncJobSwitch = true;
+
+            UpdateSyncTargetRequest(Serializer.ToXML(dest));
 
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
             {
                 if (action == TransformType.CreateNew)
                 {
-                    db2.Create(dest2);
-                    dest.AktionsID = dest2.AktionsID;
-                    db.Create(dest);
+                    try
+                    {
+                        db2.Create(dest2);
+                        dest.AktionsID = dest2.AktionsID;
+                        db.Create(dest);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, dest.AktionsID);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), dest.AktionsID);
+                        throw;
+                    }
+
+                    OdooService.Client.UpdateModel(
+                        OnlineModelName,
+                        new { sosync_fs_id = dest2.AktionsID},
+                        onlineID,
+                        false);
                 }
                 else
                 {
-                    db.Update(dest);
-                    db2.Update(dest2);
+                    try
+                    {
+                        db.Update(dest);
+                        db2.Update(dest2);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), null);
+                        throw;
+                    }
                 }
             }
         }
-
-        //private dboAktion CreateAktionSpendenmeldungBPKAktion()
-        //{
-        //    var res = new dboAktion();
-        //    res.AktionsdetailtypID = 2300;
-        //    res.AktionstypID = 2005746; //Aktion_AktionstypID.AktionSpendemeldungBPK
-        //    res.Durchführungstag = DateTime.Today.Date;
-        //    res.Durchführungszeit = DateTime.Today.TimeOfDay;
-        //    res.zMarketingID = 0; //TODO: match better zMarketingID!
-        //    res.zThemaID = 0;
-        //    res.VertragID = 0;
-        //    res.IDHierarchie = 0;
-
-        //    return res;
-        //}
 
         private void CopyDonationReportToAktionSpendenmeldungBPK(resPartnerDonationReport source, dboAktionSpendenmeldungBPK dest, dboAktion dest2)
         {
