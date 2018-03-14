@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Syncer.Flows
 {
     /// <summary>
-    /// Base class for sync flows that deal 
+    /// Base class for sync flows that deal with merging duplicate data.
     /// </summary>
     public abstract class MergeSyncFlow : SyncFlow
     {
