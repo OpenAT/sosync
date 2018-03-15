@@ -5,7 +5,7 @@ using Syncer.Enumerations;
 using WebSosync.Data.Models;
 using Syncer.Attributes;
 
-namespace Syncer.Flows
+namespace Syncer.Flows.Temporary
 {
     [DisableFlow()]
     public class PartnerDonationReportCorrectionFlow : TempSyncFlow

@@ -10,7 +10,7 @@ using WebSosync.Data;
 using Syncer.Exceptions;
 using Microsoft.Extensions.Logging;
 
-namespace Syncer.Flows
+namespace Syncer.Flows.Temporary
 {
     /// <summary>
     /// Base class for sync flows that handle special cases like data correction etc.
