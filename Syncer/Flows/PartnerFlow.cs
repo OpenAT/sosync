@@ -665,6 +665,8 @@ namespace Syncer.Flows
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
+            dboPersonStack person = null;
+
             using (var personSvc = MdbService.GetDataService<dboPerson>())
             {
                 var transaction = personSvc.BeginTransaction();
@@ -680,7 +682,7 @@ namespace Syncer.Flows
                     // Load online model, save it to studio
                     if (action == TransformType.CreateNew)
                     {
-                        var person = new dboPersonStack();
+                        person = new dboPersonStack();
 
                         //create new dboPerson
                         person.person = InitDboPerson();
@@ -869,7 +871,7 @@ namespace Syncer.Flows
                     else
                     {
                         var PersonID = partner.Sosync_FS_ID.Value;
-                        var person = GetCurrentdboPersonStack(PersonID);
+                        person = GetCurrentdboPersonStack(PersonID);
 
                         UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(person));
 
@@ -1288,6 +1290,19 @@ namespace Syncer.Flows
                     }
                     personSvc.CommitTransaction();
                     LogMilliseconds($"{nameof(TransformToStudio)} commit transaction dbo.Person", personSvc.LastQueryExecutionTimeMS);
+
+                    if (person != null && person.person != null)
+                    {
+                        var s = new Stopwatch();
+                        s.Start();
+
+                        var p = new DynamicParameters();
+                        p.Add("PersonID", person.person.PersonID, System.Data.DbType.Int32);
+                        personSvc.ExecuteProcedure("[dbo].[stp_300_DBUpdate_0010_PersonAdresseblock]", p);
+
+                        s.Stop();
+                        LogMilliseconds($"{nameof(TransformToStudio)} executing [dbo].[stp_300_DBUpdate_0010_PersonAdresseblock]", s.Elapsed.TotalMilliseconds);
+                    }
                 }
             }
         }
