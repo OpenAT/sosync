@@ -224,6 +224,9 @@ namespace Syncer.Flows
             Job = job;
 
             StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
+
+            Job.Job_Log += $"{(string.IsNullOrEmpty(job.Job_Log) ? "" : "\n\n")}{GetTimeLog()}\n";
+            UpdateJob(Job, "Saving job log after finished flow");
         }
 
         protected abstract void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason);
@@ -622,7 +625,7 @@ namespace Syncer.Flows
                 job.Sync_Target_Model = targetModel;
                 job.Sync_Target_Record_ID = targetId;
 
-                job.Job_Log = log ?? job.Job_Log; // If log is null, keep whatever is already in Job_Log
+                job.Job_Log = job.Job_Log ?? "" + log ?? "";
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateJobSourceAndTarget), db, _job);
@@ -742,7 +745,7 @@ namespace Syncer.Flows
 
             using (var db = GetDb())
             {
-                job.Job_Log = $"Consistency check {nr} failed, exiting job, leaving it in progress.";
+                job.Job_Log += $"Consistency check {nr} failed, exiting job, leaving it in progress.\n";
                 job.Job_Last_Change = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobInconsistent), db, _job);
