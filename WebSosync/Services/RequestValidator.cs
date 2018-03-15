@@ -96,9 +96,10 @@ namespace WebSosync.Services
             if (!string.IsNullOrEmpty(value)
                 && value != SosyncJobSourceType.MergeInto
                 && value != SosyncJobSourceType.Delete
+                && value != SosyncJobSourceType.Temp
                 )
             {
-                errorList.Add("job_source_type", $"job_source_type must be NULL, '', 'merge_into' or 'delete'");
+                errorList.Add("job_source_type", $"job_source_type must be NULL, '', 'merge_into', 'temp' or 'delete'");
             }
         }
 
