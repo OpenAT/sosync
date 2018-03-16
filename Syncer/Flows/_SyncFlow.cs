@@ -625,7 +625,7 @@ namespace Syncer.Flows
                 job.Sync_Target_Model = targetModel;
                 job.Sync_Target_Record_ID = targetId;
 
-                job.Job_Log = job.Job_Log ?? "" + log ?? "";
+                job.Job_Log = (job.Job_Log ?? "") + (log ?? "");
                 job.Job_Last_Change = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateJobSourceAndTarget), db, _job);
