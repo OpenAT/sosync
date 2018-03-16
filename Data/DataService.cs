@@ -111,6 +111,9 @@ namespace WebSosync.Data
             AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
 
+            // New field for temporary flow information
+            AddColumnIfNotExists("job_source_type_info", "text");
+
             try
             {
                 _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex), commandTimeout: 60);
