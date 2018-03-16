@@ -439,11 +439,11 @@ namespace Syncer.Flows
                 data.Add("anrede_individuell", null);
             }
 
-            SetDictionaryEntryForObject(data, person.email, "email", $"{person.email.EmailVor}@{person.email.EmailNach}", null);
+            SetDictionaryEntryForObject(data, person.email, "email", () => $"{person.email.EmailVor}@{person.email.EmailNach}", () => null);
 
-            SetDictionaryEntryForObject(data, person.phone, "phone", CombinePhone(person.phone), null);
-            SetDictionaryEntryForObject(data, person.mobile, "mobile", CombinePhone(person.mobile), null);
-            SetDictionaryEntryForObject(data, person.fax, "fax", CombinePhone(person.fax), null);
+            SetDictionaryEntryForObject(data, person.phone, "phone", () => CombinePhone(person.phone), () => null);
+            SetDictionaryEntryForObject(data, person.mobile, "mobile", () => CombinePhone(person.mobile), () => null);
+            SetDictionaryEntryForObject(data, person.fax, "fax", () => CombinePhone(person.fax), () => null);
 
             SetDictionaryEntryForGroup(data, person.personDonationDeductionOptOut, "donation_deduction_optout_web", true, false);
             SetDictionaryEntryForGroup(data, person.personDonationReceipt, "donation_receipt_web", true, false);
@@ -558,12 +558,12 @@ namespace Syncer.Flows
             }
         }
 
-        private void SetDictionaryEntryForObject<T>(Dictionary<string, object> dict, object item, string key, T trueValue, T falseValue)
+        private void SetDictionaryEntryForObject<T>(Dictionary<string, object> dict, object item, string key, Func<T> getTrueValue, Func<T> getFalseValue)
         {
             if (item != null)
-                dict.Add(key, trueValue);
+                dict.Add(key, getTrueValue());
             else
-                dict.Add(key, falseValue);
+                dict.Add(key, getFalseValue());
         }
 
         private void SetDictionaryEntryForGroup<T>(Dictionary<string, object> dict, IStudioGroup group, string key, T trueValue, T falseValue)
