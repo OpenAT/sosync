@@ -127,12 +127,12 @@ namespace WebSosync.Data
             }
         }
 
-            /// <summary>
-            /// Used for database setup, in case new columns are needed in production.
-            /// </summary>
-            /// <param name="column">The column name.</param>
-            /// <param name="dataType">The pgSQL data type.</param>
-            private void AddColumnIfNotExists(string column, string dataType)
+        /// <summary>
+        /// Used for database setup, in case new columns are needed in production.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <param name="dataType">The pgSQL data type.</param>
+        private void AddColumnIfNotExists(string column, string dataType)
         {
             _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), "sync_table", column, dataType), commandTimeout: _cmdTimeoutSec);
         }
