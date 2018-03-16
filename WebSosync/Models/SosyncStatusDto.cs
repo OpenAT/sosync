@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using WebSosync.Data.Models;
 
 namespace WebSosync.Models
 {
@@ -15,6 +16,9 @@ namespace WebSosync.Models
 
         [DataMember(Name = "protocol_worker")]
         public ServiceStatusDto ProtocolWorker { get; set; }
+
+        [DataMember(Name = "statistics")]
+        public JobStatistic Statistics { get; set; }
         #endregion
 
         #region Constructors

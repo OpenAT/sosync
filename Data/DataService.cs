@@ -336,6 +336,20 @@ namespace WebSosync.Data
 
             _con.Execute($"update {tblName} set {propName} = @{propName} where job_id = @job_id", job, commandTimeout: _cmdTimeoutSec);
         }
+
+        /// <summary>
+        /// Return statistic information from the sync table.
+        /// </summary>
+        /// <returns></returns>
+        public JobStatistic GetJobStatistics()
+        {
+            var query = Resources.ResourceManager.GetString(ResourceNames.JobStatisticsScript);
+
+            return _con.Query<JobStatistic>(
+                query,
+                commandTimeout: _cmdTimeoutSec)
+                .SingleOrDefault();
+        }
         #endregion
 
         #region IDisposable implementation

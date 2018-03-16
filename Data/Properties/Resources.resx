@@ -189,6 +189,16 @@ order by
 	job_last_change desc
 limit 1;</value>
   </data>
+  <data name="JobStatistics_SCRIPT" xml:space="preserve">
+    <value>select
+	count(*) Total
+	,sum(case when job_state = 'new' then 1 else 0 end) new
+	,sum(case when job_state = 'inprogress' then 1 else 0 end) in_progress
+	,sum(case when job_state = 'error' then 1 else 0 end) error
+	,sum(case when job_state = 'done' then 1 else 0 end) done
+from
+	sync_table;</value>
+  </data>
   <data name="SetupAddColumn_SCRIPT" xml:space="preserve">
     <value>DO $$ 
     BEGIN

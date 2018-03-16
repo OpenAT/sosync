@@ -6,6 +6,7 @@ using Syncer.Services;
 using Syncer.Workers;
 using System;
 using WebSosync.Common.Interfaces;
+using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Interfaces;
 using WebSosync.Models;
@@ -40,7 +41,7 @@ namespace WebSosync.Controllers
         #region Methods
         // GET service/status
         [HttpGet("status")]
-        public IActionResult Status()
+        public IActionResult Status([FromServices]DataService db)
         {
             var result = new SosyncStatusDto();
 
@@ -49,6 +50,11 @@ namespace WebSosync.Controllers
 
             result.ProtocolWorker.Status = (int)_protocolWorkerJob.Status;
             result.ProtocolWorker.StatusText = _protocolWorkerJob.Status.ToString();
+
+            using (db)
+            {
+                result.Statistics = db.GetJobStatistics();
+            }
 
             return new OkObjectResult(result);
         }
