@@ -8,6 +8,7 @@ using dadi_data.Models;
 using System.Linq;
 using Syncer.Exceptions;
 using dadi_data.Interfaces;
+using WebSosync.Data;
 
 namespace Syncer.Flows.Temporary
 {
@@ -86,13 +87,62 @@ namespace Syncer.Flows.Temporary
                 receipt = IsInGroup(receiptGroup, DateTime.Today);
             }
 
-            OdooService.Client.UpdateModel(
-                OnlineModelName,
-                new { donation_deduction_optout_web = optOut, donation_deduction_disabled = deactivate },
-                fsoId.Value,
-                false);
+            UpdateSyncSourceData(Serializer.ToXML(new DonationCorrectionFields(optOut, deactivate, receipt, newsletter)));
 
-            LogMilliseconds("Transformation: Odoo update", OdooService.Client.LastRpcTime);
+            var partnerDict = OdooService.Client.GetDictionary(
+                OnlineModelName,
+                fsoId.Value,
+                new[] { "donation_deduction_optout_web", "donation_deduction_disabled", "donation_receipt_web", "newsletter_web" });
+
+            LogMilliseconds("Transformation: Reading current res.partner (4 fields)", OdooService.Client.LastRpcTime);
+
+            if (partnerDict.Count == 1)
+                throw new SyncerException($"[{SosyncSystem.FundraisingStudio}] {StudioModelName} ({studioID}) did not exist in [{SosyncSystem.FSOnline}] {OnlineModelName} ({fsoId.Value})");
+
+            var changes =
+                Convert.ToString(partnerDict["donation_deduction_optout_web"]) != BoolToString(optOut)
+                || Convert.ToString(partnerDict["donation_deduction_disabled"]) != BoolToString(deactivate)
+                || Convert.ToString(partnerDict["donation_receipt_web"]) != BoolToString(receipt)
+                || Convert.ToString(partnerDict["newsletter_web"]) != BoolToString(newsletter);
+
+            if (changes)
+            {
+                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(
+                    new DonationCorrectionFields(
+                        Convert.ToInt32(partnerDict["donation_deduction_optout_web"]) != 0,
+                        Convert.ToInt32(partnerDict["donation_deduction_disabled"]) != 0,
+                        Convert.ToInt32(partnerDict["donation_receipt_web"]) != 0,
+                        Convert.ToInt32(partnerDict["newsletter_web"]) != 0)));
+
+                UpdateSyncTargetRequest(Serializer.ToXML(new DonationCorrectionFields(optOut, deactivate, receipt, newsletter)));
+
+                try
+                {
+                    OdooService.Client.UpdateModel(
+                        OnlineModelName,
+                        new { donation_deduction_optout_web = optOut, donation_deduction_disabled = deactivate },
+                        fsoId.Value,
+                        false);
+
+                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+
+                    LogMilliseconds("Transformation: Odoo update", OdooService.Client.LastRpcTime);
+                }
+                catch (Exception ex)
+                {
+                    UpdateSyncTargetAnswer(ex.ToString(), null);
+                    throw;
+                }
+            }
+            else
+            {
+                LogMilliseconds("Transformation: Odoo no changes", 0);
+            }
+        }
+
+        private string BoolToString(bool val)
+        {
+            return val ? "1" : "0";
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
@@ -100,5 +150,24 @@ namespace Syncer.Flows.Temporary
             throw new NotSupportedException("Correction only possible from [fs] to [fso].");
         }
         #endregion
+    }
+
+    public class DonationCorrectionFields
+    {
+        public DonationCorrectionFields()
+        { }
+
+        public DonationCorrectionFields(bool optOut, bool disabled, bool receipt, bool news)
+        {
+            donation_deduction_optout_web = optOut;
+            donation_deduction_disabled = disabled;
+            donation_receipt_web = receipt;
+            newsletter_web = news;
+        }
+
+        public bool donation_deduction_optout_web { get; set; }
+        public bool donation_deduction_disabled { get; set; }
+        public bool donation_receipt_web { get; set; }
+        public bool newsletter_web { get; set; }
     }
 }
