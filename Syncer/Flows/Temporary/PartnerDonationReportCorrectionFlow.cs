@@ -40,6 +40,10 @@ namespace Syncer.Flows.Temporary
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
+#warning TODO: This should be set from the source systems when the sync job is submitted via REST api
+            if (String.IsNullOrEmpty(Job.Job_Source_Type_Info))
+                Job.Job_Source_Type_Info = "donation_deduction_fields_repair";
+
             int? fsoId = null;
             var optOut = false;
             var deactivate = false;
