@@ -51,11 +51,6 @@ namespace WebSosync.Controllers
             result.ProtocolWorker.Status = (int)_protocolWorkerJob.Status;
             result.ProtocolWorker.StatusText = _protocolWorkerJob.Status.ToString();
 
-            using (db)
-            {
-                result.Statistics = db.GetJobStatistics();
-            }
-
             return new OkObjectResult(result);
         }
 

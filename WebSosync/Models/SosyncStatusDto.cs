@@ -16,9 +16,6 @@ namespace WebSosync.Models
 
         [DataMember(Name = "protocol_worker")]
         public ServiceStatusDto ProtocolWorker { get; set; }
-
-        [DataMember(Name = "statistics")]
-        public JobStatistic Statistics { get; set; }
         #endregion
 
         #region Constructors
