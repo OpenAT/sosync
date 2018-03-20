@@ -9,5 +9,6 @@ namespace WebSosync.Data.Constants
         public const string Default = "";
         public const string MergeInto = "merge_into";
         public const string Delete = "delete";
+        public const string Temp = "temp";
     }
 }

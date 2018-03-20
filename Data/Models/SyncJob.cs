@@ -70,6 +70,9 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "job_source_type")]
         public string Job_Source_Type { get; set; }
 
+        [DataMember(Name = "job_source_type_info")]
+        public string Job_Source_Type_Info { get; set; }
+
         [DataMember(Name = "job_source_merge_into_record_id")]
         public int? Job_Source_Merge_Into_Record_ID { get; set; }
 

@@ -10,14 +10,14 @@ using WebSosync.Data;
 using Syncer.Exceptions;
 using Microsoft.Extensions.Logging;
 
-namespace Syncer.Flows
+namespace Syncer.Flows.Temporary
 {
     /// <summary>
-    /// Base class for sync flows that deal with merging duplicate data.
+    /// Base class for sync flows that handle special cases like data correction etc.
     /// </summary>
-    public abstract class MergeSyncFlow : SyncFlow
+    public abstract class TempSyncFlow : SyncFlow
     {
-        public MergeSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public TempSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
         {
         }
 
@@ -36,10 +36,10 @@ namespace Syncer.Flows
 
             if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
                 // If source is studio, set merge IDs via online
-                SetMergeInfos(OnlineModelName, Job);
+                SetProcessInfos(OnlineModelName, Job);
             else
                 // If source is online, set merge IDs via studio
-                SetMergeInfos(StudioModelName, Job);
+                SetProcessInfos(StudioModelName, Job);
 
             Stopwatch consistencyWatch = new Stopwatch();
 
@@ -52,12 +52,13 @@ namespace Syncer.Flows
                 ref requireRestart,
                 ref restartReason);
 
-            var description = $"Merging [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} into {Job.Sync_Target_Merge_Into_Record_ID}";
+            var description = $"Processing [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} and {Job.Sync_Target_Merge_Into_Record_ID}";
+
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
             HandleChildJobs(
                 "Post Transformation Child Job",
-                RequiredPostTransformChildJobs,
+                RequiredChildJobs,
                 flowService,
                 null,
                 consistencyWatch,
@@ -65,13 +66,25 @@ namespace Syncer.Flows
                 ref restartReason);
         }
 
-        private void SetMergeInfos(string modelName, SyncJob job)
+        private void SetProcessInfos(string modelName, SyncJob job)
         {
             using (var db = GetDb())
             {
                 if (job.Job_Source_System == SosyncSystem.FSOnline)
                 {
-                    throw new SyncerException("Merging from 'fso' to 'fs' currently not supported.");
+                    job.Sync_Source_System = SosyncSystem.FSOnline;
+                    job.Sync_Target_System = SosyncSystem.FundraisingStudio;
+
+                    job.Sync_Source_Model = OnlineModelName;
+                    job.Sync_Target_Model = StudioModelName;
+
+                    var sourceOnlineID = job.Job_Source_Record_ID;
+                    var targetStudioID = GetFsIdByFsoId(modelName, MdbService.GetStudioModelIdentity(modelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
+
+                    job.Sync_Source_Record_ID = sourceOnlineID;
+                    job.Sync_Target_Record_ID = targetStudioID;
+
+                    UpdateJob(Job, "Updating IDs");
                 }
                 else
                 {
@@ -82,18 +95,12 @@ namespace Syncer.Flows
                     job.Sync_Target_Model = OnlineModelName;
 
                     var sourceStudioID = job.Job_Source_Record_ID;
-                    var sourceOnlineID = GetFsoIdByFsId(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
-
-                    var mergeStudioID = job.Job_Source_Merge_Into_Record_ID;
-                    var mergeOnlineID = GetFsoIdByFsId(modelName, mergeStudioID.Value) ?? job.Job_Source_Merge_Into_Record_ID;
+                    var targetOnlineID = GetFsoIdByFsId(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceStudioID;
-                    job.Sync_Source_Merge_Into_Record_ID = mergeStudioID;
+                    job.Sync_Target_Record_ID = targetOnlineID;
 
-                    job.Sync_Target_Record_ID = sourceOnlineID;
-                    job.Sync_Target_Merge_Into_Record_ID = mergeOnlineID;
-
-                    UpdateJob(Job, "Updating Merge-IDs");
+                    UpdateJob(Job, "Updating IDs");
                 }
             }
         }

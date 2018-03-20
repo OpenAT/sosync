@@ -16,7 +16,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            // No chlid jobs
+            // No chlid jobs, because this direction is not supported
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
@@ -30,6 +30,12 @@ namespace Syncer.Flows
                 OnlineModelName,
                 Job.Sync_Target_Record_ID.Value,
                 Job.Sync_Target_Merge_Into_Record_ID.Value);
+
+            RequestPostTransformChildJob(
+                SosyncSystem.FundraisingStudio,
+                StudioModelName, 
+                Job.Job_Source_Merge_Into_Record_ID.Value,
+                true);
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)

@@ -160,6 +160,22 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to select
+        ///	count(*) Total
+        ///	,sum(case when job_state = &apos;new&apos; then 1 else 0 end) new
+        ///	,sum(case when job_state = &apos;inprogress&apos; then 1 else 0 end) in_progress
+        ///	,sum(case when job_state = &apos;error&apos; then 1 else 0 end) error
+        ///	,sum(case when job_state = &apos;done&apos; then 1 else 0 end) done
+        ///from
+        ///	sync_table;.
+        /// </summary>
+        internal static string JobStatistics_SCRIPT {
+            get {
+                return ResourceManager.GetString("JobStatistics_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DO $$ 
         ///    BEGIN
         ///        BEGIN

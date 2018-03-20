@@ -128,7 +128,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -195,7 +195,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -220,7 +220,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -252,7 +252,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -277,7 +277,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -312,7 +312,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -340,7 +340,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 
@@ -365,7 +365,7 @@ namespace Odoo
             {
                 LastRequestRaw = _rpcObject.LastRequest;
                 LastResponseRaw = _rpcObject.LastResponse;
-                LastRpcTime = _rpcCommon.LastRpcTime;
+                LastRpcTime = _rpcObject.LastRpcTime;
             }
         }
 

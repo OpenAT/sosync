@@ -134,8 +134,6 @@ namespace Syncer.Workers
                             RaiseCancelling();
                             // Clean up here, if necessary
                         }
-
-                        job.Job_Log += $"{(string.IsNullOrEmpty(job.Job_Log) ? "": "\n\n")}{flow.GetTimeLog()}";
                     }
                 }
                 catch(TimeDriftException ex)

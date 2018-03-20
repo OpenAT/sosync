@@ -79,7 +79,6 @@ namespace Syncer.Flows
         {
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
-            //using (var db3 = MdbService.GetDataService<dboPersonBPK()>)
             {
                 var meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
                 var aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
@@ -92,21 +91,20 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboAktionSpendenmeldungBPK meldung = null;
-            dboAktion aktion = null;
-            dboPerson person = null;
             dboxBPKAccount bpkAccount = null;
+            var partnerID = 0;
 
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-            using (var db2 = MdbService.GetDataService<dboAktion>())
-            using (var db3 = MdbService.GetDataService<dboPerson>())
             using (var db4 = MdbService.GetDataService<dboxBPKAccount>())
             using (var db5 = MdbService.GetDataService<dboPersonBPK>())
             {
                 meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
-                aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
-                person = db3.Read(new { PersonID = aktion.PersonID }).FirstOrDefault();
+                var personID = db.ExecuteQuery<int>("select PersonID from dbo.Aktion where AktionsID = @AktionsID", new { AktionsID = studioID }).Single(); 
+                partnerID = db.ExecuteQuery<int>("select sosync_fso_id from dbo.Person where PersonID = @PersonID", new { PersonID = personID }).Single();
                 bpkAccount = db4.Read(new { xBPKAccountID = meldung.xBPKAccountID }).FirstOrDefault();
             }
+
+            UpdateSyncSourceData(Serializer.ToXML(meldung));
 
             // Never synchronize test entries
             if ((meldung.SubmissionEnv ?? "").ToUpper() != "P")
@@ -115,11 +113,11 @@ namespace Syncer.Flows
             var data = new Dictionary<string, object>()
             {
                 { "submission_env", meldung.SubmissionEnv },
-                { "partner_id", person.sosync_fso_id },
+                { "partner_id", partnerID },
                 { "bpk_company_id", bpkAccount.sosync_fso_id },
-                { "anlage_am_um", meldung.AnlageAmUm },
-                { "ze_datum_von", meldung.ZEDatumVon },
-                { "ze_datum_bis", meldung.ZEDatumBis },
+                { "anlage_am_um", meldung.AnlageAmUm.Value.ToUniversalTime() },
+                { "ze_datum_von", meldung.ZEDatumVon.Value.ToUniversalTime() },
+                { "ze_datum_bis", meldung.ZEDatumBis.Value.ToUniversalTime() },
                 { "meldungs_jahr", meldung.MeldungsJahr.ToString("0") },
                 { "betrag", meldung.Betrag },
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
@@ -135,18 +133,16 @@ namespace Syncer.Flows
                 try
                 {
                     onlineMeldungID = OdooService.Client.CreateModel(OnlineModelName, data, false);
+                    meldung.sosync_fso_id = onlineMeldungID;
+                    using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
+                    {
+                        db.Update(meldung);
+                    }
                 }
                 finally
                 {
                     UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
                     UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, onlineMeldungID);
-                }
-
-                using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-                {
-                    meldung.sosync_fso_id = onlineMeldungID;
-                    meldung.noSyncJobSwitch = true;
-                    db.Update(meldung);
                 }
             }
             else
@@ -177,6 +173,8 @@ namespace Syncer.Flows
             if ((source.submission_env ?? "").ToUpper() != "P")
                 throw new SyncerException($"{OnlineModelName} can only be synchronized with submission_env = 'P' for production. Test entries cannot be synchronized.");
 
+            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+
             dboAktionSpendenmeldungBPK dest = null;
             dboAktion dest2 = null;
 
@@ -196,42 +194,55 @@ namespace Syncer.Flows
                 }
             }
 
+            UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(dest2));
+
             CopyDonationReportToAktionSpendenmeldungBPK(source, dest, dest2);
 
             dest.sosync_write_date = source_sosync_write_date;
             dest.noSyncJobSwitch = true;
+
+            UpdateSyncTargetRequest(Serializer.ToXML(dest));
 
             using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
             using (var db2 = MdbService.GetDataService<dboAktion>())
             {
                 if (action == TransformType.CreateNew)
                 {
-                    db2.Create(dest2);
-                    dest.AktionsID = dest2.AktionsID;
-                    db.Create(dest);
+                    try
+                    {
+                        db2.Create(dest2);
+                        dest.AktionsID = dest2.AktionsID;
+                        db.Create(dest);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, dest.AktionsID);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), dest.AktionsID);
+                        throw;
+                    }
+
+                    OdooService.Client.UpdateModel(
+                        OnlineModelName,
+                        new { sosync_fs_id = dest2.AktionsID},
+                        onlineID,
+                        false);
                 }
                 else
                 {
-                    db.Update(dest);
-                    db2.Update(dest2);
+                    try
+                    {
+                        db.Update(dest);
+                        db2.Update(dest2);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), null);
+                        throw;
+                    }
                 }
             }
         }
-
-        //private dboAktion CreateAktionSpendenmeldungBPKAktion()
-        //{
-        //    var res = new dboAktion();
-        //    res.AktionsdetailtypID = 2300;
-        //    res.AktionstypID = 2005746; //Aktion_AktionstypID.AktionSpendemeldungBPK
-        //    res.Durchführungstag = DateTime.Today.Date;
-        //    res.Durchführungszeit = DateTime.Today.TimeOfDay;
-        //    res.zMarketingID = 0; //TODO: match better zMarketingID!
-        //    res.zThemaID = 0;
-        //    res.VertragID = 0;
-        //    res.IDHierarchie = 0;
-
-        //    return res;
-        //}
 
         private void CopyDonationReportToAktionSpendenmeldungBPK(resPartnerDonationReport source, dboAktionSpendenmeldungBPK dest, dboAktion dest2)
         {
@@ -244,9 +255,9 @@ namespace Syncer.Flows
             dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
             dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;
             dest.SubmissionCompanyName = (string)source.bpk_company_id[1];
-            dest.AnlageAmUm = source.anlage_am_um;
-            dest.ZEDatumVon = source.ze_datum_von;
-            dest.ZEDatumBis = source.ze_datum_bis;
+            dest.AnlageAmUm = source.anlage_am_um.Value.ToLocalTime();
+            dest.ZEDatumVon = source.ze_datum_von.Value.ToLocalTime();
+            dest.ZEDatumBis = source.ze_datum_bis.Value.ToLocalTime();
             dest.MeldungsJahr =  source.meldungs_jahr.Value;
             dest.Betrag = source.betrag.Value;
             dest.CancellationForBpkPrivate = source.cancellation_for_bpk_private;
@@ -256,6 +267,11 @@ namespace Syncer.Flows
             dest.SubmissionLastname = source.submission_lastname;
             dest.SubmissionBirthdateWeb = source.submission_birthdate_web;
             dest.SubmissionZip = source.submission_zip;
+
+            if (source.submission_id_datetime.HasValue)
+                dest.SubmissionIdDate = source.submission_id_datetime.Value.ToLocalTime();
+            else
+                dest.SubmissionIdDate = null;
 
             if (!string.IsNullOrEmpty(source.submission_bpk_request_id))
                 dest.SubmissionBPKRequestID = Convert.ToInt32(source.submission_bpk_request_id); // 1:1 speichern
@@ -268,6 +284,9 @@ namespace Syncer.Flows
             dest.ErrorType = source.error_type;
             dest.ErrorCode = source.error_code;
             dest.ErrorDetail = source.error_detail;
+
+            dest.ResponseErrorOrigRefnr = source.response_error_orig_refnr;
+
             // -- source.report_erstmeldung_id;
             // -- source.report_follow_up_ids;
             // -- source.skipped_by_id;
