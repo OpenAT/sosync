@@ -121,7 +121,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sync_table
-        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///		where job_date &gt; now() - interval &apos;10 days&apos; and parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
         ///        order by job_date desc
         ///		limit 1
         ///	) first_parent
@@ -229,6 +229,18 @@ namespace WebSosync.Data.Properties {
         internal static string SyncJobToSyncIndex {
             get {
                 return ResourceManager.GetString("SyncJobToSyncIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE INDEX job_date_parent_job_id_job_state_idx
+        ///  ON sync_table
+        ///  USING btree
+        ///  (job_date, parent_job_id, job_state COLLATE pg_catalog.&quot;default&quot;);.
+        /// </summary>
+        internal static string SyncJobToSyncIndex2 {
+            get {
+                return ResourceManager.GetString("SyncJobToSyncIndex2", resourceCulture);
             }
         }
     }

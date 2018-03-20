@@ -163,7 +163,7 @@ select * from children;</value>
 	select * from (
 		select *
 		from sync_table
-		where parent_job_id is null and job_state in ('new', 'inprogress')
+		where job_date &gt; now() - interval '10 days' and parent_job_id is null and job_state in ('new', 'inprogress')
         order by job_date desc
 		limit 1
 	) first_parent
@@ -273,5 +273,11 @@ $$</value>
     <value>create index syncjob_sync_index1 on sync_table (job_to_fso_can_sync);
 create index syncjob_sync_index2 on sync_table (job_to_fso_sync_version NULLS FIRST);
 create index syncjob_sync_index3 on sync_table (job_last_change);</value>
+  </data>
+  <data name="SyncJobToSyncIndex2" xml:space="preserve">
+    <value>CREATE INDEX job_date_parent_job_id_job_state_idx
+  ON sync_table
+  USING btree
+  (job_date, parent_job_id, job_state COLLATE pg_catalog."default");</value>
   </data>
 </root>
