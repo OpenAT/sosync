@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -57,7 +58,15 @@ namespace MassDataCorrection
                 instInfo.Instance = instance;
                 instInfo.Port = port;
 
+                var s = new Stopwatch();
+                s.Start();
                 processor(instInfo, ReportProgress);
+                s.Stop();
+
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"Elapsed time: {s.Elapsed.TotalMilliseconds.ToString("#,##0")}ms\n");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
                 Console.WriteLine("\n");
             }
             catch (Exception ex)
