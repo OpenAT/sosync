@@ -21,7 +21,7 @@ namespace MassDataCorrection
             if (key.KeyChar == 'y' || key.KeyChar == 'Y')
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"), SosyncVersion.Sosync2);
-                processor.Process(CheckOpenSyncJobs, "bsvw");
+                processor.Process(CheckOpenSyncJobs, null);
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }

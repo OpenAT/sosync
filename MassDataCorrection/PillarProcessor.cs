@@ -20,13 +20,13 @@ namespace MassDataCorrection
 
         public void Process(
             Action<InstanceInfo, Action<float>> processor,
-            string instance = null)
+            string[] instances = null)
         {
             var files = Directory.GetFiles(_path, "*.sls");
 
-            if (!string.IsNullOrEmpty(instance))
+            if (instances != null && instances.Length > 0)
                 files = files
-                    .Where(x => x.ToLower().Contains(instance.ToLower()))
+                    .Where(x => instances.Contains(x.Split("_")[1].Split(".")[0]))
                     .ToArray();
 
             for (int i = 1; i <= files.Length; i++)
