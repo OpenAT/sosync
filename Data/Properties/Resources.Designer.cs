@@ -94,6 +94,18 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CREATE INDEX job_date_parent_job_id_job_state_idx
+        ///  ON sync_table
+        ///  USING btree
+        ///  (job_date, parent_job_id, job_state COLLATE pg_catalog.&quot;default&quot;);.
+        /// </summary>
+        internal static string CreateIndex2_SCRIPT {
+            get {
+                return ResourceManager.GetString("CreateIndex2_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select *
@@ -245,18 +257,6 @@ namespace WebSosync.Data.Properties {
         internal static string SyncJobToSyncIndex {
             get {
                 return ResourceManager.GetString("SyncJobToSyncIndex", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CREATE INDEX job_date_parent_job_id_job_state_idx
-        ///  ON sync_table
-        ///  USING btree
-        ///  (job_date, parent_job_id, job_state COLLATE pg_catalog.&quot;default&quot;);.
-        /// </summary>
-        internal static string SyncJobToSyncIndex2 {
-            get {
-                return ResourceManager.GetString("SyncJobToSyncIndex2", resourceCulture);
             }
         }
     }

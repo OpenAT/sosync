@@ -102,7 +102,7 @@ namespace WebSosync.Data
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
 
             CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex));
-            CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex2));
+            CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.CreateIndexIndex2Script));
         }
 
         private void CreateIndexIfNotExists(string ddlQuery)
