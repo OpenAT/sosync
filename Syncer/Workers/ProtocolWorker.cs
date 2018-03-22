@@ -38,58 +38,61 @@ namespace Syncer.Workers
         #region Methods
         public override void Start()
         {
-            var throttle = Configuration.Protocol_Throttle_ms;
-
-            var count = 0;
-            var protocolStart = DateTime.UtcNow;
-            var syncStart = DateTime.UtcNow;
-
-            var job = GetNextJobToSync();
-            while (job != null && !CancellationToken.IsCancellationRequested)
+            using (var db = GetDb())
             {
-                _log.LogInformation($"Syncing job_id ({job.Job_ID}) with [fso]");
+                var throttle = Configuration.Protocol_Throttle_ms;
 
-                int? odooID = _odoo.SendSyncJob(job);
+                var count = 0;
+                var protocolStart = DateTime.UtcNow;
+                var syncStart = DateTime.UtcNow;
 
-                if (odooID.HasValue)
+                var job = GetNextJobToSync(db);
+                while (job != null && !CancellationToken.IsCancellationRequested)
                 {
-                    job.Job_Fso_ID = odooID.Value;
-                    UpdateJobFsoID(job);
-                }
+                    _log.LogInformation($"Syncing job_id ({job.Job_ID}) with [fso]");
 
-                UpdateJobSyncInfo(job);
-                count++;
+                    int? odooID = _odoo.SendSyncJob(job);
 
-                if (throttle > 0)
-                {
-                    var consumedTimeMs = (int)(DateTime.UtcNow - syncStart).TotalMilliseconds;
-                    var remainingTimeMs = throttle - consumedTimeMs;
-
-                    if (remainingTimeMs > 0)
+                    if (odooID.HasValue)
                     {
-                        _log.LogInformation($"Throttle set to {throttle}ms, updating job in [fso] took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
-                        Thread.Sleep(remainingTimeMs);
+                        job.Job_Fso_ID = odooID.Value;
+                        UpdateJobFsoID(job);
                     }
-                    else
+
+                    UpdateJobSyncInfo(job);
+                    count++;
+
+                    if (throttle > 0)
                     {
-                        _log.LogDebug($"Updatinug job in [fso] ({consumedTimeMs}ms) exceeded throttle time ({throttle}ms), continuing at full speed.");
+                        var consumedTimeMs = (int)(DateTime.UtcNow - syncStart).TotalMilliseconds;
+                        var remainingTimeMs = throttle - consumedTimeMs;
+
+                        if (remainingTimeMs > 0)
+                        {
+                            _log.LogInformation($"Throttle set to {throttle}ms, updating job in [fso] took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
+                            Thread.Sleep(remainingTimeMs);
+                        }
+                        else
+                        {
+                            _log.LogDebug($"Updatinug job in [fso] ({consumedTimeMs}ms) exceeded throttle time ({throttle}ms), continuing at full speed.");
+                        }
                     }
+
+                    // Stop processing the queue if cancellation was requested
+                    if (CancellationToken.IsCancellationRequested)
+                    {
+                        // Raise the cancelling event
+                        RaiseCancelling();
+                        // Clean up here, if necessary
+                    }
+
+                    syncStart = DateTime.UtcNow;
+                    job = GetNextJobToSync(db);
                 }
 
-                // Stop processing the queue if cancellation was requested
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    // Raise the cancelling event
-                    RaiseCancelling();
-                    // Clean up here, if necessary
-                }
-
-                syncStart = DateTime.UtcNow;
-                job = GetNextJobToSync();
+                var elapsedMs = (int)(DateTime.UtcNow - protocolStart).TotalMilliseconds;
+                _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds(elapsedMs)}, throttle at {SpecialFormat.FromMilliseconds(throttle)}.");
             }
-
-            var elapsedMs = (int)(DateTime.UtcNow - protocolStart).TotalMilliseconds;
-            _log.LogInformation($"Sent {count} jobs to [fso] in {SpecialFormat.FromMilliseconds(elapsedMs)}, throttle at {SpecialFormat.FromMilliseconds(throttle)}.");
         }
 
         private DataService GetDb()
@@ -97,12 +100,9 @@ namespace Syncer.Workers
             return new DataService(_conf);
         }
 
-        private SyncJob GetNextJobToSync()
+        private SyncJob GetNextJobToSync(DataService db)
         {
-            using (var db = GetDb())
-            {
-                return db.GetJobToSync();
-            }
+            return db.GetJobToSync();
         }
 
         private void UpdateJobFsoID(SyncJob job)
