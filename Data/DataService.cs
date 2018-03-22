@@ -22,7 +22,7 @@ namespace WebSosync.Data
         private static string SQL_UpdateJob;
 
         private NpgsqlConnection _con;
-        private int _cmdTimeoutSec = 10;
+        private int _cmdTimeoutSec = 30;
         #endregion
 
         #region Class initializers

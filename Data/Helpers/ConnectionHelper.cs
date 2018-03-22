@@ -9,7 +9,7 @@ namespace WebSosync.Data.Helpers
     {
         public static string GetPostgresConnectionString(string host, int port, string database, string user, string pass)
         {
-            return $"Host={host};Port={port};Database={database};Username={user};Password={pass};Timeout=4";
+            return $"Host={host};Port={port};Database={database};Username={user};Password={pass};Timeout=30";
         }
     }
 }
