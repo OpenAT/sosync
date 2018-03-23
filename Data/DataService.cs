@@ -220,14 +220,14 @@ namespace WebSosync.Data
         /// Returns the first job to be synced to fso.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<SyncJob> GetJobToSync()
+        public SyncJob GetJobToSync()
         {
             var result = _con.Query<SyncJob>(
                 Resources.ResourceManager.GetString(ResourceNames.GetFirstSyncJobToSyncSelect),
-                commandTimeout: _cmdTimeoutSec);
+                commandTimeout: _cmdTimeoutSec)
+                .SingleOrDefault();
 
-            foreach (var job in result)
-                CleanModel(job);
+            CleanModel(result);
 
             return result;
         }
