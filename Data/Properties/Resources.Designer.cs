@@ -163,11 +163,11 @@ namespace WebSosync.Data.Properties {
         ///    and (job_to_fso_sync_version is null or job_to_fso_sync_version &lt;&gt; job_last_change)
         ///order by
         ///	job_last_change desc
-        ///limit 1;.
+        ///limit 100;.
         /// </summary>
-        internal static string GetFirstSyncJobToSync_SELECT {
+        internal static string GetProtocolToSync_SELECT {
             get {
-                return ResourceManager.GetString("GetFirstSyncJobToSync_SELECT", resourceCulture);
+                return ResourceManager.GetString("GetProtocolToSync_SELECT", resourceCulture);
             }
         }
         

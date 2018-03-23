@@ -15,7 +15,7 @@ namespace WebSosync.Data.Constants
         public const string SetupAddColumnScript = "SetupAddColumn_SCRIPT";
         public const string SetupDropColumnScript = "SetupDropColumn_SCRIPT";
         public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
-        public const string GetFirstSyncJobToSyncSelect = "GetFirstSyncJobToSync_SELECT";
+        public const string GetProtocolToSyncSelect = "GetProtocolToSync_SELECT";
         public const string CreateIndexScript = "CreateIndex_SCRIPT";
         public const string SyncJobToSyncIndex = "SyncJobToSyncIndex";
         public const string JobStatisticsScript = "JobStatistics_SCRIPT";

@@ -183,7 +183,7 @@ select * from children;</value>
 )
 select * from children order by job_date asc;</value>
   </data>
-  <data name="GetFirstSyncJobToSync_SELECT" xml:space="preserve">
+  <data name="GetProtocolToSync_SELECT" xml:space="preserve">
     <value>select
 	*
 from
@@ -193,7 +193,7 @@ where
     and (job_to_fso_sync_version is null or job_to_fso_sync_version &lt;&gt; job_last_change)
 order by
 	job_last_change desc
-limit 1;</value>
+limit 100;</value>
   </data>
   <data name="JobStatistics_SCRIPT" xml:space="preserve">
     <value>select
