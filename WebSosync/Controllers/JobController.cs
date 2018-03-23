@@ -59,7 +59,7 @@ namespace WebSosync.Controllers
         public IActionResult GetAll([FromServices]DataService db)
         {
 #warning TODO: Bad practice and returning everything unpaged... fix some time!
-            var result = db.GetJobsAsync(false).GetAwaiter().GetResult();
+            var result = db.GetJobs(false);
             return new OkObjectResult(result);
         }
 

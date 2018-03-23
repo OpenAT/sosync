@@ -62,7 +62,7 @@ namespace Syncer.Workers
         /// <summary>
         /// Starts the syncer.
         /// </summary>
-        public override async void Start()
+        public override void Start()
         {
             using (var db = GetDb())
             {
@@ -74,7 +74,7 @@ namespace Syncer.Workers
 
                 var s = new Stopwatch();
                 s.Start();
-                var job = await GetNextOpenJobAsync(db);
+                var job = GetNextOpenJob(db);
                 s.Stop();
 
                 while (job != null && !CancellationToken.IsCancellationRequested)
@@ -167,7 +167,7 @@ namespace Syncer.Workers
                     loadTimeUTC = DateTime.UtcNow;
                     s.Reset();
                     s.Start();
-                    job = await GetNextOpenJobAsync(db);
+                    job = GetNextOpenJob(db);
                     s.Stop();
                 }
             }
@@ -178,12 +178,12 @@ namespace Syncer.Workers
             return new DataService(_conf);
         }
 
-        private async Task<SyncJob> GetNextOpenJobAsync(DataService db)
+        private SyncJob GetNextOpenJob(DataService db)
         {
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            var result = new List<SyncJob>(await db.GetFirstOpenJobHierarchy()).ToTree(
+            var result = new List<SyncJob>(db.GetFirstOpenJobHierarchy()).ToTree(
                     x => x.Job_ID,
                     x => x.Parent_Job_ID,
                     x => x.Children)
@@ -191,7 +191,7 @@ namespace Syncer.Workers
 
             s.Stop();
             if (result != null)
-                _log.LogDebug($"Job {result.Job_ID}: {nameof(GetNextOpenJobAsync)} elapsed: {s.ElapsedMilliseconds} ms");
+                _log.LogDebug($"Job {result.Job_ID}: {nameof(GetNextOpenJob)} elapsed: {s.ElapsedMilliseconds} ms");
 
             return result;
         }

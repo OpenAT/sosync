@@ -152,29 +152,29 @@ namespace WebSosync.Data
         /// Reads all open SyncJobs from the database.
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<SyncJob>> GetJobsAsync(bool onlyOpenJobs)
+        public IEnumerable<SyncJob> GetJobs(bool onlyOpenJobs)
         {
             if (onlyOpenJobs)
             {
-                var result = await _con.QueryAsync<SyncJob>(
+                var result = _con.Query<SyncJob>(
                     Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect),
                     commandTimeout: _cmdTimeoutSec);
 
                 foreach (var r in result)
                     CleanModel(r);
 
-                return result.AsList();
+                return result;
             }
             else
             {
-                var result = await _con.QueryAsync<SyncJob>(
+                var result = _con.Query<SyncJob>(
                     "select * from sync_table",
                     commandTimeout: _cmdTimeoutSec);
 
                 foreach (var r in result)
                     CleanModel(r);
 
-                return result.AsList();
+                return result;
             }
         }
 
@@ -204,9 +204,9 @@ namespace WebSosync.Data
         /// in the hierarchy as a flat list.
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<SyncJob>> GetFirstOpenJobHierarchy()
+        public IEnumerable<SyncJob> GetFirstOpenJobHierarchy()
         {
-            var result = await _con.QueryAsync<SyncJob>(
+            var result = _con.Query<SyncJob>(
                 Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren),
                 commandTimeout: _cmdTimeoutSec);
 
