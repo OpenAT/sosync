@@ -163,7 +163,7 @@ namespace WebSosync.Data.Properties {
         ///    and (job_to_fso_sync_version is null or job_to_fso_sync_version &lt;&gt; job_last_change)
         ///order by
         ///	job_last_change desc
-        ///limit 1;.
+        ///limit 10;.
         /// </summary>
         internal static string GetFirstSyncJobToSync_SELECT {
             get {
