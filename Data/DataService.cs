@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace WebSosync.Data
 {
@@ -151,31 +152,29 @@ namespace WebSosync.Data
         /// Reads all open SyncJobs from the database.
         /// </summary>
         /// <returns></returns>
-        public List<SyncJob> GetJobs(bool onlyOpenJobs)
+        public async Task<IEnumerable<SyncJob>> GetJobsAsync(bool onlyOpenJobs)
         {
             if (onlyOpenJobs)
             {
-                var result = _con.Query<SyncJob>(
+                var result = await _con.QueryAsync<SyncJob>(
                     Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect),
-                    commandTimeout: _cmdTimeoutSec)
-                    .AsList();
+                    commandTimeout: _cmdTimeoutSec);
 
                 foreach (var r in result)
                     CleanModel(r);
 
-                return result;
+                return result.AsList();
             }
             else
             {
-                var result = _con.Query<SyncJob>(
+                var result = await _con.QueryAsync<SyncJob>(
                     "select * from sync_table",
-                    commandTimeout: _cmdTimeoutSec)
-                    .AsList();
+                    commandTimeout: _cmdTimeoutSec);
 
                 foreach (var r in result)
                     CleanModel(r);
 
-                return result;
+                return result.AsList();
             }
         }
 
@@ -205,12 +204,11 @@ namespace WebSosync.Data
         /// in the hierarchy as a flat list.
         /// </summary>
         /// <returns></returns>
-        public List<SyncJob> GetFirstOpenJobHierarchy()
+        public async Task<IEnumerable<SyncJob>> GetFirstOpenJobHierarchy()
         {
-            var result = _con.Query<SyncJob>(
+            var result = await _con.QueryAsync<SyncJob>(
                 Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren),
-                commandTimeout: _cmdTimeoutSec)
-                .AsList();
+                commandTimeout: _cmdTimeoutSec);
 
             foreach (var r in result)
                 CleanModel(r);

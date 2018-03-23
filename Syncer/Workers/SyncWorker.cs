@@ -4,9 +4,11 @@ using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
@@ -60,7 +62,7 @@ namespace Syncer.Workers
         /// <summary>
         /// Starts the syncer.
         /// </summary>
-        public override void Start()
+        public override async void Start()
         {
             using (var db = GetDb())
             {
@@ -72,7 +74,7 @@ namespace Syncer.Workers
 
                 var s = new Stopwatch();
                 s.Start();
-                var job = GetNextOpenJob(db);
+                var job = await GetNextOpenJobAsync(db);
                 s.Stop();
 
                 while (job != null && !CancellationToken.IsCancellationRequested)
@@ -165,7 +167,7 @@ namespace Syncer.Workers
                     loadTimeUTC = DateTime.UtcNow;
                     s.Reset();
                     s.Start();
-                    job = GetNextOpenJob(db);
+                    job = await GetNextOpenJobAsync(db);
                     s.Stop();
                 }
             }
@@ -176,12 +178,12 @@ namespace Syncer.Workers
             return new DataService(_conf);
         }
 
-        private SyncJob GetNextOpenJob(DataService db)
+        private async Task<SyncJob> GetNextOpenJobAsync(DataService db)
         {
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            var result = db.GetFirstOpenJobHierarchy().ToTree(
+            var result = new List<SyncJob>(await db.GetFirstOpenJobHierarchy()).ToTree(
                     x => x.Job_ID,
                     x => x.Parent_Job_ID,
                     x => x.Children)
@@ -189,7 +191,7 @@ namespace Syncer.Workers
 
             s.Stop();
             if (result != null)
-                _log.LogDebug($"Job {result.Job_ID}: {nameof(GetNextOpenJob)} elapsed: {s.ElapsedMilliseconds} ms");
+                _log.LogDebug($"Job {result.Job_ID}: {nameof(GetNextOpenJobAsync)} elapsed: {s.ElapsedMilliseconds} ms");
 
             return result;
         }
