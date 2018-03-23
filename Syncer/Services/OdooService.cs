@@ -60,7 +60,7 @@ namespace Syncer.Services
                 // an exception
                 int foundJobId = Client
                     .SearchModelByField<SyncJob, int>("sosync.job", x => x.Job_ID, job.Job_ID)
-                    .SingleOrDefault();
+                    .FirstOrDefault();
 
                 if (foundJobId == 0)
                 {
