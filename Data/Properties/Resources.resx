@@ -175,7 +175,7 @@ select * from children;</value>
 	select * from (
 		select *
 		from sync_table
-		where job_date &gt; now() - interval '10 days' and parent_job_id is null and job_state = 'new'
+		where job_date &gt; now() - interval '15 days' and parent_job_id is null and job_state = 'new'
         order by job_date desc
         limit 50
 	) first_parent
