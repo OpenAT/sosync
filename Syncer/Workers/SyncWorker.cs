@@ -114,6 +114,7 @@ namespace Syncer.Workers
                                 flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
 
                                 if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+#warning TODO: Log time for this query too, once the majority of open sync jobs is completed
                                     CloseAllPreviousJobs(job);
 
                                 if (requireRestart)
