@@ -24,10 +24,12 @@ namespace MassDataCorrection
             if (key.KeyChar == 'y' || key.KeyChar == 'Y')
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"), SosyncVersion.Sosync2);
-                processor.Process(CheckFaultyPhoneNumbers, null);
+                //processor.Process(CheckFaultyPhoneNumbers, null);
+                //processor.Process(CheckOpenSyncJobs, new[] { "bsvw" });
+                processor.Process(CheckOpenSyncJobs, null);
 
-                //var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
-                
+                var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
+
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
             else
@@ -43,21 +45,17 @@ namespace MassDataCorrection
         {
             try
             {
-
                 using (var con = info.CreateOpenMssqlConnection())
                 {
                     var cmd = new SqlCommand(@"
-	    SELECT
-		    t.PersonTelefonID
-		    ,t.PersonID
-		    ,t.Rufnummer
-	    FROM
-		    PersonTelefon t
-	    WHERE
-		    ISNULL(t.Landkennzeichen, '') = ''
-		    AND ISNULL(t.Vorwahl, '') = ''
-		    AND ISNULL(t.Rufnummer, '') <> ''
-    ", con);
+	                    SELECT
+		                    COUNT(*) Anzahl
+	                    FROM
+		                    PersonTelefon t
+	                    WHERE
+		                    (ISNULL(t.Landkennzeichen, '') = '' OR ISNULL(t.Vorwahl, '') = '')
+		                    AND ISNULL(t.Rufnummer, '') <> ''
+                        ", con);
 
                     var count = Convert.ToInt32(cmd.ExecuteScalar());
 
@@ -65,6 +63,47 @@ namespace MassDataCorrection
                         _tel[info.Instance] = count;
 
                     Console.WriteLine($"Anzahl Tel: {count}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not connect to mssql.");
+            }
+        }
+
+        private static void CorrectFaultyPhoneNumbers(InstanceInfo info, Action<float> reportProgress)
+        {
+            try
+            {
+                using (var con = info.CreateOpenMssqlConnection())
+                {
+                    var cmd = new SqlCommand(@"
+                        SELECT COUNT(*) FROM dbo.PersonTelefon t
+	                    WHERE
+		                    (ISNULL(t.Landkennzeichen, '') = '' OR ISNULL(t.Vorwahl, '') = '')
+		                    AND ISNULL(t.Rufnummer, '') <> '';
+
+                        SELECT
+		                    t.PersonTelefonID
+                            ,t.PersonID
+                            ,Rufnummer
+	                    FROM
+		                    PersonTelefon t
+	                    WHERE
+		                    (ISNULL(t.Landkennzeichen, '') = '' OR ISNULL(t.Vorwahl, '') = '')
+		                    AND ISNULL(t.Rufnummer, '') <> '';
+                        ", con);
+
+                    var rdr = cmd.ExecuteReader();
+                    var count = 0;
+
+                    if (rdr.Read())
+                        count = Convert.ToInt32(rdr[0]);
+
+                    while (rdr.Read())
+                    {
+
+                    }
                 }
             }
             catch (Exception ex)
