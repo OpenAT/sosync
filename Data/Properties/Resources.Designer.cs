@@ -262,6 +262,24 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to create index skip_jobs_idx on sync_table
+        ///using btree
+        ///(
+        ///		job_source_sosync_write_date
+        ///		,job_source_system
+        ///		,job_source_model
+        ///		,job_source_record_id
+        ///		,job_state
+        ///)
+        ///where (job_state = &apos;new&apos;::text);.
+        /// </summary>
+        internal static string SkipPreviousJobsIndex_SCRIPT {
+            get {
+                return ResourceManager.GetString("SkipPreviousJobsIndex_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to create index syncjob_sync_index1 on sync_table (job_to_fso_can_sync);
         ///create index syncjob_sync_index2 on sync_table (job_to_fso_sync_version NULLS FIRST);
         ///create index syncjob_sync_index3 on sync_table (job_last_change);.

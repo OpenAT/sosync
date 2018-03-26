@@ -113,6 +113,8 @@ namespace WebSosync.Data
 
             TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });
             TryQueryIgnoreErrors("drop index job_date_parent_job_id_job_state_idx", new [] { UndefinedObjectError });
+
+            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SkipPreviousJobsIndexScript), new[] { DuplicateTableError });
         }
 
         private void TryQueryIgnoreErrors(string ddlQuery, string[] ignoredErrorCodes)

@@ -21,5 +21,6 @@ namespace WebSosync.Data.Constants
         public const string JobStatisticsScript = "JobStatistics_SCRIPT";
         public const string CreateIndex2Script = "CreateIndex2_SCRIPT";
         public const string CreateIndex3Script = "CreateIndex3_SCRIPT";
+        public const string SkipPreviousJobsIndexScript = "SkipPreviousJobsIndex_SCRIPT";
     }
 }

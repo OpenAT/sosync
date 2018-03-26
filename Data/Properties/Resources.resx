@@ -291,6 +291,18 @@ with (
     END;
 $$</value>
   </data>
+  <data name="SkipPreviousJobsIndex_SCRIPT" xml:space="preserve">
+    <value>create index skip_jobs_idx on sync_table
+using btree
+(
+		job_source_sosync_write_date
+		,job_source_system
+		,job_source_model
+		,job_source_record_id
+		,job_state
+)
+where (job_state = 'new'::text);</value>
+  </data>
   <data name="SyncJobToSyncIndex" xml:space="preserve">
     <value>create index syncjob_sync_index1 on sync_table (job_to_fso_can_sync);
 create index syncjob_sync_index2 on sync_table (job_to_fso_sync_version NULLS FIRST);
