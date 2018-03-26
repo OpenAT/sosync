@@ -18,6 +18,11 @@ namespace WebSosync.Data
 {
     public class DataService : IDisposable
     {
+        #region Constants
+        private const string DuplicateTableError = "42P07";
+        private const string UndefinedObjectError = "42704";
+        #endregion
+
         #region Members
         private static string SQL_CreateJob;
         private static string SQL_UpdateJob;
@@ -76,7 +81,7 @@ namespace WebSosync.Data
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
-            CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.CreateIndexScript));
+            //TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndexScript), new int[] { IndexAlreadyExistsError });
 
             // To modify the sync table in production
             // AddColumnIfNotExists("col_name", "col_type");
@@ -102,21 +107,28 @@ namespace WebSosync.Data
             AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
 
-            CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex));
-            CreateIndexIfNotExists(Resources.ResourceManager.GetString(ResourceNames.CreateIndexIndex2Script));
+            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex), new [] { DuplicateTableError });
+            //TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex2Script), new int[] { IndexAlreadyExistsError });
+            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex3Script), new [] { DuplicateTableError });
+
+            TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });
+            TryQueryIgnoreErrors("drop index job_date_parent_job_id_job_state_idx", new [] { UndefinedObjectError });
         }
 
-        private void CreateIndexIfNotExists(string ddlQuery)
+        private void TryQueryIgnoreErrors(string ddlQuery, string[] ignoredErrorCodes)
         {
+            if (ignoredErrorCodes == null)
+                ignoredErrorCodes = new string[0];
+
             try
             {
                 _con.Execute(ddlQuery, commandTimeout: 60);
             }
-            catch (NpgsqlException ex)
+            catch (PostgresException ex)
             {
                 // If the exception happened because the index already exists, ignore it.
                 // Rethrow any other exception
-                if (ex.ErrorCode != -2147467259)
+                if (!ignoredErrorCodes.Contains(ex.SqlState))
                     throw ex;
             }
         }

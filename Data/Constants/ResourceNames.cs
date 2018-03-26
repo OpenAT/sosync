@@ -19,6 +19,7 @@ namespace WebSosync.Data.Constants
         public const string CreateIndexScript = "CreateIndex_SCRIPT";
         public const string SyncJobToSyncIndex = "SyncJobToSyncIndex";
         public const string JobStatisticsScript = "JobStatistics_SCRIPT";
-        public const string CreateIndexIndex2Script = "CreateIndex2_SCRIPT";
+        public const string CreateIndex2Script = "CreateIndex2_SCRIPT";
+        public const string CreateIndex3Script = "CreateIndex3_SCRIPT";
     }
 }

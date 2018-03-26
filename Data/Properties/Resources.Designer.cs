@@ -106,6 +106,18 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to create index get_first_open_jobs_idx on sync_table
+        ///using btree
+        ///(job_date desc, job_state, parent_job_id)
+        ///where (job_state = &apos;new&apos;::text and parent_job_id is null).
+        /// </summary>
+        internal static string CreateIndex3_SCRIPT {
+            get {
+                return ResourceManager.GetString("CreateIndex3_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select *
@@ -135,7 +147,7 @@ namespace WebSosync.Data.Properties {
         ///		from sync_table
         ///		where job_date &gt; now() - interval &apos;10 days&apos; and parent_job_id is null and job_state = &apos;new&apos;
         ///        order by job_date desc
-        ///		limit 50
+        ///        limit 50
         ///	) first_parent
         ///
         ///	union all
