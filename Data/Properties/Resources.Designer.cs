@@ -97,6 +97,20 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to create index protocol_idx
+        ///	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
+        ///    where job_to_fso_can_sync = true
+        ///    AND (job_to_fso_sync_version is null
+        ///         or job_to_fso_sync_version &lt; job_last_change
+        ///         or job_to_fso_sync_version &gt; job_last_change );.
+        /// </summary>
+        internal static string CreateProtocolIndex_SCRIPT {
+            get {
+                return ResourceManager.GetString("CreateProtocolIndex_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select *
@@ -145,16 +159,13 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to select
-        ///	*
-        ///from
-        ///	sync_table
-        ///where
-        ///	job_to_fso_can_sync = true
-        ///    and (job_to_fso_sync_version is null or job_to_fso_sync_version &lt;&gt; job_last_change)
-        ///order by
-        ///	job_last_change desc
-        ///limit 100;.
+        ///   Looks up a localized string similar to SELECT * FROM sync_table
+        /// 	WHERE job_to_fso_can_sync = true
+        ///    	AND (job_to_fso_sync_version is null
+        ///         	 or job_to_fso_sync_version &lt; job_last_change
+        ///         	 or job_to_fso_sync_version &gt; job_last_change)
+        ///    ORDER BY job_last_change desc
+        ///    LIMIT 100;.
         /// </summary>
         internal static string GetProtocolToSync_SELECT {
             get {

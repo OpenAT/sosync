@@ -112,6 +112,7 @@ namespace WebSosync.Data
             TryQueryIgnoreErrors("drop index job_date_parent_job_id_job_state_idx", new [] { UndefinedObjectError });
 
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SkipPreviousJobsIndexScript), new[] { DuplicateTableError });
+            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateProtocolIndexScript), new[] { DuplicateTableError });
         }
 
         private void TryQueryIgnoreErrors(string ddlQuery, string[] ignoredErrorCodes)
