@@ -165,6 +165,8 @@ namespace Syncer.Workers
                         // All finished jobs get flagged for beeing synced to fso
                         if (job.Job_State == SosyncState.Done || job.Job_State == SosyncState.Error)
                             UpdateJobAllowSync(job);
+
+                        loadTimeUTC = DateTime.UtcNow;
                     }
 
                     // Start the background job for synchronization of sync jobs to fso
