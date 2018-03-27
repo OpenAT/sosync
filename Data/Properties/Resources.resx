@@ -299,9 +299,4 @@ using btree
 )
 where (job_state = 'new'::text);</value>
   </data>
-  <data name="SyncJobToSyncIndex" xml:space="preserve">
-    <value>create index syncjob_sync_index1 on sync_table (job_to_fso_can_sync);
-create index syncjob_sync_index2 on sync_table (job_to_fso_sync_version NULLS FIRST);
-create index syncjob_sync_index3 on sync_table (job_last_change);</value>
-  </data>
 </root>
