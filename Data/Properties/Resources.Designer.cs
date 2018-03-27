@@ -85,27 +85,6 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);.
-        /// </summary>
-        internal static string CreateIndex_SCRIPT {
-            get {
-                return ResourceManager.GetString("CreateIndex_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CREATE INDEX job_date_parent_job_id_job_state_idx
-        ///  ON sync_table
-        ///  USING btree
-        ///  (job_date, parent_job_id, job_state COLLATE pg_catalog.&quot;default&quot;);.
-        /// </summary>
-        internal static string CreateIndex2_SCRIPT {
-            get {
-                return ResourceManager.GetString("CreateIndex2_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to create index get_first_open_jobs_idx on sync_table
         ///using btree
         ///(job_date desc, job_state, parent_job_id)

@@ -81,8 +81,6 @@ namespace WebSosync.Data
             // Initial table creation, new fields will only be added below over time
             _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
 
-            //TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndexScript), new int[] { IndexAlreadyExistsError });
-
             // To modify the sync table in production
             // AddColumnIfNotExists("col_name", "col_type");
             // DropColumnIfExists("col_name");
@@ -108,7 +106,6 @@ namespace WebSosync.Data
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
 
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SyncJobToSyncIndex), new [] { DuplicateTableError });
-            //TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex2Script), new int[] { IndexAlreadyExistsError });
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex3Script), new [] { DuplicateTableError });
 
             TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });

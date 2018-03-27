@@ -138,20 +138,11 @@
 )
 select count(*) affected_rows from updated_rows;</value>
   </data>
-  <data name="CreateIndex2_SCRIPT" xml:space="preserve">
-    <value>CREATE INDEX job_date_parent_job_id_job_state_idx
-  ON sync_table
-  USING btree
-  (job_date, parent_job_id, job_state COLLATE pg_catalog."default");</value>
-  </data>
   <data name="CreateIndex3_SCRIPT" xml:space="preserve">
     <value>create index get_first_open_jobs_idx on sync_table
 using btree
 (job_date desc, job_state, parent_job_id)
 where (job_state = 'new'::text and parent_job_id is null)</value>
-  </data>
-  <data name="CreateIndex_SCRIPT" xml:space="preserve">
-    <value>create index sync_table_parent_job_id_job_state on sync_table (parent_job_id, job_date);</value>
   </data>
   <data name="GetAllOpenSyncJobs_SELECT" xml:space="preserve">
     <value>with recursive children as (
