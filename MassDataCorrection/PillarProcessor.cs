@@ -13,10 +13,9 @@ namespace MassDataCorrection
         private string _path;
         private SosyncVersion _version;
 
-        public PillarProcessor(string instancePath, SosyncVersion version)
+        public PillarProcessor(string instancePath)
         {
             _path = instancePath;
-            _version = version;
         }
 
         public void Process(

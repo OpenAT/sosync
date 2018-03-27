@@ -23,9 +23,9 @@ namespace MassDataCorrection
 
             if (key.KeyChar == 'y' || key.KeyChar == 'Y')
             {
-                var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"), SosyncVersion.Sosync2);
+                var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, new[] { "bsvw" });
+                //processor.Process(CheckOpenSyncJobs, new[] { "diaf" });
                 processor.Process(CheckOpenSyncJobs, null);
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
