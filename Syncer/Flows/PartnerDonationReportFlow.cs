@@ -37,7 +37,7 @@ namespace Syncer.Flows
             var info = GetDefaultOnlineModelInfo(onlineID, "res.partner.donation_report");
 
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetFsIdByFsoId("dbo.AktionSpendenmeldungBPK", "AktionSpendenmeldungBPK", onlineID);
+                info.ForeignID = GetFsIdByFsoId("dbo.AktionSpendenmeldungBPK", "AktionsID", onlineID);
 
             return info;
         }
