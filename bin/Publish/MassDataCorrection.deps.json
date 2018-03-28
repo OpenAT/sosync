@@ -1,19 +1,30 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "4c8aecea03798a48887cc4a94d69ae0cc4e865b2"
+    "signature": "b4bbd451959cecf4e6ec738ca425b206465e388c"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
+          "Dapper": "1.50.4",
           "Npgsql": "3.2.7",
           "Odoo": "1.0.0",
           "System.Data.SqlClient": "4.4.3"
         },
         "runtime": {
           "MassDataCorrection.dll": {}
+        }
+      },
+      "Dapper/1.50.4": {
+        "dependencies": {
+          "System.Data.SqlClient": "4.4.3",
+          "System.Reflection.Emit.Lightweight": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.4.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Dapper.dll": {}
         }
       },
       "Microsoft.CSharp/4.4.1": {},
@@ -415,6 +426,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Dapper/1.50.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-t5DMz+1aEkBcyCgkj+6hJHNsUq3k/d67lVMTNzICEhVjPUI3Gt2kgotSK8S4SpziIbFPphnOEn8M6Q75ED5hRQ==",
+      "path": "dapper/1.50.4",
+      "hashPath": "dapper.1.50.4.nupkg.sha512"
     },
     "Microsoft.CSharp/4.4.1": {
       "type": "package",
