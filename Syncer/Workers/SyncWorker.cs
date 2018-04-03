@@ -103,6 +103,7 @@ namespace Syncer.Workers
                             }
 
                             job.Job_Log += $"GetNextOpenJob: {s.Elapsed.TotalMilliseconds.ToString("0")} ms\n";
+                            UpdateJobRunCount(job);
                             UpdateJobStart(job, loadTimeUTC);
 
                             // Get the flow for the job source model, and start it
@@ -230,6 +231,19 @@ namespace Syncer.Workers
             {
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
+                job.Job_Last_Change = DateTime.UtcNow;
+
+                db.UpdateJob(job);
+            }
+        }
+
+        protected void UpdateJobRunCount(SyncJob job)
+        {
+            _log.LogDebug($"Updating job {job.Job_ID}: run_count");
+
+            using (var db = GetDb())
+            {
+                job.Job_Run_Count += 1;
                 job.Job_Last_Change = DateTime.UtcNow;
 
                 db.UpdateJob(job);

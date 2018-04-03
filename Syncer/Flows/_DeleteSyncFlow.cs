@@ -18,7 +18,6 @@ namespace Syncer.Flows
 
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            UpdateJobRunCount(Job);
             CheckRunCount(MaxRunCount);
 
             if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)

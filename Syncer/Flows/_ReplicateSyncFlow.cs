@@ -41,7 +41,6 @@ namespace Syncer.Flows
         /// <param name="restartReason">Reference parameter to indicate the reason why the restart was requested.</param>
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            UpdateJobRunCount(Job);
             CheckRunCount(MaxRunCount);
 
             DateTime? initialWriteDate = null;

@@ -727,19 +727,6 @@ namespace Syncer.Flows
             }
         }
 
-        protected void UpdateJobRunCount(SyncJob job)
-        {
-            Log.LogDebug($"Updating job {job.Job_ID}: run_count");
-
-            using (var db = GetDb())
-            {
-                job.Job_Run_Count += 1;
-                job.Job_Last_Change = DateTime.UtcNow;
-
-                UpdateJob(nameof(UpdateJobRunCount), db, _job);
-            }
-        }
-
         private void UpdateJobInconsistent(SyncJob job, int nr)
         {
             Log.LogDebug($"Updating job {job.Job_ID}: job_log");
