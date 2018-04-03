@@ -27,9 +27,11 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                processor.Process(CheckOpenSyncJobs, new[] { "freu" });
+                //processor.Process(CheckOpenSyncJobs, new[] { "freu" });
                 //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
                 //processor.Process(FillNewDonationReportFields, null);
+                //processor.Process(FillMissingPartnerBPKFields, new[] { "bsvw" });
+                processor.Process(FillMissingPartnerBPKFields, null);
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
 
@@ -210,6 +212,91 @@ namespace MassDataCorrection
 
                 Console.WriteLine($"\nUpdated {updated} of {pgDonationReports.Count} donation reports.");
             }
+        }
+
+        private static void FillMissingPartnerBPKFields(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            SqlMapper.AddTypeMap(typeof(DateTime), System.Data.DbType.DateTime2);
+            SqlMapper.AddTypeMap(typeof(DateTime?), System.Data.DbType.DateTime2);
+
+            using (var pgCon = info.CreateOpenNpgsqlConnection())
+            using (var msCon = info.CreateOpenMssqlConnection())
+            {
+                var pgPartnerBPKs = pgCon
+                    .Query<PgPartnerBpkCorrection>("select id, sosync_fs_id, bpk_request_zip, bpk_error_request_zip, bpk_request_log, last_bpk_request, bpk_request_url, bpk_error_request_url, state from res_partner_bpk;")
+                    .ToList();
+
+                var msPersonBPKs = msCon
+                    .Query<MsPartnerBpkCorrection>("select PersonBPKID, sosync_fso_id, PLZ, FehlerPLZ, RequestLog, LastRequest, RequestUrl, ErrorRequestUrl, fso_state from PersonBPK;")
+                    .ToDictionary(x => x.PersonBPKID);
+
+                var updated = 0;
+                for (int i = 0; i < pgPartnerBPKs.Count; i++)
+                {
+                    var msPersonBPK = msPersonBPKs.ContainsKey(pgPartnerBPKs[i].sosync_fs_id)
+                        ? msPersonBPKs[pgPartnerBPKs[i].sosync_fs_id]
+                        : null;
+
+                    if (msPersonBPK != null)
+                    {
+                        var update = false;
+
+                        if (HasBPKChanges(msPersonBPK, pgPartnerBPKs[i]))
+                        {
+                            //Console.WriteLine($"RefNR different");
+                            update = true;
+                            CopyBPK(pgPartnerBPKs[i], msPersonBPK);
+                        }
+
+                        if (update)
+                        {
+                            //msCon.Execute("UPDATE dbo.AktionSpendenmeldungBPK SET SubmissionIdDate = @SubmissionIdDate, ResponseErrorOrigRefnr = @ResponseErrorOrigRefnr, noSyncJobSwitch = 1 WHERE AktionsID = @AktionsID",
+                            //    new { AktionsID = msPersonBPK.AktionsID, SubmissionIdDate = msPersonBPK.SubmissionIdDate, ResponseErrorOrigRefnr = msPersonBPK.ResponseErrorOrigRefNr });
+
+                            updated++;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Not synced: res_partner_bpk.id = {pgPartnerBPKs[i].id}");
+                    }
+
+                    reportProgress((float)(i + 1) / (float)pgPartnerBPKs.Count);
+                }
+
+                Console.WriteLine($"\nUpdated {updated} of {pgPartnerBPKs.Count} PersonBPKs.");
+            }
+        }
+
+        private static bool HasBPKChanges(MsPartnerBpkCorrection msBPK, PgPartnerBpkCorrection pgBPK)
+        {
+            var result =
+                (msBPK.PLZ ?? "") != (pgBPK.bpk_request_zip ?? "")
+                || (msBPK.FehlerPLZ ?? "") != (pgBPK.bpk_error_request_zip ?? "")
+                || (msBPK.RequestLog ?? "") != (pgBPK.bpk_request_log ?? "")
+                || msBPK.LastRequest != pgBPK.last_bpk_request
+                || (msBPK.RequestUrl ?? "") != (pgBPK.bpk_request_url ?? "")
+                || (msBPK.ErrorRequestUrl ?? "") != (pgBPK.bpk_error_request_url ?? "")
+                || (msBPK.fso_state ?? "") != (pgBPK.state ?? "");
+
+            return result;
+        }
+
+        private static void CopyBPK(PgPartnerBpkCorrection source, MsPartnerBpkCorrection dest)
+        {
+            dest.PLZ = source.bpk_request_zip;
+            dest.FehlerPLZ = source.bpk_error_request_zip;
+            dest.RequestLog = source.bpk_request_log;
+            dest.LastRequest = source.last_bpk_request;
+            dest.RequestUrl = source.bpk_request_url;
+            dest.ErrorRequestUrl = source.bpk_error_request_url;
+            dest.fso_state = source.state;
         }
 
         private static string GetDate(DateTime? d)
