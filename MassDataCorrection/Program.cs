@@ -27,9 +27,9 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, null );
+                processor.Process(CheckOpenSyncJobs, new[] { "freu" });
                 //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
-                processor.Process(FillNewDonationReportFields, null);
+                //processor.Process(FillNewDonationReportFields, null);
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
 
