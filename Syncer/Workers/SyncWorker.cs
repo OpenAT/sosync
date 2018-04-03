@@ -209,7 +209,7 @@ namespace Syncer.Workers
         private void CloseAllPreviousJobs(SyncJob job)
         {
             if (!job.Job_Source_Sosync_Write_Date.HasValue)
-                throw new SyncerException($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.Job_ID})");
+                return;
 
             using (var db = GetDb())
             {
