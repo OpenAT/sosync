@@ -32,7 +32,7 @@ namespace Syncer.Flows
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             UpdateJobRunCount(Job);
-            CheckRunCount(5);
+            CheckRunCount(MaxRunCount);
 
             if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
                 // If source is studio, set merge IDs via online

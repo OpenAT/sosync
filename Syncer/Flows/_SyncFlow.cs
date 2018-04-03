@@ -27,6 +27,7 @@ namespace Syncer.Flows
     {
         #region Constants
         public const string MssqlTargetSuccessMessage = "success";
+        public const int MaxRunCount = 5;
         #endregion
 
         #region Members
