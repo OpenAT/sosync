@@ -27,11 +27,11 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, new[] { "freu" });
+                processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
                 //processor.Process(FillNewDonationReportFields, null);
-                //processor.Process(FillMissingPartnerBPKFields, new[] { "bsvw" });
-                processor.Process(FillMissingPartnerBPKFields, null);
+                //processor.Process(FillMissingPartnerBPKFields, new[] { "demo" });
+                //processor.Process(FillMissingPartnerBPKFields, null);
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
 
@@ -256,8 +256,17 @@ namespace MassDataCorrection
 
                         if (update)
                         {
-                            //msCon.Execute("UPDATE dbo.AktionSpendenmeldungBPK SET SubmissionIdDate = @SubmissionIdDate, ResponseErrorOrigRefnr = @ResponseErrorOrigRefnr, noSyncJobSwitch = 1 WHERE AktionsID = @AktionsID",
-                            //    new { AktionsID = msPersonBPK.AktionsID, SubmissionIdDate = msPersonBPK.SubmissionIdDate, ResponseErrorOrigRefnr = msPersonBPK.ResponseErrorOrigRefNr });
+                            msCon.Execute("UPDATE dbo.PersonBPK SET PLZ = @PLZ, FehlerPLZ = @FehlerPLZ, RequestLog = @RequestLog, LastRequest = @LastRequest, RequestUrl = @RequestUrl, ErrorRequestUrl = @ErrorRequestUrl, fso_state = @fso_state, noSyncJobSwitch = 1 WHERE PersonBPKID = @PersonBPKID;",
+                                new {
+                                    PersonBPKID = msPersonBPK.PersonBPKID,
+                                    PLZ = msPersonBPK.PLZ,
+                                    FehlerPLZ = msPersonBPK.FehlerPLZ,
+                                    RequestLog = msPersonBPK.RequestLog,
+                                    LastRequest = msPersonBPK.LastRequest,
+                                    RequestUrl = msPersonBPK.RequestUrl,
+                                    ErrorRequestUrl = msPersonBPK.ErrorRequestUrl,
+                                    fso_state = msPersonBPK.fso_state
+                                });
 
                             updated++;
                         }
