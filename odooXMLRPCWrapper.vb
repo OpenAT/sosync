@@ -493,6 +493,15 @@ Public Class odooXMLRPCWrapper
         date_list.Add("expiration_date")
         date_list.Add("BPKForcedBirthdate")
         date_list.Add("bpk_forced_birthdate")
+        date_list.Add("meldezeitraum_start")
+        date_list.Add("meldezeitraum_end")
+        date_list.Add("date_start")
+        date_list.Add("date_stop")
+        date_list.Add("create_date")
+        date_list.Add("ze_datum_von")
+        date_list.Add("ze_datum_bis")
+        date_list.Add("drg_last")
+        date_list.Add("drg_next_run")
 
         ' data.Add("test", "")
 
