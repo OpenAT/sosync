@@ -102,6 +102,7 @@ namespace Syncer.Flows
                     { "drg_interval_type", spanne.ErstellungIntervallEinheit},
                     { "drg_next_run", DateTimeHelper.ToUtc(spanne.NächsterLauf) },
                     { "drg_last", DateTimeHelper.ToUtc(spanne.LetzterLauf) },
+                    { "drg_last_count", spanne.LetzterLaufAnzahl },
                     { "sosync_write_date", (spanne.sosync_write_date ?? spanne.write_date.ToUniversalTime()) }
                 };
 
@@ -217,12 +218,16 @@ namespace Syncer.Flows
             entry.MeldespanneBis = DateTimeHelper.ToLocal(fiscal.MeldezeitraumEnd);
 
             var start = DateTimeHelper.ToLocal(fiscal.ZeDatumVon);
-            entry.Meldungsjahr = start.HasValue ? start.Value.Year : 0;
+
+            entry.Meldungsjahr = string.IsNullOrEmpty(fiscal.Meldungs_Jahr)
+                ? (int?)null
+                : int.Parse(fiscal.Meldungs_Jahr);
 
             entry.ErstellungIntervall = fiscal.DrgIntervalNumber;
             entry.ErstellungIntervallEinheit = fiscal.DrgIntervalType;
             entry.NächsterLauf = DateTimeHelper.ToLocal(fiscal.DrgNextRun);
             entry.LetzterLauf = DateTimeHelper.ToLocal(fiscal.DrgLast);
+            entry.LetzterLaufAnzahl = fiscal.DrgLastCount;
 
             entry.sosync_write_date = (fiscal.Sosync_Write_Date ?? fiscal.Write_Date).Value;
             entry.noSyncJobSwitch = true;
