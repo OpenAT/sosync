@@ -49,6 +49,9 @@ namespace Odoo.Models
         [DataMember(Name = "drg_last")]
         public DateTime? DrgLast { get; set; }
 
+        [DataMember(Name = "drg_last_count")]
+        public int DrgLastCount { get; set; }
+
         [DataMember(Name = "sosync_fs_id")]
         public int? Sosync_FS_ID { get; set; }
 
@@ -60,5 +63,8 @@ namespace Odoo.Models
 
         [DataMember(Name = "create_date")]
         public DateTime Create_Date { get; set; }
+
+        [DataMember(Name = "meldungs_jahr")]
+        public string Meldungs_Jahr { get; set; }
     }
 }
