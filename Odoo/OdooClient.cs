@@ -369,6 +369,21 @@ namespace Odoo
             }
         }
 
+        public void UnlinkModel(string modelName, int id)
+        {
+            var create_sync_job = false;
+            object additional = CreateAdditional(create_sync_job);
+
+            var result = _rpcObject.execute_kw<int>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "unlink",
+                new int[] { id },
+                additional);
+        }
+
         public bool IsValidResult(Dictionary<string, object> dic)
         {
             if (dic == null)
