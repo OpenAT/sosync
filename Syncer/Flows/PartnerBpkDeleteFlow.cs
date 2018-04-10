@@ -31,7 +31,7 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException("Delete from fs to fso not supported.");
+            throw new NotSupportedException($"Delete from [fs] to [fso] for model {StudioModelName}.");
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
