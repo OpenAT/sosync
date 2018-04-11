@@ -27,12 +27,12 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, null);
+                processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
                 //processor.Process(FillNewDonationReportFields, null);
                 //processor.Process(FillMissingPartnerBPKFields, new[] { "demo" });
                 //processor.Process(FillMissingPartnerBPKFields, null);
-                processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
+                //processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
                 //processor.Process(DeleteAndResyncFiscalYears, null);
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
@@ -331,6 +331,8 @@ namespace MassDataCorrection
 
         private static void DeleteAndResyncFiscalYears(InstanceInfo info, Action<float> reportProgress)
         {
+            var enabled = false;
+
             if (info.host_sosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
@@ -342,7 +344,9 @@ namespace MassDataCorrection
             {
                 var years = con.ExecuteScalar<int>("select count(*) from dbo.xBPKMeldespanne");
                 Console.WriteLine($"xBPKMeldespannen to delete: {years}");
-                con.Execute("delete from dbo.xBPKMeldespanne");
+
+                if (enabled)
+                    con.Execute("delete from dbo.xBPKMeldespanne");
             }
 
             // 2) Set all sosync_fs_id in pgSQL to null
@@ -354,13 +358,19 @@ namespace MassDataCorrection
 
                 Console.WriteLine($"FiscalYears to reset for sync: {yearIDs.Count}");
 
-                con.Execute("update account_fiscalyear set sosync_fs_id = null");
+                if (enabled)
+                    con.Execute("update account_fiscalyear set sosync_fs_id = null");
             }
 
             // 3) Use XML-RPC to invoke new sync jobs for fiscal years
-            Console.WriteLine($"Creating {yearIDs.Count} new sync jobs.");
-            var client = info.CreateAuthenticatedOdooClient();
-            yearIDs.ForEach(x => client.CreateSyncJob("account.fiscalyear", x));
+            if (enabled)
+            {
+                Console.WriteLine($"Creating {yearIDs.Count} new sync jobs.");
+                var client = info.CreateAuthenticatedOdooClient();
+                client.CreateSyncJob("account.fiscalyear", yearIDs.ToArray());
+
+                // yearIDs.ForEach(x => client.CreateSyncJob("account.fiscalyear", x));
+            }
         }
     }
 }
