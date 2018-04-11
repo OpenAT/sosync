@@ -102,8 +102,8 @@ namespace Syncer.Flows
 
         private void SetModelNames()
         {
-            var studioAtt = this.GetType().GetCustomAttribute<StudioModelAttribute>();
-            var onlineAtt = this.GetType().GetCustomAttribute<OnlineModelAttribute>();
+            var studioAtt = GetType().GetCustomAttribute<StudioModelAttribute>();
+            var onlineAtt = GetType().GetCustomAttribute<OnlineModelAttribute>();
 
             if (studioAtt != null)
                 StudioModelName = studioAtt.Name;
