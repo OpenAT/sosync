@@ -17,7 +17,8 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class MergeSyncFlow : SyncFlow
     {
-        public MergeSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public MergeSyncFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
 

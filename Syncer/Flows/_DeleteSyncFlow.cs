@@ -12,7 +12,8 @@ namespace Syncer.Flows
 {
     public abstract class DeleteSyncFlow : SyncFlow
     {
-        public DeleteSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public DeleteSyncFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
 

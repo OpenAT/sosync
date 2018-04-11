@@ -25,7 +25,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public ReplicateSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public ReplicateSyncFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
         #endregion

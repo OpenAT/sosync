@@ -21,7 +21,8 @@ namespace Syncer.Flows
     public abstract class UniformSyncFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public UniformSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public UniformSyncFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
             var t = this.GetType();
             var attStudio = t.GetCustomAttribute<StudioModelAttribute>();
