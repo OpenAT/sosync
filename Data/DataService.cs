@@ -214,6 +214,12 @@ namespace WebSosync.Data
             return updated_rows;
         }
 
+        public void ReopenErrorJobs()
+        {
+            _con.Execute("update sync_table set job_state = 'new' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 5;",
+                commandTimeout: 60 * 2);
+        }
+
         /// <summary>
         /// Returns the first unfinished parent job from the sync table and all its children
         /// in the hierarchy as a flat list.

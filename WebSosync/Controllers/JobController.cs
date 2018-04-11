@@ -176,6 +176,15 @@ namespace WebSosync.Controllers
 
             return new OkObjectResult(result);
         }
+        
+        [HttpGet("retryfailed")]
+        public IActionResult RetryFailed([FromServices] DataService db)
+        {
+            db.ReopenErrorJobs();
+            _jobWorker.Start();
+
+            return new OkResult();
+        }
         #endregion
     }
 }
