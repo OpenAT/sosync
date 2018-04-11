@@ -384,6 +384,20 @@ namespace Odoo
                 additional);
         }
 
+        public void CreateSyncJob(string modelName, int id)
+        {
+            object additional = CreateAdditional(true);
+
+            var result = _rpcObject.execute_kw<int>(
+                Database,
+                _uid,
+                Password,
+                modelName,
+                "create_sync_job",
+                new int[] { id },
+                additional);
+        }
+
         public bool IsValidResult(Dictionary<string, object> dic)
         {
             if (dic == null)
