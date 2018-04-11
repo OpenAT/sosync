@@ -24,14 +24,11 @@ namespace Syncer.Flows
         public UniformSyncFlow(IServiceProvider svc, SosyncOptions conf)
             : base(svc, conf)
         {
-            var t = this.GetType();
+            var t = GetType();
             var attStudio = t.GetCustomAttribute<StudioModelAttribute>();
             var attOnline = t.GetCustomAttribute<OnlineModelAttribute>();
 
-            StudioModel = attStudio.Name;
             StudioModelID = $"{attStudio.Name.Split('.')[1]}ID";
-
-            OnlineModel = attOnline.Name;
             OnlineModelID = "id";
 
             Fields = new List<string>();
@@ -41,7 +38,7 @@ namespace Syncer.Flows
         #region Methods
         protected override ModelInfo GetOnlineInfo(int onlineID)
         {
-            return GetDefaultOnlineModelInfo(onlineID, OnlineModel);
+            return GetDefaultOnlineModelInfo(onlineID, OnlineModelName);
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
@@ -50,7 +47,7 @@ namespace Syncer.Flows
             {
                 var result = db.ExecuteQuery<ModelInfo>(
                     $"select {StudioModelID} ID, sosync_fso_id ForeignID, write_date WriteDate, sosync_write_date SosyncWriteDate " +
-                    $"from {StudioModel} where {StudioModelID} = @studioID",
+                    $"from {StudioModelName} where {StudioModelID} = @studioID",
                     new { studioID = studioID })
                     .SingleOrDefault();
 
@@ -96,9 +93,7 @@ namespace Syncer.Flows
             private set => _fields = value;
         }
 
-        public string StudioModel { get; private set; }
         public string StudioModelID { get; private set; }
-        public string OnlineModel { get; private set; }
         public string OnlineModelID { get; private set; }
         #endregion
 
