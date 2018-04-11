@@ -157,7 +157,7 @@ namespace Syncer.Flows
                 if (action == TransformType.CreateNew)
                 {
                     var entry = new dboxBPKMeldespanne();
-                    CopyFiscalToMeldespanne(fiscal, entry, onlineID, 0, true);
+                    CopyFiscalToMeldespanne(fiscal, entry, onlineID, xBPKAccountID.Value, true);
 
                     UpdateSyncTargetRequest(Serializer.ToXML(entry));
 
