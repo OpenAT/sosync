@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="dadi-data" Version="1.3.4" />
+    <PackageReference Include="DaDi.Odoo" Version="1.0.0" />
     <PackageReference Include="Daemaged.NTP" Version="0.6.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
@@ -19,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Data\Data.csproj" />
-    <ProjectReference Include="..\Odoo\Odoo.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,5 @@
-﻿using Npgsql;
-using Odoo;
+﻿using DaDi.Odoo;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;

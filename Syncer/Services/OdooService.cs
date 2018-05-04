@@ -1,6 +1,6 @@
-﻿using dadi_data;
+﻿using DaDi.Odoo;
+using dadi_data;
 using Microsoft.Extensions.Logging;
-using Odoo;
 using System;
 using System.Collections.Generic;
 using System.Linq;

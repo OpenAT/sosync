@@ -1,7 +1,7 @@
-﻿using dadi_data.Models;
+﻿using DaDi.Odoo;
+using dadi_data.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Odoo;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;

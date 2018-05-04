@@ -1,11 +1,11 @@
-﻿using dadi_data;
+﻿using DaDi.Odoo;
+using DaDi.Odoo.Extensions;
+using DaDi.Odoo.Models;
+using dadi_data;
 using dadi_data.Interfaces;
 using dadi_data.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
-using Odoo;
-using Odoo.Extensions;
-using Odoo.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;

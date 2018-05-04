@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Odoo.Models;
 using Syncer.Models;
 using Syncer.Services;
 using Syncer.Workers;

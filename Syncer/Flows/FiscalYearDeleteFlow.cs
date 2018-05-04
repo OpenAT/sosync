@@ -8,7 +8,7 @@ using WebSosync.Data.Models;
 using dadi_data.Models;
 using System.Linq;
 using Syncer.Exceptions;
-using Odoo.Models;
+using DaDi.Odoo.Models;
 
 namespace Syncer.Flows
 {

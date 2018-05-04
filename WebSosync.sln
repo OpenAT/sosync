@@ -11,13 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Syncer", "Syncer\Syncer.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{DBAEC19C-ADA9-4763-915B-19D386C9543E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlRpc", "XmlRpc\XmlRpc.csproj", "{BCFB99C8-7378-495B-BC4A-2716E5F3D436}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Odoo", "Odoo\Odoo.csproj", "{55A7C8CD-F163-4D18-83AA-36D6042896C5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualTest", "ManualTest\ManualTest.csproj", "{D8F8DD14-E154-4342-B078-B2FA66A38DFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassDataCorrection", "MassDataCorrection\MassDataCorrection.csproj", "{256ECA30-E839-41C0-B32D-03F1403CD245}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MassDataCorrection", "MassDataCorrection\MassDataCorrection.csproj", "{256ECA30-E839-41C0-B32D-03F1403CD245}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,14 +37,6 @@ Global
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBAEC19C-ADA9-4763-915B-19D386C9543E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BCFB99C8-7378-495B-BC4A-2716E5F3D436}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55A7C8CD-F163-4D18-83AA-36D6042896C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8F8DD14-E154-4342-B078-B2FA66A38DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8F8DD14-E154-4342-B078-B2FA66A38DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8F8DD14-E154-4342-B078-B2FA66A38DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -6,12 +6,11 @@ using Syncer.Models;
 using WebSosync.Data.Models;
 using System.Linq;
 using Syncer.Enumerations;
-using Odoo;
-using Odoo.Models;
 using dadi_data.Models;
 using Syncer.Exceptions;
 using WebSosync.Data;
 using Microsoft.Extensions.Logging;
+using DaDi.Odoo.Models;
 
 namespace Syncer.Flows
 {

@@ -1,8 +1,8 @@
-﻿using dadi_data;
+﻿using DaDi.Odoo;
+using DaDi.Odoo.Models;
+using dadi_data;
 using dadi_data.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Odoo;
-using Odoo.Models;
 using Syncer.Flows;
 using Syncer.Models;
 using System;

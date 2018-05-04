@@ -7,10 +7,10 @@ using Syncer.Attributes;
 using dadi_data.Models;
 using System.Linq;
 using WebSosync.Data.Models;
-using Odoo;
 using WebSosync.Data;
-using Odoo.Models;
 using WebSosync.Common;
+using DaDi.Odoo;
+using DaDi.Odoo.Models;
 
 namespace Syncer.Flows
 {
