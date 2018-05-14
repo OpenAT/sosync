@@ -138,12 +138,6 @@
 )
 select count(*) affected_rows from updated_rows;</value>
   </data>
-  <data name="CreateIndex3_SCRIPT" xml:space="preserve">
-    <value>create index get_first_open_jobs_idx on sync_table
-using btree
-(job_date desc, job_state, parent_job_id)
-where (job_state = 'new'::text and parent_job_id is null)</value>
-  </data>
   <data name="CreateProtocolIndex_SCRIPT" xml:space="preserve">
     <value>create index protocol_idx
 	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
@@ -167,6 +161,12 @@ where (job_state = 'new'::text and parent_job_id is null)</value>
 	inner join sync_table parent on child.parent_job_id = parent.job_id
 )
 select * from children;</value>
+  </data>
+  <data name="GetFirstOpenJobIndex_SCRIPT" xml:space="preserve">
+    <value>create index get_first_open_jobs_idx on sync_table
+using btree
+(job_date desc, job_state, parent_job_id)
+where (job_state = 'new'::text and parent_job_id is null)</value>
   </data>
   <data name="GetFirstOpenSynJobAndChildren_SELECT" xml:space="preserve">
     <value>with recursive children as (

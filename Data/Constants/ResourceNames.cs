@@ -17,7 +17,7 @@ namespace WebSosync.Data.Constants
         public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
         public const string GetProtocolToSyncSelect = "GetProtocolToSync_SELECT";
         public const string JobStatisticsScript = "JobStatistics_SCRIPT";
-        public const string CreateIndex3Script = "CreateIndex3_SCRIPT";
+        public const string GetFirstOpenJobIndexScript = "GetFirstOpenJobIndex_SCRIPT";
         public const string SkipPreviousJobsIndexScript = "SkipPreviousJobsIndex_SCRIPT";
         public const string CreateProtocolIndexScript = "CreateProtocolIndex_SCRIPT";
     }

@@ -107,7 +107,7 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_priority", "integer not null default 0");
             AddColumnIfNotExists("parent_path", "text");
 
-            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex3Script), new [] { DuplicateTableError });
+            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenJobIndexScript), new [] { DuplicateTableError });
 
             TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });
             TryQueryIgnoreErrors("drop index job_date_parent_job_id_job_state_idx", new [] { UndefinedObjectError });

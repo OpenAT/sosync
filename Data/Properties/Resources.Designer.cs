@@ -85,18 +85,6 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to create index get_first_open_jobs_idx on sync_table
-        ///using btree
-        ///(job_date desc, job_state, parent_job_id)
-        ///where (job_state = &apos;new&apos;::text and parent_job_id is null).
-        /// </summary>
-        internal static string CreateIndex3_SCRIPT {
-            get {
-                return ResourceManager.GetString("CreateIndex3_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to create index protocol_idx
         ///	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
         ///    where job_to_fso_can_sync = true
@@ -129,6 +117,18 @@ namespace WebSosync.Data.Properties {
         internal static string GetAllOpenSyncJobs_SELECT {
             get {
                 return ResourceManager.GetString("GetAllOpenSyncJobs_SELECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to create index get_first_open_jobs_idx on sync_table
+        ///using btree
+        ///(job_date desc, job_state, parent_job_id)
+        ///where (job_state = &apos;new&apos;::text and parent_job_id is null).
+        /// </summary>
+        internal static string GetFirstOpenJobIndex_SCRIPT {
+            get {
+                return ResourceManager.GetString("GetFirstOpenJobIndex_SCRIPT", resourceCulture);
             }
         }
         
