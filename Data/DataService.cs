@@ -38,14 +38,17 @@ namespace WebSosync.Data
         static DataService()
         {
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
-            var excludedColumns = new string[] { "job_id", "children" };
+            var excludedColumns = new string[] { "job_id", "children", "parent_path" };
 
             var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
 
             // Generate the insert statement
             //   insert into sync_table (prop1, prop2, ...) values (@prop1, @prop2, ...)
-            SQL_CreateJob = $"insert into sync_table (\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()))}\n) values (\n\t{string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"))}\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id'));";
+            var propertiesString = string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()));
+            var propertyParametersString = string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"));
+
+            SQL_CreateJob = $"insert into sync_table (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id')) job_id, concat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/') parent_path;";
 
             // Update statement
             //   update sync_table set prop1 = @prop1, prop2 = @prop2, ... where job_id = @job_id
@@ -319,13 +322,18 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateJob(SyncJob job)
+        public void CreateJob(SyncJob job, string parentPath)
         {
+            if (parentPath == null)
+                parentPath = "";
+
             CleanModel(job);
 
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
-            job.Job_ID = _con.Query<int>(DataService.SQL_CreateJob, job).Single();
+            var inserted = _con.Query<JobInsertedInfo>(DataService.SQL_CreateJob.Replace("%%PARENT_PATH%%", parentPath), job).Single();
+            job.Job_ID = inserted.Job_ID;
+            job.Parent_Path = inserted.Parent_Path;
         }
 
         /// <summary>

@@ -173,7 +173,7 @@ namespace WebSosync.Controllers
                 else
                     job.Job_Priority = 0;
 
-                db.CreateJob(job);
+                db.CreateJob(job, "");
                 result.JobID = job.Job_ID;
 
                 // Start the sync background job
