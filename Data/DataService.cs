@@ -28,7 +28,7 @@ namespace WebSosync.Data
         private static string SQL_UpdateJob;
 
         private NpgsqlConnection _con;
-        private int _cmdTimeoutSec = 60;
+        private int _cmdTimeoutSec = 120;
         #endregion
 
         #region Class initializers
@@ -104,6 +104,8 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_source_target_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
+            AddColumnIfNotExists("job_priority", "integer not null default 0");
+            AddColumnIfNotExists("parent_path", "text");
 
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateIndex3Script), new [] { DuplicateTableError });
 
