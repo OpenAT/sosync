@@ -243,6 +243,14 @@ namespace Syncer.Flows
         {
             LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
 
+            // The derived sync flows can use RequestChildJob() method to
+            // fill _requiredChildJobs.
+
+            if (_job.Sync_Source_System == SosyncSystem.FSOnline)
+                SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
+            else
+                SetupStudioToOnlineChildJobs(_job.Sync_Source_Record_ID.Value);
+
             var s = new Stopwatch();
             s.Start();
 
@@ -256,16 +264,6 @@ namespace Syncer.Flows
 
             try
             {
-                // The derived sync flows can use RequestChildJob() method to
-                // fill _requiredChildJobs.
-
-                // This setup is not counted towards child_job_start and child_job_end.
-
-                if (_job.Sync_Source_System == SosyncSystem.FSOnline)
-                    SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
-                else
-                    SetupStudioToOnlineChildJobs(_job.Sync_Source_Record_ID.Value);
-
                 // Process the requested child jobs:
                 // 1) Ignore finished child jobs
                 // 2) If child job is open --> Skipped?
@@ -341,7 +339,7 @@ namespace Syncer.Flows
                             if (entry == null)
                             {
                                 Log.LogInformation($"Creating {childDescription} for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
-                                db.CreateJob(childJob);
+                                db.CreateJob(childJob, _job.Parent_Path);
                                 _job.Children.Add(childJob);
 
                                 entry = childJob;
