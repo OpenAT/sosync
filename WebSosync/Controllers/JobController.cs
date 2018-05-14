@@ -162,9 +162,16 @@ namespace WebSosync.Controllers
                         throw new Exception("Content of job_source_fields was not recognized.");
                 }
 
+                var flowService = (FlowService)services.GetService(typeof(FlowService));
+
                 job.Job_State = SosyncState.New;
                 job.Job_Fetched = DateTime.UtcNow;
                 job.Job_To_FSO_Can_Sync = false;
+
+                if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
+                    job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
+                else
+                    job.Job_Priority = 0;
 
                 db.CreateJob(job);
                 result.JobID = job.Job_ID;

@@ -23,6 +23,7 @@ namespace Syncer.Services
         /// List of all types derived from <see cref="SyncFlow"/>.
         /// </summary>
         public ReadOnlyCollection<Type> FlowTypes { get; private set; }
+        public ReadOnlyDictionary<string, int> ModelPriorities { get; private set; }
         #endregion
 
         #region Constructors
@@ -44,8 +45,23 @@ namespace Syncer.Services
             types.AddRange(GetAllFlowTypes());
             FlowTypes = types.AsReadOnly();
 
+            var modelPriorities = new Dictionary<string, int>();
             foreach (var flowType in FlowTypes)
+            {
                 services.AddTransient(flowType);
+
+                var priorityAttribute = flowType.GetTypeInfo().GetCustomAttribute<ModelPriorityAttribute>();
+                var studioModelAttribute = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
+                var onlineModelAttribute = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
+
+                if (priorityAttribute != null)
+                {
+                    modelPriorities.Add(studioModelAttribute.Name, priorityAttribute.Priority);
+                    modelPriorities.Add(onlineModelAttribute.Name, priorityAttribute.Priority);
+                }
+            }
+
+            ModelPriorities = new ReadOnlyDictionary<string, int>(modelPriorities);
 
             _registered = true;
         }
