@@ -85,6 +85,24 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to WITH RECURSIVE __parent_store_compute(job_id, parent_path) AS (
+        ///                SELECT row.job_id, concat(row.job_id, &apos;/&apos;)
+        ///                FROM sync_table row
+        ///                WHERE row.parent_job_id IS NULL
+        ///            UNION
+        ///                SELECT row.job_id, concat(comp.parent_path, row.job_id, &apos;/&apos;)
+        ///                FROM sync_table row, __parent_store_compute comp
+        ///                WHERE row.parent_job_id = comp.job_id
+        ///            )
+        ///            UPDATE sync_table row SET parent_path = comp.parent_path [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ComputeParentPathWhereNull_SCRIPT {
+            get {
+                return ResourceManager.GetString("ComputeParentPathWhereNull_SCRIPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to create index protocol_idx
         ///	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
         ///    where job_to_fso_can_sync = true

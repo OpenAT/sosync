@@ -20,5 +20,6 @@ namespace WebSosync.Data.Constants
         public const string GetFirstOpenJobIndexScript = "GetFirstOpenJobIndex_SCRIPT";
         public const string SkipPreviousJobsIndexScript = "SkipPreviousJobsIndex_SCRIPT";
         public const string CreateProtocolIndexScript = "CreateProtocolIndex_SCRIPT";
+        public const string ComputeParentPathWhereNull = "ComputeParentPathWhereNull_SCRIPT";
     }
 }

@@ -121,6 +121,9 @@ namespace WebSosync.Data
 
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SkipPreviousJobsIndexScript), new[] { DuplicateTableError });
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateProtocolIndexScript), new[] { DuplicateTableError });
+
+            // Compute parent_path for all sync jobs where it's null
+            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.ComputeParentPathWhereNull), commandTimeout: _cmdTimeoutSec);
         }
 
         private void TryQueryIgnoreErrors(string ddlQuery, string[] ignoredErrorCodes)

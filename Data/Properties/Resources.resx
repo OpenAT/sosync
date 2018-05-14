@@ -138,6 +138,20 @@
 )
 select count(*) affected_rows from updated_rows;</value>
   </data>
+  <data name="ComputeParentPathWhereNull_SCRIPT" xml:space="preserve">
+    <value>WITH RECURSIVE __parent_store_compute(job_id, parent_path) AS (
+                SELECT row.job_id, concat(row.job_id, '/')
+                FROM sync_table row
+                WHERE row.parent_job_id IS NULL
+            UNION
+                SELECT row.job_id, concat(comp.parent_path, row.job_id, '/')
+                FROM sync_table row, __parent_store_compute comp
+                WHERE row.parent_job_id = comp.job_id
+            )
+            UPDATE sync_table row SET parent_path = comp.parent_path
+            FROM __parent_store_compute comp
+            WHERE row.parent_path is null and row.job_id = comp.job_id</value>
+  </data>
   <data name="CreateProtocolIndex_SCRIPT" xml:space="preserve">
     <value>create index protocol_idx
 	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
