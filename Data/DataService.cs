@@ -107,7 +107,7 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_source_target_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
             AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
-            AddColumnIfNotExists("job_priority", "integer not null default 0");
+            AddColumnIfNotExists("job_priority", $"integer not null default {ModelPriority.Default}");
             AddColumnIfNotExists("parent_path", "text");
 
             // Drop old indexes. The newest index always has a different name

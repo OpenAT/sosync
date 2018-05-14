@@ -171,7 +171,7 @@ namespace WebSosync.Controllers
                 if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
                     job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
                 else
-                    job.Job_Priority = 0;
+                    job.Job_Priority = ModelPriority.Default;
 
                 db.CreateJob(job, "");
                 result.JobID = job.Job_ID;
