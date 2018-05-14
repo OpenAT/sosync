@@ -121,9 +121,9 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to create index get_first_open_jobs_idx on sync_table
+        ///   Looks up a localized string similar to create index get_first_open_jobs_v2_idx on sync_table
         ///using btree
-        ///(job_date desc, job_state, parent_job_id)
+        ///(job_priority desc, job_date desc, job_state, parent_job_id)
         ///where (job_state = &apos;new&apos;::text and parent_job_id is null).
         /// </summary>
         internal static string GetFirstOpenJobIndex_SCRIPT {

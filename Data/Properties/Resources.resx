@@ -163,9 +163,9 @@ select count(*) affected_rows from updated_rows;</value>
 select * from children;</value>
   </data>
   <data name="GetFirstOpenJobIndex_SCRIPT" xml:space="preserve">
-    <value>create index get_first_open_jobs_idx on sync_table
+    <value>create index get_first_open_jobs_v2_idx on sync_table
 using btree
-(job_date desc, job_state, parent_job_id)
+(job_priority desc, job_date desc, job_state, parent_job_id)
 where (job_state = 'new'::text and parent_job_id is null)</value>
   </data>
   <data name="GetFirstOpenSynJobAndChildren_SELECT" xml:space="preserve">

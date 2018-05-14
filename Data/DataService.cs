@@ -107,6 +107,9 @@ namespace WebSosync.Data
             AddColumnIfNotExists("job_priority", "integer not null default 0");
             AddColumnIfNotExists("parent_path", "text");
 
+            // Drop old indexes. The newest index always has a different name
+            TryQueryIgnoreErrors("drop index get_first_open_jobs_idx", new[] { UndefinedObjectError });
+            // New index
             TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenJobIndexScript), new [] { DuplicateTableError });
 
             TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });
