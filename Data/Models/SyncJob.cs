@@ -65,6 +65,9 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "job_date")]
         public DateTime Job_Date { get; set; }
 
+        [DataMember(Name = "job_priority")]
+        public int Job_Priority { get; set; }
+
         // SyncJob source
 
         [DataMember(Name = "job_source_type")]
@@ -133,6 +136,9 @@ namespace WebSosync.Data.Models
 
         [DataMember(Name = "parent_job_id")]
         public int? Parent_Job_ID { get; set; }
+
+        [DataMember(Name = "parent_path")]
+        public string Parent_Path { get; set; }
 
         // Child jobs processing time
 
