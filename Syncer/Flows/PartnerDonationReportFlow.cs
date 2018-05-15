@@ -167,7 +167,7 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var source = OdooService.Client.GetModel<resPartnerDonationReport>(OnlineModelName, onlineID);
-            var source_sosync_write_date = (source.sosync_write_date ?? source.write_date).Value;
+            var source_sosync_write_date = (source.Sosync_Write_Date ?? source.Write_Date).Value;
 
             // Never synchronize test entries
             if ((source.submission_env ?? "").ToUpper() != "P")
