@@ -42,9 +42,9 @@ namespace Syncer.Services
             }
         }
 
-        public string GetStudioModelIdentity(string modelName)
+        public string GetStudioModelIdentity(string studioModelName)
         {
-            return $"{modelName.Split('.')[1]}ID";
+            return $"{studioModelName.Split('.')[1]}ID";
         }
         #endregion
     }

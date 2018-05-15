@@ -181,11 +181,11 @@ namespace Syncer.Flows
             return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
         }
 
-        protected int? GetFsoIdByFsId(string modelName, int fsId)
+        protected int? GetFsoIdByFsId(string onlineModelName, int fsId)
         {
             var odooID = 0;
 
-            var results = OdooService.Client.SearchByField(modelName, "sosync_fs_id", "=", fsId.ToString()).ToList();
+            var results = OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId.ToString()).ToList();
 
             if (results.Count == 1)
                 odooID = results[0];
@@ -198,13 +198,13 @@ namespace Syncer.Flows
             return null;
         }
 
-        protected int? GetFsIdByFsoId(string modelName, string idName, int onlineID)
+        protected int? GetFsIdByFsoId(string studioModelName, string idName, int onlineID)
         {
             // Since we're only running a simple query, the DataService type doesn't matter
             using (var db = MdbService.GetDataService<dboPerson>())
             {
                 var foundStudioID = db.ExecuteQuery<int?>(
-                    $"select {idName} from {modelName} where sosync_fso_id = @fso_id",
+                    $"select {idName} from {studioModelName} where sosync_fso_id = @fso_id",
                     new { fso_id = onlineID })
                     .SingleOrDefault();
 
