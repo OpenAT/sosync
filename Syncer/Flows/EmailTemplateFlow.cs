@@ -11,6 +11,7 @@ using System.Linq;
 using DaDi.Odoo.Models;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
+using DaDi.MultiMail.Client;
 
 namespace Syncer.Flows
 {
@@ -82,11 +83,18 @@ namespace Syncer.Flows
 
             using (var db = MdbService.GetDataService<dboxTemplate>())
             {
+                var orgId = db.ExecuteQuery<int>("select dbo.FS_100_Organisation_01_ID()")
+                    .SingleOrDefault();
+
                 if (action == TransformType.CreateNew)
                 {
+                    var referenceId = PublishToMultiMail(orgId, onlineTemplate);
+
                     var entry = new dboxTemplate()
                     {
                         Name = onlineTemplate.Name,
+                        ReferenzBeschreibung = "message_template_id",
+                        ReferenzID = referenceId,
 
                         EmailBetreff = onlineTemplate.Subject,
                         EmailVon = onlineTemplate.EmailFrom,
@@ -133,6 +141,9 @@ namespace Syncer.Flows
 
                     UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioTemplate));
 
+                    var referenceId = studioTemplate.ReferenzID;
+                    PublishToMultiMail(orgId, onlineTemplate, referenceId);
+
                     studioTemplate.Name = onlineTemplate.Name;
                     studioTemplate.EmailBetreff = onlineTemplate.Subject;
                     studioTemplate.EmailVon = onlineTemplate.EmailFrom;
@@ -156,6 +167,27 @@ namespace Syncer.Flows
                     }
                 }
             }
+        }
+
+        private int PublishToMultiMail(int orgId, emailTemplate onlineTemplate, int referenceId = 0)
+        {
+            var client = new MultiMailPortTypeClient();
+            client.Endpoint.Binding.OpenTimeout = new TimeSpan(0, 0, 10);
+            client.Endpoint.Binding.SendTimeout = new TimeSpan(0, 0, 10);
+
+            var task = client.soap_updateMessageTemplateAsync(
+                orgId,
+                referenceId,
+                "mail",
+                onlineTemplate.Subject,
+                onlineTemplate.EmailFrom,
+                onlineTemplate.ReplyTo,
+                null,
+                onlineTemplate.FsoEmailHtmlParsed);
+
+            referenceId = task.GetAwaiter().GetResult();
+
+            return referenceId;
         }
     }
 }
