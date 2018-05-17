@@ -91,7 +91,7 @@ namespace Syncer.Flows
                         EmailBetreff = onlineTemplate.Subject,
                         EmailVon = onlineTemplate.EmailFrom,
                         EmailAntwortAn = onlineTemplate.ReplyTo,
-                        EmailHTML = InsertLinkTrackers(onlineTemplate.FsoEmailHtmlParsed),
+                        EmailHTML = onlineTemplate.FsoEmailHtmlParsed,
 
                         TemplateFürtypID = 109610, // Für Organisation
                         TemplatetypID = 2005837, // FS-Online Emailtemplate für MultiMail
@@ -137,7 +137,7 @@ namespace Syncer.Flows
                     studioTemplate.EmailBetreff = onlineTemplate.Subject;
                     studioTemplate.EmailVon = onlineTemplate.EmailFrom;
                     studioTemplate.EmailAntwortAn = onlineTemplate.ReplyTo;
-                    studioTemplate.EmailHTML = InsertLinkTrackers(onlineTemplate.FsoEmailHtmlParsed);
+                    studioTemplate.EmailHTML = onlineTemplate.FsoEmailHtmlParsed;
 
                     studioTemplate.sosync_write_date = onlineTemplate.Sosync_Write_Date ?? onlineTemplate.Write_Date;
                     studioTemplate.noSyncJobSwitch = true;
@@ -156,50 +156,6 @@ namespace Syncer.Flows
                     }
                 }
             }
-        }
-
-        private string InsertLinkTrackers(string html)
-        {
-            // do not track links with class "dadi_notrack"
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            foreach (var linkNode in doc.DocumentNode.SelectNodes("//a[@href]"))
-                if (IsTrackableLink(linkNode))
-                    linkNode.Attributes["href"].Value = CreateTrackingLink(linkNode.Attributes["href"].Value);
-
-            return doc.DocumentNode.OuterHtml;
-        }
-
-        private bool IsTrackableLink(HtmlNode node)
-        {
-            var isAnchor = node.Name.ToLower() == "a";
-            var hasHref = node.Attributes.Contains("href");
-            var isNoTrack = node.Attributes.Contains("class") && node.Attributes["class"].Value.ToLower().Contains("dadi_notrack");
-
-            return isAnchor & hasHref & !isNoTrack;
-        }
-
-        private string CreateTrackingLink(string link)
-        {
-            // Do not touch Hash-References
-            if (link.StartsWith("#"))
-                return link;
-
-            // Links without http or https default to https
-            if (!link.ToLower().StartsWith("http"))
-                return $"%redirector%/https//{link}";
-
-            var exp = new Regex("https?://", RegexOptions.IgnoreCase);
-            var match = exp.Match(link);
-
-            if (match.Value.ToLower().Contains("s"))
-                link = link.Replace(match.Value, "%redirector%/https//");
-            else
-                link = link.Replace(match.Value, "%redirector%/http//");
-
-            return link;
         }
     }
 }
