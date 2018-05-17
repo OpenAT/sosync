@@ -7,6 +7,7 @@ using dadi_data.Models;
 using Syncer.Attributes;
 using WebSosync.Data.Constants;
 using System.Linq;
+using Syncer.Exceptions;
 
 namespace Syncer.Flows
 {
@@ -42,6 +43,14 @@ namespace Syncer.Flows
             {
                 var template = db.Read(new { sosync_fso_id = onlineID })
                     .SingleOrDefault();
+
+                if (template == null)
+                    throw new SyncerException($"Failed to read data from model {StudioModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
+
+                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(template));
+
+                var query = $"update {StudioModelName} set GültigBis = cast(dateadd(day, -1, getdate()) as date) where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                UpdateSyncTargetRequest($"-- @id = {Job.Sync_Target_Record_ID.Value}\n" + query);
 
                 template.GültigBis = DateTime.Today.AddDays(-1);
 
