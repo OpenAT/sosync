@@ -502,6 +502,7 @@ Public Class odooXMLRPCWrapper
         date_list.Add("ze_datum_bis")
         date_list.Add("drg_last")
         date_list.Add("drg_next_run")
+        date_list.Add("submission_id_datetime")
 
         ' data.Add("test", "")
 
