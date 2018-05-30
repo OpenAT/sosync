@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "528016a3ac11df34a4ef9dd3cbc383ef1ece82c8"
+    "signature": "3aa94198918426f56a59d2355ff9c8cc7a60b4bf"
   },
   "compilationOptions": {
     "defines": [
@@ -34,7 +34,6 @@
           "Microsoft.Extensions.Configuration.Ini": "2.0.0",
           "Microsoft.Extensions.Logging.Debug": "2.0.0",
           "Microsoft.NETCore.App": "2.0.0",
-          "Odoo": "1.0.0",
           "Serilog.Enrichers.Environment": "2.1.2",
           "Serilog.Extensions.Logging.File": "1.1.0",
           "Syncer": "1.0.0",
@@ -70,7 +69,7 @@
           "lib/netstandard1.3/AutoMapper.dll": {}
         }
       },
-      "dadi-data/1.3.4": {
+      "dadi-data/1.3.7": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -87,6 +86,40 @@
         },
         "compile": {
           "lib/netstandard1.4/dadi-data.dll": {}
+        }
+      },
+      "DaDi.MultiMail/1.0.0": {
+        "dependencies": {
+          "System.ServiceModel.Duplex": "4.4.2",
+          "System.ServiceModel.Http": "4.4.2",
+          "System.ServiceModel.NetTcp": "4.4.2",
+          "System.ServiceModel.Security": "4.4.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/DaDi.MultiMail.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/DaDi.MultiMail.dll": {}
+        }
+      },
+      "DaDi.Odoo/1.0.4": {
+        "dependencies": {
+          "DaDi.XmlRpc": "1.0.1",
+          "Microsoft.CSharp": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/DaDi.Odoo.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/DaDi.Odoo.dll": {}
+        }
+      },
+      "DaDi.XmlRpc/1.0.1": {
+        "runtime": {
+          "lib/netstandard2.0/DaDi.XmlRpc.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/DaDi.XmlRpc.dll": {}
         }
       },
       "Daemaged.NTP/0.6.6": {
@@ -114,6 +147,20 @@
         },
         "compile": {
           "lib/netstandard2.0/Dapper.dll": {}
+        }
+      },
+      "HtmlAgilityPack/1.8.2": {
+        "dependencies": {
+          "System.Net.Http": "4.3.2",
+          "System.Xml.XPath": "4.3.0",
+          "System.Xml.XPath.XmlDocument": "4.3.0",
+          "System.Xml.XmlDocument": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/HtmlAgilityPack.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/HtmlAgilityPack.dll": {}
         }
       },
       "Libuv/1.10.0": {
@@ -2121,6 +2168,57 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Net.Http/4.3.2": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.0.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Debug": "4.3.0",
+          "System.Diagnostics.DiagnosticSource": "4.4.1",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Globalization.Extensions": "4.3.0",
+          "System.IO": "4.3.0",
+          "System.IO.FileSystem": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.Handles": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Security.Cryptography.Algorithms": "4.3.0",
+          "System.Security.Cryptography.Encoding": "4.3.0",
+          "System.Security.Cryptography.OpenSsl": "4.3.0",
+          "System.Security.Cryptography.Primitives": "4.3.0",
+          "System.Security.Cryptography.X509Certificates": "4.3.0",
+          "System.Text.Encoding": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0",
+          "runtime.native.System": "4.3.0",
+          "runtime.native.System.Net.Http": "4.3.0",
+          "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
+        },
+        "runtimeTargets": {
+          "runtime/unix/lib/_._": {
+            "rid": "unix",
+            "assetType": "runtime"
+          },
+          "runtime/win/lib/_._": {
+            "rid": "win",
+            "assetType": "runtime"
+          }
+        }
+      },
+      "System.Net.Http.WinHttpHandler/4.4.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Net.Http.WinHttpHandler.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/netstandard2.0/System.Net.Http.WinHttpHandler.dll": {
+            "rid": "win",
+            "assetType": "runtime"
+          }
+        }
+      },
       "System.Net.NameResolution/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0",
@@ -2167,6 +2265,24 @@
           "System.Threading": "4.3.0"
         }
       },
+      "System.Private.ServiceModel/4.4.2": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.0.0",
+          "System.Net.Http.WinHttpHandler": "4.4.0",
+          "System.Reflection.DispatchProxy": "4.4.0",
+          "System.Security.Principal.Windows": "4.4.0"
+        },
+        "runtimeTargets": {
+          "runtimes/unix/lib/netstandard2.0/System.Private.ServiceModel.dll": {
+            "rid": "unix",
+            "assetType": "runtime"
+          },
+          "runtimes/win7/lib/netstandard2.0/System.Private.ServiceModel.dll": {
+            "rid": "win7",
+            "assetType": "runtime"
+          }
+        }
+      },
       "System.Reflection/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0",
@@ -2176,6 +2292,7 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Reflection.DispatchProxy/4.4.0": {},
       "System.Reflection.Emit/4.3.0": {
         "dependencies": {
           "System.IO": "4.3.0",
@@ -2543,6 +2660,67 @@
           "ref/netstandard2.0/System.Security.Principal.Windows.dll": {}
         }
       },
+      "System.ServiceModel.Duplex/4.4.2": {
+        "dependencies": {
+          "System.Private.ServiceModel": "4.4.2",
+          "System.ServiceModel.Primitives": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.Duplex.dll": {}
+        },
+        "compile": {
+          "ref/netstandard2.0/System.ServiceModel.Duplex.dll": {}
+        }
+      },
+      "System.ServiceModel.Http/4.4.2": {
+        "dependencies": {
+          "System.Private.ServiceModel": "4.4.2",
+          "System.ServiceModel.Primitives": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.Http.dll": {}
+        },
+        "compile": {
+          "ref/netstandard2.0/System.ServiceModel.Http.dll": {}
+        }
+      },
+      "System.ServiceModel.NetTcp/4.4.2": {
+        "dependencies": {
+          "System.Private.ServiceModel": "4.4.2",
+          "System.ServiceModel.Primitives": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.NetTcp.dll": {}
+        },
+        "compile": {
+          "ref/netstandard2.0/System.ServiceModel.NetTcp.dll": {}
+        }
+      },
+      "System.ServiceModel.Primitives/4.4.1": {
+        "dependencies": {
+          "System.Private.ServiceModel": "4.4.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.Primitives.dll": {},
+          "lib/netstandard2.0/System.ServiceModel.dll": {}
+        },
+        "compile": {
+          "ref/netstandard2.0/System.ServiceModel.Primitives.dll": {},
+          "ref/netstandard2.0/System.ServiceModel.dll": {}
+        }
+      },
+      "System.ServiceModel.Security/4.4.2": {
+        "dependencies": {
+          "System.Private.ServiceModel": "4.4.2",
+          "System.ServiceModel.Primitives": "4.4.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.Security.dll": {}
+        },
+        "compile": {
+          "ref/netstandard2.0/System.ServiceModel.Security.dll": {}
+        }
+      },
       "System.Text.Encoding/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0",
@@ -2726,29 +2904,38 @@
           "System.Xml.XPath": "4.3.0"
         }
       },
-      "Odoo/1.0.0": {
+      "System.Xml.XPath.XmlDocument/4.3.0": {
         "dependencies": {
-          "Microsoft.CSharp": "4.4.1",
-          "System.Reflection.TypeExtensions": "4.4.0",
-          "XmlRpc": "1.0.0"
+          "System.Collections": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.IO": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Xml.ReaderWriter": "4.3.0",
+          "System.Xml.XPath": "4.3.0",
+          "System.Xml.XmlDocument": "4.3.0"
         },
         "runtime": {
-          "Odoo.dll": {}
+          "lib/netstandard1.3/System.Xml.XPath.XmlDocument.dll": {}
         },
         "compile": {
-          "Odoo.dll": {}
+          "ref/netstandard1.3/System.Xml.XPath.XmlDocument.dll": {}
         }
       },
       "Syncer/1.0.0": {
         "dependencies": {
+          "DaDi.MultiMail": "1.0.0",
+          "DaDi.Odoo": "1.0.4",
           "Daemaged.NTP": "0.6.6",
+          "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
           "Microsoft.Extensions.DependencyInjection": "2.0.0",
-          "Odoo": "1.0.0",
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.3.4"
+          "dadi-data": "1.3.7"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -2781,20 +2968,6 @@
         },
         "compile": {
           "WebSosync.Data.dll": {}
-        }
-      },
-      "XmlRpc/1.0.0": {
-        "dependencies": {
-          "System.Dynamic.Runtime": "4.3.0",
-          "System.Reflection.TypeExtensions": "4.4.0",
-          "System.Runtime.Serialization.Primitives": "4.3.0",
-          "System.Xml.XmlDocument": "4.3.0"
-        },
-        "runtime": {
-          "XmlRpc.dll": {}
-        },
-        "compile": {
-          "XmlRpc.dll": {}
         }
       },
       "Microsoft.NETCore.App/2.0.0": {
@@ -2988,12 +3161,33 @@
       "path": "automapper/6.2.2",
       "hashPath": "automapper.6.2.2.nupkg.sha512"
     },
-    "dadi-data/1.3.4": {
+    "dadi-data/1.3.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-BTGK+74FgeoJxP3cKBE3dj8wDopSU4JuJ6zs9VoiFbrBB9xpg7pC3nggGpVWjWIFwGiADUEA//YQV5Il0TJuCg==",
-      "path": "dadi-data/1.3.4",
-      "hashPath": "dadi-data.1.3.4.nupkg.sha512"
+      "sha512": "sha512-E/O4agH1jWogg+3U+/E95ty8dqmBc5hBg12P/8deSiyBD7mOmHGr+mKFKw6DWRL26sibjIcD51V9XCmDckunfA==",
+      "path": "dadi-data/1.3.7",
+      "hashPath": "dadi-data.1.3.7.nupkg.sha512"
+    },
+    "DaDi.MultiMail/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nDHFaj27pR0/Xh51OWxWi3GS3YUI/7XgvXsQ/YE7lTQY1pq52FKN2GHJ4mFY5nofFliByLJoxbMEkVl1kLyWmw==",
+      "path": "dadi.multimail/1.0.0",
+      "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
+    },
+    "DaDi.Odoo/1.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kttiZrnvqoEGLEhDpD1PV9fhp2o5829f3AA4p0ZiyTO6EIJm9iDiEj1lS5yi9YjlZq9GdkeonufK3A3Ow4B6QA==",
+      "path": "dadi.odoo/1.0.4",
+      "hashPath": "dadi.odoo.1.0.4.nupkg.sha512"
+    },
+    "DaDi.XmlRpc/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZaT39+7iJ7OjIj3NeU8Xe2bRy4QTeffrzDaTFVjnERRCAxaUwEMWEQcEVlJWThfqrm+ktHpxeBp+Psj9ZLREWw==",
+      "path": "dadi.xmlrpc/1.0.1",
+      "hashPath": "dadi.xmlrpc.1.0.1.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",
@@ -3008,6 +3202,13 @@
       "sha512": "sha512-t5DMz+1aEkBcyCgkj+6hJHNsUq3k/d67lVMTNzICEhVjPUI3Gt2kgotSK8S4SpziIbFPphnOEn8M6Q75ED5hRQ==",
       "path": "dapper/1.50.4",
       "hashPath": "dapper.1.50.4.nupkg.sha512"
+    },
+    "HtmlAgilityPack/1.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6eZx+QMxghcaVurr3QSa5FT0P5EgqxZBcalj5LpEEW3X72mKbbAuyaIaNUCifk467R68KgJA6x/W1VnYxBlT0Q==",
+      "path": "htmlagilitypack/1.8.2",
+      "hashPath": "htmlagilitypack.1.8.2.nupkg.sha512"
     },
     "Libuv/1.10.0": {
       "type": "package",
@@ -4136,6 +4337,20 @@
       "path": "system.linq.queryable/4.3.0",
       "hashPath": "system.linq.queryable.4.3.0.nupkg.sha512"
     },
+    "System.Net.Http/4.3.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-usY6qzgAko1HCYo6Z8gFl1TJ4PJmcn+vXG2WKhtL1NmQr1/0MPrt+jVLGHo/YNzpPQqddARfyD619WAmpAezrA==",
+      "path": "system.net.http/4.3.2",
+      "hashPath": "system.net.http.4.3.2.nupkg.sha512"
+    },
+    "System.Net.Http.WinHttpHandler/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZmsFZIZ4PL2UfUlfj4KCzzAGGE2SF39ENIqtvfgu0bwMEAe3J3CqZr765E2W6eQQtNK08/8DpHcsA0sAKZdEtA==",
+      "path": "system.net.http.winhttphandler/4.4.0",
+      "hashPath": "system.net.http.winhttphandler.4.4.0.nupkg.sha512"
+    },
     "System.Net.NameResolution/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -4164,12 +4379,26 @@
       "path": "system.objectmodel/4.3.0",
       "hashPath": "system.objectmodel.4.3.0.nupkg.sha512"
     },
+    "System.Private.ServiceModel/4.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7lPNLr5icowsX0NhKz3Aqsx64rr4qYQUYNCDMmkdeGE25qDWX0r9PucuIJkvBeffn+4qWCLnROw8Ehy60WtbhA==",
+      "path": "system.private.servicemodel/4.4.2",
+      "hashPath": "system.private.servicemodel.4.4.2.nupkg.sha512"
+    },
     "System.Reflection/4.3.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-SUU5J0BMel7c26vfV6LqNte83c4ft9zJOFvj1Krev0zZzylncBn8yNd+TtsD3MAIXmdjoGFJo5peof+Ycn46CQ==",
       "path": "system.reflection/4.3.0",
       "hashPath": "system.reflection.4.3.0.nupkg.sha512"
+    },
+    "System.Reflection.DispatchProxy/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xK6JE0mpsBD+T0qu3V6dmVRa06PxAvIIM/zSjouqP7Sk6X+FQj+9XFRz9GmZk9aJGMU1LX6AgTZIlsYZ64QKsw==",
+      "path": "system.reflection.dispatchproxy/4.4.0",
+      "hashPath": "system.reflection.dispatchproxy.4.4.0.nupkg.sha512"
     },
     "System.Reflection.Emit/4.3.0": {
       "type": "package",
@@ -4367,6 +4596,41 @@
       "path": "system.security.principal.windows/4.4.0",
       "hashPath": "system.security.principal.windows.4.4.0.nupkg.sha512"
     },
+    "System.ServiceModel.Duplex/4.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HKCiCub7Z/RGNvmT9fkky0dslN05eAE8qR4T8v+ZD1FfFPED6cS/ijnLL7smVvu0YSavXZBzgQIo2OHySJXjKQ==",
+      "path": "system.servicemodel.duplex/4.4.2",
+      "hashPath": "system.servicemodel.duplex.4.4.2.nupkg.sha512"
+    },
+    "System.ServiceModel.Http/4.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IeF9QT6bHlSgCw5KXldxOt78sGLC0cf/tH7MqfulAydUuWoWgI956AQwyru83lYPTS/eYn5b6UvJbs/33KbCWQ==",
+      "path": "system.servicemodel.http/4.4.2",
+      "hashPath": "system.servicemodel.http.4.4.2.nupkg.sha512"
+    },
+    "System.ServiceModel.NetTcp/4.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-j35YzVN/SYgtGV9Ltpc+56I0WTSQEC4z0TGWGFzC8Cx/0RH3o25fS3vRbrnk1ClI7T28pASx7ZgsNeySvuZI8g==",
+      "path": "system.servicemodel.nettcp/4.4.2",
+      "hashPath": "system.servicemodel.nettcp.4.4.2.nupkg.sha512"
+    },
+    "System.ServiceModel.Primitives/4.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vp7zTf2xEq8shjlT6IZj0nkmIl+3eoPVrxrFtMS14ldFyDHqe9KB6YNOc6oirkg0udPnF5tSpxlrtTqANDGoMQ==",
+      "path": "system.servicemodel.primitives/4.4.1",
+      "hashPath": "system.servicemodel.primitives.4.4.1.nupkg.sha512"
+    },
+    "System.ServiceModel.Security/4.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-89lX1gdMB4DE33dU8fzvxCudcvGRc5PVQ9K7u0ir3CRRcJki8A49aOU5EU/BiEZp+bXPUR805vb6H56WyOIvtQ==",
+      "path": "system.servicemodel.security/4.4.2",
+      "hashPath": "system.servicemodel.security.4.4.2.nupkg.sha512"
+    },
     "System.Text.Encoding/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -4493,10 +4757,12 @@
       "path": "system.xml.xpath.xdocument/4.3.0",
       "hashPath": "system.xml.xpath.xdocument.4.3.0.nupkg.sha512"
     },
-    "Odoo/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
+    "System.Xml.XPath.XmlDocument/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A/uxsWi/Ifzkmd4ArTLISMbfFs6XpRPsXZonrIqyTY70xi8t+mDtvSM5Os0RqyRDobjMBwIDHDL4NOIbkDwf7A==",
+      "path": "system.xml.xpath.xmldocument/4.3.0",
+      "hashPath": "system.xml.xpath.xmldocument.4.3.0.nupkg.sha512"
     },
     "Syncer/1.0.0": {
       "type": "project",
@@ -4509,11 +4775,6 @@
       "sha512": ""
     },
     "WebSosync.Data/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "XmlRpc/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
