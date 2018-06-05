@@ -925,9 +925,6 @@ namespace Syncer.Flows
 
                         try
                         {
-                            personSvc.Update(person.person);
-                            LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
-
                             CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
                             CreateOrUpdate(emailSvc, person.email, person.email != null ? person.email.PersonEmailID : 0);
                             CreateOrUpdate(phoneSvc, person.phone, person.phone != null ? person.phone.PersonTelefonID : 0, "(Festnetz)");
@@ -937,6 +934,9 @@ namespace Syncer.Flows
                             CreateOrUpdate(personGroupSvc, person.personDonationReceipt, person.personDonationReceipt != null ? person.personDonationReceipt.PersonGruppeID : 0, "(DonationReceipt)");
                             CreateOrUpdate(emailNewsletterSvc, person.emailNewsletter, person.emailNewsletter != null ? person.emailNewsletter.PersonEmailGruppeID : 0);
                             CreateOrUpdate(personGroupSvc, person.SystemDeactivateBPK, person.SystemDeactivateBPK != null ? person.SystemDeactivateBPK.PersonGruppeID : 0, "(DeactivateBPK)");
+
+                            personSvc.Update(person.person);
+                            LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
 
                             SetdboPersonStack_fso_ids(
                                person,
