@@ -1101,10 +1101,6 @@ namespace Syncer.Flows
             else if (string.IsNullOrEmpty(source.Gender))
                 dest.GeschlechttypID = 0;
 
-            if (source.Write_Date.HasValue)
-                dest.write_date = source.Write_Date.Value;
-
-            dest.Anlagedatum = DateTime.Now;
         }
 
         private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest)
