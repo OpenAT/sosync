@@ -5,7 +5,7 @@ Synchronizes data between **FundraisingStudio (FS)** and **FundraisingStudio Onl
 ### Overview
 - **sosync** is an *ASP.NET Core* Application, written in *C#*
 - It is supposed to run as a linux service
-- It runs a self contained *Kestrel* webserver to provite a *REST*ful API
+- It runs a self contained *Kestrel* webserver to provide a *REST*ful API
   - By default, localhost and all IPv4 addresses will be listened on
   - INI configuration should override this behaviour, but that is **not implemented yet**
 - The API returns strings for simple results, and XML or json for complex results (set desired "Accept" header)
