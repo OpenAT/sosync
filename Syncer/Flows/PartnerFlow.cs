@@ -776,7 +776,15 @@ namespace Syncer.Flows
                         }
                         catch (Exception ex)
                         {
-                            UpdateSyncTargetAnswer(ex.ToString(), PersonID);
+                            var debug = $"------------------------------------------\n{personSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{addressSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{addressAMSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{emailSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{phoneSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{personGroupSvc.LastQuery}\n"
+                                + $"------------------------------------------\n{emailNewsletterSvc.LastQuery}\n";
+
+                            UpdateSyncTargetAnswer(ex.ToString() + $"\n{debug}", PersonID);
                             throw;
                         }
 
