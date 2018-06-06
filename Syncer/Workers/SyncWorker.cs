@@ -5,6 +5,7 @@ using Syncer.Flows;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -156,6 +157,11 @@ namespace Syncer.Workers
 
                             var waitTimeMs = 1000 * 60 * reCheckTimeMin + 5000;
                             _log.LogError($"{ex.Message} Locking sync for {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
+                        }
+                        catch (SqlException ex)
+                        {
+                            _log.LogError(ex.ToString());
+                            UpdateJobError(job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
                         }
                         catch (Exception ex)
                         {
