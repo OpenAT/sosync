@@ -772,7 +772,7 @@ namespace Syncer.Flows
                 _job.Job_State = SosyncState.Error;
                 _job.Job_End = DateTime.UtcNow;
                 _job.Job_Error_Code = errorCode;
-                _job.Job_Error_Text = errorText;
+                _job.Job_Error_Text = string.IsNullOrEmpty(_job.Job_Error_Text) ? MssqlTargetSuccessMessage : _job.Job_Error_Text + "\n\n" + errorText;
                 _job.Job_Last_Change = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobError), db, _job);
