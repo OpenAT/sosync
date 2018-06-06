@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "f5160580bcb7224b4747f0e983dc4db892003d7e"
+    "signature": "a3b32420dfa7d41a8ff043125903a84edaea1636"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,13 +10,13 @@
         "dependencies": {
           "Syncer": "1.0.0",
           "WebSosync.Common": "1.0.0",
-          "dadi-data": "1.3.7"
+          "dadi-data": "1.4.2"
         },
         "runtime": {
           "ManualTest.dll": {}
         }
       },
-      "dadi-data/1.3.7": {
+      "dadi-data/1.4.2": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -1247,7 +1247,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.3.7"
+          "dadi-data": "1.4.2"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -1281,12 +1281,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.3.7": {
+    "dadi-data/1.4.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-E/O4agH1jWogg+3U+/E95ty8dqmBc5hBg12P/8deSiyBD7mOmHGr+mKFKw6DWRL26sibjIcD51V9XCmDckunfA==",
-      "path": "dadi-data/1.3.7",
-      "hashPath": "dadi-data.1.3.7.nupkg.sha512"
+      "sha512": "sha512-i/6a+jDzY797wVghs7YWGUEu7w/jHEvPvTo/yvmh80EztIhACOhyVgWwVKTUmqLrsnE1eAsbsf0Wq/Dl35O67g==",
+      "path": "dadi-data/1.4.2",
+      "hashPath": "dadi-data.1.4.2.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
