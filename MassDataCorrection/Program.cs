@@ -27,13 +27,15 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
                 //processor.Process(CheckFaultyPhoneNumbers, null);
-                processor.Process(CheckOpenSyncJobs, null);
+                //processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
                 //processor.Process(FillNewDonationReportFields, null);
                 //processor.Process(FillMissingPartnerBPKFields, new[] { "demo" });
                 //processor.Process(FillMissingPartnerBPKFields, null);
                 //processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
                 //processor.Process(DeleteAndResyncFiscalYears, null);
+                processor.Process(CheckUnsyncedPartners, null);
+                ShowUnsynchedPartners();
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
 
@@ -370,6 +372,39 @@ namespace MassDataCorrection
                 client.CreateSyncJob("account.fiscalyear", yearIDs.ToArray());
 
                 // yearIDs.ForEach(x => client.CreateSyncJob("account.fiscalyear", x));
+            }
+        }
+
+        private static Dictionary<string, int> _unsyncedPartners = new Dictionary<string, int>();
+        private static void CheckUnsyncedPartners(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            using (var db = info.CreateOpenNpgsqlConnection())
+            {
+                var query = "select count(*) from res_partner where active = true and coalesce(sosync_fs_id, 0) = 0;";
+                var count = db.Query<int>(query).SingleOrDefault();
+
+                _unsyncedPartners.Add(info.Instance, count);
+
+                Console.WriteLine($"Unsynchronized Partners: {count}");
+            }
+        }
+
+        private static void ShowUnsynchedPartners()
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Summary:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            foreach (var item in _unsyncedPartners)
+            {
+                Console.WriteLine($"{item.Key}: {item.Value}");
             }
         }
     }
