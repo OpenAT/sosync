@@ -9,6 +9,7 @@ using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -445,6 +446,11 @@ namespace Syncer.Flows
 
                 // Done - update job success
                 UpdateJobSuccess(false);
+            }
+            catch (SqlException ex)
+            {
+                UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}\nProcedure: {ex.Procedure}\n");
+                throw;
             }
             catch (Exception ex)
             {
