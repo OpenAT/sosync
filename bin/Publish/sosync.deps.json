@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "11aebd39c3c6368d1d10074200831df8194a8897"
+    "signature": "5b7bf9bf3987d2c36a07260eab528580007e0000"
   },
   "compilationOptions": {
     "defines": [
@@ -69,7 +69,7 @@
           "lib/netstandard1.3/AutoMapper.dll": {}
         }
       },
-      "dadi-data/1.4.2": {
+      "dadi-data/1.4.5": {
         "dependencies": {
           "Dapper": "1.50.4",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -2935,7 +2935,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.4.2"
+          "dadi-data": "1.4.5"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -3161,12 +3161,12 @@
       "path": "automapper/6.2.2",
       "hashPath": "automapper.6.2.2.nupkg.sha512"
     },
-    "dadi-data/1.4.2": {
+    "dadi-data/1.4.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-i/6a+jDzY797wVghs7YWGUEu7w/jHEvPvTo/yvmh80EztIhACOhyVgWwVKTUmqLrsnE1eAsbsf0Wq/Dl35O67g==",
-      "path": "dadi-data/1.4.2",
-      "hashPath": "dadi-data.1.4.2.nupkg.sha512"
+      "sha512": "sha512-Yyl3QbBgpqrxDIPA0rYvpcihg90H7GkWcntDIB3pS1JdjmsMRUGUe6P7c7Va+2vq7JK4aEx7vS92Jq8LgW6B0g==",
+      "path": "dadi-data/1.4.5",
+      "hashPath": "dadi-data.1.4.5.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
