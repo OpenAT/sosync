@@ -570,8 +570,8 @@ namespace Syncer.Flows
         {
             if (group != null)
             {
-                if (group.GültigVon <= DateTime.Today
-                    && group.GültigBis >= DateTime.Today)
+                if (group.GültigVon.Date <= DateTime.Today
+                    && group.GültigBis.Date >= DateTime.Today)
                     dict.Add(key, trueValue);
                 else
                     dict.Add(key, falseValue);
