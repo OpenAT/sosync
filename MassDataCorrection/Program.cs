@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Dapper;
 using MassDataCorrection.Models;
+using MassDataCorrection.Properties;
 
 namespace MassDataCorrection
 {
@@ -34,8 +35,13 @@ namespace MassDataCorrection
                 //processor.Process(FillMissingPartnerBPKFields, null);
                 //processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
                 //processor.Process(DeleteAndResyncFiscalYears, null);
-                processor.Process(CheckUnsyncedPartners, null);
-                ShowUnsynchedPartners();
+                //processor.Process(CheckUnsyncedPartners, null);
+
+                //processor.Process(CheckGroups, new[] { "npha" });
+                processor.Process(CheckGroups, null);
+                PrintGroupStats();
+
+                //ShowUnsynchedPartners();
 
                 var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
 
@@ -403,6 +409,47 @@ namespace MassDataCorrection
             Console.ForegroundColor = ConsoleColor.Gray;
 
             foreach (var item in _unsyncedPartners)
+            {
+                Console.WriteLine($"{item.Key}: {item.Value}");
+            }
+        }
+
+        private static Dictionary<string, int> groupsStats = new Dictionary<string, int>();
+        private static void CheckGroups(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+
+            using (var msCon = info.CreateOpenMssqlConnection())
+            {
+                // msCon.Query(Resources.UpdateSosyncWriteDate);
+
+                var data = msCon.Query<NlRow>(Resources.NewsletterQuery)
+                    .ToList();
+
+                var anzahl = 0;
+                foreach (var row in data)
+                {
+                    // Console.WriteLine($"Creating SyncJob for \"res.partner\" {row.sosync_fso_id}");
+                    // rpc.CreateSyncJob("res.partner", row.sosync_fso_id);
+                    anzahl++;
+                }
+
+                if (!groupsStats.ContainsKey(info.Instance))
+                    groupsStats.Add(info.Instance, anzahl);
+
+                Console.WriteLine($"Anzahl: {anzahl}");
+            }
+        }
+
+        private static void PrintGroupStats()
+        {
+            foreach (var item in groupsStats)
             {
                 Console.WriteLine($"{item.Key}: {item.Value}");
             }
