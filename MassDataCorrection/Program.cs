@@ -429,14 +429,15 @@ namespace MassDataCorrection
             {
                 // msCon.Query(Resources.UpdateSosyncWriteDate);
 
-                var data = msCon.Query<NlRow>(Resources.NewsletterQuery)
+                var data = msCon.Query<NlRow>(Resources.GruppenQuery)
                     .ToList();
 
                 var anzahl = 0;
                 foreach (var row in data)
                 {
                     // Console.WriteLine($"Creating SyncJob for \"res.partner\" {row.sosync_fso_id}");
-                    // rpc.CreateSyncJob("res.partner", row.sosync_fso_id);
+                    Console.WriteLine($"PersonGruppeID {row.Tabellenidentity} GültigBis auf 31.12.2099 gesetzt");
+                    rpc.CreateSyncJob("res.partner", row.sosync_fso_id);
                     anzahl++;
                 }
 

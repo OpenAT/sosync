@@ -61,33 +61,38 @@ namespace MassDataCorrection.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to --- nur einen Einträge in der Änderung - somit nur nach ODOO aktualisieren
-        ///			SELECT p.PersonID, p.sosync_fso_id FROM dbo.xAktionÄnderung ä
-        ///			INNER JOIN dbo.Person p
-        ///				ON ä.PersonID = p.PersonID
-        ///			inner JOIN (
-        ///			SELECT MAX(aktionsid)maxaktionsid, TabellenIdentity FROM dbo.xAktionÄnderung WHERE Tabellenname LIKE &apos;%Personemailgruppe%&apos;  AND Feldname LIKE &apos;gültigVon&apos;  
-        ///			--AND NOT Sachbearbeiter LIKE &apos;%sosync%&apos;
-        ///			GROUP BY TabellenIdentity) g ON g.maxaktionsid = ä.AktionsID
-        ///			
-        ///			WHERE Tabellenn [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to -- count &gt; 1 wenn sosync und user beide = 1 dann retour setzen auf 31.12.2099 - Liste für Meldungen
+        /// -- Kontrolle ob andere Sachbearbeiter-kombis vorhanden außer (0, &gt;= 1) , (1, 1)
+        /// -- Uhrzeit bei gültig von
+        ///SELECT
+        ///	basis.*
+        ///	,p.sosync_fso_id
+        ///-- UPDATE pg SET GültigBis = &apos;20991231&apos;
+        ///FROM
+        ///(
+        ///	SELECT
+        ///		SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE &apos;%_sosync&apos; THEN 1 ELSE 0 end) sosync_änderungen
+        ///		,SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE &apos;%_sosync&apos; THEN 0 ELSE 1 end) user_änderungen
+        ///		,a.PersonI [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string NewsletterQuery {
+        internal static string GruppenQuery {
             get {
-                return ResourceManager.GetString("NewsletterQuery", resourceCulture);
+                return ResourceManager.GetString("GruppenQuery", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SELECT ä.* INTO #up1 FROM dbo.xAktionÄnderung ä
-        ///			
-        ///			inner JOIN (
-        ///			SELECT MAX(aktionsid)maxaktionsid, TabellenIdentity FROM dbo.xAktionÄnderung WHERE Tabellenname LIKE &apos;%Personemailgruppe%&apos;  AND Feldname LIKE &apos;gültigVon&apos;  
-        ///			--AND NOT Sachbearbeiter LIKE &apos;%sosync%&apos;
-        ///			GROUP BY TabellenIdentity) g ON g.maxaktionsid = ä.AktionsID
-        ///			
-        ///			WHERE Tabellenname LIKE &apos;%Personemailgruppe%&apos; AND Auslöser LIKE &apos;%neuanlage%&apos; AND Feldname LIKE &apos;gültigVon&apos;  AND SUBSTRING(Wertneu,12,8) &lt;&gt;&apos;00:00:00&apos;
-        ///			AND ä.Dur [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to UPDATE pg SET GültigBis = &apos;20991231&apos;
+        ///FROM
+        ///(
+        ///	SELECT
+        ///		SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE &apos;%_sosync&apos; THEN 1 ELSE 0 end) sosync_änderungen
+        ///		,SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE &apos;%_sosync&apos; THEN 0 ELSE 1 end) user_änderungen
+        ///		,a.PersonID
+        ///		,a.TabellenIdentity
+        ///	FROM
+        ///		(SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = &apos;PersonGruppe&apos; AND Feldname = &apos;GültigVon&apos; ) a
+        ///		INNER JOIN (SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = &apos;PersonGruppe&apos; AND WertNeu like &apos;%&lt;128782&gt;&apos;  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string UpdateSosyncWriteDate {
             get {
