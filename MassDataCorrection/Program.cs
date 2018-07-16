@@ -8,6 +8,7 @@ using System.Linq;
 using Dapper;
 using MassDataCorrection.Models;
 using MassDataCorrection.Properties;
+using DaDi.Odoo.Models;
 
 namespace MassDataCorrection
 {
@@ -38,8 +39,11 @@ namespace MassDataCorrection
                 //processor.Process(CheckUnsyncedPartners, null);
 
                 //processor.Process(CheckGroups, new[] { "npha" });
-                processor.Process(CheckGroups, null);
-                PrintGroupStats();
+                //processor.Process(CheckGroups, null);
+                //PrintDictionary(groupsStats);
+
+                //processor.Process(RestartBpkJobs, null);
+                //PrintDictionary(_restartBpkCounts);
 
                 //ShowUnsynchedPartners();
 
@@ -448,12 +452,60 @@ namespace MassDataCorrection
             }
         }
 
-        private static void PrintGroupStats()
+        private static void PrintDictionary(Dictionary<string, int> dic)
         {
-            foreach (var item in groupsStats)
+            foreach (var item in dic)
             {
                 Console.WriteLine($"{item.Key}: {item.Value}");
             }
+        }
+
+        private static Dictionary<string, int> _restartBpkCounts = new Dictionary<string, int>();
+        private static void RestartBpkJobs(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+
+            var searchArgs = new List<OdooSearchArgument>();
+            searchArgs.Add(new OdooSearchArgument("job_source_model", "=", "res.partner.bpk"));
+            searchArgs.Add(new OdooSearchArgument("job_run_count", ">=", "5"));
+            searchArgs.Add(new OdooSearchArgument("job_state", "=", "error"));
+            searchArgs.Add(new OdooSearchArgument("job_error_text", "like", "aktuelle Transaktion kann kein Commit"));
+
+            var data = rpc.SearchBy("sosync.job", searchArgs);
+
+            _restartBpkCounts.Add(info.Instance, data.Length);
+
+            var ids = new List<int>();
+            var current = 0;
+            foreach (var jobID in data)
+            {
+                current++;
+                Console.CursorLeft = 0;
+                var percent = (int)((float)current / (float)data.Length * 100f);
+                Console.Write($"{percent}%");
+
+                try
+                {
+                    var job = rpc.GetDictionary("sosync.job", jobID, new string[] { "job_source_record_id" });
+                    var id = Convert.ToInt32(job["job_source_record_id"]);
+
+                    if (!ids.Contains(id))
+                    {
+                        ids.Add(id);
+                        rpc.RunMethod("res.partner.bpk", "create_sync_job", id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            Console.WriteLine();
         }
     }
 }
