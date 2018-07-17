@@ -117,55 +117,62 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="NewsletterQuery" xml:space="preserve">
-    <value>--- nur einen Einträge in der Änderung - somit nur nach ODOO aktualisieren
-			SELECT p.PersonID, p.sosync_fso_id FROM dbo.xAktionÄnderung ä
-			INNER JOIN dbo.Person p
-				ON ä.PersonID = p.PersonID
-			inner JOIN (
-			SELECT MAX(aktionsid)maxaktionsid, TabellenIdentity FROM dbo.xAktionÄnderung WHERE Tabellenname LIKE '%Personemailgruppe%'  AND Feldname LIKE 'gültigVon'  
-			--AND NOT Sachbearbeiter LIKE '%sosync%'
-			GROUP BY TabellenIdentity) g ON g.maxaktionsid = ä.AktionsID
-			
-			WHERE Tabellenname LIKE '%Personemailgruppe%' AND ä.Auslöser LIKE '%neuanlage%' AND Feldname LIKE 'gültigVon'  AND SUBSTRING(Wertneu,12,8) &lt;&gt;'00:00:00'
-			AND ä.Durchführungstag &gt;= '20170705'</value>
+  <data name="GruppenQuery" xml:space="preserve">
+    <value>-- count &gt; 1 wenn sosync und user beide = 1 dann retour setzen auf 31.12.2099 - Liste für Meldungen
+ -- Kontrolle ob andere Sachbearbeiter-kombis vorhanden außer (0, &gt;= 1) , (1, 1)
+ -- Uhrzeit bei gültig von
+SELECT
+	basis.*
+	,p.sosync_fso_id
+-- UPDATE pg SET GültigBis = '20991231'
+FROM
+(
+	SELECT
+		SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE '%_sosync' THEN 1 ELSE 0 end) sosync_änderungen
+		,SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE '%_sosync' THEN 0 ELSE 1 end) user_änderungen
+		,a.PersonID
+		,a.TabellenIdentity
+	FROM
+		(SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND Feldname = 'GültigVon' ) a
+		INNER JOIN (SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND WertNeu like '%&lt;128782&gt;' ) b
+			ON a.TabellenIdentity = b.TabellenIdentity
+		INNER JOIN dbo.PersonGruppe pg
+			ON a.TabellenIdentity = pg.PersonGruppeID
+		INNER JOIN (SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND Feldname = 'GültigVon' AND ISNULL(wertalt,'') =''  AND SUBSTRING(Wertneu,12,8) &lt;&gt;'00:00:00') g ON g.TabellenIdentity = a.TabellenIdentity
+	GROUP BY
+		a.PersonID, a.TabellenIdentity
+	HAVING
+		COUNT(*) &gt; 1
+) basis
+ 	INNER JOIN dbo.Person p
+		ON basis.PersonID = p.PersonID
+	INNER JOIN dbo.PersonGruppe pg
+		ON pg.PersonGruppeID = basis.TabellenIdentity</value>
   </data>
   <data name="UpdateSosyncWriteDate" xml:space="preserve">
-    <value>SELECT ä.* INTO #up1 FROM dbo.xAktionÄnderung ä
-			
-			inner JOIN (
-			SELECT MAX(aktionsid)maxaktionsid, TabellenIdentity FROM dbo.xAktionÄnderung WHERE Tabellenname LIKE '%Personemailgruppe%'  AND Feldname LIKE 'gültigVon'  
-			--AND NOT Sachbearbeiter LIKE '%sosync%'
-			GROUP BY TabellenIdentity) g ON g.maxaktionsid = ä.AktionsID
-			
-			WHERE Tabellenname LIKE '%Personemailgruppe%' AND Auslöser LIKE '%neuanlage%' AND Feldname LIKE 'gültigVon'  AND SUBSTRING(Wertneu,12,8) &lt;&gt;'00:00:00'
-			AND ä.Durchführungstag &gt;= '20170705'
-
-			UPDATE personemailgruppe
-			SET sosync_write_date = SYSUTCDATETIME()
-			FROM dbo.PersonEmailGruppe
-			INNER JOIN #up1 u ON u.TabellenIdentity = PersonEmailGruppeID
-
-
-
-			-- gültigBis '20991231'
-
-			SELECT COUNT(*)a,b.TabellenIdentity, g.gültigbis INTO #up FROM (
-
-			SELECT TabellenIdentity, 'da'herkunft  FROM dbo.xAktionÄnderung ä WHERE Tabellenname LIKE '%Personemailgruppe%' AND Feldname LIKE 'gültigVon'   AND (NOT Sachbearbeiter LIKE '%sosync%') AND ä.Durchführungstag &gt;= '20170705' 
-			UNION ALL
-			SELECT TabellenIdentity , 'so'herkunft FROM dbo.xAktionÄnderung ä WHERE Tabellenname LIKE '%Personemailgruppe%' AND Feldname LIKE 'gültigVon'   AND (Sachbearbeiter LIKE '%sosync%' ) AND ä.Durchführungstag &gt;= '20170705'
-			)b
-			INNER JOIN dbo.PersonEmailGruppe g ON g.PersonEmailGruppeID = b.TabellenIdentity
-            WHERE g.GültigBis &lt;&gt;'20991231'
-           GROUP BY b.TabellenIdentity, g.gültigbis
-		   HAVING COUNT(DISTINCT b.herkunft)=2
-
-		   UPDATE PersonEmailGruppe
-		   SET GültigBis ='20991231',
-		   Auslöser = 'Korrektur Newsletter'
-		   
-		   FROM dbo.PersonEmailGruppe
-		   INNER JOIN #up u ON u.TabellenIdentity = PersonEmailGruppeID</value>
+    <value>UPDATE pg SET GültigBis = '20991231'
+FROM
+(
+	SELECT
+		SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE '%_sosync' THEN 1 ELSE 0 end) sosync_änderungen
+		,SUM(DISTINCT  CASE WHEN a.Sachbearbeiter LIKE '%_sosync' THEN 0 ELSE 1 end) user_änderungen
+		,a.PersonID
+		,a.TabellenIdentity
+	FROM
+		(SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND Feldname = 'GültigVon' ) a
+		INNER JOIN (SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND WertNeu like '%&lt;128782&gt;' ) b
+			ON a.TabellenIdentity = b.TabellenIdentity
+		INNER JOIN dbo.PersonGruppe pg
+			ON a.TabellenIdentity = pg.PersonGruppeID
+		INNER JOIN (SELECT * FROM dbo.xAktionÄnderung WHERE Tabellenname = 'PersonGruppe' AND Feldname = 'GültigVon' AND ISNULL(wertalt,'') =''  AND SUBSTRING(Wertneu,12,8) &lt;&gt;'00:00:00') g ON g.TabellenIdentity = a.TabellenIdentity
+	GROUP BY
+		a.PersonID, a.TabellenIdentity
+	HAVING
+		COUNT(*) &gt; 1
+) basis
+ 	INNER JOIN dbo.Person p
+		ON basis.PersonID = p.PersonID
+	INNER JOIN dbo.PersonGruppe pg
+		ON pg.PersonGruppeID = basis.TabellenIdentity</value>
   </data>
 </root>

@@ -8,6 +8,10 @@ namespace MassDataCorrection.Models
     {
         public int PersonID { get; set; }
         public int sosync_fso_id { get; set; }
+        public int sosync_änderungen { get; set; }
+        public int user_änderungen { get; set; }
+        public int Tabellenidentity { get; set; }
+
         //public int? sosync_fso_id { get; set; }
         //public bool Newsletter { get; set; }
         //public DateTime GültigVon { get; set; }
