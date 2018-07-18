@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DaDi.Odoo.Models;
 using dadi_data.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
@@ -11,7 +12,7 @@ using WebSosync.Data.Models;
 namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.zGruppe")]
-    [OnlineModel(Name = "")]
+    [OnlineModel(Name = "frst.zgruppe")]
     public class zGruppeDeteleFlow
         : DeleteSyncFlow
     {
@@ -38,7 +39,7 @@ namespace Syncer.Flows
             else
                 id = GetFsoIdByFsId(OnlineModelName, Job.Job_Source_Record_ID).Value;
 
-            var data = OdooService.Client.GetModel<accountFiscalYear>(OnlineModelName, id);
+            var data = OdooService.Client.GetModel<frstzGruppe>(OnlineModelName, id);
 
             if (data == null)
                 throw new SyncerException($"Failed to read data from model {OnlineModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");

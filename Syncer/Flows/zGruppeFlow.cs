@@ -9,7 +9,7 @@ using WebSosync.Data.Models;
 namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.zGruppe")]
-    [OnlineModel(Name = "")]
+    [OnlineModel(Name = "frst.zgruppe")]
     public class zGruppeFlow
         : ReplicateSyncFlow
     {
