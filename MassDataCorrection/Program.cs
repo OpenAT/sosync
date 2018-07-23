@@ -42,8 +42,8 @@ namespace MassDataCorrection
                 //processor.Process(CheckGroups, null);
                 //PrintDictionary(groupsStats);
 
-                //processor.Process(RestartDonationReportJobs, null);
-                //PrintDictionary(_restartDonationReportsCounts);
+                processor.Process(RestartDonationReportJobs, null);
+                PrintDictionary(_restartDonationReportsCounts);
 
                 //processor.Process(RestartBpkJobs, null);
                 //PrintDictionary(_restartBpkCounts);
@@ -523,10 +523,10 @@ namespace MassDataCorrection
             var rpc = info.CreateAuthenticatedOdooClient();
 
             var searchArgs = new List<OdooSearchArgument>();
-            searchArgs.Add(new OdooSearchArgument("job_source_model", "=", "res.partner.donation_report"));
+            searchArgs.Add(new OdooSearchArgument("job_source_model", "=", "dbo.AktionSpendenmeldungBPK"));
             searchArgs.Add(new OdooSearchArgument("job_run_count", ">=", "5"));
             searchArgs.Add(new OdooSearchArgument("job_state", "=", "error"));
-            searchArgs.Add(new OdooSearchArgument("job_error_text", "like", "aktuelle Transaktion kann kein Commit"));
+            //searchArgs.Add(new OdooSearchArgument("job_error_text", "like", "aktuelle Transaktion kann kein Commit"));
 
             var data = rpc.SearchBy("sosync.job", searchArgs);
 
@@ -546,11 +546,16 @@ namespace MassDataCorrection
                     var job = rpc.GetDictionary("sosync.job", jobID, new string[] { "job_source_record_id" });
                     var id = Convert.ToInt32(job["job_source_record_id"]);
 
-                    if (!ids.Contains(id))
+                    using (var mdb = info.CreateOpenMssqlConnection())
                     {
-                        ids.Add(id);
-                        rpc.RunMethod("res.partner.donation_report", "create_sync_job", id);
+                        mdb.Execute(Properties.Resources.SubmitSpendenmeldungSyncJob, new { ID = id });
                     }
+
+                    //if (!ids.Contains(id))
+                    //{
+                    //    ids.Add(id);
+                    //    rpc.RunMethod("res.partner.donation_report", "create_sync_job", id);
+                    //}
                 }
                 catch (Exception ex)
                 {

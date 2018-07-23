@@ -82,6 +82,33 @@ namespace MassDataCorrection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO sosync.JobQueue
+        ///(
+        ///    JobDate,
+        ///    JobSourceSystem,
+        ///    JobSourceModel,
+        ///    JobSourceRecordID,
+        ///    JobState,
+        ///    JobSourceSosyncWriteDate,
+        ///    JobSourceFields,
+        ///    JobSourceTargetRecordID,
+        ///    JobSourceMergeIntoRecordID,
+        ///    JobSourceTargetMergeIntoRecordID,
+        ///    JobSourceType
+        ///)
+        ///VALUES
+        ///(   SYSDATETIME(), -- JobDate - datetime2(7)
+        ///    &apos;fs&apos;,            -- JobSourceSystem - varchar(32)
+        ///    N&apos;dbo.AktionSpendenmeldungBPK&apos;,           -- JobSourceModel - nvarchar(128)
+        ///    @ID,          [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string SubmitSpendenmeldungSyncJob {
+            get {
+                return ResourceManager.GetString("SubmitSpendenmeldungSyncJob", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to UPDATE pg SET GültigBis = &apos;20991231&apos;
         ///FROM
         ///(
