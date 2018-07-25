@@ -149,6 +149,35 @@ FROM
 	INNER JOIN dbo.PersonGruppe pg
 		ON pg.PersonGruppeID = basis.TabellenIdentity</value>
   </data>
+  <data name="SubmitSpendenmeldungSyncJob" xml:space="preserve">
+    <value>INSERT INTO sosync.JobQueue
+(
+    JobDate,
+    JobSourceSystem,
+    JobSourceModel,
+    JobSourceRecordID,
+    JobState,
+    JobSourceSosyncWriteDate,
+    JobSourceFields,
+    JobSourceTargetRecordID,
+    JobSourceMergeIntoRecordID,
+    JobSourceTargetMergeIntoRecordID,
+    JobSourceType
+)
+VALUES
+(   SYSDATETIME(), -- JobDate - datetime2(7)
+    'fs',            -- JobSourceSystem - varchar(32)
+    N'dbo.AktionSpendenmeldungBPK',           -- JobSourceModel - nvarchar(128)
+    @ID,             -- JobSourceRecordID - int
+    'new',            -- JobState - varchar(32)
+    SYSDATETIME(), -- JobSourceSosyncWriteDate - datetime2(7)
+    N'{}',           -- JobSourceFields - nvarchar(max)
+    NULL,             -- JobSourceTargetRecordID - int
+    NULL,             -- JobSourceMergeIntoRecordID - int
+    NULL,             -- JobSourceTargetMergeIntoRecordID - int
+    NULL            -- JobSourceType - nvarchar(128)
+    )</value>
+  </data>
   <data name="UpdateSosyncWriteDate" xml:space="preserve">
     <value>UPDATE pg SET GültigBis = '20991231'
 FROM

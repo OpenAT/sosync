@@ -42,6 +42,9 @@ namespace MassDataCorrection
                 //processor.Process(CheckGroups, null);
                 //PrintDictionary(groupsStats);
 
+                processor.Process(RestartDonationReportJobs, null);
+                PrintDictionary(_restartDonationReportsCounts);
+
                 //processor.Process(RestartBpkJobs, null);
                 //PrintDictionary(_restartBpkCounts);
 
@@ -500,6 +503,59 @@ namespace MassDataCorrection
                         ids.Add(id);
                         rpc.RunMethod("res.partner.bpk", "create_sync_job", id);
                     }
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            Console.WriteLine();
+        }
+
+        private static Dictionary<string, int> _restartDonationReportsCounts = new Dictionary<string, int>();
+        private static void RestartDonationReportJobs(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+
+            var searchArgs = new List<OdooSearchArgument>();
+            searchArgs.Add(new OdooSearchArgument("job_source_model", "=", "dbo.AktionSpendenmeldungBPK"));
+            searchArgs.Add(new OdooSearchArgument("job_run_count", ">=", "5"));
+            searchArgs.Add(new OdooSearchArgument("job_state", "=", "error"));
+            //searchArgs.Add(new OdooSearchArgument("job_error_text", "like", "aktuelle Transaktion kann kein Commit"));
+
+            var data = rpc.SearchBy("sosync.job", searchArgs);
+
+            _restartDonationReportsCounts.Add(info.Instance, data.Length);
+
+            var ids = new List<int>();
+            var current = 0;
+            foreach (var jobID in data)
+            {
+                current++;
+                Console.CursorLeft = 0;
+                var percent = (int)((float)current / (float)data.Length * 100f);
+                Console.Write($"{percent}%");
+
+                try
+                {
+                    var job = rpc.GetDictionary("sosync.job", jobID, new string[] { "job_source_record_id" });
+                    var id = Convert.ToInt32(job["job_source_record_id"]);
+
+                    using (var mdb = info.CreateOpenMssqlConnection())
+                    {
+                        mdb.Execute(Properties.Resources.SubmitSpendenmeldungSyncJob, new { ID = id });
+                    }
+
+                    //if (!ids.Contains(id))
+                    //{
+                    //    ids.Add(id);
+                    //    rpc.RunMethod("res.partner.donation_report", "create_sync_job", id);
+                    //}
                 }
                 catch (Exception ex)
                 {

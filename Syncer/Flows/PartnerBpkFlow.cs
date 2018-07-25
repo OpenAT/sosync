@@ -207,6 +207,9 @@ namespace Syncer.Flows
             dest.ErrorRequestURL = source.bpk_error_request_url;
 
             dest.fso_state = source.state;
+
+            dest.Strasse = source.bpk_request_street;
+            dest.FehlerStrasse = source.bpk_error_request_street;
         }
         #endregion
     }
