@@ -9,14 +9,15 @@ using Syncer.Enumerations;
 using Syncer.Exceptions;
 using WebSosync.Data.Models;
 
-namespace Syncer.Flows
+namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.zGruppe")]
     [OnlineModel(Name = "frst.zgruppe")]
     public class zGruppeDeteleFlow
         : DeleteSyncFlow
     {
-        public zGruppeDeteleFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public zGruppeDeteleFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
 

@@ -10,14 +10,15 @@ using Syncer.Exceptions;
 using Syncer.Models;
 using WebSosync.Data.Models;
 
-namespace Syncer.Flows
+namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.zGruppe")]
     [OnlineModel(Name = "frst.zgruppe")]
     public class zGruppeFlow
         : ReplicateSyncFlow
     {
-        public zGruppeFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public zGruppeFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
         {
         }
 
