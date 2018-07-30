@@ -33,7 +33,7 @@ namespace Syncer.Flows
                 studioModel => studioModel.zGruppeID,
                 (studio, online) =>
                     {
-                        online.Add("tabellentyp_id", studio.TabellentypID);
+                        online.Add("tabellentyp_id", Convert.ToString(studio.TabellentypID));
                         online.Add("gruppe_kurz", studio.GruppeKurz);
                         online.Add("gruppe_lang", studio.GruppeLang);
                         online.Add("gui_anzeigen", studio.GUIAnzeigen);
