@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DaDi.Odoo;
 using dadi_data.Models;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
@@ -12,6 +13,8 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
 {
+    [StudioModel(Name = "dbo.zGruppeDetail")]
+    [OnlineModel(Name = "frst.zgruppedetail")]
     public class zGruppeDetailFlow
         : ReplicateSyncFlow
     {

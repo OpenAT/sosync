@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
@@ -8,6 +9,8 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
 {
+    [StudioModel(Name = "dbo.zGruppeDetail")]
+    [OnlineModel(Name = "frst.zgruppedetail")]
     public class zGruppeDetailDeleteFlow
         : DeleteSyncFlow
     {
