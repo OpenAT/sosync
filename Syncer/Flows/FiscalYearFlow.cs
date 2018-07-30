@@ -49,7 +49,17 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            var companyID = GetFsoIdByFsId("res.company", studioID);
+            var companyID = 0;
+            dboxBPKMeldespanne spanne = null;
+            using (var db = MdbService.GetDataService<dboxBPKMeldespanne>())
+            {
+                spanne = db.Read(new { xBPKMeldespanneID = studioID }).SingleOrDefault();
+
+                if (!spanne.sosync_fso_id.HasValue)
+                    spanne.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, spanne.xBPKMeldespanneID);
+
+                companyID = GetFsoIdByFsId("res.company", spanne.xBPKAccountID).Value;
+            }
 
             SimpleTransformToOnline<dboxBPKMeldespanne, accountFiscalYear>(
                 studioID,
@@ -76,12 +86,21 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            var fiscal = OdooService.Client.GetModel<accountFiscalYear>(OnlineModelName, onlineID);
+
+            if (!IsValidFsID(fiscal.Sosync_FS_ID))
+                fiscal.Sosync_FS_ID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+
+            var xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(fiscal.CompanyID[0]));
+
             SimpleTransformToStudio<accountFiscalYear, dboxBPKMeldespanne>(
                 onlineID,
                 action,
-                studioModel => studioModel.xBPKAccountID,
+                studioModel => studioModel.xBPKMeldespanneID,
                 (online, studio) =>
                     {
+                        studio.xBPKAccountID = xBPKAccountID.Value;
+
                         studio.Bezeichnung = online.Name;
                         studio.Kurzbezeichnung = online.Code;
                         studio.FiskaljahrVon = online.DateStart; // No UTC conversion, field is a 'date' in Odoo
