@@ -20,20 +20,8 @@ namespace Syncer.Flows
         {
         }
 
-        protected override void SetupOnlineToStudioChildJobs(int onlineID)
-        {
-            // No child jobs for delete
-        }
-
-        protected override void SetupStudioToOnlineChildJobs(int studioID)
-        {
-            // No child jobs for delete
-        }
-
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            //throw new NotSupportedException($"Delete from [fs] to [fso] for model {StudioModelName}.");
-
             var id = 0;
 
             if (Job.Job_Source_Target_Record_ID.HasValue && Job.Job_Source_Target_Record_ID > 0)
