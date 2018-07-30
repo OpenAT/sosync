@@ -1,4 +1,5 @@
 ﻿using DaDi.Odoo;
+using dadi_data.Interfaces;
 using dadi_data.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -118,7 +119,20 @@ namespace Syncer.Flows
         /// </summary>
         /// <param name="onlineID">The ID for the model.</param>
         /// <returns></returns>
-        protected abstract ModelInfo GetOnlineInfo(int onlineID);
+        protected virtual ModelInfo GetOnlineInfo(int onlineID)
+        {
+            var info = GetDefaultOnlineModelInfo(onlineID, OnlineModelName);
+
+            // If there was no foreign ID in fso, try to check the mssql side
+            // for the referenced ID too
+            if (!info.ForeignID.HasValue)
+                info.ForeignID = GetFsIdByFsoId(
+                    StudioModelName,
+                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    onlineID);
+
+            return info;
+        }
 
         /// <summary>
         /// Get IDs and write date for the model in studio.
@@ -133,13 +147,19 @@ namespace Syncer.Flows
         /// from fs online.
         /// </summary>
         /// <param name="onlineID">The Online ID for the model.</param>
-        protected abstract void SetupOnlineToStudioChildJobs(int onlineID);
+        protected virtual void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+
+        }
 
         /// <summary>
         /// Configure the flow for the sync direction studio to online.
         /// </summary>
         /// <param name="studioID">The Studio ID for the model.</param>
-        protected abstract void SetupStudioToOnlineChildJobs(int studioID);
+        protected virtual void SetupStudioToOnlineChildJobs(int studioID)
+        {
+
+        }
 
         /// <summary>
         /// Read the studio model with the given ID and transform it
@@ -180,6 +200,28 @@ namespace Syncer.Flows
             var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"], true);
 
             return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
+        }
+
+        protected ModelInfo GetDefaultStudioModelInfo<TStudio>(int studioID)
+            where TStudio: MdbModelBase, ISosyncable, new()
+        {
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                var studioModel = db.Read(
+                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    new { ID = studioID })
+                    .SingleOrDefault();
+
+                if (studioModel != null)
+                {
+                    if (!studioModel.sosync_fso_id.HasValue)
+                        studioModel.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, studioID);
+
+                    return new ModelInfo(studioID, studioModel.sosync_fso_id, studioModel.sosync_write_date, studioModel.write_date);
+                }
+            }
+
+            return null;
         }
 
         protected int? GetFsoIdByFsId(string onlineModelName, int fsId)
