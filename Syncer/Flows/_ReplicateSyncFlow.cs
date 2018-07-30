@@ -12,6 +12,10 @@ using System.Reflection;
 using WebSosync.Data;
 using Microsoft.Extensions.Logging;
 using WebSosync.Common;
+using dadi_data.Models;
+using DaDi.Odoo.Models;
+using dadi_data.Interfaces;
+using System.Linq;
 
 namespace Syncer.Flows
 {
@@ -307,6 +311,153 @@ namespace Syncer.Flows
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
                LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
+            }
+        }
+
+        protected void SimpleTransformToOnline<TStudio, TOdoo>(
+            int studioID,
+            TransformType action,
+            Func<TStudio, int> getStudioIdentity,
+            Action<TStudio, Dictionary<string, object>> copyStudioToDictionary
+            )
+            where TStudio : MdbModelBase, ISosyncable, new()
+            where TOdoo : SosyncModelBase
+        {
+            TStudio studioModel = null;
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                // studioModel = db.Read(new { zGruppeID = studioID }).SingleOrDefault();
+                studioModel = db.Read(
+                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    new { ID = studioID })
+                    .SingleOrDefault();
+
+                if (!studioModel.sosync_fso_id.HasValue)
+                    studioModel.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, getStudioIdentity(studioModel));
+
+                UpdateSyncSourceData(Serializer.ToXML(studioModel));
+
+                // Perpare data that is the same for create or update
+                var data = new Dictionary<string, object>();
+
+                copyStudioToDictionary(studioModel, data);
+                data.Add("sosync_write_date", (studioModel.sosync_write_date ?? studioModel.write_date.ToUniversalTime()));
+
+                if (action == TransformType.CreateNew)
+                {
+                    data.Add("sosync_fs_id", getStudioIdentity(studioModel));
+                    int odooModelID = 0;
+                    try
+                    {
+                        odooModelID = OdooService.Client.CreateModel(OnlineModelName, data, false);
+                        studioModel.sosync_fso_id = odooModelID;
+                        db.Update(studioModel);
+                    }
+                    finally
+                    {
+                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooModelID);
+                    }
+                }
+                else
+                {
+                    var odooModel = OdooService.Client.GetModel<TOdoo>(OnlineModelName, studioModel.sosync_fso_id.Value);
+                    UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+
+                    try
+                    {
+                        OdooService.Client.UpdateModel(OnlineModelName, data, studioModel.sosync_fso_id.Value, false);
+                    }
+                    finally
+                    {
+                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+                    }
+                }
+            }
+        }
+
+        protected void SimpleTransformToStudio<TOdoo, TStudio>(
+            int onlineID,
+            TransformType action,
+            Func<TStudio, int> getStudioIdentity,
+            Action<TOdoo, TStudio> copyOdooToStudio
+            )
+            where TOdoo : SosyncModelBase
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            var onlineModel = OdooService.Client.GetModel<TOdoo>(OnlineModelName, onlineID);
+
+            if (!IsValidFsID(onlineModel.Sosync_FS_ID))
+                onlineModel.Sosync_FS_ID = GetFsIdByFsoId(
+                    StudioModelName,
+                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    onlineID);
+
+            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                if (action == TransformType.CreateNew)
+                {
+                    var studioModel = new TStudio()
+                    {
+                        sosync_write_date = (onlineModel.Sosync_Write_Date ?? onlineModel.Write_Date).Value,
+                        sosync_fso_id = onlineID,
+                        noSyncJobSwitch = true
+                    };
+
+                    copyOdooToStudio(onlineModel, studioModel);
+
+                    UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+
+                    var studioModelID = 0;
+                    try
+                    {
+                        db.Create(studioModel);
+                        studioModelID = getStudioIdentity(studioModel);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, studioModelID);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), studioModelID);
+                        throw;
+                    }
+
+                    OdooService.Client.UpdateModel(
+                        OnlineModelName,
+                        new { sosync_fs_id = getStudioIdentity(studioModel) },
+                        onlineID,
+                        false);
+                }
+                else
+                {
+                    var sosync_fs_id = onlineModel.Sosync_FS_ID;
+                    var studioModel = db.Read(
+                        $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                        new { ID = sosync_fs_id })
+                        .SingleOrDefault();
+
+                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioModel));
+
+                    copyOdooToStudio(onlineModel, studioModel);
+
+                    studioModel.sosync_write_date = onlineModel.Sosync_Write_Date ?? onlineModel.Write_Date;
+                    studioModel.noSyncJobSwitch = true;
+
+                    UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+
+                    try
+                    {
+                        db.Update(studioModel);
+                        UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateSyncTargetAnswer(ex.ToString(), null);
+                        throw;
+                    }
+                }
             }
         }
         #endregion
