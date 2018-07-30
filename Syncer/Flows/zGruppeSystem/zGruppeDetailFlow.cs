@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using DaDi.Odoo;
 using dadi_data.Models;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
+using WebSosync.Data;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -24,12 +27,19 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            throw new NotImplementedException();
+            using (var db = MdbService.GetDataService<dbozGruppe>())
+            {
+                var studioModel = db.Read(new { zGruppeID = studioID }).SingleOrDefault();
+                RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, studioModel.zGruppeID);
+            }
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            throw new NotImplementedException();
+            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "zgruppe_id" });
+            var frstzGruppeID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppe_id"])[0]);
+
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppe", frstzGruppeID.Value);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
