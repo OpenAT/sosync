@@ -51,6 +51,10 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            // zGruppe cannot be deleted. GUIAnzeigen = false should be used instead.
+            throw new SyncerException($"Model {StudioModelName} can only be deleted from FS, not from FS-Online.");
+
+            /*
             using (var db = MdbService.GetDataService<dbozGruppe>())
             {
                 var data = db.Read(new { zGruppeID = Job.Sync_Target_Record_ID.Value })
@@ -70,6 +74,7 @@ namespace Syncer.Flows
                 if (affectedRows == 0)
                     throw new SyncerException($"Failed to delete model {StudioModelName} {Job.Sync_Target_Record_ID.Value}, no rows affected by the delete.");
             }
+            */
         }
     }
 }

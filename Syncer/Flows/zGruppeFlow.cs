@@ -6,6 +6,7 @@ using DaDi.Odoo.Models;
 using dadi_data.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using WebSosync.Data.Models;
 
@@ -42,6 +43,11 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            // zGruppe originates from a central database, so there are special steps
+            // required to create a new one.
+            if (action == TransformType.CreateNew)
+                throw new SyncerException($"{StudioModelName} can only be created from FS, not from FS-Online.");
+
             SimpleTransformToStudio<frstzGruppe, dbozGruppe>(
                 onlineID,
                 action,
