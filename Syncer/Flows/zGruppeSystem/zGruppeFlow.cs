@@ -44,22 +44,24 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            // zGruppe originates from a central database, so there are special steps
-            // required to create a new one.
-            if (action == TransformType.CreateNew)
-                throw new SyncerException($"{StudioModelName} can only be created from FS, not from FS-Online.");
+            throw new SyncerException($"{StudioModelName} can only be created/updated from FS, not from FS-Online.");
 
-            SimpleTransformToStudio<frstzGruppe, dbozGruppe>(
-                onlineID,
-                action,
-                studioModel => studioModel.zGruppeID,
-                (online, studio) =>
-                    {
-                        studio.TabellentypID = online.tabellentyp_id;
-                        studio.GruppeKurz = online.gruppe_kurz;
-                        studio.GruppeLang = online.gruppe_lang;
-                        studio.GUIAnzeigen = online.gui_anzeigen;
-                    });
+            //// zGruppe originates from a central database, so there are special steps
+            //// required to create a new one.
+            //if (action == TransformType.CreateNew)
+            //    throw new SyncerException($"{StudioModelName} can only be created from FS, not from FS-Online.");
+
+            //SimpleTransformToStudio<frstzGruppe, dbozGruppe>(
+            //    onlineID,
+            //    action,
+            //    studioModel => studioModel.zGruppeID,
+            //    (online, studio) =>
+            //        {
+            //            studio.TabellentypID = online.tabellentyp_id;
+            //            studio.GruppeKurz = online.gruppe_kurz;
+            //            studio.GruppeLang = online.gruppe_lang;
+            //            studio.GUIAnzeigen = online.gui_anzeigen;
+            //        });
         }
     }
 }
