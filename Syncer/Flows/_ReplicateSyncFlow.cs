@@ -461,6 +461,15 @@ namespace Syncer.Flows
             }
         }
 
+        /// <summary>
+        /// Uses MSSQL and Odoo to query the Online-ID for the given Studio-ID.
+        /// Odoo is only queried as a backup, if MSSQL does not have an ID.
+        /// </summary>
+        /// <typeparam name="TStudio">Studio model type</typeparam>
+        /// <param name="studioModelName">Studio model name</param>
+        /// <param name="onlineModelName">Online model name</param>
+        /// <param name="studioID">Studio-ID for searching the Online-ID</param>
+        /// <returns>The Online-ID if found, otherwise null</returns>
         protected int? GetOnlineID<TStudio>(string studioModelName, string onlineModelName, int studioID)
             where TStudio : MdbModelBase, ISosyncable, new()
         {
