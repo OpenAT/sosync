@@ -16,6 +16,7 @@ using dadi_data.Models;
 using DaDi.Odoo.Models;
 using dadi_data.Interfaces;
 using System.Linq;
+using DaDi.Odoo;
 
 namespace Syncer.Flows
 {
@@ -486,6 +487,39 @@ namespace Syncer.Flows
 
                 return studioModel.sosync_fso_id;
             }
+        }
+
+        /// <summary>
+        /// Uses Odoo and MSSQL to query the Studio-ID for the given Online-ID.
+        /// MSSQL is only queried as a backup, if Odoo does not have an ID.
+        /// </summary>
+        /// <typeparam name="TStudio">Studio model type</typeparam>
+        /// <param name="onlineModelName">Online model name</param>
+        /// <param name="studioModelName">Studio model name</param>
+        /// <param name="onlineID">Online-ID for searching the Studio-ID</param>
+        /// <returns>The Studio-ID if found, otherwise null</returns>
+        protected int? GetStudioID<TStudio>(string onlineModelName, string studioModelName, int onlineID)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            int? studioID = null;
+
+            var odooModel = OdooService.Client.GetDictionary(onlineModelName, onlineID, new[] { "sosync_fs_id" });
+
+            if (odooModel.ContainsKey("sosync_fs_id"))
+                studioID = OdooConvert.ToInt32((string)((List<object>)odooModel["sosync_fs_id"])[0]);
+
+            if (!studioID.HasValue)
+            {
+                using (var db = MdbService.GetDataService<TStudio>())
+                {
+                    studioID = db.ExecuteQuery<int?>(
+                        $"select {MdbService.GetStudioModelIdentity(studioModelName)} from {studioModelName} where sosync_fso_id = @sosync_fso_id",
+                        new { sosync_fso_id = onlineID })
+                        .SingleOrDefault();
+                }
+            }
+
+            return studioID;
         }
         #endregion
     }
