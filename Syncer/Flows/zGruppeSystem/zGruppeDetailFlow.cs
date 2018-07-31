@@ -99,6 +99,8 @@ namespace Syncer.Flows.zGruppeSystem
             //            studio.GruppeKurz = online.gruppe_kurz;
             //            studio.GruppeLang = online.gruppe_lang;
             //            studio.GUIAnzeigen = online.gui_anzeigen;
+            //            studio.GültigVon = online.gueltig_von;
+            //            studio.GültigBis = online.gueltig_bis;
             //        });
         }
     }
