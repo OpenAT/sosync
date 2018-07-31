@@ -460,6 +460,24 @@ namespace Syncer.Flows
                 }
             }
         }
+
+        protected int? GetOnlineID<TStudio>(string studioModelName, string onlineModelName, int studioID)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            TStudio studioModel = null;
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                studioModel = db.Read(
+                    $"select * from {studioModel} where {MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
+                    new { ID = studioID })
+                    .SingleOrDefault();
+
+                if (!studioModel.sosync_fso_id.HasValue)
+                    return GetFsoIdByFsId(onlineModelName, studioID);
+
+                return studioModel.sosync_fso_id;
+            }
+        }
         #endregion
     }
 }
