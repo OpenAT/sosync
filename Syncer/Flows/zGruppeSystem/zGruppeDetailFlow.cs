@@ -78,30 +78,6 @@ namespace Syncer.Flows.zGruppeSystem
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             throw new SyncerException($"{StudioModelName} can only be created/updated from FS, not from FS-Online.");
-
-            //if (action == TransformType.CreateNew)
-            //    throw new SyncerException($"{StudioModelName} can only be created from FS, not from FS-Online.");
-
-            //var odooGrp = OdooService.Client.GetModel<frstzGruppedetail>(OnlineModelName, onlineID);
-
-            //if (!IsValidFsID(odooGrp.Sosync_FS_ID))
-            //    odooGrp.Sosync_FS_ID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
-
-            //var zGruppeID = GetFsIdByFsoId("dbo.zGruppe", "zGruppeID", odooGrp.zgruppe_id).Value;
-
-            //SimpleTransformToStudio<frstzGruppedetail, dbozGruppeDetail>(
-            //    onlineID,
-            //    action,
-            //    studioModel => studioModel.zGruppeDetailID,
-            //    (online, studio) =>
-            //        {
-            //            studio.zGruppeID = zGruppeID;
-            //            studio.GruppeKurz = online.gruppe_kurz;
-            //            studio.GruppeLang = online.gruppe_lang;
-            //            studio.GUIAnzeigen = online.gui_anzeigen;
-            //            studio.GültigVon = online.gueltig_von;
-            //            studio.GültigBis = online.gueltig_bis;
-            //        });
         }
     }
 }
