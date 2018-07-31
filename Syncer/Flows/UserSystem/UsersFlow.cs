@@ -10,7 +10,7 @@
 //using WebSosync.Data;
 //using WebSosync.Data.Models;
 
-//namespace Syncer.Flows
+//namespace Syncer.Flows.UserSystem
 //{
 //    [StudioModel(Name = "fson.res_users")]
 //    [OnlineModel(Name = "res.users")]
