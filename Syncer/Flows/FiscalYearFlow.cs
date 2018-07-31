@@ -43,7 +43,7 @@ namespace Syncer.Flows
             using (var db = MdbService.GetDataService<dboxBPKMeldespanne>())
             {
                 var fiscal = db.Read(new { xBPKMeldespanneID = studioID }).SingleOrDefault();
-                RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, fiscal.xBPKAccountID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", fiscal.xBPKAccountID);
             }
         }
 
