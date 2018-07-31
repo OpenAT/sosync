@@ -38,7 +38,7 @@ namespace Syncer.Flows
             // If there was no foreign ID in fso, try to check the mssql side
             // for the referenced ID too
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetFsIdByFsoId("dbo.PersonBPK", "PersonBPKID", onlineID);
+                info.ForeignID = GetStudioIDFromMssqlViaOnlineID("dbo.PersonBPK", "PersonBPKID", onlineID);
 
             return info;
         }
@@ -51,7 +51,7 @@ namespace Syncer.Flows
                 if (bpk != null)
                 {
                     if (!bpk.sosync_fso_id.HasValue)
-                        bpk.sosync_fso_id = GetFsoIdByFsId("res.partner.bpk", bpk.PersonBPKID);
+                        bpk.sosync_fso_id = GetOnlineIDFromOdooViaStudioID("res.partner.bpk", bpk.PersonBPKID);
 
                     return new ModelInfo(studioID, bpk.sosync_fso_id, bpk.sosync_write_date, bpk.write_date);
                 }
@@ -85,7 +85,7 @@ namespace Syncer.Flows
             var bpk = OdooService.Client.GetModel<resPartnerBpk>("res.partner.bpk", onlineID);
 
             if (!IsValidFsID(bpk.Sosync_FS_ID))
-                bpk.Sosync_FS_ID = GetFsIdByFsoId("dbo.PersonBPK", "PersonBPKID", onlineID);
+                bpk.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID("dbo.PersonBPK", "PersonBPKID", onlineID);
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 

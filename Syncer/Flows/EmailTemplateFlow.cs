@@ -31,7 +31,7 @@ namespace Syncer.Flows
             // If there was no foreign ID in fso, try to check the mssql side
             // for the referenced ID too
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+                info.ForeignID = GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
             return info;
         }
@@ -44,7 +44,7 @@ namespace Syncer.Flows
                 if (emailTemplate != null)
                 {
                     if (!emailTemplate.sosync_fso_id.HasValue)
-                        emailTemplate.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, emailTemplate.xTemplateID);
+                        emailTemplate.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, emailTemplate.xTemplateID);
 
                     return new ModelInfo(studioID, emailTemplate.sosync_fso_id, emailTemplate.sosync_write_date, emailTemplate.write_date);
                 }
@@ -74,7 +74,7 @@ namespace Syncer.Flows
             var onlineTemplate = OdooService.Client.GetModel<emailTemplate>(OnlineModelName, onlineID);
 
             if (!IsValidFsID(onlineTemplate.Sosync_FS_ID))
-                onlineTemplate.Sosync_FS_ID = GetFsIdByFsoId(
+                onlineTemplate.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
                     MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);

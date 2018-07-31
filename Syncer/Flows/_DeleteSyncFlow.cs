@@ -63,7 +63,7 @@ namespace Syncer.Flows
                     job.Sync_Target_Model = StudioModelName;
 
                     var sourceOnlineID = job.Job_Source_Record_ID; 
-                    var targetStudioID = GetFsIdByFsoId(modelName, MdbService.GetStudioModelIdentity(StudioModelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
+                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, MdbService.GetStudioModelIdentity(StudioModelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceOnlineID;
                     job.Sync_Target_Record_ID = targetStudioID;
@@ -79,7 +79,7 @@ namespace Syncer.Flows
                     job.Sync_Target_Model = OnlineModelName;
 
                     var sourceStudioID = job.Job_Source_Record_ID;
-                    var targetOnlineID = GetFsoIdByFsId(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
+                    var targetOnlineID = GetOnlineIDFromOdooViaStudioID(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceStudioID;
                     job.Sync_Target_Record_ID = targetOnlineID;

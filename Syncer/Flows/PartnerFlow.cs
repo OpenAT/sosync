@@ -126,7 +126,7 @@ namespace Syncer.Flows
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
                 if (!result.person.sosync_fso_id.HasValue)
-                    result.person.sosync_fso_id = GetFsoIdByFsId("res.partner", result.person.PersonID);
+                    result.person.sosync_fso_id = GetOnlineIDFromOdooViaStudioID("res.partner", result.person.PersonID);
 
                 result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
                                   where iterAddress.GültigVon <= DateTime.Today &&
@@ -605,7 +605,7 @@ namespace Syncer.Flows
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
             if (!IsValidFsID(partner.Sosync_FS_ID))
-                partner.Sosync_FS_ID = GetFsIdByFsoId("dbo.Person", "PersonID", onlineID);
+                partner.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID("dbo.Person", "PersonID", onlineID);
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 

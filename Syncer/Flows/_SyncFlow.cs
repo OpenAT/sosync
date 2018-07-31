@@ -126,7 +126,7 @@ namespace Syncer.Flows
             // If there was no foreign ID in fso, try to check the mssql side
             // for the referenced ID too
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetFsIdByFsoId(
+                info.ForeignID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
                     MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
@@ -215,7 +215,7 @@ namespace Syncer.Flows
                 if (studioModel != null)
                 {
                     if (!studioModel.sosync_fso_id.HasValue)
-                        studioModel.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, studioID);
+                        studioModel.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, studioID);
 
                     return new ModelInfo(studioID, studioModel.sosync_fso_id, studioModel.sosync_write_date, studioModel.write_date);
                 }
@@ -224,7 +224,7 @@ namespace Syncer.Flows
             return null;
         }
 
-        protected int? GetFsoIdByFsId(string onlineModelName, int fsId)
+        protected int? GetOnlineIDFromOdooViaStudioID(string onlineModelName, int fsId)
         {
             var odooID = 0;
 
@@ -233,7 +233,7 @@ namespace Syncer.Flows
             if (results.Count == 1)
                 odooID = results[0];
             else if (results.Count > 1)
-                throw new SyncerException($"{nameof(GetFsoIdByFsId)}(): Multiple Odoo-IDs found.");
+                throw new SyncerException($"{nameof(GetOnlineIDFromOdooViaStudioID)}(): Multiple Odoo-IDs found.");
 
             if (odooID > 0)
                 return odooID;
@@ -241,7 +241,7 @@ namespace Syncer.Flows
             return null;
         }
 
-        protected int? GetFsIdByFsoId(string studioModelName, string idName, int onlineID)
+        protected int? GetStudioIDFromMssqlViaOnlineID(string studioModelName, string idName, int onlineID)
         {
             // Since we're only running a simple query, the DataService type doesn't matter
             using (var db = MdbService.GetDataService<dboPerson>())
@@ -366,8 +366,8 @@ namespace Syncer.Flows
 
                             childJob.Sync_Target_Record_ID =
                                 Job.Job_Source_System == SosyncSystem.FundraisingStudio
-                                ? GetFsoIdByFsId(OnlineModelName, request.JobSourceRecordID)
-                                : GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
+                                ? GetOnlineIDFromOdooViaStudioID(OnlineModelName, request.JobSourceRecordID)
+                                : GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
 
                             childJob.Job_Log += $"Forcing direction: {request.JobSourceModel} ({request.JobSourceRecordID}) --> {childJob.Sync_Target_Model} ({childJob.Sync_Target_Record_ID})\n";
                         }

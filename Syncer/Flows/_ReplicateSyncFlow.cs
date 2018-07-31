@@ -333,7 +333,7 @@ namespace Syncer.Flows
                     .SingleOrDefault();
 
                 if (!studioModel.sosync_fso_id.HasValue)
-                    studioModel.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, getStudioIdentity(studioModel));
+                    studioModel.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, getStudioIdentity(studioModel));
 
                 UpdateSyncSourceData(Serializer.ToXML(studioModel));
 
@@ -389,7 +389,7 @@ namespace Syncer.Flows
             var onlineModel = OdooService.Client.GetModel<TOdoo>(OnlineModelName, onlineID);
 
             if (!IsValidFsID(onlineModel.Sosync_FS_ID))
-                onlineModel.Sosync_FS_ID = GetFsIdByFsoId(
+                onlineModel.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
                     MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
@@ -473,7 +473,7 @@ namespace Syncer.Flows
                     .SingleOrDefault();
 
                 if (!studioModel.sosync_fso_id.HasValue)
-                    return GetFsoIdByFsId(onlineModelName, studioID);
+                    return GetOnlineIDFromOdooViaStudioID(onlineModelName, studioID);
 
                 return studioModel.sosync_fso_id;
             }

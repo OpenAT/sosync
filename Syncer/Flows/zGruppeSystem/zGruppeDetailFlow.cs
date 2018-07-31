@@ -55,9 +55,9 @@ namespace Syncer.Flows.zGruppeSystem
                 grpDetail = db.Read(new { zGruppeDetailID = studioID }).SingleOrDefault();
 
                 if (!grpDetail.sosync_fso_id.HasValue)
-                    grpDetail.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, grpDetail.zGruppeDetailID);
+                    grpDetail.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, grpDetail.zGruppeDetailID);
 
-                odoozgruppeID = GetFsoIdByFsId("frst.zgruppe", grpDetail.zGruppeID).Value;
+                odoozgruppeID = GetOnlineIDFromOdooViaStudioID("frst.zgruppe", grpDetail.zGruppeID).Value;
             }
 
             SimpleTransformToOnline<dbozGruppeDetail, frstzGruppedetail>(

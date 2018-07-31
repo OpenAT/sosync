@@ -27,7 +27,7 @@ namespace Syncer.Flows
             if (Job.Job_Source_Target_Record_ID.HasValue && Job.Job_Source_Target_Record_ID > 0)
                 id = Job.Job_Source_Target_Record_ID.Value;
             else
-                id = GetFsoIdByFsId(OnlineModelName, Job.Job_Source_Record_ID).Value;
+                id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, Job.Job_Source_Record_ID).Value;
 
             var data = OdooService.Client.GetModel<accountFiscalYear>(OnlineModelName, id);
 

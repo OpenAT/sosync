@@ -37,7 +37,7 @@ namespace Syncer.Flows
             var info = GetDefaultOnlineModelInfo(onlineID, "res.partner.donation_report");
 
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetFsIdByFsoId("dbo.AktionSpendenmeldungBPK", "AktionsID", onlineID);
+                info.ForeignID = GetStudioIDFromMssqlViaOnlineID("dbo.AktionSpendenmeldungBPK", "AktionsID", onlineID);
 
             return info;
         }
@@ -252,8 +252,8 @@ namespace Syncer.Flows
             dest.Status = source.state;
             dest.Info = source.info;
             dest.SubmissionEnv = source.submission_env;
-            dest2.PersonID = GetFsIdByFsoId("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
-            dest.xBPKAccountID = GetFsIdByFsoId("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;
+            dest2.PersonID = GetStudioIDFromMssqlViaOnlineID("dbo.Person", "PersonID", Convert.ToInt32(source.partner_id[0])).Value;
+            dest.xBPKAccountID = GetStudioIDFromMssqlViaOnlineID("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(source.bpk_company_id[0])).Value;
             dest.SubmissionCompanyName = (string)source.bpk_company_id[1];
             dest.AnlageAmUm = source.anlage_am_um.Value.ToLocalTime();
             dest.ZEDatumVon = source.ze_datum_von.Value.ToLocalTime();
