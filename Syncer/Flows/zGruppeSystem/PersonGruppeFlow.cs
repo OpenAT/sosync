@@ -1,0 +1,141 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using DaDi.Odoo;
+using DaDi.Odoo.Models;
+using dadi_data.Models;
+using Syncer.Attributes;
+using Syncer.Enumerations;
+using Syncer.Exceptions;
+using Syncer.Models;
+using WebSosync.Data;
+using WebSosync.Data.Models;
+
+namespace Syncer.Flows.zGruppeSystem
+{
+    [StudioModel(Name = "dbo.PersonGruppe")]
+    [OnlineModel(Name = "frst.persongruppe")]
+    public class PersonGruppeFlow
+        : ReplicateSyncFlow
+    {
+        public PersonGruppeFlow(IServiceProvider svc, SosyncOptions conf)
+            : base(svc, conf)
+        {
+        }
+
+        protected override ModelInfo GetStudioInfo(int studioID)
+        {
+            return GetDefaultStudioModelInfo<dboPersonGruppe>(studioID);
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            using (var db = MdbService.GetDataService<dboPersonGruppe>())
+            {
+                var studioModel = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
+
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID);
+            }
+        }
+
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            var odooModel = OdooService.Client.GetDictionary(
+                OnlineModelName,
+                onlineID,
+                new string[] { "zgruppedetail_id", "partner_id" });
+
+            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0]);
+            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0]);
+
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID.Value);
+        }
+
+        protected override void TransformToOnline(int studioID, TransformType action)
+        {
+
+            var zgruppedetail_id = 0;
+            var partner_id = 0;
+
+            using (var db = MdbService.GetDataService<dboPersonGruppe>())
+            {
+                // Get the referenced Studio-IDs
+                var personGruppe = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
+
+                // Get the corresponding Online-IDs
+                zgruppedetail_id = GetOnlineID<dbozGruppeDetail>(
+                    "dbo.zGruppeDetail",
+                    "frst.zgruppedetail",
+                    personGruppe.zGruppeDetailID)
+                    .Value;
+
+                partner_id = GetOnlineID<dboPerson>(
+                    "dbo.Person",
+                    "res.partner",
+                    personGruppe.PersonID)
+                    .Value;
+            }
+
+            // Do the transformation
+            SimpleTransformToOnline<dboPersonGruppe, frstzGruppedetail>(
+                studioID,
+                action,
+                studioModel => studioModel.zGruppeDetailID,
+                (studio, online) =>
+                {
+                    online.Add("zgruppedetail_id", zgruppedetail_id);
+                    online.Add("partner_id", partner_id);
+                    online.Add("steuerung_bit", studio.Steuerung);
+                    online.Add("gueltig_von", studio.GültigVon);
+                    online.Add("gueltig_bis", studio.GültigBis);
+                });
+        }
+
+        protected override void TransformToStudio(int onlineID, TransformType action)
+        {
+            // Get the referenced Odoo-IDs
+            var odooModel = OdooService.Client.GetDictionary(
+                OnlineModelName,
+                onlineID,
+                new string[] { "zgruppedetail_id", "partner_id" });
+
+            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0])
+                .Value;
+
+            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0])
+                .Value;
+
+            // Get the corresponding Studio-IDs
+            var zGruppeDetailID = GetStudioID<dbozGruppeDetail>(
+                "frst.zgruppedetail",
+                "dbo.zGruppeDetail",
+                odooGruppeDetailID)
+                .Value;
+
+            var PersonID = GetStudioID<dbozGruppeDetail>(
+                "res.partner",
+                "dbo.Person",
+                odooPartnerID)
+                .Value;
+
+            // Do the transformation
+            SimpleTransformToStudio<frstPersongruppe, dboPersonGruppe>(
+                onlineID,
+                action,
+                studioModel => studioModel.PersonGruppeID,
+                (online, studio) =>
+                    {
+                        studio.zGruppeDetailID = zGruppeDetailID;
+                        studio.PersonID = PersonID;
+                        studio.Steuerung = online.steuerung_bit;
+                        studio.GültigVon = online.gueltig_von;
+                        studio.GültigBis = online.gueltig_bis;
+                    });
+        }
+    }
+}
+
+
