@@ -478,7 +478,7 @@ namespace Syncer.Flows
             using (var db = MdbService.GetDataService<TStudio>())
             {
                 studioModel = db.Read(
-                    $"select * from {studioModel} where {MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
+                    $"select sosync_fso_id from {studioModelName} where {MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
@@ -506,7 +506,7 @@ namespace Syncer.Flows
             var odooModel = OdooService.Client.GetDictionary(onlineModelName, onlineID, new[] { "sosync_fs_id" });
 
             if (odooModel.ContainsKey("sosync_fs_id"))
-                studioID = OdooConvert.ToInt32((string)((List<object>)odooModel["sosync_fs_id"])[0]);
+                studioID = OdooConvert.ToInt32((string)odooModel["sosync_fs_id"]);
 
             if (!studioID.HasValue)
             {
