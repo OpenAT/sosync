@@ -1,9 +1,13 @@
-﻿using Syncer.Exceptions;
+﻿using DaDi.Odoo.Models;
+using dadi_data.Interfaces;
+using dadi_data.Models;
+using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -99,6 +103,67 @@ namespace Syncer.Flows
         {
             // Not applicable for delete flows
             return null;
+        }
+
+        protected void SimpleDeleteInOnline<TOdoo>(
+            int studioID
+            )
+            where TOdoo : SosyncModelBase
+        {
+            int? odooID;
+            if (Job.Job_Source_Target_Record_ID.HasValue && Job.Job_Source_Target_Record_ID > 0)
+                odooID = Job.Job_Source_Target_Record_ID;
+            else
+                odooID = GetOnlineIDFromOdooViaStudioID(
+                    OnlineModelName,
+                    Job.Job_Source_Record_ID);
+
+            var data = OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
+
+            if (data == null)
+                throw new SyncerException($"Failed to read data from model {OnlineModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
+
+            UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+
+            OdooService.Client.UnlinkModel(OnlineModelName, odooID.Value);
+        }
+
+        protected void SimpleDeleteInStudio<TStudio>(
+            int onlineID
+            )
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+
+            int? studioID;
+            if (Job.Job_Source_Target_Record_ID.HasValue && Job.Job_Source_Target_Record_ID > 0)
+                studioID = Job.Job_Source_Target_Record_ID;
+            else
+                studioID = GetStudioIDFromMssqlViaOnlineID(
+                    StudioModelName,
+                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    onlineID);
+
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                var data = db.Read(
+                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id;",
+                    new { id = studioID })
+                    .SingleOrDefault();
+
+                if (data == null)
+                    throw new SyncerException($"Failed to read data from model {StudioModelName} {studioID} before deletion.");
+
+                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(data));
+
+                var query = $"delete from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                UpdateSyncTargetRequest($"-- @id = {studioID}\n" + query);
+
+                var affectedRows = db.ExecuteQuery<int>(query, new { id = studioID }).SingleOrDefault();
+                UpdateSyncTargetAnswer($"Deleted rows: {affectedRows}", null);
+
+                if (affectedRows == 0)
+                    throw new SyncerException($"Failed to delete model {StudioModelName} {studioID}, no rows affected by the delete.");
+            }
         }
     }
 }
