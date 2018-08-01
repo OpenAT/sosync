@@ -529,6 +529,66 @@ namespace Syncer.Flows
         }
 
         /// <summary>
+        /// Uses MSSQL and Odoo to query the Online-ID for the given Studio-ID.
+        /// Odoo is only queried as a backup, if MSSQL does not have an ID.
+        /// </summary>
+        /// <typeparam name="TStudio">Studio model type</typeparam>
+        /// <param name="studioModelName">Studio model name</param>
+        /// <param name="onlineModelName">Online model name</param>
+        /// <param name="studioID">Studio-ID for searching the Online-ID</param>
+        /// <returns>The Online-ID if found, otherwise null</returns>
+        protected int? GetOnlineID<TStudio>(string studioModelName, string onlineModelName, int studioID)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            TStudio studioModel = null;
+            using (var db = MdbService.GetDataService<TStudio>())
+            {
+                studioModel = db.Read(
+                    $"select sosync_fso_id from {studioModelName} where {MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
+                    new { ID = studioID })
+                    .SingleOrDefault();
+
+                if (!studioModel.sosync_fso_id.HasValue)
+                    return GetOnlineIDFromOdooViaStudioID(onlineModelName, studioID);
+
+                return studioModel.sosync_fso_id;
+            }
+        }
+
+        /// <summary>
+        /// Uses Odoo and MSSQL to query the Studio-ID for the given Online-ID.
+        /// MSSQL is only queried as a backup, if Odoo does not have an ID.
+        /// </summary>
+        /// <typeparam name="TStudio">Studio model type</typeparam>
+        /// <param name="onlineModelName">Online model name</param>
+        /// <param name="studioModelName">Studio model name</param>
+        /// <param name="onlineID">Online-ID for searching the Studio-ID</param>
+        /// <returns>The Studio-ID if found, otherwise null</returns>
+        protected int? GetStudioID<TStudio>(string onlineModelName, string studioModelName, int onlineID)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            int? studioID = null;
+
+            var odooModel = OdooService.Client.GetDictionary(onlineModelName, onlineID, new[] { "sosync_fs_id" });
+
+            if (odooModel.ContainsKey("sosync_fs_id"))
+                studioID = OdooConvert.ToInt32((string)odooModel["sosync_fs_id"]);
+
+            if (!studioID.HasValue)
+            {
+                using (var db = MdbService.GetDataService<TStudio>())
+                {
+                    studioID = db.ExecuteQuery<int?>(
+                        $"select {MdbService.GetStudioModelIdentity(studioModelName)} from {studioModelName} where sosync_fso_id = @sosync_fso_id",
+                        new { sosync_fso_id = onlineID })
+                        .SingleOrDefault();
+                }
+            }
+
+            return studioID;
+        }
+
+        /// <summary>
         /// Checks the current run_count value of the job against the
         /// specified maximum value. Throws an <see cref="RunCountException"/>
         /// if the maximum value is reached or exceeded.
