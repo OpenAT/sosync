@@ -39,30 +39,6 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
-        protected override ModelInfo GetOnlineInfo(int onlineID)
-        {
-            var info = GetDefaultOnlineModelInfo(onlineID, "res.partner");
-
-            // If there was no foreign ID in fso, try to check the mssql side
-            // for the referenced ID too
-            if (!info.ForeignID.HasValue)
-            {
-                // Since we're only running a simple query, the DataService type doesn't matter
-                using (var db = MdbService.GetDataService<dboPerson>())
-                {
-                    var foundStudioID = db.ExecuteQuery<int?>(
-                        $"select PersonID from dbo.Person where sosync_fso_id = @fso_id",
-                        new { fso_id = onlineID })
-                        .SingleOrDefault();
-
-                    if (foundStudioID.HasValue)
-                        info.ForeignID = foundStudioID;
-                }
-            }
-
-            return info;
-        }
-
         private DateTime? GetPersonWriteDate(dboPersonStack person)
         {
             var query = new DateTime?[]
