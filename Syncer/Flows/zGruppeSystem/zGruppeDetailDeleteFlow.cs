@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DaDi.Odoo.Models;
+using dadi_data.Models;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
@@ -21,7 +23,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotImplementedException();
+            SimpleDeleteInOnline<frstzGruppedetail>(studioID);
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
