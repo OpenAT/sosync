@@ -14,6 +14,10 @@ namespace Syncer.Services
         private SosyncOptions _config;
         #endregion
 
+        #region Properties
+        public string Instance { get { return _config.Instance; } }
+        #endregion
+
         #region Constructors
         public MdbService(SosyncOptions options)
         {
