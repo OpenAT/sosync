@@ -25,6 +25,12 @@ namespace ManualTest
 
             //var f = new ProductTemplateFlow(svc);
 
+            var vor = "";
+            var nach = "";
+
+            string result = EmailHelper.MergeEmail(vor, nach);
+            Console.WriteLine(result);
+
             Console.WriteLine("Done");
             Console.ReadKey();
         }
