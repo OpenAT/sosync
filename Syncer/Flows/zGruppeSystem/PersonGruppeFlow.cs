@@ -89,8 +89,8 @@ namespace Syncer.Flows.zGruppeSystem
                     online.Add("zgruppedetail_id", zgruppedetail_id);
                     online.Add("partner_id", partner_id);
                     online.Add("steuerung_bit", studio.Steuerung);
-                    online.Add("gueltig_von", studio.GültigVon);
-                    online.Add("gueltig_bis", studio.GültigBis);
+                    online.Add("gueltig_von", studio.GültigVon.Date);
+                    online.Add("gueltig_bis", studio.GültigBis.Date);
                 });
         }
 
@@ -131,8 +131,8 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.zGruppeDetailID = zGruppeDetailID;
                         studio.PersonID = PersonID;
                         studio.Steuerung = online.steuerung_bit;
-                        studio.GültigVon = online.gueltig_von;
-                        studio.GültigBis = online.gueltig_bis;
+                        studio.GültigVon = online.gueltig_von.Date;
+                        studio.GültigBis = online.gueltig_bis.Date;
                     });
         }
     }
