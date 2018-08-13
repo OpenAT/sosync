@@ -83,7 +83,7 @@ namespace Syncer.Flows.zGruppeSystem
             SimpleTransformToOnline<dboPersonGruppe, frstzGruppedetail>(
                 studioID,
                 action,
-                studioModel => studioModel.zGruppeDetailID,
+                studioModel => studioModel.PersonGruppeID,
                 (studio, online) =>
                 {
                     online.Add("zgruppedetail_id", zgruppedetail_id);
