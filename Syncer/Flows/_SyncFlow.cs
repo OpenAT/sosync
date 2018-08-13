@@ -228,7 +228,7 @@ namespace Syncer.Flows
         {
             var odooID = 0;
 
-            var results = OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId.ToString()).ToList();
+            var results = OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId).ToList();
 
             if (results.Count == 1)
                 odooID = results[0];
