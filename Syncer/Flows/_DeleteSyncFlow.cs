@@ -118,7 +118,10 @@ namespace Syncer.Flows
                     OnlineModelName,
                     Job.Job_Source_Record_ID);
 
-            var data = OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
+            TOdoo data = null;
+
+            if (odooID.HasValue)
+                data = OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
 
             if (data == null)
                 throw new SyncerException($"Failed to read data from model {OnlineModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
@@ -155,7 +158,9 @@ namespace Syncer.Flows
 
                 UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(data));
 
-                var query = $"delete from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; "
+                    + $"delete from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+
                 UpdateSyncTargetRequest($"-- @id = {studioID}\n" + query);
 
                 var affectedRows = db.ExecuteQuery<int>(query, new { id = studioID }).SingleOrDefault();
