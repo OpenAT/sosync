@@ -87,7 +87,7 @@ namespace MassDataCorrection
                     Console.WriteLine($"Anzahl Tel: {count}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Could not connect to mssql.");
             }
@@ -128,7 +128,7 @@ namespace MassDataCorrection
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Could not connect to mssql.");
             }
@@ -504,7 +504,7 @@ namespace MassDataCorrection
                         rpc.RunMethod("res.partner.bpk", "create_sync_job", id);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
@@ -557,7 +557,7 @@ namespace MassDataCorrection
                     //    rpc.RunMethod("res.partner.donation_report", "create_sync_job", id);
                     //}
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
