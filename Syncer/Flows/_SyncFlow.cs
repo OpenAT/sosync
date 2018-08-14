@@ -574,7 +574,7 @@ namespace Syncer.Flows
             if (odooModel.ContainsKey("sosync_fs_id"))
                 studioID = OdooConvert.ToInt32((string)odooModel["sosync_fs_id"]);
 
-            if (!studioID.HasValue)
+            if (!studioID.HasValue || studioID == 0)
             {
                 using (var db = MdbService.GetDataService<TStudio>())
                 {
