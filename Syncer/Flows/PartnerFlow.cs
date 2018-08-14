@@ -45,14 +45,9 @@ namespace Syncer.Flows
             {
                 person.person != null ? person.person.write_date : (DateTime?)null,
                 person.address != null ? person.address.write_date : (DateTime?)null,
-                person.email != null ? person.email.write_date : (DateTime?)null,
                 person.phone != null ? person.phone.write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.write_date : (DateTime?)null,
                 person.fax != null ? person.fax.write_date : (DateTime?)null,
-                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
-                person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null,
-                person.SystemDeactivateBPK != null ? person.SystemDeactivateBPK.write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -67,14 +62,9 @@ namespace Syncer.Flows
             {
                 person.person != null ? person.person.sosync_write_date : (DateTime?)null,
                 person.address != null ? person.address.sosync_write_date : (DateTime?)null,
-                person.email != null ? person.email.sosync_write_date : (DateTime?)null,
                 person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
                 person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
-                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.sosync_write_date : (DateTime?)null,
-                person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null,
-                person.SystemDeactivateBPK != null ? person.SystemDeactivateBPK.sosync_write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -94,10 +84,7 @@ namespace Syncer.Flows
             using (var personSvc = MdbService.GetDataService<dboPerson>())
             using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
             using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
-            using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
-            using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var emailGroupSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
@@ -137,26 +124,6 @@ namespace Syncer.Flows
                                 orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? GültigMonatArray : iterfax.GültigMonatArray descending,
                                 iterfax.PersonTelefonID descending
                               select iterfax).FirstOrDefault();
-
-                result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
-                                where iterEmail.GültigVon <= DateTime.Today &&
-                                    iterEmail.GültigBis >= DateTime.Today
-                                orderby string.IsNullOrEmpty(iterEmail.GültigMonatArray) ? GültigMonatArray : iterEmail.GültigMonatArray descending,
-                                iterEmail.PersonEmailID descending
-                                select iterEmail).FirstOrDefault();
-
-                result.personDonationDeductionOptOut = personGroupSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
-                result.personDonationReceipt = personGroupSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
-
-                if (result.email != null)
-                    result.emailNewsletter = emailGroupSvc.Read(
-                        new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 })
-                        .FirstOrDefault();
-
-                // Select the first active "bPK deactivated by system" group
-                result.SystemDeactivateBPK = personGroupSvc.Read(
-                    new { PersonID = PersonID, zGruppeDetailID = 128782 })
-                    .FirstOrDefault();
             }
 
             result.write_date = GetPersonWriteDate(result);
@@ -173,9 +140,7 @@ namespace Syncer.Flows
             int onlineID,
             DataService<dboPerson> personSvc,
             DataService<dboPersonAdresse> addressSvc,
-            DataService<dboPersonEmail> emailSvc,
             DataService<dboPersonTelefon> phoneSvc,
-            DataService<dboPersonEmailGruppe> emailNewsletterSvc,
             SqlConnection con,
             SqlTransaction transaction)
         {
@@ -219,40 +184,6 @@ namespace Syncer.Flows
                             iterAddress.sosync_fso_id = null;
                             iterAddress.noSyncJobSwitch = true;
                             addressSvc.Update(iterAddress);
-                        }
-                    }
-                }
-            }
-
-            foreach (dboPersonEmail iterEmail in emailSvc.Read(new { PersonID = person.person.PersonID }))
-            {
-                if (person.email == null)
-                {
-                    if (iterEmail.sosync_fso_id != null)
-                    {
-                        iterEmail.sosync_fso_id = null;
-                        iterEmail.noSyncJobSwitch = true;
-                        emailSvc.Update(iterEmail);
-                    }
-                }
-                else
-                {
-                    if (iterEmail.PersonEmailID == person.email.PersonEmailID)
-                    {
-                        if ((iterEmail.sosync_fso_id ?? 0) != onlineID)
-                        {
-                            iterEmail.sosync_fso_id = onlineID;
-                            iterEmail.noSyncJobSwitch = true;
-                            emailSvc.Update(iterEmail);
-                        }
-                    }
-                    else
-                    {
-                        if (iterEmail.sosync_fso_id != null)
-                        {
-                            iterEmail.sosync_fso_id = null;
-                            iterEmail.noSyncJobSwitch = true;
-                            emailSvc.Update(iterEmail);
                         }
                     }
                 }
@@ -302,15 +233,6 @@ namespace Syncer.Flows
                 }
             }
 
-            if (person.emailNewsletter != null)
-            {
-                if ((person.emailNewsletter.sosync_fso_id ?? 0) != onlineID)
-                {
-                    person.emailNewsletter.sosync_fso_id = onlineID;
-                    person.emailNewsletter.noSyncJobSwitch = true;
-                    emailNewsletterSvc.Update(person.emailNewsletter);
-                }
-            }
             s.Stop();
             LogMs(1, $"{nameof(SetdboPersonStack_fso_ids)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
         }
@@ -385,16 +307,9 @@ namespace Syncer.Flows
                 data.Add("anrede_individuell", null);
             }
 
-            SetDictionaryEntryForObject(data, person.email, "email", () => $"{person.email.EmailVor}@{person.email.EmailNach}", () => null);
-
             SetDictionaryEntryForObject(data, person.phone, "phone", () => CombinePhone(person.phone), () => null);
             SetDictionaryEntryForObject(data, person.mobile, "mobile", () => CombinePhone(person.mobile), () => null);
             SetDictionaryEntryForObject(data, person.fax, "fax", () => CombinePhone(person.fax), () => null);
-
-            SetDictionaryEntryForGroup(data, person.personDonationDeductionOptOut, "donation_deduction_optout_web", true, false);
-            SetDictionaryEntryForGroup(data, person.personDonationReceipt, "donation_receipt_web", true, false);
-            SetDictionaryEntryForGroup(data, person.emailNewsletter, "newsletter_web", true, false);
-            SetDictionaryEntryForGroup(data, person.SystemDeactivateBPK, "donation_deduction_disabled", true, false);
 
             UpdateSyncSourceData(Serializer.ToXML(person));
             
@@ -416,19 +331,14 @@ namespace Syncer.Flows
                 // Update the remote id in studio
                 using (var personSvc = MdbService.GetDataService<dboPerson>())
                 using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-                using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
-                using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
-                using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
                 {
                     SetdboPersonStack_fso_ids(
                         person, 
                         odooPartnerId, 
                         personSvc, 
                         addressSvc, 
-                        emailSvc, 
                         phoneSvc, 
-                        emailNewsletterSvc, 
                         null, 
                         null);
                 }
@@ -448,19 +358,14 @@ namespace Syncer.Flows
                     // Update the remote id in studio
                     using (var personSvc = MdbService.GetDataService<dboPerson>())
                     using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-                    using (var emailSvc = MdbService.GetDataService<dboPersonEmail>())
                     using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
-                    using (var personGroupSvc = MdbService.GetDataService<dboPersonGruppe>())
-                    using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
                     {
                         SetdboPersonStack_fso_ids(
                             person,
                             onlineID,
                             personSvc,
                             addressSvc,
-                            emailSvc,
                             phoneSvc,
-                            emailNewsletterSvc,
                             null,
                             null);
                     }
@@ -510,21 +415,21 @@ namespace Syncer.Flows
                 dict.Add(key, getFalseValue());
         }
 
-        private void SetDictionaryEntryForGroup<T>(Dictionary<string, object> dict, IStudioGroup group, string key, T trueValue, T falseValue)
-        {
-            if (group != null)
-            {
-                if (group.GültigVon.Date <= DateTime.Today
-                    && group.GültigBis.Date >= DateTime.Today)
-                    dict.Add(key, trueValue);
-                else
-                    dict.Add(key, falseValue);
-            }
-            else
-            {
-                dict.Add(key, falseValue);
-            }
-        }
+        //private void SetDictionaryEntryForGroup<T>(Dictionary<string, object> dict, IStudioGroup group, string key, T trueValue, T falseValue)
+        //{
+        //    if (group != null)
+        //    {
+        //        if (group.GültigVon.Date <= DateTime.Today
+        //            && group.GültigBis.Date >= DateTime.Today)
+        //            dict.Add(key, trueValue);
+        //        else
+        //            dict.Add(key, falseValue);
+        //    }
+        //    else
+        //    {
+        //        dict.Add(key, falseValue);
+        //    }
+        //}
 
         private string CombinePhone(dboPersonTelefon phone)
         {
@@ -561,9 +466,7 @@ namespace Syncer.Flows
 
                 using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>(con, transaction))
                 using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
-                using (var emailSvc = MdbService.GetDataService<dboPersonEmail>(con, transaction))
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
-                using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>(con, transaction))
                 {
                     // Load online model, save it to studio
                     if (action == TransformType.CreateNew)
@@ -585,15 +488,6 @@ namespace Syncer.Flows
                             CopyPartnerToPersonAddress(partner, person.address);
 
                             person.addressAM = InitDboPersonAdresseAM();
-                        }
-
-                        //create new dboPersonEmail if email is filled
-                        if (partner.HasEmail())
-                        {
-                            person.email = InitDboPersonEmail();
-                            SetSyncFields(person.email, onlineID, sosync_write_date);
-
-                            CopyPartnerToPersonEmail(partner, person.email);
                         }
 
                         //create new dboPersonTelefon if phone is filled
@@ -623,32 +517,6 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                         }
 
-                        //create new dboPersonGruppe if don-de-oo
-                        if (partner.DonationDeductionOptOut ?? false)
-                        {
-                            person.personDonationDeductionOptOut = InitGroup<dboPersonGruppe>(110493);
-                            SetSyncFields(person.personDonationDeductionOptOut, onlineID, sosync_write_date);
-                        }
-
-                        //create new dboPersonGruppe if don-rec
-                        if (partner.DonationReceipt ?? false)
-                        {
-                            person.personDonationReceipt = InitGroup<dboPersonGruppe>(20168);
-                            SetSyncFields(person.personDonationReceipt, onlineID, sosync_write_date);
-                        }
-
-                        if (partner.EmailNewsletter && partner.HasEmail())
-                        {
-                            person.emailNewsletter = InitGroup<dboPersonEmailGruppe>(30104);
-                            SetSyncFields(person.emailNewsletter, onlineID, sosync_write_date);
-                        }
-
-                        if (partner.DonationDeductionDisabled ?? false)
-                        {
-                            person.SystemDeactivateBPK = InitGroup<dboPersonGruppe>(128782);
-                            SetSyncFields(person.SystemDeactivateBPK, onlineID, sosync_write_date);
-                        }
-
                         UpdateSyncTargetRequest(Serializer.ToXML(person));
 
                         var PersonID = 0;
@@ -664,19 +532,6 @@ namespace Syncer.Flows
                                 person.addressAM.PersonID = PersonID;
                                 person.addressAM.PersonAdresseID = person.address.PersonAdresseID;
                                 addressAMSvc.Create(person.addressAM);
-                            }
-
-                            if (person.email != null)
-                            {
-                                person.email.PersonID = PersonID;
-                                emailSvc.Create(person.email);
-
-                                if (person.emailNewsletter != null)
-                                {
-                                    person.emailNewsletter.PersonEmailID = person.email.PersonEmailID;
-                                    emailNewsletterSvc.Create(person.emailNewsletter);
-                                }
-
                             }
 
                             if (person.phone != null)
@@ -704,9 +559,7 @@ namespace Syncer.Flows
                             var debug = $"------------------------------------------\n{personSvc.LastQuery}\n"
                                 + $"------------------------------------------\n{addressSvc.LastQuery}\n"
                                 + $"------------------------------------------\n{addressAMSvc.LastQuery}\n"
-                                + $"------------------------------------------\n{emailSvc.LastQuery}\n"
-                                + $"------------------------------------------\n{phoneSvc.LastQuery}\n"
-                                + $"------------------------------------------\n{emailNewsletterSvc.LastQuery}\n";
+                                + $"------------------------------------------\n{phoneSvc.LastQuery}\n";
 
                             UpdateSyncTargetAnswer(ex.ToString() + $"\n{debug}", PersonID);
                             throw;
@@ -751,23 +604,6 @@ namespace Syncer.Flows
                             SetSyncFields(person.address, onlineID, sosync_write_date);
 
                             person.addressAM.PAC = 0; //personadresseAM record is always created with the personadresse record, so it can be refered here
-                        }
-
-                        if (person.email == null)
-                        {
-                            if (partner.HasEmail())
-                            {
-                                person.email = InitDboPersonEmail();
-                                person.email.PersonID = PersonID;
-
-                                CopyPartnerToPersonEmail(partner, person.email);
-                                SetSyncFields(person.email, onlineID, sosync_write_date);
-                            }
-                        }
-                        else
-                        {
-                            CopyPartnerToPersonEmail(partner, person.email);
-                            SetSyncFields(person.email, onlineID, sosync_write_date);
                         }
 
                         if (person.phone == null)
@@ -821,48 +657,14 @@ namespace Syncer.Flows
                             SetSyncFields(person.fax, onlineID, sosync_write_date);
                         }
 
-                        person.personDonationDeductionOptOut = SetupGroup(
-                            person.personDonationDeductionOptOut,
-                            partner.DonationDeductionOptOut ?? false,
-                            onlineID,
-                            110493,
-                            sosync_write_date,
-                            (grp) => grp.PersonID = person.person.PersonID);
-
-                        person.personDonationReceipt = SetupGroup(
-                            person.personDonationReceipt,
-                            partner.DonationReceipt ?? false,
-                            onlineID,
-                            20168,
-                            sosync_write_date,
-                            (grp) => grp.PersonID = person.person.PersonID);
-
-                        person.emailNewsletter = SetupGroup(
-                            person.emailNewsletter,
-                            partner.EmailNewsletter && person.email != null,
-                            onlineID,
-                            30104,
-                            sosync_write_date,
-                            (grp) => grp.PersonEmailID = person.email != null ? person.email.PersonEmailID : 0);
-
-                        person.SystemDeactivateBPK = SetupGroup(
-                            person.SystemDeactivateBPK,
-                            partner.DonationDeductionDisabled ?? false,
-                            onlineID,
-                            128782,
-                            sosync_write_date,
-                            (grp) => grp.PersonID = person.person.PersonID);
-
                         UpdateSyncTargetRequest(Serializer.ToXML(person));
 
                         try
                         {
                             CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
-                            CreateOrUpdate(emailSvc, person.email, person.email != null ? person.email.PersonEmailID : 0);
                             CreateOrUpdate(phoneSvc, person.phone, person.phone != null ? person.phone.PersonTelefonID : 0, "(Festnetz)");
                             CreateOrUpdate(phoneSvc, person.mobile, person.mobile != null ? person.mobile.PersonTelefonID : 0, "(Mobil)");
                             CreateOrUpdate(phoneSvc, person.fax, person.fax != null ? person.fax.PersonTelefonID : 0, "(Fax)");
-                            CreateOrUpdate(emailNewsletterSvc, person.emailNewsletter, person.emailNewsletter != null ? person.emailNewsletter.PersonEmailGruppeID : 0);
 
                             personSvc.Update(person.person);
                             LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
@@ -872,9 +674,7 @@ namespace Syncer.Flows
                                onlineID,
                                personSvc,
                                addressSvc,
-                               emailSvc,
                                phoneSvc,
-                               emailNewsletterSvc,
                                personSvc.Connection,
                                transaction);
 
