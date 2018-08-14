@@ -115,7 +115,7 @@ namespace Syncer.Flows.zGruppeSystem
                 odooGruppeDetailID)
                 .Value;
 
-            var PersonID = GetStudioID<dbozGruppeDetail>(
+            var PersonID = GetStudioID<dboPerson>(
                 "res.partner",
                 "dbo.Person",
                 odooPartnerID)
