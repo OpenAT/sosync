@@ -173,6 +173,8 @@ namespace Syncer.Flows
                     else if (diff.TotalMilliseconds < 0)
                     {
                         // The studio model was newer
+                        //var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
+
                         writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
                         UpdateJobSourceAndTarget(
                             job,
@@ -187,6 +189,8 @@ namespace Syncer.Flows
                     else
                     {
                         // The online model was newer
+                        //var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
+
                         writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
                         UpdateJobSourceAndTarget(
                             job,
@@ -242,6 +246,27 @@ namespace Syncer.Flows
             s.Stop();
             LogMs(0, $"{nameof(SetSyncSource)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
+        }
+
+        private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            var tolerance = 2000;
+            var modelInfo = studioInfo;
+
+            if (job.Job_Source_System == SosyncSystem.FSOnline)
+                modelInfo = onlineInfo;
+
+            var sosyncDate = (modelInfo.SosyncWriteDate ?? modelInfo.WriteDate.Value);
+            var diff = job.Job_Date - sosyncDate;
+
+            var result = false;
+
+            if (diff.TotalMilliseconds <= tolerance)
+                result = true;
+
+            Log.LogWarning($"{job.Job_Source_Model}\nsimilar = {result}\nJD = {job.Job_Date}\nWD = {sosyncDate}");
+
+            return result;
         }
 
         /// <summary>
@@ -333,7 +358,7 @@ namespace Syncer.Flows
             {
                 // studioModel = db.Read(new { zGruppeID = studioID }).SingleOrDefault();
                 studioModel = db.Read(
-                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select * from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
