@@ -31,7 +31,7 @@ namespace Syncer.Flows.zGruppeSystem
         {
             using (var db = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
-                var studioModel = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
+                var studioModel = db.Read(new { PersonEmailGruppeID = studioID }).SingleOrDefault();
 
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID);
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID);
