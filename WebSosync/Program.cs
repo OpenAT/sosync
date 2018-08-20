@@ -119,6 +119,13 @@ namespace WebSosync
             if (!string.IsNullOrEmpty(Program.LogFile))
                 log.LogInformation($"Logging to: {Program.LogFile}");
 
+            // Active check: quit if not active
+            if (!IsSosyncActive(kestrelConfig))
+            {
+                log.LogWarning($"INI parameter: active = true, process ending.");
+                return;
+            }
+
             // Attach handler for the linux sigterm signal
             AssemblyLoadContext.Default.Unloading += (obj) => HandleSigTerm(host.Services, log, svc);
 
@@ -193,6 +200,18 @@ namespace WebSosync
             }
 
             log.LogInformation("Sosync service ended");
+        }
+
+        private static bool IsSosyncActive(IConfigurationRoot config)
+        {
+            // Set default for active INI parameter
+            if (string.IsNullOrEmpty(config["sosync:active"]))
+                config["sosync:active"] = "true"; // Active by default
+
+            // Check if sosync is active
+            var active = config["sosync:active"].Trim().ToLower() == "true";
+
+            return active;
         }
 
         /// <summary>
