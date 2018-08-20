@@ -56,7 +56,6 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-
             var zgruppedetail_id = 0;
             var partner_id = 0;
 
@@ -80,7 +79,7 @@ namespace Syncer.Flows.zGruppeSystem
             }
 
             // Do the transformation
-            SimpleTransformToOnline<dboPersonGruppe, frstzGruppedetail>(
+            SimpleTransformToOnline<dboPersonGruppe, frstPersongruppe>(
                 studioID,
                 action,
                 studioModel => studioModel.PersonGruppeID,
