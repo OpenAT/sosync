@@ -252,7 +252,11 @@ namespace Syncer.Flows
         /// <param name="onlineWriteDate">The FSO time stamp.</param>
         /// <param name="studioWriteDate">The Studio time stamp.</param>
         /// <returns></returns>
-        private TimeSpan GetWriteDateDifference(string anyModelName, ModelInfo studioInfo, ModelInfo onlineInfo, int toleranceMS)
+        private TimeSpan GetWriteDateDifference(
+            string anyModelName,
+            ModelInfo studioInfo,
+            ModelInfo onlineInfo,
+            int toleranceMS)
         {
             var onlineWriteDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate.Value;
             var studioWriteDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate.Value;
