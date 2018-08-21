@@ -294,9 +294,9 @@
         ' Using New dadi_impersonation.ImpersonationScope(String.Format(dadi_upn_prototype, Me._instance), Me._pw)
 
         Dim db As New mdbDataContext(Me._conn) 'get_connection_string(Me._instance))
-        Dim command As String = "select * from odoo.sync_table where SyncStart is null order by Anlagedatum"
+        Dim command As String = "select * from odoo.sync_table where SyncStart is null order by Anlagedatum, sync_tableID"
 
-            Return db.ExecuteQuery(Of sync_table_record)(command).ToList()
+        Return db.ExecuteQuery(Of sync_table_record)(command).ToList()
 
         ' End Using
 

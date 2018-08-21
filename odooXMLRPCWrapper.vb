@@ -266,17 +266,18 @@ Public Class odooXMLRPCWrapper
 
             Else
 
+
                 Dim retVal = int_execute_kw(db, uid, password, model_name, "create", create_args(data, online_field_mapping), get_de_de_locale())
 
-                If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
-                    ret = retVal
-                End If
+                    If retVal.GetType() Is GetType(Integer) AndAlso CType(retVal, Integer?).HasValue Then
+                        ret = retVal
+                    End If
 
-                If ret.HasValue() Then
-                    msSQLHost.save_new_odoo_id(record, ret.Value)
-                End If
+                    If ret.HasValue() Then
+                        msSQLHost.save_new_odoo_id(record, ret.Value)
+                    End If
 
-            End If
+                End If
 
             record.SyncEnde = Now
             record.SyncResult = True
@@ -289,8 +290,37 @@ Public Class odooXMLRPCWrapper
             'record.SyncMessage = ex.ToString()
             'msSQLHost.save_sync_table_record(record)
 
-            Logging.log("odoo-api", ex.ToString)
-            Return False
+            If record.Tabelle = "res_partner_fstoken" Then
+
+                Dim search_data As New Dictionary(Of String, Object)
+                search_data.Add("name", data("name"))
+
+                Dim res = proxy.execute_kw_wo_additional(db, uid, password, model_name, "search_read", create_search_args(search_data))
+
+                If CType(res, XmlRpcStruct()).Count = 1 Then
+
+
+                    Dim retVal As Integer = CType(res, XmlRpcStruct())(0)("id")
+                    ret = retVal
+
+                    msSQLHost.save_new_odoo_id(record, ret)
+
+                    record.SyncEnde = Now
+                    record.SyncResult = True
+                    msSQLHost.save_sync_table_record(record)
+
+                Else
+
+                    Logging.log("odoo-api", ex.ToString)
+                    Return False
+                End If
+            Else
+
+                Logging.log("odoo-api", ex.ToString)
+                Return False
+            End If
+
+
 
         End Try
 
@@ -485,6 +515,29 @@ Public Class odooXMLRPCWrapper
 
     End Function
 
+    Private Function create_search_args(data As Dictionary(Of String, Object))
+
+        Dim res(0) As Object
+
+        Dim sub_res(data.Count - 1) As Object
+
+        res(0) = sub_res
+
+        Dim i As Integer = 0
+        For Each item In data
+            Dim domain(2) As Object
+            domain(0) = item.Key
+            domain(1) = "="
+            domain(2) = item.Value
+            sub_res(i) = domain
+            i += 1
+        Next
+
+        Return res
+
+    End Function
+
+
     Private Function create_args(data As Dictionary(Of String, Object), online_field_mapping As Dictionary(Of String, String), ParamArray additionalArgs() As Object) As Object()
 
         'TODO: hier nur provisorisch gelöst, muss noch schön programmiert werden:
@@ -559,8 +612,8 @@ Public Class odooXMLRPCWrapper
 
     Public Interface odooRPC
 
-        '<XmlRpcMethod("execute_kw")>
-        'Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object()) As Object
+        <XmlRpcMethod("execute_kw")>
+        Function execute_kw_wo_additional(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object) As Object
 
         <XmlRpcMethod("execute_kw")>
         Function execute_kw(db As String, uid As Integer, password As String, model_name As String, method_name As String, args As Object(), additional As XmlRpcStruct) As Object
