@@ -165,11 +165,12 @@ namespace Syncer.Flows
                         // job_date for the studio sosync_write_date
                         studioInfo.SosyncWriteDate = job.Job_Date;
                     }
-                    //else if (!isJobDateSimilar && !IsStudioMultiModel)
-                    //{
-                    //    // For normal models this is in invalid state
-                    //    throw new SyncerException($"Job {job.Job_ID}: job_date differs from sosync_write_date, aborting synchronization.");
-                    //}
+
+                    if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
+                    {
+                        // For normal main jobs (not child jobs!) this is an invalid state
+                        throw new SyncerException($"Job {job.Job_ID}: job_date differs from sosync_write_date, aborting synchronization.");
+                    }
 
                     // Figure out sync direction
                     var toleranceMS = 0;
