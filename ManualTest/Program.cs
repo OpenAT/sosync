@@ -204,7 +204,6 @@ namespace ManualTest
             using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).SingleOrDefault();
@@ -264,7 +263,6 @@ namespace ManualTest
             using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
