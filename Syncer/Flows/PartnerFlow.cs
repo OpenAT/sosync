@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using System;
 using System.Collections.Generic;
@@ -88,6 +89,9 @@ namespace Syncer.Flows
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
+
+                if (result.person == null)
+                    throw new SyncerException($"{StudioModelName} {PersonID} did not exist");
 
                 if (!result.person.sosync_fso_id.HasValue)
                     result.person.sosync_fso_id = GetOnlineIDFromOdooViaStudioID("res.partner", result.person.PersonID);
