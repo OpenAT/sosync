@@ -64,6 +64,7 @@ namespace Syncer.Flows
 
         public string StudioModelName { get; set; }
         public string OnlineModelName { get; set; }
+        public bool IsStudioMultiModel { get; set; }
         #endregion
 
         #region Constructors
@@ -82,7 +83,7 @@ namespace Syncer.Flows
             _requiredChildJobs = new List<ChildJobRequest>();
             _requiredPostChildJobs = new List<ChildJobRequest>();
 
-            SetModelNames();
+            SetModelPropertiesFromAttributes();
         }
         #endregion
 
@@ -102,16 +103,20 @@ namespace Syncer.Flows
             return new DataService(_conf);
         }
 
-        private void SetModelNames()
+        private void SetModelPropertiesFromAttributes()
         {
             var studioAtt = GetType().GetCustomAttribute<StudioModelAttribute>();
             var onlineAtt = GetType().GetCustomAttribute<OnlineModelAttribute>();
+            var studioMultiAtt = GetType().GetCustomAttribute<StudioMultiModelAttribute>();
 
             if (studioAtt != null)
                 StudioModelName = studioAtt.Name;
 
             if (onlineAtt != null)
                 OnlineModelName = onlineAtt.Name;
+
+            if (studioMultiAtt != null)
+                IsStudioMultiModel = true;
         }
 
         /// <summary>
@@ -208,7 +213,7 @@ namespace Syncer.Flows
             using (var db = MdbService.GetDataService<TStudio>())
             {
                 var studioModel = db.Read(
-                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select * from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 

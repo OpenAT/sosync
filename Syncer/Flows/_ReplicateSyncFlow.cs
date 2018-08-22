@@ -153,11 +153,26 @@ namespace Syncer.Flows
                     if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
                         throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
 
-                    // XML-RPC default format for date/time does not include milliseconds, so
-                    // when comparing the difference, up to 999 milliseconds difference is still
-                    // considered equal
-                    var toleranceMS = 0;
+                    // job_date check: if the job_date differs, either:
+                    //  - Use job_date as sosync_write_date in the current flow is for a multi model
+                    //  - Throw and exception, if it is not a multi model
 
+                    var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
+
+                    if (!isJobDateSimilar && IsStudioMultiModel)
+                    {
+                        // For studio multi models, substitute
+                        // job_date for the studio sosync_write_date
+                        studioInfo.SosyncWriteDate = job.Job_Date;
+                    }
+                    else if (!isJobDateSimilar && !IsStudioMultiModel)
+                    {
+                        // For normal models this is in invalid state
+                        throw new SyncerException($"Job {job.Job_ID}: job_date differs from sosync_write_date, aborting synchronization.");
+                    }
+
+                    // Figure out sync direction
+                    var toleranceMS = 0;
                     var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
 
                     if (diff.TotalMilliseconds == 0)
@@ -173,9 +188,8 @@ namespace Syncer.Flows
                     else if (diff.TotalMilliseconds < 0)
                     {
                         // The studio model was newer
-                        //var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
-
                         writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+
                         UpdateJobSourceAndTarget(
                             job,
                             SosyncSystem.FundraisingStudio,
@@ -189,9 +203,8 @@ namespace Syncer.Flows
                     else
                     {
                         // The online model was newer
-                        //var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
-
                         writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
+
                         UpdateJobSourceAndTarget(
                             job,
                             SosyncSystem.FSOnline,
@@ -250,7 +263,7 @@ namespace Syncer.Flows
 
         private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
         {
-            var tolerance = 2000;
+            var toleranceMS = 2000;
             var modelInfo = studioInfo;
 
             if (job.Job_Source_System == SosyncSystem.FSOnline)
@@ -259,14 +272,28 @@ namespace Syncer.Flows
             var sosyncDate = (modelInfo.SosyncWriteDate ?? modelInfo.WriteDate.Value);
             var diff = job.Job_Date - sosyncDate;
 
-            var result = false;
+            var isSimilar = false;
 
-            if (diff.TotalMilliseconds <= tolerance)
-                result = true;
+            if (diff.TotalMilliseconds <= toleranceMS)
+                isSimilar = true;
 
-            Log.LogWarning($"{job.Job_Source_Model}\nsimilar = {result}\nJD = {job.Job_Date}\nWD = {sosyncDate}");
+            var format = "yyyy-MM-dd HH:mm:ss.fffffff";
 
-            return result;
+            var logMsg = string.Format(
+                "Job: {0}: JobSourceModel = {1} similar = {2} (tolerance: {3}ms) job_date = {4} write_date = {5}",
+                job.Job_ID,
+                job.Job_Source_Model,
+                isSimilar,
+                toleranceMS,
+                job.Job_Date.ToString(format),
+                sosyncDate.ToString(format));
+
+            if (isSimilar)
+                Log.LogInformation(logMsg);
+            else
+                Log.LogWarning(logMsg);
+
+            return isSimilar;
         }
 
         /// <summary>

@@ -50,6 +50,11 @@ namespace Syncer.Services
         {
             return $"{studioModelName.Split('.')[1]}ID";
         }
+
+        public string GetStudioModelReadView(string studioModelName)
+        {
+            return $"orm.[{studioModelName.Replace(".", "")}.read.view]";
+        }
         #endregion
     }
 }
