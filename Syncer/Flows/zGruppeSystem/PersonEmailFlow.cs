@@ -77,9 +77,8 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("partner_id", partner_id);
                         online.Add("gueltig_von", studio.GültigVon.Date);
                         online.Add("gueltig_bis", studio.GültigBis.Date);
-#warning TODO: Sync state and main_address to PersonEmail
-                        // state // Sync this after MSSQL has the column!
-                        // main_address // Sync this after MSSQL has the column!
+                        // state -- is only set by FSOnline
+                        // main_address -- is only set by FSOnline
                     });
         }
 
@@ -114,6 +113,7 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.EmailNach = nach;
                         studio.GültigVon = online.gueltig_von.Date;
                         studio.GültigBis = online.gueltig_bis.Date;
+                        studio.HauptAdresse = online.main_address;
                     });
         }
     }
