@@ -114,6 +114,7 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.GültigVon = online.gueltig_von.Date;
                         studio.GültigBis = online.gueltig_bis.Date;
                         studio.HauptAdresse = online.main_address;
+                        studio.State = online.state;
                     });
         }
     }
