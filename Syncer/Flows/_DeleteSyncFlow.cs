@@ -124,7 +124,10 @@ namespace Syncer.Flows
                 data = OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
 
             if (data == null)
-                throw new SyncerException($"Failed to read data from model {OnlineModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
+                throw new SyncerException(String.Format("Failed to read data from model {0} {1} before deletion.{2}",
+                    OnlineModelName,
+                    odooID?.ToString() ?? "<Unknown ID>",
+                    odooID.HasValue ? "" : " job_source_target_record_id was not set and the model could not be found via FS-ID."));
 
             UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
 
