@@ -106,11 +106,11 @@ namespace Syncer.Flows.zGruppeSystem
                 studioModel => studioModel.PersonEmailID,
                 (online, studio) =>
                     {
-                        EmailHelper.SplitEmail(online.email, out var vor, out var nach);
+                        EmailHelper.SplitEmail(online.email, out var mailVor, out var mailNach);
 
                         studio.PersonID = PersonID;
-                        studio.EmailVor = vor;
-                        studio.EmailNach = nach;
+                        studio.EmailVor = mailVor;
+                        studio.EmailNach = mailNach;
                         studio.GültigVon = online.gueltig_von.Date;
                         studio.GültigBis = online.gueltig_bis.Date;
                         studio.HauptAdresse = online.main_address;
