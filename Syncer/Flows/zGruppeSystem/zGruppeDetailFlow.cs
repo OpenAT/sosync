@@ -70,6 +70,8 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gruppe_kurz", studio.GruppeKurz);
                         online.Add("gruppe_lang", studio.GruppeLang);
                         online.Add("gui_anzeigen", studio.GUIAnzeigen);
+                        online.Add("gueltig_von", studio.GültigVon);
+                        online.Add("gueltig_bis", studio.GültigBis);
                     });
         }
 
