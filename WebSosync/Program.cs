@@ -119,10 +119,25 @@ namespace WebSosync
             if (!string.IsNullOrEmpty(Program.LogFile))
                 log.LogInformation($"Logging to: {Program.LogFile}");
 
+            // Check max thread parameter and set default value
+            if (!sosyncConfig.Max_Threads.HasValue)
+                sosyncConfig.Max_Threads = 10;
+
+            // Job package size default value
+            if (!sosyncConfig.Job_Package_Size.HasValue)
+                sosyncConfig.Job_Package_Size = 20;
+
+            // Model lock timeout default value
+            if (!sosyncConfig.Model_Lock_Timeout.HasValue)
+                sosyncConfig.Model_Lock_Timeout = 10000;
+
             // Active check: quit if not active
-            if (!IsSosyncActive(kestrelConfig))
+            if (!sosyncConfig.Active.HasValue)
+                sosyncConfig.Active = true;
+
+            if (!sosyncConfig.Active.Value)
             {
-                log.LogWarning($"INI parameter: active = true, process ending.");
+                log.LogWarning($"INI parameter: active = false, process ending.");
                 return;
             }
 
@@ -200,18 +215,6 @@ namespace WebSosync
             }
 
             log.LogInformation("Sosync service ended");
-        }
-
-        private static bool IsSosyncActive(IConfigurationRoot config)
-        {
-            // Set default for active INI parameter
-            if (string.IsNullOrEmpty(config["sosync:active"]))
-                config["sosync:active"] = "true"; // Active by default
-
-            // Check if sosync is active
-            var active = config["sosync:active"].Trim().ToLower() == "true";
-
-            return active;
         }
 
         /// <summary>

@@ -42,6 +42,7 @@ namespace Syncer.Flows.Temporary
 
             Stopwatch consistencyWatch = new Stopwatch();
 
+            SetupChildJobRequests();
             HandleChildJobs(
                 "Child Job",
                 RequiredChildJobs, 
@@ -52,7 +53,6 @@ namespace Syncer.Flows.Temporary
                 ref restartReason);
 
             var description = $"Processing [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} and {Job.Sync_Target_Merge_Into_Record_ID}";
-
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
             HandleChildJobs(

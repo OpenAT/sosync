@@ -43,6 +43,7 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
+            SetupChildJobRequests();
             HandleChildJobs(
                 "Child Job",
                 RequiredChildJobs, 

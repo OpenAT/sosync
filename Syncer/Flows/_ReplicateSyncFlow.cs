@@ -81,27 +81,91 @@ namespace Syncer.Flows
                 return;
             }
 
-            HandleChildJobs(
-                "Child Job",
-                RequiredChildJobs,
-                flowService,
-                initialWriteDate, 
-                consistencyWatch, 
-                ref requireRestart,
-                ref restartReason);
+            // Model locking via hash
+            var fsID = (Job.Sync_Source_Model == StudioModelName ? Job.Sync_Source_Record_ID : Job.Sync_Target_Record_ID) ?? 0;
+            var fsoID = (Job.Sync_Source_Model == OnlineModelName ? Job.Sync_Source_Record_ID : Job.Sync_Target_Record_ID) ?? 0;
 
-            var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
-            var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
-            HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+            string hash = $"{OnlineModelName}_F{fsID}_O{fsoID}";
 
-            HandleChildJobs(
-                "Post Transformation Child Job",
-                RequiredPostTransformChildJobs,
-                flowService,
-                initialWriteDate, 
-                consistencyWatch, 
-                ref requireRestart,
-                ref restartReason);
+            var locked = true;
+            var lockT1 = DateTime.Now;
+            var timeoutMS = Config.Model_Lock_Timeout;
+            while (locked)
+            {
+                lock (ThreadService.JobLocks)
+                {
+                    if (ThreadService.JobLocks.ContainsKey(hash))
+                    {
+                        if (ThreadService.JobLocks[hash] > 0)
+                        {
+                            locked = false;
+                            UpdateJobSuccessOtherThread(ThreadService.JobLocks[hash]);
+                            return;
+                        }
+                        else
+                        {
+                            locked = true;
+                        }
+                    }
+                    else
+                    {
+                        // No entry = free, so lock it
+                        ThreadService.JobLocks.Add(hash, 0);
+                        locked = false;
+                    }
+                }
+
+                if (locked)
+                {
+                    Log.LogInformation($"Job {Job.Job_ID} locked by hash {hash}");
+                    System.Threading.Thread.Sleep(100);
+
+                    if ((DateTime.Now - lockT1).TotalMilliseconds > timeoutMS)
+                        throw new SyncerException($"Lock for hash {hash} timed out.");
+                }
+            }
+
+            try
+            {
+                SetupChildJobRequests();
+                HandleChildJobs(
+                    "Child Job",
+                    RequiredChildJobs,
+                    flowService,
+                    initialWriteDate,
+                    consistencyWatch,
+                    ref requireRestart,
+                    ref restartReason);
+
+                var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
+                var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
+                HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+
+                HandleChildJobs(
+                    "Post Transformation Child Job",
+                    RequiredPostTransformChildJobs,
+                    flowService,
+                    initialWriteDate,
+                    consistencyWatch,
+                    ref requireRestart,
+                    ref restartReason);
+            }
+            finally
+            {
+                lock (ThreadService.JobLocks)
+                {
+                    if (Job.Job_State == SosyncState.Done)
+                    {
+                        // Set the job_id for the hash, indicating success
+                        ThreadService.JobLocks[hash] = Job.Job_ID;
+                    }
+                    else
+                    {
+                        // Remove the lock, so other threads can retry
+                        ThreadService.JobLocks.Remove(hash);
+                    }
+                }
+            }
         }
 
         /// <summary>

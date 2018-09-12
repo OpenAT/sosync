@@ -237,10 +237,13 @@ namespace WebSosync.Data
         /// in the hierarchy as a flat list.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<SyncJob> GetFirstOpenJobHierarchy()
+        public IEnumerable<SyncJob> GetFirstOpenJobHierarchy(int limit)
         {
+            var query = Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren)
+                .Replace("%LIMIT%", limit.ToString("0"));
+
             var result = _con.Query<SyncJob>(
-                Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren),
+                query,
                 commandTimeout: _cmdTimeoutSec);
 
             foreach (var r in result)

@@ -8,7 +8,9 @@ using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Constants;
@@ -65,21 +67,33 @@ namespace WebSosync.Controllers
         [HttpPost("create")]
         public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
         {
+            var s = new Stopwatch();
+            s.Start();
+
             if (data == null)
                 return new BadRequestResult();
 
-            return HandleCreateJob(services, data);
+            var res = HandleCreateJob(services, data);
+            s.Stop();
+            //_log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+            return res;
         }
 
         [HttpGet("create")]
         public IActionResult Get([FromServices]IServiceProvider services, [FromQuery]Dictionary<string, string> data)
         {
+            var s = new Stopwatch();
+            s.Start();
+
             var converted = new Dictionary<string, object>();
 
             foreach (var entry in data)
                 converted.Add(entry.Key, entry.Value);
 
-            return HandleCreateJob(services, converted);
+            var res = HandleCreateJob(services, converted);
+            s.Stop();
+            //_log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+            return res;
         }
 
         private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)

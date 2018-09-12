@@ -46,6 +46,7 @@ namespace Syncer.Flows
         protected MdbService MdbService { get; private set; }
         protected OdooFormatService OdooFormat { get; private set; }
         protected SerializationService Serializer { get; private set; }
+        protected SosyncOptions Config { get {return _conf; } }
 
         protected IReadOnlyList<ChildJobRequest> RequiredChildJobs { get { return _requiredChildJobs.AsReadOnly(); } }
         protected IReadOnlyList<ChildJobRequest> RequiredPostTransformChildJobs { get { return _requiredPostChildJobs.AsReadOnly(); } }
@@ -186,12 +187,26 @@ namespace Syncer.Flows
         /// <param name="id">The fso ID of the model.</param>
         /// <param name="model">The model name.</param>
         /// <returns></returns>
+        private static Dictionary<string, Tuple<double, int>> _DebugOnlineStat = new Dictionary<string, Tuple<double, int>>();
         protected ModelInfo GetDefaultOnlineModelInfo(int id, string model)
         {
+            var s = new Stopwatch();
+            s.Start();
+
             var dicModel = OdooService.Client.GetDictionary(
                 model,
                 id,
                 new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
+
+            s.Stop();
+            lock (_DebugOnlineStat)
+            {
+                if (!_DebugOnlineStat.ContainsKey(model))
+                    _DebugOnlineStat.Add(model, new Tuple<double, int>(0, 0));
+
+                var t = _DebugOnlineStat[model];
+                _DebugOnlineStat[model] = new Tuple<double, int>(t.Item1 + s.Elapsed.TotalMilliseconds, t.Item2 + 1);
+            }
 
             if (!OdooService.Client.IsValidResult(dicModel))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, model, id);
@@ -207,15 +222,29 @@ namespace Syncer.Flows
             return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
         }
 
+        private static Dictionary<string, Tuple<double, int>> _DebugStudioStat = new Dictionary<string, Tuple<double, int>>();
         protected ModelInfo GetDefaultStudioModelInfo<TStudio>(int studioID)
             where TStudio: MdbModelBase, ISosyncable, new()
         {
             using (var db = MdbService.GetDataService<TStudio>())
             {
+                var s = new Stopwatch();
+                s.Start();
+
                 var studioModel = db.Read(
-                    $"select * from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select write_date, sosync_write_date from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
+
+                s.Stop();
+                lock(_DebugStudioStat)
+                {
+                    if (!_DebugStudioStat.ContainsKey(typeof(TStudio).Name))
+                        _DebugStudioStat.Add(typeof(TStudio).Name, new Tuple<double, int>(0, 0));
+
+                    var t = _DebugStudioStat[typeof(TStudio).Name];
+                    _DebugStudioStat[typeof(TStudio).Name] = new Tuple<double, int>(t.Item1 + s.Elapsed.TotalMilliseconds, t.Item2 + 1);
+                }
 
                 if (studioModel != null)
                 {
@@ -280,6 +309,16 @@ namespace Syncer.Flows
 
         protected abstract void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason);
 
+        public void SetupChildJobRequests()
+        {
+            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
+
+            if (_job.Sync_Source_System == SosyncSystem.FSOnline)
+                SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
+            else
+                SetupStudioToOnlineChildJobs(_job.Sync_Source_Record_ID.Value);
+        }
+
         protected void HandleChildJobs(
             string childDescription,
             IEnumerable<ChildJobRequest> requestedChildJobs,
@@ -293,11 +332,6 @@ namespace Syncer.Flows
 
             // The derived sync flows can use RequestChildJob() method to
             // fill _requiredChildJobs.
-
-            if (_job.Sync_Source_System == SosyncSystem.FSOnline)
-                SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
-            else
-                SetupStudioToOnlineChildJobs(_job.Sync_Source_Record_ID.Value);
 
             var s = new Stopwatch();
             s.Start();
@@ -870,6 +904,28 @@ namespace Syncer.Flows
                 UpdateJob(nameof(UpdateJobSuccess), db, _job);
             }
         }
+
+        /// <summary>
+        /// Updates the job, indicating the processing was
+        /// done successfully in another thread.
+        /// </summary>
+        /// <param name="otherJobID">ID of the job that led to completion of this job.</param>
+        protected void UpdateJobSuccessOtherThread(int otherJobID)
+        {
+            var msg = $"Updating job {_job.Job_ID}: Another thread completed same job (ID {otherJobID})";
+            Log.LogDebug(msg);
+
+            using (var db = GetDb())
+            {
+                _job.Job_State = SosyncState.Done;
+                _job.Job_Log += "\n" + msg;
+                _job.Job_End = DateTime.Now.ToUniversalTime();
+                _job.Job_Last_Change = DateTime.UtcNow;
+
+                UpdateJob(nameof(UpdateJobSuccess), db, _job);
+            }
+        }
+
 
         /// <summary>
         /// Updates the job, indicating an an error occured while processing.

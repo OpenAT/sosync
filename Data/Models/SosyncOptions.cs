@@ -5,9 +5,7 @@ namespace WebSosync.Data.Models
     /// </summary>
     public class SosyncOptions
     {
-        /// <summary>
-        /// Port for Kestrel webserver.
-        /// </summary>
+        public bool? Active { get; set; }
         public int Port { get; set; }
 
         public string Instance { get; set; }
@@ -33,5 +31,8 @@ namespace WebSosync.Data.Models
         public int Protocol_Throttle_ms { get; set; }
 
         public int Max_Time_Drift_ms { get; set; }
+        public int? Max_Threads { get; set; }
+        public int? Job_Package_Size { get; set; }
+        public int? Model_Lock_Timeout { get; set; }
     }
 }
