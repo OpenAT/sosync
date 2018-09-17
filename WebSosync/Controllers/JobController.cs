@@ -67,9 +67,6 @@ namespace WebSosync.Controllers
         [HttpPost("create")]
         public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
         {
-            var s = new Stopwatch();
-            s.Start();
-
             if (data == null)
                 return new BadRequestResult();
 
@@ -78,11 +75,13 @@ namespace WebSosync.Controllers
             if (result.ErrorCode != (int)JobErrorCode.None)
                 return new BadRequestObjectResult(result);
 
-            var createdID = HandleCreateJob(services, data);
-            result.JobID = createdID;
+            var job = ParseJob(services, data);
+            StoreJob(services, job);
+            result.JobID = job.Job_ID;
 
-            s.Stop();
-            _log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+            // Start the sync background job
+            _jobWorker.Start();
+
             return new OkObjectResult(result);
         }
 
@@ -91,9 +90,6 @@ namespace WebSosync.Controllers
         {
             if (dictionaryList == null || dictionaryList.Length == 0)
                 return new BadRequestResult();
-
-            var s = new Stopwatch();
-            s.Start();
 
             var isBadRequest = false;
             var result = new List<JobResultDto>();
@@ -114,12 +110,13 @@ namespace WebSosync.Controllers
             {
                 for (int i = 0; i < dictionaryList.Length; i++)
                 {
-                    var createdID = HandleCreateJob(services, dictionaryList[i]);
-                    result[i].JobID = createdID;
+                    var job = ParseJob(services, dictionaryList[i]);
+                    StoreJob(services, job);
+                    result[i].JobID = job.Job_ID;
                 }
 
-                s.Stop();
-                _log.LogWarning($"Created {dictionaryList.Length} Jobs in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+                // Start the sync background job
+                _jobWorker.Start();
 
                 return new OkObjectResult(result);
             }
@@ -147,92 +144,89 @@ namespace WebSosync.Controllers
             return result;
         }
 
-        private int HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)
+        private SyncJob ParseJob(IServiceProvider services, Dictionary<string, object> data)
         {
-            var createdID = 0;
-
-            using (var db = (DataService)services.GetService(typeof(DataService)))
+            var job = new SyncJob()
             {
-                var job = new SyncJob()
+                Job_Date = DateTime.Parse((string)data["job_date"], CultureInfo.InvariantCulture),
+                Job_Source_System = (string)data["job_source_system"],
+                Job_Source_Model = (string)data["job_source_model"],
+                Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"]),
+                Job_Last_Change = DateTime.UtcNow
+            };
+
+            if (data.ContainsKey("job_source_type")
+                && data["job_source_type"] != null
+                && data["job_source_type"].GetType() == typeof(string)
+                && !string.IsNullOrEmpty((string)data["job_source_type"]))
+            {
+                job.Job_Source_Type = (string)data["job_source_type"];
+
+                if (job.Job_Source_Type == SosyncJobSourceType.MergeInto)
                 {
-                    Job_Date = DateTime.Parse((string)data["job_date"], CultureInfo.InvariantCulture),
-                    Job_Source_System = (string)data["job_source_system"],
-                    Job_Source_Model = (string)data["job_source_model"],
-                    Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"]),
-                    Job_Last_Change = DateTime.UtcNow
-                };
+                    job.Job_Source_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_merge_into_record_id"]);
 
-                if (data.ContainsKey("job_source_type")
-                    && data["job_source_type"] != null
-                    && data["job_source_type"].GetType() == typeof(string)
-                    && !string.IsNullOrEmpty((string)data["job_source_type"]))
-                {
-                    job.Job_Source_Type = (string)data["job_source_type"];
-
-                    if (job.Job_Source_Type == SosyncJobSourceType.MergeInto)
-                    {
-                        job.Job_Source_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_merge_into_record_id"]);
-
-                        if (data.ContainsKey("job_source_target_merge_into_record_id") && data["job_source_target_merge_into_record_id"] != null)
-                            job.Job_Source_Target_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_target_merge_into_record_id"]);
-                    }
+                    if (data.ContainsKey("job_source_target_merge_into_record_id") && data["job_source_target_merge_into_record_id"] != null)
+                        job.Job_Source_Target_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_target_merge_into_record_id"]);
                 }
-
-                if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
-                    job.Job_Source_Target_Record_ID = Convert.ToInt32(data["job_source_target_record_id"]);
-
-                if (data.ContainsKey("job_source_sosync_write_date"))
-                {
-                    var val = data["job_source_sosync_write_date"];
-
-                    if (val != null && val.GetType() == typeof(DateTime))
-                        job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
-                    else if (val != null && val.GetType() == typeof(string) && !string.IsNullOrEmpty((string)val))
-                        job.Job_Source_Sosync_Write_Date = DateTime.Parse(
-                            (string)data["job_source_sosync_write_date"],
-                            CultureInfo.InvariantCulture,
-                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-                    else if (val != null && val.GetType() == typeof(bool) && (bool)val == false)
-                        job.Job_Source_Sosync_Write_Date = null;
-                    else
-                        throw new Exception($"Unrecognized format ({val}) in field job_source_sosync_write_date.");
-                }
-
-                if (data.ContainsKey("job_source_fields"))
-                {
-                    if (data["job_source_fields"].GetType() == typeof(string))
-                        job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
-                    else if (data["job_source_fields"].GetType() == typeof(JObject))
-                        job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
-                    else if (data["job_source_fields"].GetType() == typeof(JValue))
-                        job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
-                    else if (data["job_source_fields"].GetType() == typeof(string))
-                        job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
-                    else if (data["job_source_fields"].GetType() == typeof(bool))
-                        job.Job_Source_Fields = null;
-                    else
-                        throw new Exception("Content of job_source_fields was not recognized.");
-                }
-
-                var flowService = (FlowService)services.GetService(typeof(FlowService));
-
-                job.Job_State = SosyncState.New;
-                job.Job_Fetched = DateTime.UtcNow;
-                job.Job_To_FSO_Can_Sync = false;
-
-                if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
-                    job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
-                else
-                    job.Job_Priority = ModelPriority.Default;
-
-                db.CreateJob(job, "");
-                createdID = job.Job_ID;
-
-                // Start the sync background job
-                _jobWorker.Start();
             }
 
-            return createdID;
+            if (data.ContainsKey("job_source_target_record_id") && data["job_source_target_record_id"] != null)
+                job.Job_Source_Target_Record_ID = Convert.ToInt32(data["job_source_target_record_id"]);
+
+            if (data.ContainsKey("job_source_sosync_write_date"))
+            {
+                var val = data["job_source_sosync_write_date"];
+
+                if (val != null && val.GetType() == typeof(DateTime))
+                    job.Job_Source_Sosync_Write_Date = (DateTime)data["job_source_sosync_write_date"];
+                else if (val != null && val.GetType() == typeof(string) && !string.IsNullOrEmpty((string)val))
+                    job.Job_Source_Sosync_Write_Date = DateTime.Parse(
+                        (string)data["job_source_sosync_write_date"],
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                else if (val != null && val.GetType() == typeof(bool) && (bool)val == false)
+                    job.Job_Source_Sosync_Write_Date = null;
+                else
+                    throw new Exception($"Unrecognized format ({val}) in field job_source_sosync_write_date.");
+            }
+
+            if (data.ContainsKey("job_source_fields"))
+            {
+                if (data["job_source_fields"].GetType() == typeof(string))
+                    job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(JObject))
+                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(JValue))
+                    job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(string))
+                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(bool))
+                    job.Job_Source_Fields = null;
+                else
+                    throw new Exception("Content of job_source_fields was not recognized.");
+            }
+
+            var flowService = (FlowService)services.GetService(typeof(FlowService));
+
+            job.Job_State = SosyncState.New;
+            job.Job_Fetched = DateTime.UtcNow;
+            job.Job_To_FSO_Can_Sync = false;
+
+            if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
+                job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
+            else
+                job.Job_Priority = ModelPriority.Default;
+
+            return job;
+        }
+
+        private void StoreJob(IServiceProvider services, SyncJob job)
+        {
+            using (var db = (DataService)services.GetService(typeof(DataService)))
+            {
+                db.CreateJob(job, "");
+            }
         }
         
         [HttpGet("retryfailed")]
