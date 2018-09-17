@@ -56,14 +56,6 @@ namespace WebSosync.Controllers
                 });
         }
 
-        [HttpGet("list")]
-        public IActionResult GetAll([FromServices]DataService db)
-        {
-#warning TODO: Bad practice and returning everything unpaged... fix some time!
-            var result = db.GetJobs(false);
-            return new OkObjectResult(result);
-        }
-
         [HttpPost("create")]
         public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object> data)
         {
