@@ -73,30 +73,61 @@ namespace WebSosync.Controllers
             if (data == null)
                 return new BadRequestResult();
 
-            var res = HandleCreateJob(services, data);
+            var result = ValidateDictionary(data);
+
+            if (result.ErrorCode != (int)JobErrorCode.None)
+                return new BadRequestObjectResult(result);
+
+            var createdID = HandleCreateJob(services, data);
+            result.JobID = createdID;
+
             s.Stop();
-            //_log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
-            return res;
+            _log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+            return new OkObjectResult(result);
         }
 
-        [HttpGet("create")]
-        public IActionResult Get([FromServices]IServiceProvider services, [FromQuery]Dictionary<string, string> data)
+        [HttpPost("bulk-create")]
+        public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object>[] dictionaryList)
         {
+            if (dictionaryList == null || dictionaryList.Length == 0)
+                return new BadRequestResult();
+
             var s = new Stopwatch();
             s.Start();
 
-            var converted = new Dictionary<string, object>();
+            var isBadRequest = false;
+            var result = new List<JobResultDto>();
 
-            foreach (var entry in data)
-                converted.Add(entry.Key, entry.Value);
+            // Validate all dictionaries in batch
+            foreach (var dictionary in dictionaryList)
+            {
+                var validationResult = ValidateDictionary(dictionary);
 
-            var res = HandleCreateJob(services, converted);
-            s.Stop();
-            //_log.LogWarning($"Created Job in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
-            return res;
+                if (validationResult.ErrorCode != (int)JobErrorCode.None)
+                    isBadRequest = true;
+
+                result.Add(validationResult);
+            }
+
+            // If no validation failed, create all jobs
+            if (!isBadRequest)
+            {
+                for (int i = 0; i < dictionaryList.Length; i++)
+                {
+                    var createdID = HandleCreateJob(services, dictionaryList[i]);
+                    result[i].JobID = createdID;
+                }
+
+                s.Stop();
+                _log.LogWarning($"Created {dictionaryList.Length} Jobs in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
+                return new OkObjectResult(result);
+            }
+
+            return new BadRequestObjectResult(result);
         }
 
-        private IActionResult HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)
+        private JobResultDto ValidateDictionary(Dictionary<string, object> data)
         {
             var result = new JobResultDto()
             {
@@ -106,12 +137,19 @@ namespace WebSosync.Controllers
             };
 
             string dateFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
-            
+
             if (!RequestValidator.ValidateInterface(result, data))
-                return new BadRequestObjectResult(result);
+                return result;
 
             if (!RequestValidator.ValidateData(result, data, dateFormat))
-                return new BadRequestObjectResult(result);
+                return result;
+
+            return result;
+        }
+
+        private int HandleCreateJob(IServiceProvider services, Dictionary<string, object> data)
+        {
+            var createdID = 0;
 
             using (var db = (DataService)services.GetService(typeof(DataService)))
             {
@@ -188,13 +226,13 @@ namespace WebSosync.Controllers
                     job.Job_Priority = ModelPriority.Default;
 
                 db.CreateJob(job, "");
-                result.JobID = job.Job_ID;
+                createdID = job.Job_ID;
 
                 // Start the sync background job
                 _jobWorker.Start();
             }
 
-            return new OkObjectResult(result);
+            return createdID;
         }
         
         [HttpGet("retryfailed")]
