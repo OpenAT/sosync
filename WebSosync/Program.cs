@@ -29,6 +29,7 @@ namespace WebSosync
         public static string ConfigurationINI { get; private set; }
         public static string LogFile { get; set; }
         public static Dictionary<string, string> SwitchMappings { get; private set; }
+        private static ILogger<Program> _log;
         #endregion
 
         #region Class initializers
@@ -106,10 +107,15 @@ namespace WebSosync
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
+            _log = log;
+
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
+
+            // Register unhandled exception handler
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             log.LogInformation(String.Join(" ",
                 $"Sosync started for instance {sosyncConfig.Instance},",
@@ -215,6 +221,22 @@ namespace WebSosync
             }
 
             log.LogInformation("Sosync service ended");
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                _log.LogError(e.ExceptionObject.ToString());
+            }
+            catch (Exception ex)
+            {
+                // Logger was not ready yet, so print out both errors for a chance to see them on a console
+                Console.WriteLine("------------------------");
+                Console.WriteLine(e.ExceptionObject.ToString());
+                Console.WriteLine("------------------------");
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         /// <summary>
