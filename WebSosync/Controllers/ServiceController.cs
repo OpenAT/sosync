@@ -18,7 +18,6 @@ namespace WebSosync.Controllers
     {
         #region Members
         private IBackgroundJob<SyncWorker> _syncWorkerJob;
-        private IBackgroundJob<ProtocolWorker> _protocolWorkerJob;
         private IHostService _hostService;
         private ILogger<ServiceController> _log;
         #endregion
@@ -26,12 +25,10 @@ namespace WebSosync.Controllers
         #region Constructors
         public ServiceController(
             IBackgroundJob<SyncWorker> syncWorkerJob,
-            IBackgroundJob<ProtocolWorker> protocolWorkerJob,
             IHostService hostService,
             ILogger<ServiceController> logger)
         {
             _syncWorkerJob = syncWorkerJob;
-            _protocolWorkerJob = protocolWorkerJob;
             _hostService = hostService;
             _log = logger;
         }
@@ -47,18 +44,7 @@ namespace WebSosync.Controllers
             result.JobWorker.Status = (int)_syncWorkerJob.Status;
             result.JobWorker.StatusText = _syncWorkerJob.Status.ToString();
 
-            result.ProtocolWorker.Status = (int)_protocolWorkerJob.Status;
-            result.ProtocolWorker.StatusText = _protocolWorkerJob.Status.ToString();
-
             return new OkObjectResult(result);
-        }
-
-        // service/protocol
-        [HttpGet("processprotocol")]
-        public IActionResult ProcessProtocol()
-        {
-            _protocolWorkerJob.Start();
-            return new OkResult();
         }
 
         // service/version
@@ -107,19 +93,6 @@ namespace WebSosync.Controllers
             syncJob.Start();
             return new OkResult();
         }
-
-        //[HttpGet("debug")]
-        //public IActionResult Debug([FromServices]OdooService odoo)
-        //{
-        //    return new OkResult();
-        //}
-
-        //// GET api/values/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
         #endregion
     }
 }

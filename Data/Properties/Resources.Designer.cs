@@ -109,20 +109,5 @@ namespace WebSosync.Data.Properties {
                 return ResourceManager.GetString("GetFirstOpenSynJobAndChildren_SELECT", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SELECT * FROM sync_table
-        /// 	WHERE job_to_fso_can_sync = true
-        ///    	AND (job_to_fso_sync_version is null
-        ///         	 or job_to_fso_sync_version &lt; job_last_change
-        ///         	 or job_to_fso_sync_version &gt; job_last_change)
-        ///    ORDER BY job_last_change desc
-        ///    LIMIT 100;.
-        /// </summary>
-        internal static string GetProtocolToSync_SELECT {
-            get {
-                return ResourceManager.GetString("GetProtocolToSync_SELECT", resourceCulture);
-            }
-        }
     }
 }

@@ -30,7 +30,6 @@ namespace Syncer.Workers
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
         private TimeService _timeSvc;
-        private IBackgroundJob<ProtocolWorker> _protocolJob;
         #endregion
 
         #region Constructors
@@ -44,8 +43,7 @@ namespace Syncer.Workers
             FlowService flowService, 
             ILogger<SyncWorker> logger, 
             OdooService odoo,
-            TimeService timeSvc,
-            IBackgroundJob<ProtocolWorker> protocolJob
+            TimeService timeSvc
             )
             : base(options)
         {
@@ -55,7 +53,6 @@ namespace Syncer.Workers
             _log = logger;
             _odoo = odoo;
             _timeSvc = timeSvc;
-            _protocolJob = protocolJob;
         }
         #endregion
 
@@ -124,9 +121,6 @@ namespace Syncer.Workers
                     threadWatch.Stop();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
-
-                    // Start the background job for synchronization of sync jobs to fso
-                    _protocolJob.Start();
 
                     // Get the next open job
                     loadTimeUTC = DateTime.UtcNow;

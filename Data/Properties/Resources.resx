@@ -158,13 +158,4 @@ select count(*) affected_rows from updated_rows;</value>
 )
 select * from children order by job_date asc;</value>
   </data>
-  <data name="GetProtocolToSync_SELECT" xml:space="preserve">
-    <value>SELECT * FROM sync_table
- 	WHERE job_to_fso_can_sync = true
-    	AND (job_to_fso_sync_version is null
-         	 or job_to_fso_sync_version &lt; job_last_change
-         	 or job_to_fso_sync_version &gt; job_last_change)
-    ORDER BY job_last_change desc
-    LIMIT 100;</value>
-  </data>
 </root>
