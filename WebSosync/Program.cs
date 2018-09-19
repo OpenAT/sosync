@@ -153,7 +153,7 @@ namespace WebSosync
             try
             {
                 if (!forceQuit && !string.IsNullOrEmpty(sosyncConfig.Instance))
-                    SetupDb(sosyncConfig, log);
+                    TestDatabaseConnection(sosyncConfig, log);
             }
             catch (PostgresException ex)
             {
@@ -272,20 +272,18 @@ namespace WebSosync
         }
 
         /// <summary>
-        /// Connects to the database and tries to create the sync table.
+        /// Connects to the database, to check availability.
         /// </summary>
         /// <param name="config">The configuration to be used to read the database connection details.</param>
         /// <param name="log">The Logger to be used foir logging.</param>
-        private static void SetupDb(SosyncOptions config, ILogger<Program> log)
+        private static void TestDatabaseConnection(SosyncOptions config, ILogger<Program> log)
         {
-            log.LogInformation($"Ensure sosync database is up to date...");
+            log.LogInformation($"Testing connection to database...");
 
             using (var db = new DataService(config))
-            {
-                db.Setup();
-            }
+            { }
 
-            log.LogInformation($"Database check done.");
+            log.LogInformation($"Database connection successful.");
         }
 
         private static void SetSosyncDefaultConfig(SosyncOptions config, ILogger<Program> log)
