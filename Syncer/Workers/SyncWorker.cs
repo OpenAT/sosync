@@ -194,48 +194,51 @@ namespace Syncer.Workers
 
         private void ProcessJob(SyncJob job, DateTime loadTimeUTC)
         {
-            try
+            using (var dataService = GetDb())
             {
-                UpdateJobRunCount(job);
-                UpdateJobStart(job, loadTimeUTC);
-
-                // Get the flow for the job source model, and start it
-                var constructorParams = new object[] { _log, _odoo, _conf, _flowService };
-                using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
+                try
                 {
-                    bool requireRestart = false;
-                    string restartReason = "";
-                    flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
+                    UpdateJobRunCount(dataService, job);
+                    UpdateJobStart(dataService, job, loadTimeUTC);
 
-                    if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                    // Get the flow for the job source model, and start it
+                    var constructorParams = new object[] { _log, _odoo, _conf, _flowService };
+                    using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
                     {
-                        var s = new Stopwatch();
-                        s.Start();
-                        CloseAllPreviousJobs(job);
-                        s.Stop();
-                        _log.LogInformation($"{nameof(CloseAllPreviousJobs)}: {s.Elapsed.TotalMilliseconds} ms");
+                        bool requireRestart = false;
+                        string restartReason = "";
+                        flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
+
+                        if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                        {
+                            var s = new Stopwatch();
+                            s.Start();
+                            CloseAllPreviousJobs(job);
+                            s.Stop();
+                            _log.LogInformation($"{nameof(CloseAllPreviousJobs)}: {s.Elapsed.TotalMilliseconds} ms");
+                        }
+
+                        if (requireRestart)
+                            RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
+
+                        // Throttling
+                        ThrottleJobProcess(loadTimeUTC);
+
+                        // Stop processing the queue if cancellation was requested
+                        if (CancellationToken.IsCancellationRequested)
+                            RaiseCancelling();
                     }
-
-                    if (requireRestart)
-                        RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
-
-                    // Throttling
-                    ThrottleJobProcess(loadTimeUTC);
-
-                    // Stop processing the queue if cancellation was requested
-                    if (CancellationToken.IsCancellationRequested)
-                        RaiseCancelling();
                 }
-            }
-            catch (SqlException ex)
-            {
-                _log.LogError(ex.ToString());
-                UpdateJobError(job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(ex.ToString());
-                UpdateJobError(job, ex.ToString());
+                catch (SqlException ex)
+                {
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, ex.ToString());
+                }
             }
         }
 
@@ -301,45 +304,36 @@ namespace Syncer.Workers
         /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
-        private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
+        private void UpdateJobStart(DataService db, SyncJob job, DateTime loadTimeUTC)
         {
             _log.LogDebug($"Updating job {job.ID}: job start");
 
-            using (var db = GetDb())
-            {
-                job.Job_State = SosyncState.InProgress;
-                job.Job_Start = loadTimeUTC;
-                job.Write_Date = DateTime.UtcNow;
+            job.Job_State = SosyncState.InProgress;
+            job.Job_Start = loadTimeUTC;
+            job.Write_Date = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
 
-        protected void UpdateJobRunCount(SyncJob job)
+        protected void UpdateJobRunCount(DataService db, SyncJob job)
         {
             _log.LogDebug($"Updating job {job.ID}: run_count");
 
-            using (var db = GetDb())
-            {
-                job.Job_Run_Count += 1;
-                job.Write_Date = DateTime.UtcNow;
+            job.Job_Run_Count += 1;
+            job.Write_Date = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
 
-        private void UpdateJobError(SyncJob job, string message)
+        private void UpdateJobError(DataService db, SyncJob job, string message)
         {
-            using (var db = GetDb())
-            {
-                job.Job_State = SosyncState.Error;
-                // Set the job_log if it's empty, otherwise concatenate it
-                job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
-                job.Write_Date = DateTime.UtcNow;
-                job.Job_End = DateTime.UtcNow;
+            job.Job_State = SosyncState.Error;
+            // Set the job_log if it's empty, otherwise concatenate it
+            job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
+            job.Write_Date = DateTime.UtcNow;
+            job.Job_End = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
         #endregion
     }
