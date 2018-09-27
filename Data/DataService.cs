@@ -38,21 +38,21 @@ namespace WebSosync.Data
         static DataService()
         {
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
-            var excludedColumns = new string[] { "job_id", "children", "parent_path" };
+            var excludedColumns = new string[] { "id", "children", "parent_path" };
 
             var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
 
             // Generate the insert statement
-            //   insert into sync_table (prop1, prop2, ...) values (@prop1, @prop2, ...)
+            //   insert into sosync_job (prop1, prop2, ...) values (@prop1, @prop2, ...)
             var propertiesString = string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()));
             var propertyParametersString = string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"));
 
-            SQL_CreateJob = $"insert into sync_table (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id')) job_id, concat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/') parent_path;\n";
+            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sosync_job','id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id, concat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sosync_job','id')), '/') parent_path;\n";
 
             // Update statement
-            //   update sync_table set prop1 = @prop1, prop2 = @prop2, ... where job_id = @job_id
-            SQL_UpdateJob = $"update sync_table set\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\" = @end" : $"{x.Name.ToLower()} = @{x.Name.ToLower()}"))}\nwhere job_id = @job_id;";
+            //   update sosync_job set prop1 = @prop1, prop2 = @prop2, ... where id = @id
+            SQL_UpdateJob = $"update sosync_job set\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\" = @end" : $"{x.Name.ToLower()} = @{x.Name.ToLower()}"))}\nwhere id = @id;";
         }
         #endregion
 
@@ -84,9 +84,9 @@ namespace WebSosync.Data
                 job_source_system = closingSourceJob.Job_Source_System,
                 job_source_model = closingSourceJob.Job_Source_Model,
                 job_source_record_id = closingSourceJob.Job_Source_Record_ID,
-                job_closed_by_job_id = closingSourceJob.Job_ID,
-                job_last_change = DateTime.UtcNow,
-                job_log = $"Skipped due to job_id = {closingSourceJob.Job_ID}."
+                job_closed_by_job_id = closingSourceJob.ID,
+                write_date = DateTime.UtcNow,
+                job_log = $"Skipped due to sosync_job.id = {closingSourceJob.ID}."
             };
 
             var updated_rows = _con.ExecuteScalar<int>(
@@ -99,7 +99,7 @@ namespace WebSosync.Data
 
         public void ReopenErrorJobs()
         {
-            _con.Execute("update sync_table set job_state = 'new' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 5;",
+            _con.Execute("update sosync_job set job_state = 'new' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 5;",
                 commandTimeout: 60 * 2);
         }
 
@@ -130,7 +130,7 @@ namespace WebSosync.Data
         /// <returns></returns>
         public SyncJob GetJob(int id)
         {
-            var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
+            var result = _con.Query<SyncJob>("select * from sosync_job where id = @id", new { id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
             CleanModel(result);
             return result;
         }
@@ -138,7 +138,7 @@ namespace WebSosync.Data
         public SyncJob GetJobBy(int parentJobId, string jobSourceSystem, string jobSourceModel, int jobSourceRecordId)
         {
             var result = _con.Query<SyncJob>(
-                "select * from sync_table where parent_job_id = @parent_job_id and job_source_system = @job_source_system and job_source_model = @job_source_model and job_source_record_id = @job_source_record_id",
+                "select * from sosync_job where parent_job_id = @parent_job_id and job_source_system = @job_source_system and job_source_model = @job_source_model and job_source_record_id = @job_source_record_id",
                 new { parent_job_id = parentJobId, job_source_system = jobSourceSystem, job_source_model = jobSourceModel, job_source_record_id = jobSourceRecordId },
                 commandTimeout: _cmdTimeoutSec)
                 .SingleOrDefault();
@@ -191,7 +191,7 @@ namespace WebSosync.Data
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
             var inserted = _con.Query<JobInsertedInfo>(DataService.SQL_CreateJob.Replace("%%PARENT_PATH%%", parentPath), job).Single();
-            job.Job_ID = inserted.Job_ID;
+            job.ID = inserted.ID;
             job.Parent_Path = inserted.Parent_Path;
         }
 
@@ -230,7 +230,7 @@ namespace WebSosync.Data
             var tblName = tblAtt == null ? typeof(SyncJob).Name : tblAtt.Name;
             var propName = propAtt == null ? prop.Name : propAtt.Name;
 
-            _con.Execute($"update {tblName} set {propName} = @{propName} where job_id = @job_id", job, commandTimeout: _cmdTimeoutSec);
+            _con.Execute($"update {tblName} set {propName} = @{propName} where id = @id", job, commandTimeout: _cmdTimeoutSec);
         }
         #endregion
 

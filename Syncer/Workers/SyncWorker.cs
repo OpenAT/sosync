@@ -131,6 +131,8 @@ namespace Syncer.Workers
                     initialJobCount = jobs.Count;
                 }
             }
+
+            Dapper.SqlMapper.PurgeQueryCache();
         }
 
         private bool IsServerTimeMismatch(int reCheckTimeMin)
@@ -235,10 +237,6 @@ namespace Syncer.Workers
                 _log.LogError(ex.ToString());
                 UpdateJobError(job, ex.ToString());
             }
-
-            // All finished jobs get flagged for beeing synced to fso
-            if (job.Job_State == SosyncState.Done || job.Job_State == SosyncState.Error)
-                UpdateJobAllowSync(job);
         }
 
         private void ThrottleJobProcess(DateTime loadTimeUTC)
@@ -271,7 +269,7 @@ namespace Syncer.Workers
             s.Start();
 
             var result = new List<SyncJob>(db.GetFirstOpenJobHierarchy(limit)).ToTree(
-                    x => x.Job_ID,
+                    x => x.ID,
                     x => x.Parent_Job_ID,
                     x => x.Children)
                     .ToList();
@@ -287,7 +285,7 @@ namespace Syncer.Workers
         {
             if (!job.Job_Source_Sosync_Write_Date.HasValue)
             {
-                _log.LogWarning($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.Job_ID})");
+                _log.LogWarning($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.ID})");
                 return;
             }
 
@@ -305,13 +303,13 @@ namespace Syncer.Workers
         /// </summary>
         private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
         {
-            _log.LogDebug($"Updating job {job.Job_ID}: job start");
+            _log.LogDebug($"Updating job {job.ID}: job start");
 
             using (var db = GetDb())
             {
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
 
                 db.UpdateJob(job);
             }
@@ -319,12 +317,12 @@ namespace Syncer.Workers
 
         protected void UpdateJobRunCount(SyncJob job)
         {
-            _log.LogDebug($"Updating job {job.Job_ID}: run_count");
+            _log.LogDebug($"Updating job {job.ID}: run_count");
 
             using (var db = GetDb())
             {
                 job.Job_Run_Count += 1;
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
 
                 db.UpdateJob(job);
             }
@@ -337,27 +335,9 @@ namespace Syncer.Workers
                 job.Job_State = SosyncState.Error;
                 // Set the job_log if it's empty, otherwise concatenate it
                 job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
                 job.Job_End = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
-        }
-
-        private void UpdateJobAllowSync(SyncJob job)
-        {
-            // First recursively update all child jobs to be synced
-            if (job.Children != null && job.Children.Count > 0)
-            {
-                foreach (var childJob in job.Children)
-                    UpdateJobAllowSync(childJob);
-            }
-
-            // Then update the job
-            using (var db = GetDb())
-            {
-                // Don't update job_last_change on job-sync related fields
-                job.Job_To_FSO_Can_Sync = true;
                 db.UpdateJob(job);
             }
         }

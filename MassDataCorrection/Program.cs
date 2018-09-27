@@ -144,7 +144,7 @@ namespace MassDataCorrection
 
             using (var con = info.CreateOpenSyncerNpgsqlConnection())
             {
-                var cmd = new NpgsqlCommand("select job_source_type, job_source_model, count(*) cnt from sync_table where job_state = 'new' group by job_source_type, job_source_model;", con);
+                var cmd = new NpgsqlCommand("select job_source_type, job_source_model, count(*) cnt from sosync_job where job_state = 'new' group by job_source_type, job_source_model;", con);
 
                 var rdr = cmd.ExecuteReader();
                 while (rdr.Read())

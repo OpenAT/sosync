@@ -311,7 +311,7 @@ namespace Syncer.Flows
 
         public void SetupChildJobRequests()
         {
-            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
+            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.ID, 0);
 
             if (_job.Sync_Source_System == SosyncSystem.FSOnline)
                 SetupOnlineToStudioChildJobs(_job.Sync_Source_Record_ID.Value);
@@ -328,7 +328,7 @@ namespace Syncer.Flows
             ref bool requireRestart,
             ref string restartReason)
         {
-            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.Job_ID, 0);
+            LogMs(0, $"\n{nameof(HandleChildJobs)} start", _job.ID, 0);
 
             // The derived sync flows can use RequestChildJob() method to
             // fill _requiredChildJobs.
@@ -339,7 +339,7 @@ namespace Syncer.Flows
             if (requestedChildJobs.Count() == 0)
             {
                 s.Stop();
-                LogMs(0, "ChildJobs", _job.Job_ID, s.ElapsedMilliseconds);
+                LogMs(0, "ChildJobs", _job.ID, s.ElapsedMilliseconds);
 
                 return;
             }
@@ -377,14 +377,14 @@ namespace Syncer.Flows
                         // 2 Create & Process child job
                         var childJob = new SyncJob()
                         {
-                            Parent_Job_ID = _job.Job_ID,
+                            Parent_Job_ID = _job.ID,
                             Job_State = SosyncState.New,
                             Job_Date = DateTime.UtcNow,
                             Job_Fetched = DateTime.UtcNow,
                             Job_Source_System = request.JobSourceSystem,
                             Job_Source_Model = request.JobSourceModel,
                             Job_Source_Record_ID = request.JobSourceRecordID,
-                            Job_Last_Change = DateTime.UtcNow
+                            Write_Date = DateTime.UtcNow
                         };
 
                         if (request.ForceDirection)
@@ -415,12 +415,12 @@ namespace Syncer.Flows
                         SyncJob entry = null;
                         using (var db = GetDb())
                         {
-                            entry = db.GetJobBy(_job.Job_ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
+                            entry = db.GetJobBy(_job.ID, childJob.Job_Source_System, childJob.Job_Source_Model, childJob.Job_Source_Record_ID);
 
                             // If the child job wasn't created yet, create it
                             if (entry == null)
                             {
-                                Log.LogInformation($"Creating {childDescription} for job ({_job.Job_ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
+                                Log.LogInformation($"Creating {childDescription} for job ({_job.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                                 db.CreateJob(childJob, _job.Parent_Path);
                                 _job.Children.Add(childJob);
 
@@ -429,12 +429,12 @@ namespace Syncer.Flows
                         }
 
                         if (entry.Job_State == SosyncState.Error)
-                            throw new SyncerException($"{childDescription} ({entry.Job_ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
+                            throw new SyncerException($"{childDescription} ({entry.ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
 
                         // If the job is new or marked as "in progress", run it
                         if (entry.Job_State == SosyncState.New || entry.Job_State == SosyncState.InProgress)
                         {
-                            Log.LogDebug($"Executing {childDescription} ({entry.Job_ID})");
+                            Log.LogDebug($"Executing {childDescription} ({entry.ID})");
 
                             UpdateJobStart(entry, DateTime.UtcNow);
 
@@ -480,13 +480,13 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, $"ChildJobs ({childDescription})", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, $"ChildJobs ({childDescription})", _job.ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
         protected void HandleTransformation(string description, DateTime? initialWriteDate, Stopwatch consistencyWatch, ref bool requireRestart, ref string restartReason)
         {
-            LogMs(0, $"\n{nameof(HandleTransformation)} start", _job.Job_ID, 0);
+            LogMs(0, $"\n{nameof(HandleTransformation)} start", _job.ID, 0);
 
             var s = new Stopwatch();
             s.Start();
@@ -539,7 +539,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, $"{nameof(HandleTransformation)} done", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, $"{nameof(HandleTransformation)} done", _job.ID, s.ElapsedMilliseconds);
             s.Reset();
         }
 
@@ -648,7 +648,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, "RunCount", _job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(0, "RunCount", _job.ID, s.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -661,7 +661,7 @@ namespace Syncer.Flows
         {
             if (sosyncWriteDate == null)
             {
-                Log.LogInformation($"Job ({job.Job_ID}) Skipping consistency check, no {nameof(sosyncWriteDate)} present.");
+                Log.LogInformation($"Job ({job.ID}) Skipping consistency check, no {nameof(sosyncWriteDate)} present.");
                 return true;
             }
 
@@ -669,11 +669,11 @@ namespace Syncer.Flows
 
             if (consistencyWatch.ElapsedMilliseconds < maxMS)
             {
-                Log.LogInformation($"Job ({job.Job_ID}) Skipping consistency check, last check under {maxMS}ms.");
+                Log.LogInformation($"Job ({job.ID}) Skipping consistency check, last check under {maxMS}ms.");
                 return true;
             }
 
-            Log.LogInformation($"Job ({job.Job_ID}) Checking model consistency");
+            Log.LogInformation($"Job ({job.ID}) Checking model consistency");
 
             ModelInfo currentInfo = null;
 
@@ -696,12 +696,12 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Data_Before_Update");
+            Log.LogDebug($"Updating job {_job.ID}: Sync_Target_Data_Before_Update");
 
             using (var db = GetDb())
             {
                 _job.Sync_Target_Data_Before = data;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                _job.Write_Date = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateSyncTargetDataBeforeUpdate), db, _job);
             }
@@ -709,12 +709,12 @@ namespace Syncer.Flows
 
         protected void UpdateSyncSourceData(string data)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Source_Data");
+            Log.LogDebug($"Updating job {_job.ID}: Sync_Source_Data");
 
             using (var db = GetDb())
             {
                 _job.Sync_Source_Data = data;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                _job.Write_Date = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateSyncSourceData), db, _job);
             }
@@ -722,12 +722,12 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetRequest(string requestData)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Request");
+            Log.LogDebug($"Updating job {_job.ID}: Sync_Target_Request");
 
             using (var db = GetDb())
             {
                 _job.Sync_Target_Request = requestData;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                _job.Write_Date = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateSyncTargetRequest), db, _job);
             }
@@ -735,7 +735,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetAnswer(string answerData, int? createdID)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: Sync_Target_Answer");
+            Log.LogDebug($"Updating job {_job.ID}: Sync_Target_Answer");
 
             using (var db = GetDb())
             {
@@ -743,7 +743,7 @@ namespace Syncer.Flows
                     _job.Sync_Target_Record_ID = createdID.Value;
 
                 _job.Sync_Target_Answer = answerData;
-                _job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                _job.Write_Date = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateSyncTargetAnswer), db, _job);
             }
@@ -759,7 +759,7 @@ namespace Syncer.Flows
         /// <param name="log">Information to be logged.</param>
         protected void UpdateJobSourceAndTarget(SyncJob job, string srcSystem, string srcModel, int? srcId, string targetSystem, string targetModel, int? targetId, string log)
         {
-            Log.LogDebug($"Updating job {job.Job_ID}: check source");
+            Log.LogDebug($"Updating job {job.ID}: check source");
 
             using (var db = GetDb())
             {
@@ -772,7 +772,7 @@ namespace Syncer.Flows
                 job.Sync_Target_Record_ID = targetId;
 
                 job.Job_Log = (job.Job_Log ?? "") + (log ?? "");
-                job.Job_Last_Change = DateTime.Now.ToUniversalTime();
+                job.Write_Date = DateTime.Now.ToUniversalTime();
 
                 UpdateJob(nameof(UpdateJobSourceAndTarget), db, _job);
             }
@@ -784,12 +784,12 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobChildStart(SyncJob job)
         {
-            Log.LogDebug($"Updating job { job.Job_ID}: child start");
+            Log.LogDebug($"Updating job { job.ID}: child start");
 
             using (var db = GetDb())
             {
                 job.Child_Job_Start = DateTime.UtcNow;
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobChildStart), db, _job);
             }
@@ -797,11 +797,11 @@ namespace Syncer.Flows
 
         protected void UpdateJob(SyncJob job, string description)
         {
-            Log.LogDebug($"Updating job { _job.Job_ID}: {description}");
+            Log.LogDebug($"Updating job { _job.ID}: {description}");
 
             using (var db = GetDb())
             {
-                Job.Job_Last_Change = DateTime.UtcNow;
+                Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(description, db, _job);
             }
@@ -812,12 +812,12 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobChildEnd()
         {
-            Log.LogDebug($"Updating job { _job.Job_ID}: child end");
+            Log.LogDebug($"Updating job { _job.ID}: child end");
 
             using (var db = GetDb())
             {
                 _job.Child_Job_End = DateTime.UtcNow;
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobChildEnd), db, _job);
             }
@@ -828,12 +828,12 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncStart()
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: transformation/sync start");
+            Log.LogDebug($"Updating job {_job.ID}: transformation/sync start");
 
             using (var db = GetDb())
             {
                 _job.Sync_Start = DateTime.UtcNow;
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSyncStart), db, _job);
             }
@@ -844,12 +844,12 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncEnd()
         {
-            Log.LogDebug($"Updating job { _job.Job_ID}: transformation/sync end");
+            Log.LogDebug($"Updating job { _job.ID}: transformation/sync end");
 
             using (var db = GetDb())
             {
                 _job.Sync_End = DateTime.UtcNow;
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSyncEnd), db, _job);
             }
@@ -860,13 +860,13 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
         {
-            Log.LogDebug($"Updating job {job.Job_ID}: job start");
+            Log.LogDebug($"Updating job {job.ID}: job start");
 
             using (var db = GetDb())
             {
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobStart), db, _job);
             }
@@ -874,12 +874,12 @@ namespace Syncer.Flows
 
         private void UpdateJobInconsistent(SyncJob job, int nr)
         {
-            Log.LogDebug($"Updating job {job.Job_ID}: job_log");
+            Log.LogDebug($"Updating job {job.ID}: job_log");
 
             using (var db = GetDb())
             {
                 job.Job_Log += $"Consistency check {nr} failed, exiting job, leaving it in progress.\n";
-                job.Job_Last_Change = DateTime.UtcNow;
+                job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobInconsistent), db, _job);
             }
@@ -893,13 +893,13 @@ namespace Syncer.Flows
         /// finished because it was already in sync.</param>
         protected void UpdateJobSuccess(bool wasInSync)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            Log.LogDebug($"Updating job {_job.ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = GetDb())
             {
                 _job.Job_State = SosyncState.Done;
                 _job.Job_End = DateTime.Now.ToUniversalTime();
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSuccess), db, _job);
             }
@@ -912,7 +912,7 @@ namespace Syncer.Flows
         /// <param name="otherJobID">ID of the job that led to completion of this job.</param>
         protected void UpdateJobSuccessOtherThread(int otherJobID)
         {
-            var msg = $"Updating job {_job.Job_ID}: Another thread completed same job (ID {otherJobID})";
+            var msg = $"Updating job {_job.ID}: Another thread completed same job (ID {otherJobID})";
             Log.LogDebug(msg);
 
             using (var db = GetDb())
@@ -920,7 +920,7 @@ namespace Syncer.Flows
                 _job.Job_State = SosyncState.Done;
                 _job.Job_Log += "\n" + msg;
                 _job.Job_End = DateTime.Now.ToUniversalTime();
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSuccess), db, _job);
             }
@@ -934,7 +934,7 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         protected void UpdateJobError(string errorCode, string errorText)
         {
-            Log.LogDebug($"Updating job {_job.Job_ID}: job error");
+            Log.LogDebug($"Updating job {_job.ID}: job error");
 
             using (var db = GetDb())
             {
@@ -942,7 +942,7 @@ namespace Syncer.Flows
                 _job.Job_End = DateTime.UtcNow;
                 _job.Job_Error_Code = errorCode;
                 _job.Job_Error_Text = (string.IsNullOrEmpty(_job.Job_Error_Text) ? "" : _job.Job_Error_Text + "\n\n") + errorText;
-                _job.Job_Last_Change = DateTime.UtcNow;
+                _job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobError), db, _job);
             }
@@ -956,12 +956,12 @@ namespace Syncer.Flows
             db.UpdateJob(job);
 
             s.Stop();
-            LogMs(1, $"Local DB: {method}", job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(1, $"Local DB: {method}", job.ID, s.ElapsedMilliseconds);
         }
 
         protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
-            Log.LogDebug($"Job {jobId ?? _job.Job_ID}: {name} elapsed: {ms} ms");
+            Log.LogDebug($"Job {jobId ?? _job.ID}: {name} elapsed: {ms} ms");
             LogMilliseconds(name, ms);
         }
 

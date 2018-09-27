@@ -62,21 +62,22 @@ namespace WebSosync.Data.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to with updated_rows as (
-        ///	update sync_table
+        ///	update sosync_job
         ///	set
         ///		job_state = &apos;skipped&apos;
         ///		,job_log = @job_log
         ///		,job_closed_by_job_id = @job_closed_by_job_id
-        ///		,job_last_change = @job_last_change
+        ///		,write_date = @write_date
         ///		,job_start = now() at time zone &apos;utc&apos;
         ///		,job_end = now() at time zone &apos;utc&apos;
-        ///		,job_to_fso_can_sync = true
         ///	where
         ///		job_source_sosync_write_date &lt; @job_source_sosync_write_date
         ///		and job_source_system = @job_source_system
         ///		and job_source_model = @job_source_model
         ///		and job_source_record_id = @job_source_record_id
-        ///	 [rest of string was truncated]&quot;;.
+        ///		and job_state = &apos;new&apos;
+        ///	returning id
+        ///)        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClosePreviousJobs_Update_SCRIPT {
             get {
@@ -89,7 +90,7 @@ namespace WebSosync.Data.Properties {
         ///	-- roots
         ///	select * from (
         ///		select *
-        ///		from sync_table
+        ///		from sosync_job
         ///		where job_date &gt; now() - interval &apos;100 days&apos; and parent_job_id is null and job_state = &apos;new&apos;
         ///        order by job_priority desc, job_date desc
         ///        limit %LIMIT%
@@ -99,8 +100,8 @@ namespace WebSosync.Data.Properties {
         ///	
         ///	-- children
         ///	select jobs.*
-        ///	from sync_table jobs
-        ///	inner join children c on c.job_id = jobs.parent_job_id
+        ///	from sosync_job jobs
+        ///	inner join children c on c.id = jobs.parent_job_id
         ///)
         ///select * from children order by job_date asc;.
         /// </summary>

@@ -117,7 +117,7 @@ namespace Syncer.Flows
 
                 if (locked)
                 {
-                    Log.LogInformation($"Job {Job.Job_ID} locked by hash {hash}");
+                    Log.LogInformation($"Job {Job.ID} locked by hash {hash}");
                     System.Threading.Thread.Sleep(100);
 
                     if ((DateTime.Now - lockT1).TotalMilliseconds > timeoutMS)
@@ -157,7 +157,7 @@ namespace Syncer.Flows
                     if (Job.Job_State == SosyncState.Done)
                     {
                         // Set the job_id for the hash, indicating success
-                        ThreadService.JobLocks[hash] = Job.Job_ID;
+                        ThreadService.JobLocks[hash] = Job.ID;
                     }
                     else
                     {
@@ -175,7 +175,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated with the sync source.</param>
         private void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
         {
-            LogMs(0, $"\n{nameof(SetSyncSource)} start", job.Job_ID, 0);
+            LogMs(0, $"\n{nameof(SetSyncSource)} start", job.ID, 0);
             Stopwatch s = new Stopwatch();
             s.Start();
             try
@@ -233,7 +233,7 @@ namespace Syncer.Flows
                     if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
                     {
                         // For normal main jobs (not child jobs!) this is an invalid state
-                        throw new SyncerException($"Job {job.Job_ID}: job_date differs from sosync_write_date, aborting synchronization.");
+                        throw new SyncerException($"Job {job.ID}: job_date differs from sosync_write_date, aborting synchronization.");
                     }
 
                     // Figure out sync direction
@@ -322,7 +322,7 @@ namespace Syncer.Flows
                 throw;
             }
             s.Stop();
-            LogMs(0, $"{nameof(SetSyncSource)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
+            LogMs(0, $"{nameof(SetSyncSource)} done", Job.ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
         }
 
@@ -346,7 +346,7 @@ namespace Syncer.Flows
 
             var logMsg = string.Format(
                 "Job: {0}: JobSourceModel = {1} similar = {2} (tolerance: {3}ms) job_date = {4} write_date = {5}",
-                job.Job_ID,
+                job.ID,
                 job.Job_Source_Model,
                 isSimilar,
                 toleranceMS,
@@ -380,7 +380,7 @@ namespace Syncer.Flows
 
             var result = onlineWriteDate - studioWriteDate;
 
-            Log.LogInformation($"job ({Job.Job_ID}): {nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+            Log.LogInformation($"job ({Job.ID}): {nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
 
             // If the difference is within the tolerance,
             // return zero
@@ -395,7 +395,7 @@ namespace Syncer.Flows
             studioInfo = null;
 
             onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-            LogMs(1, nameof(GetModelInfosViaOnline) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
+            LogMs(1, nameof(GetModelInfosViaOnline) + "-FSO", job.ID, OdooService.Client.LastRpcTime);
 
             if (onlineInfo == null)
                 throw new ModelNotFoundException(
@@ -409,7 +409,7 @@ namespace Syncer.Flows
                 s.Start();
                 studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
                 s.Stop();
-                LogMs(1, nameof(GetModelInfosViaOnline) + "-MSSQL", job.Job_ID, s.ElapsedMilliseconds);
+                LogMs(1, nameof(GetModelInfosViaOnline) + "-MSSQL", job.ID, s.ElapsedMilliseconds);
             }
         }
 
@@ -421,7 +421,7 @@ namespace Syncer.Flows
             s.Start();
             studioInfo = GetStudioInfo(job.Job_Source_Record_ID);
             s.Stop();
-            LogMs(1, nameof(GetModelInfosViaStudio) + "-MSSQL", job.Job_ID, s.ElapsedMilliseconds);
+            LogMs(1, nameof(GetModelInfosViaStudio) + "-MSSQL", job.ID, s.ElapsedMilliseconds);
 
             if (studioInfo == null)
                 throw new ModelNotFoundException(
@@ -432,7 +432,7 @@ namespace Syncer.Flows
             if (studioInfo.ForeignID != null)
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-               LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.Job_ID, OdooService.Client.LastRpcTime);
+               LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.ID, OdooService.Client.LastRpcTime);
             }
         }
 

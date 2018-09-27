@@ -119,22 +119,21 @@
   </resheader>
   <data name="ClosePreviousJobs_Update_SCRIPT" xml:space="preserve">
     <value>with updated_rows as (
-	update sync_table
+	update sosync_job
 	set
 		job_state = 'skipped'
 		,job_log = @job_log
 		,job_closed_by_job_id = @job_closed_by_job_id
-		,job_last_change = @job_last_change
+		,write_date = @write_date
 		,job_start = now() at time zone 'utc'
 		,job_end = now() at time zone 'utc'
-		,job_to_fso_can_sync = true
 	where
 		job_source_sosync_write_date &lt; @job_source_sosync_write_date
 		and job_source_system = @job_source_system
 		and job_source_model = @job_source_model
 		and job_source_record_id = @job_source_record_id
 		and job_state = 'new'
-	returning job_id
+	returning id
 )
 select count(*) affected_rows from updated_rows;</value>
   </data>
@@ -143,7 +142,7 @@ select count(*) affected_rows from updated_rows;</value>
 	-- roots
 	select * from (
 		select *
-		from sync_table
+		from sosync_job
 		where job_date &gt; now() - interval '100 days' and parent_job_id is null and job_state = 'new'
         order by job_priority desc, job_date desc
         limit %LIMIT%
@@ -153,8 +152,8 @@ select count(*) affected_rows from updated_rows;</value>
 	
 	-- children
 	select jobs.*
-	from sync_table jobs
-	inner join children c on c.job_id = jobs.parent_job_id
+	from sosync_job jobs
+	inner join children c on c.id = jobs.parent_job_id
 )
 select * from children order by job_date asc;</value>
   </data>

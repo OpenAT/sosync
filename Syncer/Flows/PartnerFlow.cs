@@ -239,7 +239,7 @@ namespace Syncer.Flows
             }
 
             s.Stop();
-            LogMs(1, $"{nameof(SetdboPersonStack_fso_ids)} done", Job.Job_ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
+            LogMs(1, $"{nameof(SetdboPersonStack_fso_ids)} done", Job.ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)

@@ -7,13 +7,13 @@ namespace WebSosync.Data.Models
 {
     /// <summary>
     /// Represents a sync job of sosync. The data member attributes
-    /// specify the column names, which are used for the sync_table
+    /// specify the column names, which are used for the sosync_job
     /// aswell as for fso.
     /// 
     /// The ignore data member describe which columns will not b
     /// transmitted to fso.
     /// </summary>
-    [DataContract(Name = "sync_table")]
+    [DataContract(Name = "sosync_job")]
     public class SyncJob
     {
         #region Constructors
@@ -26,41 +26,21 @@ namespace WebSosync.Data.Models
         #region Properties
         // Sosync only
 
-        [DataMember(Name = "job_fs_id")]
+        [DataMember(Name = "write_date")]
         [IgnoreDataMember]
-        public int? Job_Fs_ID { get; set; }
-
-        [DataMember(Name = "job_fso_id")]
-        [IgnoreDataMember]
-        public int? Job_Fso_ID { get; set; }
-
-        [DataMember(Name = "job_last_change")]
-        [IgnoreDataMember]
-        public DateTime? Job_Last_Change { get; set; }
+        public DateTime? Write_Date { get; set; }
 
         [DataMember(Name = "job_closed_by_job_id")]
         [IgnoreDataMember]
         public int? Job_Closed_By_Job_ID { get; set; }
-
-        [DataMember(Name = "job_to_fso_can_sync")]
-        [IgnoreDataMember]
-        public bool? Job_To_FSO_Can_Sync { get; set; }
-
-        [DataMember(Name = "job_to_fso_sync_date")]
-        [IgnoreDataMember]
-        public DateTime? Job_To_FSO_Sync_Date { get; set; }
-
-        [DataMember(Name = "job_to_fso_sync_version")]
-        [IgnoreDataMember]
-        public DateTime? Job_To_FSO_Sync_Version { get; set; }
 
         [IgnoreDataMember]
         public List<SyncJob> Children { get; set; }
         
         // SyncJob
 
-        [DataMember(Name = "job_id")]
-        public int Job_ID { get; set; }
+        [DataMember(Name = "id")]
+        public int ID { get; set; }
 
         [DataMember(Name = "job_date")]
         public DateTime Job_Date { get; set; }

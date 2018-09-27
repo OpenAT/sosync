@@ -69,7 +69,7 @@ namespace WebSosync.Controllers
 
             var job = ParseJob(services, data);
             StoreJob(services, job);
-            result.JobID = job.Job_ID;
+            result.ID = job.ID;
 
             // Start the sync background job
             _jobWorker.Start();
@@ -104,7 +104,7 @@ namespace WebSosync.Controllers
                 {
                     var job = ParseJob(services, dictionaryList[i]);
                     StoreJob(services, job);
-                    result[i].JobID = job.Job_ID;
+                    result[i].ID = job.ID;
                 }
 
                 // Start the sync background job
@@ -144,7 +144,7 @@ namespace WebSosync.Controllers
                 Job_Source_System = (string)data["job_source_system"],
                 Job_Source_Model = (string)data["job_source_model"],
                 Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"]),
-                Job_Last_Change = DateTime.UtcNow
+                Write_Date = DateTime.UtcNow
             };
 
             if (data.ContainsKey("job_source_type")
@@ -203,7 +203,6 @@ namespace WebSosync.Controllers
 
             job.Job_State = SosyncState.New;
             job.Job_Fetched = DateTime.UtcNow;
-            job.Job_To_FSO_Can_Sync = false;
 
             if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
                 job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
