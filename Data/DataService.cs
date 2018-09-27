@@ -48,7 +48,7 @@ namespace WebSosync.Data
             var propertiesString = string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()));
             var propertyParametersString = string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"));
 
-            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sosync_job','id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id, concat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sosync_job','id')), '/') parent_path;\n";
+            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id, concat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/') parent_path;\n";
 
             // Update statement
             //   update sosync_job set prop1 = @prop1, prop2 = @prop2, ... where id = @id
@@ -190,7 +190,10 @@ namespace WebSosync.Data
 
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
-            var inserted = _con.Query<JobInsertedInfo>(DataService.SQL_CreateJob.Replace("%%PARENT_PATH%%", parentPath), job).Single();
+            var queryParams = new DynamicParameters(job);
+            queryParams.Add("@ParentPath", parentPath);
+
+            var inserted = _con.Query<JobInsertedInfo>(SQL_CreateJob, queryParams).Single();
             job.ID = inserted.ID;
             job.Parent_Path = inserted.Parent_Path;
         }
