@@ -1,4 +1,6 @@
-﻿using Syncer.Attributes;
+﻿using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
+using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +13,8 @@ namespace Syncer.Flows
     public class ProductTemplateFlow : UniformSyncFlow
     {
         #region Constructors
-        public ProductTemplateFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public ProductTemplateFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
             Fields.AddRange(new string[] {
                 "id",

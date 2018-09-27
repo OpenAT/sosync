@@ -1,6 +1,7 @@
 ﻿using DaDi.Odoo.Models;
 using dadi_data.Interfaces;
 using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
@@ -16,8 +17,8 @@ namespace Syncer.Flows
 {
     public abstract class DeleteSyncFlow : SyncFlow
     {
-        public DeleteSyncFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public DeleteSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

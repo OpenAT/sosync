@@ -9,6 +9,8 @@ using dadi_data.Models;
 using System.Linq;
 using Syncer.Exceptions;
 using DaDi.Odoo.Models;
+using Microsoft.Extensions.Logging;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -16,7 +18,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "account.fiscalyear")]
     public class FiscalYearDeleteFlow : DeleteSyncFlow
     {
-        public FiscalYearDeleteFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public FiscalYearDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

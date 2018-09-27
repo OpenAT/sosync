@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using DaDi.Odoo.Models;
 using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
+using Syncer.Services;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -16,8 +18,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailDeleteFlow
         : DeleteSyncFlow
     {
-        public zGruppeDetailDeleteFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public zGruppeDetailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

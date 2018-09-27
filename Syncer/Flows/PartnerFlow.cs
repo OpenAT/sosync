@@ -10,6 +10,7 @@ using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
+using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -28,15 +29,10 @@ namespace Syncer.Flows
         private const string GültigMonatArray = "111111111111";
         #endregion
 
-        #region Members
-        private ILogger<PartnerFlow> _log;
-        #endregion
-
         #region Constructors
-        public PartnerFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public PartnerFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
-            _log = (ILogger<PartnerFlow>)svc.GetService(typeof(ILogger<PartnerFlow>));
         }
         #endregion
 

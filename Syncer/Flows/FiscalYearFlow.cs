@@ -11,6 +11,8 @@ using WebSosync.Data;
 using WebSosync.Common;
 using DaDi.Odoo;
 using DaDi.Odoo.Models;
+using Microsoft.Extensions.Logging;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -19,7 +21,8 @@ namespace Syncer.Flows
     public class FiscalYearFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public FiscalYearFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public FiscalYearFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
         #endregion

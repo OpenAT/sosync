@@ -8,6 +8,8 @@ using WebSosync.Data.Models;
 using dadi_data.Models;
 using System.Linq;
 using Syncer.Exceptions;
+using Microsoft.Extensions.Logging;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -15,7 +17,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.bpk")]
     public class PartnerBpkDeleteFlow : DeleteSyncFlow
     {
-        public PartnerBpkDeleteFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public PartnerBpkDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

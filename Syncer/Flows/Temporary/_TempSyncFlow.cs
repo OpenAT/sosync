@@ -17,7 +17,8 @@ namespace Syncer.Flows.Temporary
     /// </summary>
     public abstract class TempSyncFlow : SyncFlow
     {
-        public TempSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public TempSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

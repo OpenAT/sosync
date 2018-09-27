@@ -5,10 +5,12 @@ using System.Text;
 using DaDi.Odoo;
 using DaDi.Odoo.Models;
 using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
+using Syncer.Services;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -19,8 +21,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailFlow
         : ReplicateSyncFlow
     {
-        public zGruppeDetailFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public zGruppeDetailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

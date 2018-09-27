@@ -1,9 +1,11 @@
 ﻿using DaDi.Odoo;
 using DaDi.Odoo.Models;
 using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
+using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +20,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonEmailGruppeFlow
         : ReplicateSyncFlow
     {
-        public PersonEmailGruppeFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public PersonEmailGruppeFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

@@ -11,6 +11,7 @@ using Syncer.Exceptions;
 using WebSosync.Data;
 using Microsoft.Extensions.Logging;
 using DaDi.Odoo.Models;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -23,8 +24,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public CompanyFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public CompanyFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
         #endregion

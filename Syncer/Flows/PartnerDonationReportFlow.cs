@@ -6,6 +6,7 @@ using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
+using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,16 +19,10 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.donation_report")]
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
-
-        #region Members
-        private ILogger<PartnerFlow> _log;
-        #endregion
-
         #region Constructors
-        public PartnerDonationReportFlow(IServiceProvider svc, SosyncOptions conf)
-            : base(svc, conf)
+        public PartnerDonationReportFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
-            _log = (ILogger<PartnerFlow>)svc.GetService(typeof(ILogger<PartnerFlow>));
         }
         #endregion
 

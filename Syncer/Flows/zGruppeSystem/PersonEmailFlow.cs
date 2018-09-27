@@ -5,9 +5,11 @@ using System.Text;
 using DaDi.Odoo;
 using DaDi.Odoo.Models;
 using dadi_data.Models;
+using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
+using Syncer.Services;
 using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -19,7 +21,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonEmailFlow
         : ReplicateSyncFlow
     {
-        public PersonEmailFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public PersonEmailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

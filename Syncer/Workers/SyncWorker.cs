@@ -200,7 +200,7 @@ namespace Syncer.Workers
                 UpdateJobStart(job, loadTimeUTC);
 
                 // Get the flow for the job source model, and start it
-                var constructorParams = new object[] { _svc, _conf };
+                var constructorParams = new object[] { _log, _odoo, _conf, _flowService };
                 using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
                 {
                     bool requireRestart = false;

@@ -12,6 +12,8 @@ using DaDi.Odoo.Models;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using DaDi.MultiMail.Client;
+using Microsoft.Extensions.Logging;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -21,7 +23,8 @@ namespace Syncer.Flows
     public class EmailTemplateFlow
         : ReplicateSyncFlow
     {
-        public EmailTemplateFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public EmailTemplateFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         { }
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
