@@ -213,25 +213,6 @@ namespace WebSosync.Data
             CleanModel(job);
             _con.Execute(DataService.SQL_UpdateJob, job, commandTimeout: _cmdTimeoutSec);
         }
-
-        /// <summary>
-        /// Updates only the specified field of the job in the database.
-        /// </summary>
-        /// <param name="job">The job to be updated.</param>
-        /// <param name="propertySelector">The member expression for which field should be updated in the database.</param>
-        public void UpdateJob<TProp>(SyncJob job, Expression<Func<SyncJob, TProp>> propertySelector)
-        {
-            CleanModel(job);
-
-            var tblAtt = job.GetType().GetTypeInfo().GetCustomAttribute<DataContractAttribute>();
-            var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
-            var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
-
-            var tblName = tblAtt == null ? typeof(SyncJob).Name : tblAtt.Name;
-            var propName = propAtt == null ? prop.Name : propAtt.Name;
-
-            _con.Execute($"update {tblName} set {propName} = @{propName} where id = @id", job, commandTimeout: _cmdTimeoutSec);
-        }
         #endregion
 
         #region IDisposable implementation
