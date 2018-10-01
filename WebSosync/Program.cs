@@ -127,7 +127,7 @@ namespace WebSosync
 
             // Check max thread parameter and set default value
             if (!sosyncConfig.Max_Threads.HasValue)
-                sosyncConfig.Max_Threads = 10;
+                sosyncConfig.Max_Threads = 2;
 
             // Job package size default value
             if (!sosyncConfig.Job_Package_Size.HasValue)
