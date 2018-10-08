@@ -189,7 +189,7 @@ namespace Syncer.Flows
 
                 // Now update the job information depending on the available
                 // model infos
-                if (onlineInfo != null && studioInfo != null)
+                if (IsModelInBothSystems(studioInfo, onlineInfo))
                 {
                     // Model is in both systems
                     SyncSourceViaModels(
@@ -198,7 +198,7 @@ namespace Syncer.Flows
                         job,
                         ref writeDate);
                 }
-                else if (onlineInfo != null && studioInfo == null)
+                else if (IsModelInOnlineOnly(studioInfo, onlineInfo))
                 {
                     // The online model is not yet in studio
                     writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
@@ -212,7 +212,7 @@ namespace Syncer.Flows
                         null,
                         null);
                 }
-                else if (onlineInfo == null && studioInfo != null)
+                else if (IsModelInStudioOnly(studioInfo, onlineInfo))
                 {
                     // The studio model is not yet in online
                     writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
@@ -241,6 +241,21 @@ namespace Syncer.Flows
             s.Stop();
             LogMs(0, $"{nameof(SetSyncSource)} done", Job.ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
+        }
+
+        private bool IsModelInBothSystems(ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            return (onlineInfo != null && studioInfo != null);
+        }
+
+        private bool IsModelInOnlineOnly(ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            return (onlineInfo != null && studioInfo == null);
+        }
+
+        private bool IsModelInStudioOnly(ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            return (onlineInfo == null && studioInfo != null);
         }
 
         private void GetInfosAndThrowOnInvalidState(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
