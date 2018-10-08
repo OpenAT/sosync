@@ -863,6 +863,7 @@ namespace Syncer.Flows
 
             using (var db = GetDb())
             {
+                job.Job_Run_Count += 1;
                 job.Job_State = SosyncState.InProgress;
                 job.Job_Start = loadTimeUTC;
                 job.Write_Date = DateTime.UtcNow;
