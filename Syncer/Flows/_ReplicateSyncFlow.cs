@@ -190,8 +190,6 @@ namespace Syncer.Flows
                 else
                     GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
 
-                writeDate = null;
-
                 // Get the attributes for the model names
                 var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
                 var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
@@ -201,6 +199,8 @@ namespace Syncer.Flows
 
                 if (studioInfo != null && studioInfo.ForeignID.HasValue && !(studioInfo.SosyncWriteDate ?? studioInfo.WriteDate).HasValue)
                     throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fs]: sosync_fso_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
+
+                writeDate = null;
 
                 // Now update the job information depending on the available
                 // model infos
