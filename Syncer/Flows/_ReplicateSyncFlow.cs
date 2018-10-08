@@ -206,80 +206,14 @@ namespace Syncer.Flows
                 // model infos
                 if (onlineInfo != null && studioInfo != null)
                 {
-                    // Both systems already have the model, check write date
-                    // and decide source. If any sosync_write_date is null,
-                    // use the write_date instead. If both are null, an exception
-                    // is thrown to abort the synchronization
-
-                    if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
-                        throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
-
-                    if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
-                        throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
-
-                    // job_date check: if the job_date differs, either:
-                    //  - Use job_date as sosync_write_date in the current flow is for a multi model
-                    //  - Throw and exception, if it is not a multi model
-
-                    var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
-
-                    if (!isJobDateSimilar && IsStudioMultiModel)
-                    {
-                        // For studio multi models, substitute
-                        // job_date for the studio sosync_write_date
-                        studioInfo.SosyncWriteDate = job.Job_Date;
-                    }
-
-                    if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
-                    {
-                        // For normal main jobs (not child jobs!) this is an invalid state
-                        throw new SyncerException($"Job {job.ID}: job_date differs from sosync_write_date, aborting synchronization.");
-                    }
-
-                    // Figure out sync direction
-                    var toleranceMS = 0;
-                    var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
-
-                    if (diff.TotalMilliseconds == 0)
-                    {
-                        // Both models are within tolerance, and considered up to date.
-                        writeDate = null;
-
-                        // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
-                        UpdateJobSourceAndTarget(
-                            job, "", "", null, "", "", null,
-                            $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
-                    }
-                    else if (diff.TotalMilliseconds < 0)
-                    {
-                        // The studio model was newer
-                        writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
-
-                        UpdateJobSourceAndTarget(
-                            job,
-                            SosyncSystem.FundraisingStudio,
-                            studioAtt.Name,
-                            studioInfo.ID,
-                            SosyncSystem.FSOnline,
-                            onlineAtt.Name,
-                            studioInfo.ForeignID,
-                            null);
-                    }
-                    else
-                    {
-                        // The online model was newer
-                        writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
-
-                        UpdateJobSourceAndTarget(
-                            job,
-                            SosyncSystem.FSOnline,
-                            onlineAtt.Name,
-                            onlineInfo.ID,
-                            SosyncSystem.FundraisingStudio,
-                            studioAtt.Name,
-                            onlineInfo.ForeignID,
-                            null);
-                    }
+                    // Model is in both systems
+                    SyncSourceViaModels(
+                        studioAtt,
+                        onlineAtt,
+                        studioInfo,
+                        onlineInfo,
+                        job,
+                        ref writeDate);
                 }
                 else if (onlineInfo != null && studioInfo == null)
                 {
@@ -324,6 +258,90 @@ namespace Syncer.Flows
             s.Stop();
             LogMs(0, $"{nameof(SetSyncSource)} done", Job.ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
+        }
+
+        private void SyncSourceViaModels(
+            StudioModelAttribute studioAtt,
+            OnlineModelAttribute onlineAtt,
+            ModelInfo studioInfo,
+            ModelInfo onlineInfo,
+            SyncJob job,
+            ref DateTime? writeDate)
+        {
+            // Both systems already have the model, check write date
+            // and decide source. If any sosync_write_date is null,
+            // use the write_date instead. If both are null, an exception
+            // is thrown to abort the synchronization
+
+            if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
+                throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
+
+            if (!studioInfo.SosyncWriteDate.HasValue && !studioInfo.WriteDate.HasValue)
+                throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fs]");
+
+            // job_date check: if the job_date differs, either:
+            //  - Use job_date as sosync_write_date in the current flow is for a multi model
+            //  - Throw and exception, if it is not a multi model
+
+            var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
+
+            if (!isJobDateSimilar && IsStudioMultiModel)
+            {
+                // For studio multi models, substitute
+                // job_date for the studio sosync_write_date
+                studioInfo.SosyncWriteDate = job.Job_Date;
+            }
+
+            if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
+            {
+                // For normal main jobs (not child jobs!) this is an invalid state
+                throw new SyncerException($"Job {job.ID}: job_date differs from sosync_write_date, aborting synchronization.");
+            }
+
+            // Figure out sync direction
+            var toleranceMS = 0;
+            var diff = GetWriteDateDifference(job.Job_Source_Model, studioInfo, onlineInfo, toleranceMS);
+
+            if (diff.TotalMilliseconds == 0)
+            {
+                // Both models are within tolerance, and considered up to date.
+                writeDate = null;
+
+                // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+                UpdateJobSourceAndTarget(
+                    job, "", "", null, "", "", null,
+                    $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
+            }
+            else if (diff.TotalMilliseconds < 0)
+            {
+                // The studio model was newer
+                writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+
+                UpdateJobSourceAndTarget(
+                    job,
+                    SosyncSystem.FundraisingStudio,
+                    studioAtt.Name,
+                    studioInfo.ID,
+                    SosyncSystem.FSOnline,
+                    onlineAtt.Name,
+                    studioInfo.ForeignID,
+                    null);
+            }
+            else
+            {
+                // The online model was newer
+                writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
+
+                UpdateJobSourceAndTarget(
+                    job,
+                    SosyncSystem.FSOnline,
+                    onlineAtt.Name,
+                    onlineInfo.ID,
+                    SosyncSystem.FundraisingStudio,
+                    studioAtt.Name,
+                    onlineInfo.ForeignID,
+                    null);
+            }
         }
 
         private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
