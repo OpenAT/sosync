@@ -190,10 +190,6 @@ namespace Syncer.Flows
                 else
                     GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
 
-                // Get the attributes for the model names
-                var studioAtt = this.GetType().GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
-                var onlineAtt = this.GetType().GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
-
                 if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
                     throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
 
@@ -208,8 +204,6 @@ namespace Syncer.Flows
                 {
                     // Model is in both systems
                     SyncSourceViaModels(
-                        studioAtt,
-                        onlineAtt,
                         studioInfo,
                         onlineInfo,
                         job,
@@ -222,10 +216,10 @@ namespace Syncer.Flows
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FSOnline,
-                        onlineAtt.Name,
+                        OnlineModelName,
                         onlineInfo.ID,
                         SosyncSystem.FundraisingStudio,
-                        studioAtt.Name,
+                        StudioModelName,
                         null,
                         null);
                 }
@@ -236,10 +230,10 @@ namespace Syncer.Flows
                     UpdateJobSourceAndTarget(
                         job,
                         SosyncSystem.FundraisingStudio,
-                        studioAtt.Name,
+                        StudioModelName,
                         studioInfo.ID,
                         SosyncSystem.FSOnline,
-                        onlineAtt.Name,
+                        OnlineModelName,
                         null,
                         null);
                 }
@@ -261,8 +255,6 @@ namespace Syncer.Flows
         }
 
         private void SyncSourceViaModels(
-            StudioModelAttribute studioAtt,
-            OnlineModelAttribute onlineAtt,
             ModelInfo studioInfo,
             ModelInfo onlineInfo,
             SyncJob job,
@@ -320,10 +312,10 @@ namespace Syncer.Flows
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FundraisingStudio,
-                    studioAtt.Name,
+                    StudioModelName,
                     studioInfo.ID,
                     SosyncSystem.FSOnline,
-                    onlineAtt.Name,
+                    OnlineModelName,
                     studioInfo.ForeignID,
                     null);
             }
@@ -335,10 +327,10 @@ namespace Syncer.Flows
                 UpdateJobSourceAndTarget(
                     job,
                     SosyncSystem.FSOnline,
-                    onlineAtt.Name,
+                    OnlineModelName,
                     onlineInfo.ID,
                     SosyncSystem.FundraisingStudio,
-                    studioAtt.Name,
+                    StudioModelName,
                     onlineInfo.ForeignID,
                     null);
             }
