@@ -183,18 +183,7 @@ namespace Syncer.Flows
                 ModelInfo onlineInfo = null;
                 ModelInfo studioInfo = null;
 
-                // First off, get the model info from the system that
-                // initiated the sync job
-                if (job.Job_Source_System == SosyncSystem.FSOnline)
-                    GetModelInfosViaOnline(job, out onlineInfo, out studioInfo);
-                else
-                    GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
-
-                if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
-                    throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
-
-                if (studioInfo != null && studioInfo.ForeignID.HasValue && !(studioInfo.SosyncWriteDate ?? studioInfo.WriteDate).HasValue)
-                    throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fs]: sosync_fso_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
+                GetInfosAndThrowOnInvalidState(job, out studioInfo, out onlineInfo);
 
                 writeDate = null;
 
@@ -252,6 +241,22 @@ namespace Syncer.Flows
             s.Stop();
             LogMs(0, $"{nameof(SetSyncSource)} done", Job.ID, Convert.ToInt64(s.Elapsed.TotalMilliseconds));
             s.Reset();
+        }
+
+        private void GetInfosAndThrowOnInvalidState(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
+        {
+            // First off, get the model info from the system that
+            // initiated the sync job
+            if (job.Job_Source_System == SosyncSystem.FSOnline)
+                GetModelInfosViaOnline(job, out onlineInfo, out studioInfo);
+            else
+                GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
+
+            if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
+                throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
+
+            if (studioInfo != null && studioInfo.ForeignID.HasValue && !(studioInfo.SosyncWriteDate ?? studioInfo.WriteDate).HasValue)
+                throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fs]: sosync_fso_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
         }
 
         private void SyncSourceViaModels(
