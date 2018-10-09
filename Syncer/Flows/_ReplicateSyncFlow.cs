@@ -332,7 +332,8 @@ namespace Syncer.Flows
                 using (var db = MdbService.GetDataService<dboTypen>())
                 {
                     db.ExecuteNonQuery(
-                        $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @id",
+                        $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id, noSyncJobSwitch = 1 " + 
+                        $"WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @id",
                         new { sosync_fso_id = onlineID, id = studioID });
                 }
                 studioWatch.Stop();
