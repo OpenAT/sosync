@@ -71,7 +71,7 @@ namespace Syncer.Flows.zGruppeSystem
                         .SingleOrDefault();
 
                     if (string.IsNullOrEmpty(mail) || !partnerID.HasValue)
-                        throw new SyncerException($"Cannot match: E-Mail = '{mail}', partner_id = {partnerID}");
+                        throw new SyncerException($"Cannot {nameof(MatchInOnlineViaData)}: E-Mail = '{mail}', partner_id = {partnerID}");
                 }
                 else
                 {
@@ -85,19 +85,33 @@ namespace Syncer.Flows.zGruppeSystem
             int? studioID = null;
 
             var frstPersonemail = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new[] { "partner_id", "email" });
-            var email = (string)frstPersonemail["email"];
-            int partnerID = Convert.ToInt32(((List<object>)frstPersonemail["partner_id"])[0]);
 
-            var resPartner = OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
-            int personID = Convert.ToInt32(resPartner["sosync_fs_id"]);
-
-            using (var db = MdbService.GetDataService<dboTypen>())
+            if (frstPersonemail.ContainsKey("email"))
             {
-                studioID = db.ExecuteQuery<int?>(
-                    $"SELECT {MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
-                    "WHERE PersonID = @personID AND ISNULL(EmailVor, '') + '@' + ISNULL(EmailNach, '') = @email",
-                    new { personID, email })
-                    .SingleOrDefault();
+                var mail = (string)frstPersonemail["email"];
+                int partnerID = Convert.ToInt32(((List<object>)frstPersonemail["partner_id"])[0]);
+
+                var resPartner = OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
+                int? personID = null;
+
+                if (resPartner.ContainsKey("sosync_fs_id"))
+                    personID = Convert.ToInt32(resPartner["sosync_fs_id"]);
+
+                if (string.IsNullOrEmpty(mail) || !personID.HasValue)
+                    throw new SyncerException($"Cannot {nameof(MatchInStudioViaData)}: E-Mail = '{mail}', PersonID = {partnerID}");
+
+                using (var db = MdbService.GetDataService<dboTypen>())
+                {
+                    studioID = db.ExecuteQuery<int?>(
+                        $"SELECT {MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
+                        "WHERE PersonID = @personID AND ISNULL(EmailVor, '') + '@' + ISNULL(EmailNach, '') = @mail",
+                        new { personID, mail })
+                        .SingleOrDefault();
+                }
+            }
+            else
+            {
+                throw new SyncerException($"Model {OnlineModelName} ({onlineID}) was not found in {SosyncSystem.FSOnline} while matching");
             }
 
             return studioID;
