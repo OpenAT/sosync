@@ -8,6 +8,7 @@ using dadi_data.Models;
 using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Common;
@@ -29,6 +30,77 @@ namespace Syncer.Flows.zGruppeSystem
         protected override ModelInfo GetStudioInfo(int studioID)
         {
             return GetDefaultStudioModelInfo<dboPersonEmail>(studioID);
+        }
+
+        protected override int? MatchInOnlineViaData(int studioID)
+        {
+            int? onlineID = null;
+            string mail;
+            int? partnerID;
+
+            FetchStudioData(studioID, out mail, out partnerID);
+
+            var searchArgs = new[] {
+                new OdooSearchArgument("partner_id", "=", partnerID.Value),
+                new OdooSearchArgument("email", "=", mail)
+            };
+
+            onlineID = OdooService.Client.SearchBy(OnlineModelName, searchArgs)
+                .SingleOrDefault();
+
+            return onlineID;
+        }
+
+        private void FetchStudioData(int studioID, out string mail, out int? partnerID)
+        {
+            mail = null;
+            partnerID = null;
+
+            using (var db = MdbService.GetDataService<dboPersonEmail>())
+            {
+                var personEmail = db.Read(new { PersonEmailID = studioID })
+                    .SingleOrDefault();
+
+                if (personEmail != null)
+                {
+                    mail = EmailHelper.MergeEmail(personEmail.EmailVor, personEmail.EmailNach);
+
+                    partnerID = db.ExecuteQuery<int?>(
+                        "SELECT sosync_fso_id FROM dbo.Person WHERE PersonID = @id",
+                        new { id = personEmail.PersonID })
+                        .SingleOrDefault();
+
+                    if (string.IsNullOrEmpty(mail) || !partnerID.HasValue)
+                        throw new SyncerException($"Cannot match: E-Mail = '{mail}', partner_id = {partnerID}");
+                }
+                else
+                {
+                    throw new SyncerException($"Model {StudioModelName} ({studioID}) was not found in {SosyncSystem.FundraisingStudio} while matching");
+                }
+            }
+        }
+
+        protected override int? MatchInStudioViaData(int onlineID)
+        {
+            int? studioID = null;
+
+            var frstPersonemail = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new[] { "partner_id", "email" });
+            var email = (string)frstPersonemail["email"];
+            int partnerID = Convert.ToInt32(((List<object>)frstPersonemail["partner_id"])[0]);
+
+            var resPartner = OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
+            int personID = Convert.ToInt32(resPartner["sosync_fs_id"]);
+
+            using (var db = MdbService.GetDataService<dboTypen>())
+            {
+                studioID = db.ExecuteQuery<int?>(
+                    $"SELECT {MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
+                    "WHERE PersonID = @personID AND ISNULL(EmailVor, '') + '@' + ISNULL(EmailNach, '') = @email",
+                    new { personID, email })
+                    .SingleOrDefault();
+            }
+
+            return studioID;
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)

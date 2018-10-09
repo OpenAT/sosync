@@ -321,7 +321,7 @@ namespace Syncer.Flows
                 int odooPartnerId = 0;
                 try
                 {
-                    odooPartnerId = OdooService.Client.CreateModel("res.partner", data, false);
+                    odooPartnerId = OdooService.Client.CreateModel("res.partner", data);
                 }
                 finally
                 {

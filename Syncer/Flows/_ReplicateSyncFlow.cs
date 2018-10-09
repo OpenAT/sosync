@@ -52,9 +52,14 @@ namespace Syncer.Flows
             DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();
 
+            ModelInfo onlineInfo = null;
+            ModelInfo studioInfo = null;
+
+            GetInfos(Job, out studioInfo, out onlineInfo);
+
             if (!SkipAutoSyncSource)
             {
-                SetSyncSource(Job, out initialWriteDate, consistencyWatch);
+                SetSyncSource(Job, out initialWriteDate, consistencyWatch, studioInfo, onlineInfo);
             }
             else
             {
@@ -137,6 +142,19 @@ namespace Syncer.Flows
                     ref requireRestart,
                     ref restartReason);
 
+                LogMs(0, $"\nMatch start", Job.ID, 0);
+                var matchWatch = Stopwatch.StartNew();
+                if (MatchOccured(studioInfo, onlineInfo))
+                {
+                    // If matching was successful, reload write dates
+                    // and re-determine the sync direction
+                    GetInfos(Job, out studioInfo, out onlineInfo);
+                    consistencyWatch.Reset();
+                    SetSyncSource(Job, out initialWriteDate, consistencyWatch, studioInfo, onlineInfo);
+                }
+                matchWatch.Stop();
+                LogMs(0, $"\nMatch end", Job.ID, (long)matchWatch.Elapsed.TotalMilliseconds);
+
                 var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
                 var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
                 HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
@@ -173,17 +191,19 @@ namespace Syncer.Flows
         /// and compares the write dates to determine the sync direction.
         /// </summary>
         /// <param name="job">The job to be updated with the sync source.</param>
-        private void SetSyncSource(SyncJob job, out DateTime? writeDate, Stopwatch consistencyWatch)
+        private void SetSyncSource(
+            SyncJob job,
+            out DateTime? writeDate,
+            Stopwatch consistencyWatch,
+            ModelInfo studioInfo,
+            ModelInfo onlineInfo)
         {
             LogMs(0, $"\n{nameof(SetSyncSource)} start", job.ID, 0);
             Stopwatch s = new Stopwatch();
             s.Start();
             try
             {
-                ModelInfo onlineInfo = null;
-                ModelInfo studioInfo = null;
-
-                GetInfosAndThrowOnInvalidState(job, out studioInfo, out onlineInfo);
+                ThrowOnInvalidState(job, studioInfo, onlineInfo);
 
                 writeDate = null;
 
@@ -258,7 +278,93 @@ namespace Syncer.Flows
             return (onlineInfo == null && studioInfo != null);
         }
 
-        private void GetInfosAndThrowOnInvalidState(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
+        private bool MatchOccured(ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            int? matchedID = null;
+
+            int studioID = 0;
+            int onlineID = 0;
+
+            // Determine the IDs for both systems via matching
+            if (IsModelInOnlineOnly(studioInfo, onlineInfo))
+            {
+                Log.LogInformation($"Trying to match {OnlineModelName} ({onlineInfo.ID}) in {SosyncSystem.FundraisingStudio}");
+                var studioWatch = Stopwatch.StartNew();
+                matchedID = MatchInStudioViaData(onlineInfo.ID);
+                studioWatch.Stop();
+                LogMs(0, $"{nameof(MatchInStudioViaData)}", Job.ID, (long)studioWatch.Elapsed.TotalMilliseconds);
+
+                if (matchedID != null)
+                {
+                    onlineID = onlineInfo.ID;
+                    studioID = matchedID.Value;
+                }
+            }
+            else if (IsModelInStudioOnly(studioInfo, onlineInfo))
+            {
+                Log.LogInformation($"Trying to match {StudioModelName} ({studioInfo.ID}) in {SosyncSystem.FSOnline}");
+                var onlineWatch = Stopwatch.StartNew();
+                matchedID = MatchInOnlineViaData(studioInfo.ID);
+                onlineWatch.Stop();
+                LogMs(0, $"{nameof(MatchInOnlineViaData)}", Job.ID, (long)onlineWatch.Elapsed.TotalMilliseconds);
+
+                if (matchedID != null)
+                {
+                    studioID = studioInfo.ID;
+                    onlineID = matchedID.Value;
+                }
+            }
+
+            // If both IDs are known, update the foreign ID in both
+            // systems accordingly
+            if (studioID > 0 && onlineID > 0)
+            {
+                Log.LogInformation($"Updating {OnlineModelName} {onlineID} setting sosync_fs_id = {studioID}");
+                var onlineWatch = Stopwatch.StartNew();
+                OdooService.Client.UpdateModel(OnlineModelName, new { sosync_fs_id = studioID }, onlineID);
+                onlineWatch.Stop();
+                LogMs(0, $"Update matched ID in {SosyncSystem.FSOnline}", Job.ID, (long)onlineWatch.Elapsed.TotalMilliseconds);
+
+                Log.LogInformation($"Updating {StudioModelName} {studioID} setting sosync_fso_id = {onlineID}");
+                var studioWatch = Stopwatch.StartNew();
+                using (var db = MdbService.GetDataService<dboTypen>())
+                {
+                    db.ExecuteNonQuery(
+                        $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @id",
+                        new { sosync_fso_id = onlineID, id = studioID });
+                }
+                studioWatch.Stop();
+                LogMs(0, $"Update matched ID in {SosyncSystem.FundraisingStudio}", Job.ID, (long)studioWatch.Elapsed.TotalMilliseconds);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Search for the specified studio model in FS-Online. This happens
+        /// after Child Jobs have been processed.
+        /// </summary>
+        /// <param name="studioID">Studio identity to look for</param>
+        /// <returns>The identity in FS-Online.</returns>
+        protected virtual int? MatchInOnlineViaData(int studioID)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Search for the specified online model in FS. This happens
+        /// after Child Jobs have been processed.
+        /// </summary>
+        /// <param name="onlineID">The online identity to look for</param>
+        /// <returns>The identity in FS.</returns>
+        protected virtual int? MatchInStudioViaData(int onlineID)
+        {
+            return null;
+        }
+
+        private void GetInfos(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
         {
             // First off, get the model info from the system that
             // initiated the sync job
@@ -266,7 +372,10 @@ namespace Syncer.Flows
                 GetModelInfosViaOnline(job, out onlineInfo, out studioInfo);
             else
                 GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
+        }
 
+        private void ThrowOnInvalidState(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
             if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
                 throw new SyncerException($"Invalid state in model {job.Job_Source_Model} [fso]: sosync_fs_id={onlineInfo.ForeignID} but sosync_write_date=null and write_date=null.");
 
