@@ -142,6 +142,7 @@ namespace Syncer.Flows
                     ref requireRestart,
                     ref restartReason);
 
+                // Matching ------------------
                 LogMs(0, $"\nMatch start", Job.ID, 0);
                 var matchWatch = Stopwatch.StartNew();
                 if (MatchOccured(studioInfo, onlineInfo))
@@ -154,6 +155,7 @@ namespace Syncer.Flows
                 }
                 matchWatch.Stop();
                 LogMs(0, $"\nMatch end", Job.ID, (long)matchWatch.Elapsed.TotalMilliseconds);
+                // ------------------
 
                 var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
                 var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
