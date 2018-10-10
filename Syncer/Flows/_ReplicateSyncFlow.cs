@@ -645,7 +645,9 @@ namespace Syncer.Flows
             int onlineID,
             TransformType action,
             Func<TStudio, int> getStudioIdentity,
-            Action<TOdoo, TStudio> copyOdooToStudio
+            Action<TOdoo, TStudio> copyOdooToStudio,
+            dboAktion parentAction = null,
+            Action<dboAktion, TStudio> applyIdentity = null
             )
             where TOdoo : SosyncModelBase
             where TStudio : MdbModelBase, ISosyncable, new()
@@ -673,11 +675,29 @@ namespace Syncer.Flows
 
                     copyOdooToStudio(onlineModel, studioModel);
 
-                    UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                    // If the model is an action, protocol both the Aktion and the Aktion*-Table
+                    // Without an action, just protocol the model itself
+                    if (parentAction != null)
+                        UpdateSyncTargetRequest(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                    else
+                        UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                    // ---
 
                     var studioModelID = 0;
                     try
                     {
+                        // If an action was specified, save that action first,
+                        // then apply the identity to the studio model
+                        // (studio model is an Aktion* Model in that case)
+                        if (parentAction != null)
+                        {
+                            using (var dbAk = MdbService.GetDataService<dboAktion>())
+                            {
+                                dbAk.Create(parentAction);
+                                applyIdentity(parentAction, studioModel);
+                            }
+                        }
+
                         db.Create(studioModel);
                         studioModelID = getStudioIdentity(studioModel);
                         UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, studioModelID);
@@ -702,17 +722,38 @@ namespace Syncer.Flows
                         new { ID = sosync_fs_id })
                         .SingleOrDefault();
 
-                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioModel));
+                    // If the model is an action, protocol both the Aktion and the Aktion*-Table
+                    // Without an action, just protocol the model itself
+                    if (parentAction != null)
+                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                    else
+                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioModel));
+                    // ---
 
                     copyOdooToStudio(onlineModel, studioModel);
 
                     studioModel.sosync_write_date = onlineModel.Sosync_Write_Date ?? onlineModel.Write_Date;
                     studioModel.noSyncJobSwitch = true;
 
-                    UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                    // If the model is an action, protocol both the Aktion and the Aktion*-Table
+                    // Without an action, just protocol the model itself
+                    if (parentAction != null)
+                        UpdateSyncTargetRequest(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                    else
+                        UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                    // ---
 
                     try
                     {
+                        // If an action was specified, save that action first
+                        if (parentAction != null)
+                        {
+                            using (var dbAk = MdbService.GetDataService<dboAktion>())
+                            {
+                                dbAk.Update(parentAction);
+                            }
+                        }
+
                         db.Update(studioModel);
                         UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, null);
                     }
