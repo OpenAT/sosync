@@ -1,14 +1,14 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "aad205838838c881da2e6b775ec1445d02196c75"
+    "signature": "edb3f8ab47b7c4c518e4b205cc38701b0a4d4389"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
-          "DaDi.Odoo": "1.1.8",
+          "DaDi.Odoo": "1.2.1",
           "Dapper": "1.50.4",
           "Npgsql": "3.2.7",
           "System.Data.SqlClient": "4.4.3"
@@ -17,7 +17,7 @@
           "MassDataCorrection.dll": {}
         }
       },
-      "DaDi.Odoo/1.1.8": {
+      "DaDi.Odoo/1.2.1": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.1",
           "Microsoft.CSharp": "4.4.1"
@@ -233,12 +233,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "DaDi.Odoo/1.1.8": {
+    "DaDi.Odoo/1.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-dnyrt0SiyiF2n2V+1M/acqWtazlgXmyY1HfXvV6vD2eQ+EfiB4us3dFX9XSzYDP9dEeyoULlR9Fxk/3lxi/VSg==",
-      "path": "dadi.odoo/1.1.8",
-      "hashPath": "dadi.odoo.1.1.8.nupkg.sha512"
+      "sha512": "sha512-wY3A6QAqc+ki3xrGJohQWq8XMfZLDsiATtVwm5S2/ZAGwKU+r0kB98F/QwhyTezkIYtN6eC6LZmCkAOaLjBfcg==",
+      "path": "dadi.odoo/1.2.1",
+      "hashPath": "dadi.odoo.1.2.1.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.1": {
       "type": "package",
