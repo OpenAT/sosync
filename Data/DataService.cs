@@ -13,6 +13,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace WebSosync.Data
 {
@@ -76,6 +77,11 @@ namespace WebSosync.Data
         #endregion
 
         #region Methods
+        public IDbTransaction BeginTransaction()
+        {
+            return _con.BeginTransaction();
+        }
+
         public int ClosePreviousJobs(SyncJob closingSourceJob)
         {
             var parameters = new
@@ -181,7 +187,7 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateJob(SyncJob job, string parentPath)
+        public void CreateJob(SyncJob job, string parentPath, IDbTransaction transaction = null)
         {
             if (parentPath == null)
                 parentPath = "";
@@ -193,7 +199,7 @@ namespace WebSosync.Data
             var queryParams = new DynamicParameters(job);
             queryParams.Add("@ParentPath", parentPath);
 
-            var inserted = _con.Query<JobInsertedInfo>(SQL_CreateJob, queryParams).Single();
+            var inserted = _con.Query<JobInsertedInfo>(SQL_CreateJob, queryParams, transaction).Single();
             job.ID = inserted.ID;
             job.Parent_Path = inserted.Parent_Path;
         }

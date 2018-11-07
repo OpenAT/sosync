@@ -100,12 +100,18 @@ namespace WebSosync.Controllers
             // If no validation failed, create all jobs
             if (!isBadRequest)
             {
+                var jobs = new List<SyncJob>(dictionaryList.Length);
+
                 for (int i = 0; i < dictionaryList.Length; i++)
                 {
-                    var job = ParseJob(services, dictionaryList[i]);
-                    StoreJob(services, job);
-                    result[i].ID = job.ID;
+                    jobs.Add(ParseJob(services, dictionaryList[i]));
+                    //var job = ParseJob(services, dictionaryList[i]);
                 }
+
+                StoreJobs(services, jobs);
+
+                for (int i = 0; i < dictionaryList.Length; i++)
+                    result[i].ID = jobs[i].ID;
 
                 // Start the sync background job
                 _jobWorker.Start();
@@ -219,7 +225,22 @@ namespace WebSosync.Controllers
                 db.CreateJob(job, "");
             }
         }
-        
+
+        private void StoreJobs(IServiceProvider services, List<SyncJob> jobs)
+        {
+            using (var db = (DataService)services.GetService(typeof(DataService)))
+            {
+                var trans = db.BeginTransaction();
+
+                foreach (var job in jobs)
+                {
+                    db.CreateJob(job, "", trans);
+                }
+
+                trans.Commit();
+            }
+        }
+
         [HttpGet("retryfailed")]
         public IActionResult RetryFailed([FromServices] DataService db)
         {
