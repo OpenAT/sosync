@@ -24,6 +24,10 @@ namespace WebSosync.Data
         private const string UndefinedObjectError = "42704";
         #endregion
 
+        #region Properties
+        public NpgsqlConnection Connection { get { return _con; } }
+        #endregion
+
         #region Members
         private static string SQL_CreateJob;
         private static string SQL_UpdateJob;

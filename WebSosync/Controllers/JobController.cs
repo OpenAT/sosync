@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PostgreSQLCopyHelper;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
@@ -84,7 +85,6 @@ namespace WebSosync.Controllers
                 return new BadRequestResult();
 
             var isBadRequest = false;
-            var result = new List<JobResultDto>();
 
             // Validate all dictionaries in batch
             foreach (var dictionary in dictionaryList)
@@ -93,8 +93,6 @@ namespace WebSosync.Controllers
 
                 if (validationResult.ErrorCode != (int)JobErrorCode.None)
                     isBadRequest = true;
-
-                result.Add(validationResult);
             }
 
             // If no validation failed, create all jobs
@@ -110,16 +108,13 @@ namespace WebSosync.Controllers
 
                 StoreJobs(services, jobs);
 
-                for (int i = 0; i < dictionaryList.Length; i++)
-                    result[i].ID = jobs[i].ID;
-
                 // Start the sync background job
                 _jobWorker.Start();
 
-                return new OkObjectResult(result);
+                return new OkObjectResult("success");
             }
 
-            return new BadRequestObjectResult(result);
+            return new BadRequestObjectResult("error");
         }
 
         private JobResultDto ValidateDictionary(Dictionary<string, object> data)
@@ -228,17 +223,32 @@ namespace WebSosync.Controllers
 
         private void StoreJobs(IServiceProvider services, List<SyncJob> jobs)
         {
+            var s = Stopwatch.StartNew();
+
+            // Only map relevant fields
+            var bulk = new PostgreSQLCopyHelper<SyncJob>("public", "sosync_job")
+                .MapTimeStamp("job_date", x => x.Job_Date)
+                .MapText("job_state", x => x.Job_State)
+                .MapText("job_source_type", x => x.Job_Source_Type)
+                .MapText("job_source_system", x => x.Job_Source_System)
+                .MapText("job_source_model", x => x.Job_Source_Model)
+                .MapInteger("job_source_record_id", x => x.Job_Source_Record_ID)
+                .MapInteger("job_source_merge_into_record_id", x => x.Job_Source_Merge_Into_Record_ID)
+                .MapInteger("job_source_target_record_id", x => x.Job_Source_Target_Record_ID)
+                .MapText("job_source_fields", x => x.Job_Source_Fields)
+                .MapTimeStamp("job_source_sosync_write_date", x => x.Job_Source_Sosync_Write_Date)
+                .MapTimeStamp("write_date", x => x.Write_Date)
+                .MapInteger("job_priority", x => x.Job_Priority);
+
             using (var db = (DataService)services.GetService(typeof(DataService)))
             {
                 var trans = db.BeginTransaction();
-
-                foreach (var job in jobs)
-                {
-                    db.CreateJob(job, "", trans);
-                }
-
+                bulk.SaveAll(db.Connection, jobs);
                 trans.Commit();
             }
+
+            s.Stop();
+            _log.LogInformation($"Bulk-Insert of {jobs.Count} jobs took {SpecialFormat.FromMilliseconds(s.Elapsed.Milliseconds)}");
         }
 
         [HttpGet("retryfailed")]
