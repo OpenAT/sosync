@@ -224,6 +224,7 @@ namespace WebSosync.Controllers
         private void StoreJobs(IServiceProvider services, List<SyncJob> jobs)
         {
             var s = Stopwatch.StartNew();
+            var create_date = DateTime.UtcNow;
 
             // Only map relevant fields
             var bulk = new PostgreSQLCopyHelper<SyncJob>("public", "sosync_job")
@@ -238,6 +239,8 @@ namespace WebSosync.Controllers
                 .MapText("job_source_fields", x => x.Job_Source_Fields)
                 .MapTimeStamp("job_source_sosync_write_date", x => x.Job_Source_Sosync_Write_Date)
                 .MapTimeStamp("write_date", x => x.Write_Date)
+                .MapTimeStamp("job_fetched", x => create_date)
+                .MapTimeStamp("create_date", x => create_date)
                 .MapInteger("job_priority", x => x.Job_Priority);
 
             using (var db = (DataService)services.GetService(typeof(DataService)))
