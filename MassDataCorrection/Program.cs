@@ -42,8 +42,11 @@ namespace MassDataCorrection
                 //processor.Process(CheckGroups, null);
                 //PrintDictionary(groupsStats);
 
-                processor.Process(RestartDonationReportJobs, null);
-                PrintDictionary(_restartDonationReportsCounts);
+                //processor.Process(RestartDonationReportJobs, null);
+
+                processor.Process(CheckDonationReports, new[] { "diaa" });
+                //processor.Process(CheckDonationReports, null);
+                PrintDictionary(_checkDonationReport);
 
                 //processor.Process(RestartBpkJobs, null);
                 //PrintDictionary(_restartBpkCounts);
@@ -455,7 +458,7 @@ namespace MassDataCorrection
             }
         }
 
-        private static void PrintDictionary(Dictionary<string, int> dic)
+        private static void PrintDictionary<T>(Dictionary<string, T> dic)
         {
             foreach (var item in dic)
             {
@@ -562,6 +565,34 @@ namespace MassDataCorrection
                 }
             }
             Console.WriteLine();
+        }
+
+        private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
+        private static void CheckDonationReports(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+            {
+                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                return;
+            }
+
+            List<DonationReport> fsoDonations;
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoDonations = onlineCon
+                    .Query<DonationReport>("select id ID, sosync_fs_id ForeignID, state State, sosync_write_date SosyncWriteDate from res_partner_donation_report")
+                    .ToList();
+
+                _checkDonationReport.Add(info.Instance, $"");
+            }
+
+            List<DonationReport> fsDonations;
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsDonations = fsCon
+                    .Query<DonationReport>("select AktionsID ID, sosync_fso_id ForeignID, ")
+                    .ToList();
+            }
         }
     }
 }
