@@ -30,6 +30,14 @@ namespace MassDataCorrection
             return con;
         }
 
+        public SqlConnection CreateOpenMssqlIntegratedConnection()
+        {
+            var conStr = $"Data Source=mssql.{Instance}.datadialog.net; Initial Catalog=mdb_{Instance}; Integrated Security=True;";
+            var con = new SqlConnection(conStr);
+            con.Open();
+            return con;
+        }
+
         public OdooClient CreateAuthenticatedOdooClient()
         {
             var address = $"http://{Instance}.datadialog.net/xmlrpc/2/";

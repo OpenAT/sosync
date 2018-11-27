@@ -9,6 +9,6 @@ namespace MassDataCorrection.Models
         public int ID { get; set; }
         public int ForeignID { get; set; }
         public string State { get; set; }
-        public string SosyncWriteDate { get; set; }
+        public DateTime? SosyncWriteDate { get; set; }
     }
 }

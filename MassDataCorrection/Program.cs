@@ -44,7 +44,7 @@ namespace MassDataCorrection
 
                 //processor.Process(RestartDonationReportJobs, null);
 
-                processor.Process(CheckDonationReports, new[] { "diaa" });
+                processor.Process(CheckDonationReports, new[] { "bsvw" });
                 //processor.Process(CheckDonationReports, null);
                 PrintDictionary(_checkDonationReport);
 
@@ -570,28 +570,128 @@ namespace MassDataCorrection
         private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
         private static void CheckDonationReports(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            var skip = new[] {
+                "dadi"
+                ,"aahs"
+                ,"apfo"
+                ,"avnc"
+                ,"deve"
+                ,"rnga"
+                ,"tiqu"
+                ,"diak"
+                ,"jeki"
+                ,"kich"
+                ,"myeu"
+                ,"nphc"
+                ,"otiv"
+                ,"rnde"
+                ,"wdcs"
+                ,"rona"
+            };
+
+            if (skip.Contains(info.Instance))
             {
-                Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
+                Console.WriteLine($"Skipping {info.Instance}");
                 return;
             }
 
-            List<DonationReport> fsoDonations;
+            Dictionary<int, DonationReport> fsoDonations = null;
+            Dictionary<int, DonationReport> fsDonations = null;
+
+            if (info.host_sosync == "sosync2")
+                CheckSosync2Donations(info, reportProgress, out fsoDonations, out fsDonations);
+            else if (info.host_sosync == "sosync1")
+                CheckSosync1Donations(info, reportProgress, out fsoDonations, out fsDonations);
+
+            // Compare results
+
+            var diffCount = 0;
+            var missingCount = 0;
+            foreach (var item in fsDonations)
+            {
+                var fsItem = item.Value;
+                DonationReport fsoItem = null;
+
+                if (fsoDonations.ContainsKey(item.Value.ForeignID))
+                    fsoItem = fsoDonations[item.Value.ForeignID];
+
+                if (fsoItem != null)
+                {
+                    //if (fsItem.State != fsoItem.State
+                    //    || (info.host_sosync == "sosync2" && fsItem.SosyncWriteDate != fsoItem.SosyncWriteDate.Value.AddHours(-1)))
+                    //{
+                    //    diffCount++;
+                    //    Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
+                    //}
+
+                    if (fsItem.State != fsoItem.State)
+                    {
+                        diffCount++;
+                        Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
+                    }
+
+                    //if (fsItem.State == fsoItem.State
+                    //    && (info.host_sosync == "sosync2" && fsItem.SosyncWriteDate != fsoItem.SosyncWriteDate.Value.AddHours(-2)))
+                    //{
+                    //}
+                }
+                else
+                {
+                    missingCount++;
+                }
+            }
+            Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+            _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+        }
+
+        private static void CheckSosync2Donations(
+            InstanceInfo info, 
+            Action<float> reportProgress, 
+            out Dictionary<int, DonationReport> fsoDonations, 
+            out Dictionary<int, DonationReport>  fsDonations)
+        {
             using (var onlineCon = info.CreateOpenNpgsqlConnection())
             {
                 fsoDonations = onlineCon
                     .Query<DonationReport>("select id ID, sosync_fs_id ForeignID, state State, sosync_write_date SosyncWriteDate from res_partner_donation_report")
-                    .ToList();
-
-                _checkDonationReport.Add(info.Instance, $"");
+                    .ToDictionary(x => x.ID);
             }
 
-            List<DonationReport> fsDonations;
             using (var fsCon = info.CreateOpenMssqlConnection())
             {
                 fsDonations = fsCon
-                    .Query<DonationReport>("select AktionsID ID, sosync_fso_id ForeignID, ")
-                    .ToList();
+                    .Query<DonationReport>("select AktionsID ID, sosync_fso_id ForeignID, Status State, sosync_write_date SosyncWriteDate from dbo.AktionSpendenmeldungBPK")
+                    .ToDictionary(x => x.ID);
+            }
+        }
+
+        private static void CheckSosync1Donations(
+            InstanceInfo info,
+            Action<float> reportProgress,
+            out Dictionary<int, DonationReport> fsoDonations,
+            out Dictionary<int, DonationReport> fsDonations)
+        {
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoDonations = onlineCon
+                    .Query<DonationReport>("select id ID, sosync_fs_id ForeignID, state State, null SosyncWriteDate from res_partner_donation_report")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlIntegratedConnection())
+            {
+                fsDonations = fsCon
+                    .Query<DonationReport>(@"SELECT
+	                                            mssqlBPK.AktionsID ID
+	                                            ,odooBPK.id ForeignID
+	                                            ,odooBPK.state
+	                                            ,mssqlBPK.sosync_write_date SosyncWriteDate 
+                                            FROM
+	                                            dbo.xAktionSpendenmeldungBPK mssqlBPK
+	                                            INNER JOIN odoo.res_partner_donation_report odooBPK
+		                                            ON mssqlBPK.AktionsID = odooBPK.MDBID
+                                            ")
+                    .ToDictionary(x => x.ID);
             }
         }
     }
