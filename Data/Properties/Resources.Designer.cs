@@ -91,7 +91,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sosync_job
-        ///		where job_date &gt; now() - interval &apos;365 days&apos; and parent_job_id is null and job_state = &apos;new&apos;
+        ///		where parent_job_id is null and job_state = &apos;new&apos;
         ///        order by job_priority desc, job_date desc
         ///        limit %LIMIT%
         ///	) first_parent
