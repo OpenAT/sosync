@@ -56,7 +56,7 @@ namespace MassDataCorrection
 
         public NpgsqlConnection CreateOpenSyncerNpgsqlConnection()
         {
-            var conStr = $"User ID={Instance}; Password={sosync_pgsql_pw}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}; Pooling=true;";
+            var conStr = $"User ID={Instance}; Password={sosync_pgsql_pw}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}_sosync_gui; Pooling=true;";
             var con = new NpgsqlConnection(conStr);
             con.Open();
             return con;

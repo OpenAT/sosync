@@ -9,6 +9,8 @@ using Dapper;
 using MassDataCorrection.Models;
 using MassDataCorrection.Properties;
 using DaDi.Odoo.Models;
+using WebSosync.Data.Models;
+using WebSosync.Data;
 
 namespace MassDataCorrection
 {
@@ -44,8 +46,9 @@ namespace MassDataCorrection
 
                 //processor.Process(RestartDonationReportJobs, null);
 
-                processor.Process(CheckDonationReports, new[] { "bsvw" });
-                //processor.Process(CheckDonationReports, null);
+                //processor.Process(CheckDonationReports, new[] { "lhsa" });
+                processor.Process(CheckDonationReports, null);
+
                 PrintDictionary(_checkDonationReport);
 
                 //processor.Process(RestartBpkJobs, null);
@@ -570,6 +573,9 @@ namespace MassDataCorrection
         private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
         private static void CheckDonationReports(InstanceInfo info, Action<float> reportProgress)
         {
+            if (info.host_sosync != "sosync2")
+                return;
+
             var skip = new[] {
                 "dadi"
                 ,"aahs"
@@ -603,45 +609,86 @@ namespace MassDataCorrection
             else if (info.host_sosync == "sosync1")
                 CheckSosync1Donations(info, reportProgress, out fsoDonations, out fsDonations);
 
+            var rpc = info.CreateAuthenticatedOdooClient();
+
             // Compare results
 
-            var diffCount = 0;
-            var missingCount = 0;
-            foreach (var item in fsDonations)
+            using (var db = info.CreateOpenMssqlIntegratedConnection())
             {
-                var fsItem = item.Value;
-                DonationReport fsoItem = null;
-
-                if (fsoDonations.ContainsKey(item.Value.ForeignID))
-                    fsoItem = fsoDonations[item.Value.ForeignID];
-
-                if (fsoItem != null)
+                var diffCount = 0;
+                var missingCount = 0;
+                foreach (var item in fsDonations)
                 {
-                    //if (fsItem.State != fsoItem.State
-                    //    || (info.host_sosync == "sosync2" && fsItem.SosyncWriteDate != fsoItem.SosyncWriteDate.Value.AddHours(-1)))
-                    //{
-                    //    diffCount++;
-                    //    Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
-                    //}
+                    var fsItem = item.Value;
+                    DonationReport fsoItem = null;
 
-                    if (fsItem.State != fsoItem.State)
+                    if (fsoDonations.ContainsKey(item.Value.ForeignID))
+                        fsoItem = fsoDonations[item.Value.ForeignID];
+
+                    if (fsoItem != null)
                     {
-                        diffCount++;
-                        Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
-                    }
+                        if (fsItem.State != fsoItem.State)
+                        {
+                            try
+                            {
+                                diffCount++;
+                                Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
 
-                    //if (fsItem.State == fsoItem.State
-                    //    && (info.host_sosync == "sosync2" && fsItem.SosyncWriteDate != fsoItem.SosyncWriteDate.Value.AddHours(-2)))
-                    //{
-                    //}
+                                //db.Execute($@"
+                                //UPDATE dbo.AktionSpendenmeldungBPK
+                                //SET sosync_write_date = DATEADD(HOUR, -3, sosync_write_date)
+                                //WHERE AktionsID = @AktionsID;", new { AktionsID = item.Key });
+
+                                //var i = db.Execute(@"
+                                //insert into sosync.JobQueue
+                                //(
+                                //    JobDate
+                                //    ,JobSourceSystem
+                                //    ,JobSourceModel
+                                //    ,JobSourceRecordID
+                                //    ,JobState
+                                //    ,JobSourceSosyncWriteDate
+                                //    ,JobSourceFields
+                                //)
+                                //values (
+                                //    @JobDate
+                                //    ,@JobSourceSystem
+                                //    ,@JobSourceModel
+                                //    ,@JobSourceRecordID
+                                //    ,@JobState
+                                //    ,@JobSourceSosyncWriteDate
+                                //    ,@JobSourceFields
+                                //)
+                                //",
+                                //    new
+                                //    {
+                                //        JobDate = fsItem.SosyncWriteDate.Value,
+                                //        JobSourceSystem = SosyncSystem.FundraisingStudio,
+                                //        JobSourceModel = "dbo.AktionSpendenmeldungBPK",
+                                //        JobSourceRecordID = fsItem.ID,
+                                //        JobState = "new",
+                                //        JobSourceSosyncWriteDate = fsItem.SosyncWriteDate.Value,
+                                //        JobSourceFields = $"{{ \"sosync_write_date\": \"{fsItem.SosyncWriteDate.Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}\" }}"
+                                //    });
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        missingCount++;
+                    }
                 }
-                else
-                {
-                    missingCount++;
-                }
+
+                Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+
+                if (diffCount > 0 || missingCount > 0)
+                    _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
             }
-            Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
-            _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
         }
 
         private static void CheckSosync2Donations(
