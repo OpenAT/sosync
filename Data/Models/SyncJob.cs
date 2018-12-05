@@ -30,6 +30,10 @@ namespace WebSosync.Data.Models
         [IgnoreDataMember]
         public DateTime? Write_Date { get; set; }
 
+        [DataMember(Name = "create_date")]
+        [IgnoreDataMember]
+        public DateTime? Create_Date { get; set; }
+
         [DataMember(Name = "job_closed_by_job_id")]
         [IgnoreDataMember]
         public int? Job_Closed_By_Job_ID { get; set; }
