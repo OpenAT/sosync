@@ -5,6 +5,7 @@ using System.Text;
 using DaDi.Odoo.Models.Payments;
 using dadi_data.Models;
 using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
 using Syncer.Services;
@@ -13,6 +14,8 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows.Payments
 {
+    [StudioModel(Name = "fson.payment_acquirer")]
+    [OnlineModel(Name = "payment.acquirer")]
     public class PaymentAcquirerFlow
         : ReplicateSyncFlow
     {
