@@ -43,24 +43,15 @@ namespace Syncer.Flows.Payments
                 {
                     studio.name = online.name;
                     studio.do_not_send_status_email = online.do_not_send_status_email;
-
-                    studio.sel_key__environment = online.environment.Keys.First();
-                    studio.sel_val__environment = online.environment[online.environment.Keys.First()];
-
+                    studio.environment = online.environment;
                     studio.globally_hidden = online.globally_hidden;
                     studio.ogonedadi_brand = online.ogonedadi_brand;
                     studio.ogonedadi_pm = online.ogonedadi_pm;
                     studio.ogonedadi_userid = online.ogonedadi_userid;
-
-                    studio.sel_key__provider = online.provider.Keys.First();
-                    studio.sel_val__provider = online.provider[online.provider.Keys.First()];
-
+                    studio.provider = online.provider;
                     studio.recurring_transactions = online.recurring_transactions;
                     studio.redirect_url_after_form_feedback = online.redirect_url_after_form_feedback;
-
-                    studio.sel_key__validation = online.validation.Keys.First();
-                    studio.sel_val__validation = online.validation[online.validation.Keys.First()];
-
+                    studio.validation = online.validation;
                     studio.website_published = online.website_published;
                 });
         }

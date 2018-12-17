@@ -70,16 +70,9 @@ namespace Syncer.Flows.Payments
                    
                     studio.name = online.name;
                     studio.product_payment_intervalID__payment_interval_default = product_payment_intervalID;
-
-                    studio.sel_key__fs_product_type = online.fs_product_type.Keys.First();
-                    studio.sel_val__fs_product_type = online.fs_product_type[online.fs_product_type.Keys.First()];
-
-                    studio.sel_key__product_page_template = online.product_page_template.Keys.First();
-                    studio.sel_val__product_page_template = online.product_page_template[online.product_page_template.Keys.First()];
-
-                    studio.sel_key__type = online.type.Keys.First();
-                    studio.sel_val__type = online.type[online.type.Keys.First()];
-
+                    studio.fs_product_type = online.fs_product_type;
+                    studio.product_page_template = online.product_page_template;
+                    studio.type = online.type;
                     studio.active = online.active;
                     studio.description_sale = online.description_sale;
                     studio.website_url = online.website_url;
