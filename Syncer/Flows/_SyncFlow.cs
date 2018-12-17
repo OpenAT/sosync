@@ -136,6 +136,27 @@ namespace Syncer.Flows
         }
 
         /// <summary>
+        /// Get the specified foreign key for an online model via FSOnline.
+        /// </summary>
+        /// <param name="onlineModelName">Model name in Odoo</param>
+        /// <param name="id">Identity in Odoo</param>
+        /// <param name="onlineReferenceField">Field name to return</param>
+        /// <returns></returns>
+        protected int? GetOnlineReferenceID(string onlineModelName, int id, string onlineReferenceField)
+        {
+            var odooDict = OdooService.Client.GetDictionary(
+                onlineModelName,
+                id,
+                new[] { onlineReferenceField });
+
+            if (!odooDict.ContainsKey(onlineReferenceField))
+                return null;
+
+            return OdooConvert.ToInt32(
+                (string)((List<object>)odooDict[onlineReferenceField])[0]);
+        }
+
+        /// <summary>
         /// Get IDs and write date for the model in studio.
         /// </summary>
         /// <param name="studioID">The Studio ID for the model.</param>
