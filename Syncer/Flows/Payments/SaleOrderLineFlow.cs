@@ -14,7 +14,7 @@ using WebSosync.Data.Models;
 namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.sale_order_line")]
-    [OnlineModel(Name = "sale.order_line")]
+    [OnlineModel(Name = "sale.order.line")]
     public class SaleOrderLineFlow
         : ReplicateSyncFlow
     {
