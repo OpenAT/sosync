@@ -117,6 +117,7 @@ namespace Syncer.Flows
                 { "betrag", meldung.Betrag },
                 { "cancellation_for_bpk_private", meldung.CancellationForBpkPrivate },
                 { "info", meldung.Info },
+                { "force_submission", meldung.ForceSubmission },
                 { "sosync_write_date", meldung.sosync_write_date }
             };
 
@@ -279,8 +280,8 @@ namespace Syncer.Flows
             dest.ErrorType = source.error_type;
             dest.ErrorCode = source.error_code;
             dest.ErrorDetail = source.error_detail;
-
             dest.ResponseErrorOrigRefnr = source.response_error_orig_refnr;
+            dest.ForceSubmission = source.force_submission;
 
             // -- source.report_erstmeldung_id;
             // -- source.report_follow_up_ids;
