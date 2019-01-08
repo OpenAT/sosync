@@ -60,13 +60,14 @@ namespace Syncer.Flows.Payments
                 studio => studio.product_templateID,
                 (online, studio) =>
                 {
-                    int? product_payment_intervalID;
+                    int? product_payment_intervalID = null;
 
                     var studioModel = "fson.product_payment_interval";
-                    product_payment_intervalID = GetStudioIDFromMssqlViaOnlineID(
-                        studioModel, 
-                        MdbService.GetStudioModelIdentity(studioModel),
-                        (int)online.payment_interval_default[0]);
+                    if (online.payment_interval_default != null)
+                        product_payment_intervalID = GetStudioIDFromMssqlViaOnlineID(
+                            studioModel, 
+                            MdbService.GetStudioModelIdentity(studioModel),
+                            Convert.ToInt32(online.payment_interval_default[0]));
                    
                     studio.name = online.name;
                     studio.product_payment_intervalID__payment_interval_default = product_payment_intervalID;

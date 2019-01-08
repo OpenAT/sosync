@@ -63,11 +63,11 @@ namespace Syncer.Flows.Payments
                     product_templateID = GetStudioIDFromMssqlViaOnlineID(
                         studioModel,
                         MdbService.GetStudioModelIdentity(studioModel),
-                        (int)online.product_tmpl_id[0]);
+                        Convert.ToInt32(online.product_tmpl_id[0]));
 
                     studio.product_templateID = product_templateID;
                     studio.default_code = online.default_code;
-                    studio.create_date = online.create_date.Value;
+                    studio.fso_create_date = online.create_date.Value;
                 });
         }
     }

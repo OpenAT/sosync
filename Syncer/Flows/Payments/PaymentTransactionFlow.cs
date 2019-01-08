@@ -24,7 +24,7 @@ namespace Syncer.Flows.Payments
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            throw new NotImplementedException();
+            return GetDefaultStudioModelInfo<fsonpayment_transaction>(studioID);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -46,7 +46,8 @@ namespace Syncer.Flows.Payments
                     studio.acquirer_reference = online.acquirer_reference;
                     studio.esr_reference_number = online.esr_reference_number;
                     studio.reference = online.reference;
-                    studio.create_date = online.create_date.Value;
+                    studio.fso_create_date = online.create_date.Value;
+                    studio.amount = online.amount;
                 });
         }
     }

@@ -36,11 +36,11 @@ namespace Syncer.Flows.Payments
         {
             var model = OdooService.Client.GetModel<saleOrderLine>(OnlineModelName, onlineID);
 
-            RequestChildJob(SosyncSystem.FSOnline, "sale.order", (int)model.order_id[0]);
-            RequestChildJob(SosyncSystem.FSOnline, "product.product", (int)model.product_id[0]);
+            RequestChildJob(SosyncSystem.FSOnline, "sale.order", Convert.ToInt32(model.order_id[0]));
+            RequestChildJob(SosyncSystem.FSOnline, "product.product", Convert.ToInt32(model.product_id[0]));
 
             if (model.payment_interval_id != null && model.payment_interval_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "product.product_interval", (int)model.payment_interval_id[0]);
+                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", Convert.ToInt32(model.payment_interval_id[0]));
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }
@@ -58,25 +58,29 @@ namespace Syncer.Flows.Payments
                 studio => studio.sale_order_lineID,
                 (online, studio) =>
                 {
-                    var orderModel = "sale.order";
+                    var orderModel = "fson.sale_order";
                     var orderID = GetStudioIDFromMssqlViaOnlineID(
                         orderModel,
                         MdbService.GetStudioModelIdentity(orderModel),
-                        (int)online.order_id[0])
+                        Convert.ToInt32(online.order_id[0]))
                         .Value;
 
-                    var productModel = "product.product";
+                    var productModel = "fson.product_product";
                     var productID = GetStudioIDFromMssqlViaOnlineID(
                         productModel,
                         MdbService.GetStudioModelIdentity(productModel),
-                        (int)online.product_id[0])
+                        Convert.ToInt32(online.product_id[0]))
                         .Value;
 
-                    var intervalModel = "product.payment_interval";
-                    var intervalID = GetStudioIDFromMssqlViaOnlineID(
-                        intervalModel,
-                        MdbService.GetStudioModelIdentity(intervalModel),
-                        (int)online.payment_interval_id[0]);
+                    int? intervalID = null;
+                    if (online.payment_interval_id != null && online.payment_interval_id.Length > 1)
+                    {
+                        var intervalModel = "fson.product_payment_interval";
+                        intervalID = GetStudioIDFromMssqlViaOnlineID(
+                            intervalModel,
+                            MdbService.GetStudioModelIdentity(intervalModel),
+                            Convert.ToInt32(online.payment_interval_id[0]));
+                    }
 
                     studio.sale_orderID = orderID;
                     studio.product_productID = productID;

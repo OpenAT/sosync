@@ -36,13 +36,13 @@ namespace Syncer.Flows.Payments
         {
             var online = OdooService.Client.GetModel<saleOrder>(OnlineModelName, onlineID);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", (int)online.partner_id[0]);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.partner_id[0]));
 
-            if (online.payment_tx_id != null || online.payment_tx_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "payment.transaction", (int)online.payment_tx_id[0]);
+            if (online.payment_tx_id != null && online.payment_tx_id.Length > 1)
+                RequestChildJob(SosyncSystem.FSOnline, "payment.transaction", Convert.ToInt32(online.payment_tx_id[0]));
 
-            if (online.payment_acquirer_id != null || online.payment_acquirer_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "payment.acquirer", (int)online.payment_acquirer_id[0]);
+            if (online.payment_acquirer_id != null && online.payment_acquirer_id.Length > 1)
+                RequestChildJob(SosyncSystem.FSOnline, "payment.acquirer", Convert.ToInt32(online.payment_acquirer_id[0]));
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }
@@ -64,26 +64,34 @@ namespace Syncer.Flows.Payments
                     var personID = GetStudioIDFromMssqlViaOnlineID(
                         personModel,
                         MdbService.GetStudioModelIdentity(personModel),
-                        (int)online.partner_id[0])
+                        Convert.ToInt32(online.partner_id[0]))
                         .Value;
 
                     var transModel = "fson.payment_transaction";
-                    var paymentTransactionID = GetStudioIDFromMssqlViaOnlineID(
-                        transModel,
-                        MdbService.GetStudioModelIdentity(transModel),
-                        (int)online.payment_tx_id[0]);
+                    int? paymentTransactionID = null;
+                    if (online.payment_tx_id != null && online.payment_tx_id.Length > 1)
+                    {
+                        paymentTransactionID = GetStudioIDFromMssqlViaOnlineID(
+                            transModel,
+                            MdbService.GetStudioModelIdentity(transModel),
+                            Convert.ToInt32(online.payment_tx_id[0]));
+                    }
 
                     var acquirerModel = "fson.payment_acquirer";
-                    var acquirerID = GetStudioIDFromMssqlViaOnlineID(
+                    int? acquirerID = null;
+                    if (online.payment_acquirer_id != null && online.payment_acquirer_id.Length > 1)
+                    {
+                        acquirerID = GetStudioIDFromMssqlViaOnlineID(
                         acquirerModel,
                         MdbService.GetStudioModelIdentity(acquirerModel),
-                        (int)online.payment_acquirer_id[0]);
+                        Convert.ToInt32(online.payment_acquirer_id[0]));
+                    }
 
                     studio.PersonID = personID;
                     studio.payment_transactionID = paymentTransactionID;
                     studio.payment_acquirerID = acquirerID;
 
-                    studio.create_date = online.create_date.Value;
+                    studio.fso_create_date = online.create_date.Value;
                     studio.date_order = online.date_order;
                     studio.amount_total = online.amount_total;
                     studio.state = online.state;

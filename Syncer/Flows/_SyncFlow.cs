@@ -152,8 +152,14 @@ namespace Syncer.Flows
             if (!odooDict.ContainsKey(onlineReferenceField))
                 return null;
 
-            return OdooConvert.ToInt32(
-                (string)((List<object>)odooDict[onlineReferenceField])[0]);
+            var result = (int?)null;
+
+            if (odooDict[onlineReferenceField] is List<Object>)
+                result = int.Parse((string)((List<Object>)odooDict[onlineReferenceField])[0]);
+            else
+                result = int.Parse((string)odooDict[onlineReferenceField]);
+
+            return result > 0 ? result : (int?)null;
         }
 
         /// <summary>
@@ -294,14 +300,21 @@ namespace Syncer.Flows
         protected int? GetStudioIDFromMssqlViaOnlineID(string studioModelName, string idName, int onlineID)
         {
             // Since we're only running a simple query, the DataService type doesn't matter
-            using (var db = MdbService.GetDataService<dboPerson>())
+            try
             {
-                var foundStudioID = db.ExecuteQuery<int?>(
-                    $"select {idName} from {studioModelName} where sosync_fso_id = @fso_id",
-                    new { fso_id = onlineID })
-                    .SingleOrDefault();
+                using (var db = MdbService.GetDataService<dboPerson>())
+                {
+                    var foundStudioID = db.ExecuteQuery<int?>(
+                        $"select {idName} from {studioModelName} where sosync_fso_id = @fso_id",
+                        new { fso_id = onlineID })
+                        .SingleOrDefault();
 
-                return foundStudioID;
+                    return foundStudioID;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
