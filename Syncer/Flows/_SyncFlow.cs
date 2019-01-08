@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -160,6 +161,34 @@ namespace Syncer.Flows
                 result = int.Parse((string)odooDict[onlineReferenceField]);
 
             return result > 0 ? result : (int?)null;
+        }
+
+        public int? GetStudioIDFromOnlineReference<T>(
+            string studioModelName,
+            T onlineModel,
+            Expression<Func<T, object[]>> expression,
+            bool required)
+        {
+            var memberExpression = expression.Body as MemberExpression;
+
+            if (memberExpression == null)
+                throw new ArgumentException($"{nameof(expression)} is expected to be a property expression.");
+
+            int? result = null;
+            var value = (object[])onlineModel.GetType().GetProperty(memberExpression.Member.Name).GetValue(onlineModel);
+
+            if (value != null && value.Length > 1)
+            {
+                result = GetStudioIDFromMssqlViaOnlineID(
+                    studioModelName,
+                    MdbService.GetStudioModelIdentity(studioModelName),
+                    Convert.ToInt32(value[0]));
+            }
+
+            if (required && result == null)
+                throw new MissingForeignKeyException($"Property {onlineModel.GetType().Name}.{memberExpression.Member.Name} is null, but was specified required.");
+
+            return result;
         }
 
         /// <summary>

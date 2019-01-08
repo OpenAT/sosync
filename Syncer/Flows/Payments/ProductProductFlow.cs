@@ -57,13 +57,11 @@ namespace Syncer.Flows.Payments
                 studio => studio.product_productID,
                 (online, studio) =>
                 {
-                    int? product_templateID;
-
-                    var studioModel = "fson.product_template";
-                    product_templateID = GetStudioIDFromMssqlViaOnlineID(
-                        studioModel,
-                        MdbService.GetStudioModelIdentity(studioModel),
-                        Convert.ToInt32(online.product_tmpl_id[0]));
+                    var product_templateID = GetStudioIDFromOnlineReference(
+                        "fson.product_template",
+                        online,
+                        x => x.product_tmpl_id,
+                        true);
 
                     studio.product_templateID = product_templateID;
                     studio.default_code = online.default_code;

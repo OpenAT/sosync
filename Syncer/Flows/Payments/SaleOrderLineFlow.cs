@@ -58,29 +58,23 @@ namespace Syncer.Flows.Payments
                 studio => studio.sale_order_lineID,
                 (online, studio) =>
                 {
-                    var orderModel = "fson.sale_order";
-                    var orderID = GetStudioIDFromMssqlViaOnlineID(
-                        orderModel,
-                        MdbService.GetStudioModelIdentity(orderModel),
-                        Convert.ToInt32(online.order_id[0]))
-                        .Value;
+                    var orderID = GetStudioIDFromOnlineReference(
+                        "fson.sale_order",
+                        online,
+                        x => x.order_id,
+                        true);
 
-                    var productModel = "fson.product_product";
-                    var productID = GetStudioIDFromMssqlViaOnlineID(
-                        productModel,
-                        MdbService.GetStudioModelIdentity(productModel),
-                        Convert.ToInt32(online.product_id[0]))
-                        .Value;
+                    var productID = GetStudioIDFromOnlineReference(
+                        "fson.product_product",
+                        online,
+                        x => x.product_id,
+                        false);
 
-                    int? intervalID = null;
-                    if (online.payment_interval_id != null && online.payment_interval_id.Length > 1)
-                    {
-                        var intervalModel = "fson.product_payment_interval";
-                        intervalID = GetStudioIDFromMssqlViaOnlineID(
-                            intervalModel,
-                            MdbService.GetStudioModelIdentity(intervalModel),
-                            Convert.ToInt32(online.payment_interval_id[0]));
-                    }
+                    var intervalID = GetStudioIDFromOnlineReference(
+                        "fson.product_payment_interval",
+                        online,
+                        x => x.payment_interval_id,
+                        false);
 
                     studio.sale_orderID = orderID;
                     studio.product_productID = productID;

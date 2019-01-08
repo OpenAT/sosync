@@ -60,32 +60,23 @@ namespace Syncer.Flows.Payments
                 studio => studio.sale_orderID,
                 (online, studio) =>
                 {
-                    var personModel = "dbo.Person";
-                    var personID = GetStudioIDFromMssqlViaOnlineID(
-                        personModel,
-                        MdbService.GetStudioModelIdentity(personModel),
-                        Convert.ToInt32(online.partner_id[0]))
-                        .Value;
+                    var personID = GetStudioIDFromOnlineReference(
+                        "dbo.Person",
+                        online,
+                        x => x.partner_id,
+                        true);
 
-                    var transModel = "fson.payment_transaction";
-                    int? paymentTransactionID = null;
-                    if (online.payment_tx_id != null && online.payment_tx_id.Length > 1)
-                    {
-                        paymentTransactionID = GetStudioIDFromMssqlViaOnlineID(
-                            transModel,
-                            MdbService.GetStudioModelIdentity(transModel),
-                            Convert.ToInt32(online.payment_tx_id[0]));
-                    }
+                    var paymentTransactionID = GetStudioIDFromOnlineReference(
+                        "fson.payment_transaction",
+                        online,
+                        x => x.payment_tx_id,
+                        false);
 
-                    var acquirerModel = "fson.payment_acquirer";
-                    int? acquirerID = null;
-                    if (online.payment_acquirer_id != null && online.payment_acquirer_id.Length > 1)
-                    {
-                        acquirerID = GetStudioIDFromMssqlViaOnlineID(
-                        acquirerModel,
-                        MdbService.GetStudioModelIdentity(acquirerModel),
-                        Convert.ToInt32(online.payment_acquirer_id[0]));
-                    }
+                    var acquirerID = GetStudioIDFromOnlineReference(
+                        "fson.payment_acquirer",
+                        online,
+                        x => x.payment_acquirer_id,
+                        false);
 
                     studio.PersonID = personID;
                     studio.payment_transactionID = paymentTransactionID;
