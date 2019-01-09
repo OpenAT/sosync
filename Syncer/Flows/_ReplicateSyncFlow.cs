@@ -662,6 +662,13 @@ namespace Syncer.Flows
 
             UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
 
+            // List all dboAktion... Types, needed for log serialization
+            var actionTypes = Assembly
+                .GetAssembly(typeof(MdbModelBase))
+                .GetTypes()
+                .Where(x => x.Name.StartsWith("dboAktion"))
+                .ToArray();
+
             using (var db = MdbService.GetDataService<TStudio>())
             {
                 if (action == TransformType.CreateNew)
@@ -678,7 +685,9 @@ namespace Syncer.Flows
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetRequest(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                        UpdateSyncTargetRequest(Serializer.ToXML(
+                            new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
+                            actionTypes));
                     else
                         UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
                     // ---
@@ -725,7 +734,9 @@ namespace Syncer.Flows
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(
+                            new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
+                            actionTypes));
                     else
                         UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioModel));
                     // ---
@@ -738,7 +749,9 @@ namespace Syncer.Flows
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetRequest(Serializer.ToXML(new { Aktion = parentAction, AktionDetail = studioModel }));
+                        UpdateSyncTargetRequest(Serializer.ToXML(
+                            new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
+                            actionTypes));
                     else
                         UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
                     // ---
