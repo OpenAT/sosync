@@ -723,9 +723,14 @@ namespace MassDataCorrection
 
         #region Current checks
 
-        private static void InitialSync(string modelName, OdooClient rpc, NpgsqlConnection onlineCon)
+        private static void InitialSync(string modelName, OdooClient rpc, NpgsqlConnection onlineCon, bool unsyncedOnly)
         {
-            var models = onlineCon.Query($"select id, sosync_fs_id, sosync_write_date from {modelName.Replace(".", "_")} where coalesce(sosync_fs_id, 0) = 0");
+            var query = $@"
+                select id, sosync_fs_id, sosync_write_date from {modelName.Replace(".", "_")}
+                {(unsyncedOnly ? " where coalesce(sosync_fs_id, 0) = 0" : "")}
+                ";
+
+            var models = onlineCon.Query(query);
 
             foreach (var model in models)
             {
@@ -776,10 +781,10 @@ namespace MassDataCorrection
             var rpc = info.CreateAuthenticatedOdooClient();
             using (var onlineCon = info.CreateOpenNpgsqlConnection())
             {
-                InitialSync("payment.acquirer", rpc, onlineCon);
-                InitialSync("payment.transaction", rpc, onlineCon);
-                InitialSync("product.product", rpc, onlineCon);
-                InitialSync("sale.order.line", rpc, onlineCon);
+                InitialSync("payment.acquirer", rpc, onlineCon, false);
+                InitialSync("payment.transaction", rpc, onlineCon, false);
+                InitialSync("product.product", rpc, onlineCon, false);
+                InitialSync("sale.order.line", rpc, onlineCon, false);
             }
         }
         #endregion
