@@ -30,33 +30,8 @@ namespace MassDataCorrection
             if (key.KeyChar == 'y' || key.KeyChar == 'Y')
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
-                //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, null);
-                //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
-                //processor.Process(FillNewDonationReportFields, null);
-                //processor.Process(FillMissingPartnerBPKFields, new[] { "demo" });
-                //processor.Process(FillMissingPartnerBPKFields, null);
-                //processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
-                //processor.Process(DeleteAndResyncFiscalYears, null);
-                //processor.Process(CheckUnsyncedPartners, null);
 
-                //processor.Process(CheckGroups, new[] { "npha" });
-                //processor.Process(CheckGroups, null);
-                //PrintDictionary(groupsStats);
-
-                //processor.Process(RestartDonationReportJobs, null);
-
-                //processor.Process(CheckDonationReports, new[] { "lhsa" });
-                processor.Process(CheckDonationReports, null);
-
-                PrintDictionary(_checkDonationReport);
-
-                //processor.Process(RestartBpkJobs, null);
-                //PrintDictionary(_restartBpkCounts);
-
-                //ShowUnsynchedPartners();
-
-                var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
+                processor.Process(InitialSyncPayments, new[] { "demo" });
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -67,6 +42,16 @@ namespace MassDataCorrection
 
             Console.ReadKey();
         }
+
+        private static void PrintDictionary<T>(Dictionary<string, T> dic)
+        {
+            foreach (var item in dic)
+            {
+                Console.WriteLine($"{item.Key}: {item.Value}");
+            }
+        }
+
+        #region Older checks
 
         private static Dictionary<string, int> _tel = new Dictionary<string, int>();
         private static void CheckFaultyPhoneNumbers(InstanceInfo info, Action<float> reportProgress)
@@ -461,14 +446,6 @@ namespace MassDataCorrection
             }
         }
 
-        private static void PrintDictionary<T>(Dictionary<string, T> dic)
-        {
-            foreach (var item in dic)
-            {
-                Console.WriteLine($"{item.Key}: {item.Value}");
-            }
-        }
-
         private static Dictionary<string, int> _restartBpkCounts = new Dictionary<string, int>();
         private static void RestartBpkJobs(InstanceInfo info, Action<float> reportProgress)
         {
@@ -741,5 +718,70 @@ namespace MassDataCorrection
                     .ToDictionary(x => x.ID);
             }
         }
+
+        #endregion
+
+        #region Current checks
+
+        private static void InitialSync(string modelName, OdooClient rpc, NpgsqlConnection onlineCon)
+        {
+            var models = onlineCon.Query($"select id, sosync_fs_id, sosync_write_date from {modelName.Replace(".", "_")} where coalesce(sosync_fs_id, 0) = 0");
+
+            foreach (var model in models)
+            {
+                string dummy = $"ID {model.id}";
+                var id = rpc.CreateModel("sosync.job.queue", new
+                {
+                    job_date = model.sosync_write_date ?? DateTime.UtcNow,
+                    job_source_system = "fso",
+                    job_source_model = modelName,
+                    job_source_record_id = (int)model.id,
+                    job_source_target_record_id = (int?)model.sosync_fs_id,
+                    job_source_sosync_write_date = model.sosync_write_date,
+                    //submission_url = submissionUrl
+                });
+            }
+        }
+
+        private static void InitialSyncPayments(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new string[] {
+                //"dadi"
+                //,"aahs"
+                //,"apfo"
+                //,"avnc"
+                //,"deve"
+                //,"rnga"
+                //,"tiqu"
+                //,"diak"
+                //,"jeki"
+                //,"kich"
+                //,"myeu"
+                //,"nphc"
+                //,"otiv"
+                //,"rnde"
+                //,"wdcs"
+                //,"rona"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                InitialSync("payment.acquirer", rpc, onlineCon);
+                InitialSync("payment.transaction", rpc, onlineCon);
+                InitialSync("product.product", rpc, onlineCon);
+                InitialSync("sale.order.line", rpc, onlineCon);
+            }
+        }
+        #endregion
     }
 }
