@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Flows\Payments\**" />
+    <EmbeddedResource Remove="Flows\Payments\**" />
+    <None Remove="Flows\Payments\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="dadi-data" Version="1.5.7" />
     <PackageReference Include="DaDi.MultiMail" Version="1.0.0" />
     <PackageReference Include="DaDi.Odoo" Version="1.2.8" />
