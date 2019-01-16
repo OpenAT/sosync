@@ -92,6 +92,7 @@ namespace Syncer.Flows
                     online.Add("cancellation_for_bpk_private", studio.CancellationForBpkPrivate);
                     online.Add("info", studio.Info);
                     online.Add("force_submission", studio.ForceSubmission);
+                    online.Add("state", studio.Status);
                 });
         }
 
