@@ -31,7 +31,8 @@ namespace MassDataCorrection
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
 
-                processor.Process(InitialSyncPayments, new[] { "demo" });
+                //processor.Process(InitialSyncPayments, new[] { "demo" });
+                processor.Process(CheckBranch, null);
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -747,6 +748,15 @@ namespace MassDataCorrection
                 });
             }
         }
+
+        private static void CheckBranch(InstanceInfo info, Action<float> reportProgress)
+        {
+            var desiredBranch = "v2";
+
+            if (info.sosync_branch != desiredBranch)
+                throw new Exception($"{info.Instance} is not on branch {desiredBranch}");
+        }
+
 
         private static void InitialSyncPayments(InstanceInfo info, Action<float> reportProgress)
         {
