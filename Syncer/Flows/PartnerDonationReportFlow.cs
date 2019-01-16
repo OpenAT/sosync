@@ -87,7 +87,7 @@ namespace Syncer.Flows
                     online.Add("anlage_am_um", studio.AnlageAmUm.Value.ToUniversalTime());
                     online.Add("ze_datum_von", studio.ZEDatumVon.Value.ToUniversalTime());
                     online.Add("ze_datum_bis", studio.ZEDatumBis.Value.ToUniversalTime());
-                    online.Add("studios_jahr", studio.MeldungsJahr.ToString("0"));
+                    online.Add("meldungs_jahr", studio.MeldungsJahr.ToString("0"));
                     online.Add("betrag", studio.Betrag);
                     online.Add("cancellation_for_bpk_private", studio.CancellationForBpkPrivate);
                     online.Add("info", studio.Info);
