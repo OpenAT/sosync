@@ -1,5 +1,7 @@
-﻿using Syncer.Attributes;
+﻿using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Services;
 using System;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -10,7 +12,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner")]
     public class PartnerMergeFlow : MergeSyncFlow
     {
-        public PartnerMergeFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public PartnerMergeFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

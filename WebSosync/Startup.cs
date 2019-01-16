@@ -104,7 +104,6 @@ namespace WebSosync
             services.AddSingleton(flowService);
 
             RegisterBackgroundJob<SyncWorker>(services);
-            RegisterBackgroundJob<ProtocolWorker>(services);
 
             // Transient services
             services.AddTransient<DataService>();

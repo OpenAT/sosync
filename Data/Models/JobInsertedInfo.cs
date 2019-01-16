@@ -6,7 +6,7 @@ namespace WebSosync.Data.Models
 {
     public class JobInsertedInfo
     {
-        public int Job_ID { get; set; }
+        public int ID { get; set; }
         public string Parent_Path { get; set; }
     }
 }

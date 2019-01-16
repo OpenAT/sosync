@@ -14,15 +14,10 @@ namespace Syncer.Models
         public dboPerson person { get; set; }
         public dboPersonAdresse address { get; set; }
         public dboPersonAdresseAM addressAM { get; set; }
-        public dboPersonEmail email { get; set; }
         public dboPersonTelefon phone { get; set; }
         public dboPersonTelefon mobile { get; set; }
         public dboPersonTelefon fax { get; set; }
-        public dboPersonGruppe personDonationDeductionOptOut { get; set; }
-        public dboPersonEmailGruppe emailNewsletter { get; set; }
         public DateTime? sosync_write_date { get; set; }
         public DateTime? write_date { get; set; }
-        public dboPersonGruppe personDonationReceipt { get; set; }
-        public dboPersonGruppe SystemDeactivateBPK { get; set; }
     }
 }

@@ -62,21 +62,22 @@ namespace WebSosync.Data.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to with updated_rows as (
-        ///	update sync_table
+        ///	update sosync_job
         ///	set
         ///		job_state = &apos;skipped&apos;
         ///		,job_log = @job_log
         ///		,job_closed_by_job_id = @job_closed_by_job_id
-        ///		,job_last_change = @job_last_change
+        ///		,write_date = @write_date
         ///		,job_start = now() at time zone &apos;utc&apos;
         ///		,job_end = now() at time zone &apos;utc&apos;
-        ///		,job_to_fso_can_sync = true
         ///	where
         ///		job_source_sosync_write_date &lt; @job_source_sosync_write_date
         ///		and job_source_system = @job_source_system
         ///		and job_source_model = @job_source_model
         ///		and job_source_record_id = @job_source_record_id
-        ///	 [rest of string was truncated]&quot;;.
+        ///		and job_state = &apos;new&apos;
+        ///	returning id
+        ///)        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClosePreviousJobs_Update_SCRIPT {
             get {
@@ -85,205 +86,28 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WITH RECURSIVE __parent_store_compute(job_id, parent_path) AS (
-        ///                SELECT row.job_id, concat(row.job_id, &apos;/&apos;)
-        ///                FROM sync_table row
-        ///                WHERE row.parent_job_id IS NULL
-        ///            UNION
-        ///                SELECT row.job_id, concat(comp.parent_path, row.job_id, &apos;/&apos;)
-        ///                FROM sync_table row, __parent_store_compute comp
-        ///                WHERE row.parent_job_id = comp.job_id
-        ///            )
-        ///            UPDATE sync_table row SET parent_path = comp.parent_path [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string ComputeParentPathWhereNull_SCRIPT {
-            get {
-                return ResourceManager.GetString("ComputeParentPathWhereNull_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to create index protocol_idx
-        ///	on sync_table (job_last_change desc, job_to_fso_can_sync, job_to_fso_sync_version)
-        ///    where job_to_fso_can_sync = true
-        ///    AND (job_to_fso_sync_version is null
-        ///         or job_to_fso_sync_version &lt; job_last_change
-        ///         or job_to_fso_sync_version &gt; job_last_change );.
-        /// </summary>
-        internal static string CreateProtocolIndex_SCRIPT {
-            get {
-                return ResourceManager.GetString("CreateProtocolIndex_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to with recursive children as (
-        ///	-- roots
-        ///	select *
-        ///	from sync_table
-        ///	where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
-        ///
-        ///	union all
-        ///	
-        ///	-- children
-        ///	select child.*
-        ///	from sync_table as child
-        ///	inner join sync_table parent on child.parent_job_id = parent.job_id
-        ///)
-        ///select * from children;.
-        /// </summary>
-        internal static string GetAllOpenSyncJobs_SELECT {
-            get {
-                return ResourceManager.GetString("GetAllOpenSyncJobs_SELECT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to create index get_first_open_jobs_v2_idx on sync_table
-        ///using btree
-        ///(job_priority desc, job_date desc, job_state, parent_job_id)
-        ///where (job_state = &apos;new&apos;::text and parent_job_id is null).
-        /// </summary>
-        internal static string GetFirstOpenJobIndex_SCRIPT {
-            get {
-                return ResourceManager.GetString("GetFirstOpenJobIndex_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to with recursive children as (
         ///	-- roots
         ///	select * from (
         ///		select *
-        ///		from sync_table
-        ///		where job_date &gt; now() - interval &apos;100 days&apos; and parent_job_id is null and job_state = &apos;new&apos;
+        ///		from sosync_job
+        ///		where parent_job_id is null and job_state = &apos;new&apos;
         ///        order by job_priority desc, job_date desc
-        ///        limit 1
+        ///        limit %LIMIT%
         ///	) first_parent
         ///
         ///	union all
         ///	
         ///	-- children
         ///	select jobs.*
-        ///	from sync_table jobs
-        ///	inner join children c on c.job_id = jobs.parent_job_id
+        ///	from sosync_job jobs
+        ///	inner join children c on c.id = jobs.parent_job_id
         ///)
         ///select * from children order by job_date asc;.
         /// </summary>
         internal static string GetFirstOpenSynJobAndChildren_SELECT {
             get {
                 return ResourceManager.GetString("GetFirstOpenSynJobAndChildren_SELECT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SELECT * FROM sync_table
-        /// 	WHERE job_to_fso_can_sync = true
-        ///    	AND (job_to_fso_sync_version is null
-        ///         	 or job_to_fso_sync_version &lt; job_last_change
-        ///         	 or job_to_fso_sync_version &gt; job_last_change)
-        ///    ORDER BY job_last_change desc
-        ///    LIMIT 100;.
-        /// </summary>
-        internal static string GetProtocolToSync_SELECT {
-            get {
-                return ResourceManager.GetString("GetProtocolToSync_SELECT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to select
-        ///	count(*) Total
-        ///	,sum(case when job_state = &apos;new&apos; then 1 else 0 end) new
-        ///	,sum(case when job_state = &apos;inprogress&apos; then 1 else 0 end) in_progress
-        ///	,sum(case when job_state = &apos;error&apos; then 1 else 0 end) error
-        ///	,sum(case when job_state = &apos;done&apos; then 1 else 0 end) done
-        ///from
-        ///	sync_table;.
-        /// </summary>
-        internal static string JobStatistics_SCRIPT {
-            get {
-                return ResourceManager.GetString("JobStatistics_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to DO $$ 
-        ///    BEGIN
-        ///        BEGIN
-        ///            ALTER TABLE {0} ADD COLUMN {1} {2};
-        ///        EXCEPTION
-        ///            WHEN duplicate_column THEN RAISE NOTICE &apos;column {1} already exists in {0}.&apos;;
-        ///        END;
-        ///    END;
-        ///$$.
-        /// </summary>
-        internal static string SetupAddColumn_SCRIPT {
-            get {
-                return ResourceManager.GetString("SetupAddColumn_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CREATE TABLE IF NOT EXISTS sync_table
-        ///(
-        /// -- SyncJob
-        ///  job_id serial constraint synctable_primary_key primary key,
-        ///  job_date timestamp without time zone not null,
-        ///  
-        ///  -- Sosync only
-        ///  job_fs_id integer,
-        ///  job_fso_id integer,
-        ///  job_last_change timestamp without time zone,
-        ///  
-        ///  -- SyncJob source
-        ///  job_source_system text,
-        ///  job_source_model text,
-        ///  job_source_record_id integer not null,
-        ///  
-        ///  -- SyncJob info
-        ///  job_fetched timestamp without time zone,
-        ///  job_start timestamp without time zone,
-        /// [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string SetupDatabase_SCRIPT {
-            get {
-                return ResourceManager.GetString("SetupDatabase_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to DO $$ 
-        ///    BEGIN
-        ///        BEGIN
-        ///            ALTER TABLE {0} DROP COLUMN {1};
-        ///        EXCEPTION
-        ///            WHEN undefined_column THEN RAISE NOTICE &apos;column {1} does not exist in {0}.&apos;;
-        ///        END;
-        ///    END;
-        ///$$.
-        /// </summary>
-        internal static string SetupDropColumn_SCRIPT {
-            get {
-                return ResourceManager.GetString("SetupDropColumn_SCRIPT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to create index skip_jobs_idx on sync_table
-        ///using btree
-        ///(
-        ///		job_source_sosync_write_date
-        ///		,job_source_system
-        ///		,job_source_model
-        ///		,job_source_record_id
-        ///		,job_state
-        ///)
-        ///where (job_state = &apos;new&apos;::text);.
-        /// </summary>
-        internal static string SkipPreviousJobsIndex_SCRIPT {
-            get {
-                return ResourceManager.GetString("SkipPreviousJobsIndex_SCRIPT", resourceCulture);
             }
         }
     }

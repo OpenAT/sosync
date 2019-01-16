@@ -14,6 +14,10 @@ namespace Syncer.Services
         private SosyncOptions _config;
         #endregion
 
+        #region Properties
+        public string Instance { get { return _config.Instance; } }
+        #endregion
+
         #region Constructors
         public MdbService(SosyncOptions options)
         {
@@ -44,7 +48,15 @@ namespace Syncer.Services
 
         public string GetStudioModelIdentity(string studioModelName)
         {
+            if (studioModelName.ToLower().StartsWith("dbo.aktion"))
+                return "AktionsID";
+
             return $"{studioModelName.Split('.')[1]}ID";
+        }
+
+        public string GetStudioModelReadView(string studioModelName)
+        {
+            return $"orm.[{studioModelName.Replace(".", "")}.read.view]";
         }
         #endregion
     }

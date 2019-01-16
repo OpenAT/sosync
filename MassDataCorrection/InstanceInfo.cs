@@ -30,6 +30,14 @@ namespace MassDataCorrection
             return con;
         }
 
+        public SqlConnection CreateOpenMssqlIntegratedConnection()
+        {
+            var conStr = $"Data Source=mssql.{Instance}.datadialog.net; Initial Catalog=mdb_{Instance}; Integrated Security=True;";
+            var con = new SqlConnection(conStr);
+            con.Open();
+            return con;
+        }
+
         public OdooClient CreateAuthenticatedOdooClient()
         {
             var address = $"http://{Instance}.datadialog.net/xmlrpc/2/";
@@ -48,7 +56,7 @@ namespace MassDataCorrection
 
         public NpgsqlConnection CreateOpenSyncerNpgsqlConnection()
         {
-            var conStr = $"User ID={Instance}; Password={sosync_pgsql_pw}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}; Pooling=true;";
+            var conStr = $"User ID={Instance}; Password={sosync_pgsql_pw}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}_sosync_gui; Pooling=true;";
             var con = new NpgsqlConnection(conStr);
             con.Open();
             return con;

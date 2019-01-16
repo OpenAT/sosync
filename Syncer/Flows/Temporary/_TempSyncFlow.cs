@@ -17,7 +17,8 @@ namespace Syncer.Flows.Temporary
     /// </summary>
     public abstract class TempSyncFlow : SyncFlow
     {
-        public TempSyncFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public TempSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 
@@ -42,6 +43,7 @@ namespace Syncer.Flows.Temporary
 
             Stopwatch consistencyWatch = new Stopwatch();
 
+            SetupChildJobRequests();
             HandleChildJobs(
                 "Child Job",
                 RequiredChildJobs, 
@@ -52,7 +54,6 @@ namespace Syncer.Flows.Temporary
                 ref restartReason);
 
             var description = $"Processing [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} and {Job.Sync_Target_Merge_Into_Record_ID}";
-
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
             HandleChildJobs(
@@ -78,7 +79,7 @@ namespace Syncer.Flows.Temporary
                     job.Sync_Target_Model = StudioModelName;
 
                     var sourceOnlineID = job.Job_Source_Record_ID;
-                    var targetStudioID = GetFsIdByFsoId(modelName, MdbService.GetStudioModelIdentity(modelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
+                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, MdbService.GetStudioModelIdentity(modelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceOnlineID;
                     job.Sync_Target_Record_ID = targetStudioID;
@@ -94,7 +95,7 @@ namespace Syncer.Flows.Temporary
                     job.Sync_Target_Model = OnlineModelName;
 
                     var sourceStudioID = job.Job_Source_Record_ID;
-                    var targetOnlineID = GetFsoIdByFsId(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
+                    var targetOnlineID = GetOnlineIDFromOdooViaStudioID(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceStudioID;
                     job.Sync_Target_Record_ID = targetOnlineID;

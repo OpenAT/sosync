@@ -29,6 +29,7 @@ namespace WebSosync
         public static string ConfigurationINI { get; private set; }
         public static string LogFile { get; set; }
         public static Dictionary<string, string> SwitchMappings { get; private set; }
+        private static ILogger<Program> _log;
         #endregion
 
         #region Class initializers
@@ -106,10 +107,15 @@ namespace WebSosync
                 .Build();
 
             ILogger<Program> log = (ILogger<Program>)host.Services.GetService(typeof(ILogger<Program>));
+            _log = log;
+
             IHostService svc = (IHostService)host.Services.GetService(typeof(IHostService));
             IConfiguration config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
 
             var sosyncConfig = (SosyncOptions)host.Services.GetService(typeof(SosyncOptions));
+
+            // Register unhandled exception handler
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             log.LogInformation(String.Join(" ",
                 $"Sosync started for instance {sosyncConfig.Instance},",
@@ -119,10 +125,25 @@ namespace WebSosync
             if (!string.IsNullOrEmpty(Program.LogFile))
                 log.LogInformation($"Logging to: {Program.LogFile}");
 
+            // Check max thread parameter and set default value
+            if (!sosyncConfig.Max_Threads.HasValue)
+                sosyncConfig.Max_Threads = 2;
+
+            // Job package size default value
+            if (!sosyncConfig.Job_Package_Size.HasValue)
+                sosyncConfig.Job_Package_Size = 20;
+
+            // Model lock timeout default value
+            if (!sosyncConfig.Model_Lock_Timeout.HasValue)
+                sosyncConfig.Model_Lock_Timeout = 10000;
+
             // Active check: quit if not active
-            if (!IsSosyncActive(kestrelConfig))
+            if (!sosyncConfig.Active.HasValue)
+                sosyncConfig.Active = true;
+
+            if (!sosyncConfig.Active.Value)
             {
-                log.LogWarning($"INI parameter: active = true, process ending.");
+                log.LogWarning($"INI parameter: active = false, process ending.");
                 return;
             }
 
@@ -132,7 +153,7 @@ namespace WebSosync
             try
             {
                 if (!forceQuit && !string.IsNullOrEmpty(sosyncConfig.Instance))
-                    SetupDb(sosyncConfig, log);
+                    TestDatabaseConnection(sosyncConfig, log);
             }
             catch (PostgresException ex)
             {
@@ -187,9 +208,6 @@ namespace WebSosync
                     var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
                     jobWorker.Start();
 
-                    var protocolWorker = (IBackgroundJob<ProtocolWorker>)host.Services.GetService(typeof(IBackgroundJob<ProtocolWorker>));
-                    protocolWorker.Start();
-
                     host.Run();
                     //host.Run(svc.Token);
                 }
@@ -202,16 +220,20 @@ namespace WebSosync
             log.LogInformation("Sosync service ended");
         }
 
-        private static bool IsSosyncActive(IConfigurationRoot config)
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            // Set default for active INI parameter
-            if (string.IsNullOrEmpty(config["sosync:active"]))
-                config["sosync:active"] = "true"; // Active by default
-
-            // Check if sosync is active
-            var active = config["sosync:active"].Trim().ToLower() == "true";
-
-            return active;
+            try
+            {
+                _log.LogError(e.ExceptionObject.ToString());
+            }
+            catch (Exception ex)
+            {
+                // Logger was not ready yet, so print out both errors for a chance to see them on a console
+                Console.WriteLine("------------------------");
+                Console.WriteLine(e.ExceptionObject.ToString());
+                Console.WriteLine("------------------------");
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -223,19 +245,16 @@ namespace WebSosync
         private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
         {
             IBackgroundJob<SyncWorker> job = (IBackgroundJob<SyncWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<SyncWorker>));
-            IBackgroundJob<ProtocolWorker> protocolJob = (IBackgroundJob<ProtocolWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<ProtocolWorker>));
             IWebHost host = (IWebHost)ioc.GetService(typeof(IWebHost));
-            log.LogInformation($"Process termination requested (job status: {job.Status}, protocol status: {protocolJob.Status})");
+            log.LogInformation($"Process termination requested (job status: {job.Status})");
 
             job.ShutdownPending = true;
-            protocolJob.ShutdownPending = true;
 
             // As logn the job status isn't stopped or error, keep requesting to stop it
             while (job.Status != BackgoundJobState.Idle && job.Status != BackgoundJobState.Error)
             {
                 log.LogInformation("Asking jobs to stop");
                 job.Stop();
-                protocolJob.Stop();
                 System.Threading.Thread.Sleep(1000);
             }
 
@@ -247,20 +266,18 @@ namespace WebSosync
         }
 
         /// <summary>
-        /// Connects to the database and tries to create the sync table.
+        /// Connects to the database, to check availability.
         /// </summary>
         /// <param name="config">The configuration to be used to read the database connection details.</param>
         /// <param name="log">The Logger to be used foir logging.</param>
-        private static void SetupDb(SosyncOptions config, ILogger<Program> log)
+        private static void TestDatabaseConnection(SosyncOptions config, ILogger<Program> log)
         {
-            log.LogInformation($"Ensure sosync database is up to date...");
+            log.LogInformation($"Testing connection to database...");
 
             using (var db = new DataService(config))
-            {
-                db.Setup();
-            }
+            { }
 
-            log.LogInformation($"Database check done.");
+            log.LogInformation($"Database connection successful.");
         }
 
         private static void SetSosyncDefaultConfig(SosyncOptions config, ILogger<Program> log)

@@ -25,6 +25,12 @@ namespace ManualTest
 
             //var f = new ProductTemplateFlow(svc);
 
+            var vor = "";
+            var nach = "";
+
+            string result = EmailHelper.MergeEmail(vor, nach);
+            Console.WriteLine(result);
+
             Console.WriteLine("Done");
             Console.ReadKey();
         }
@@ -198,7 +204,6 @@ namespace ManualTest
             using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).SingleOrDefault();
@@ -225,17 +230,6 @@ namespace ManualTest
 
                     if (ids.Fax_PersonTelefonID.HasValue)
                         result.fax = phoneSvc.Read(new { PersonTelefonID = ids.Fax_PersonTelefonID }).SingleOrDefault();
-
-                    if (ids.PersonEmailID.HasValue)
-                        result.email = emailSvc.Read(new { PersonEmailID = ids.PersonEmailID }).SingleOrDefault();
-
-                    result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
-                    result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
-
-                    if (result.email != null)
-                    {
-                        result.emailNewsletter = emailNewsletterSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
-                    }
                 }
             }
 
@@ -269,7 +263,6 @@ namespace ManualTest
             using (var mobileSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var faxSvc = MdbService.GetDataService<dboPersonTelefon>())
             using (var personDonationDeductionOptOutSvc = MdbService.GetDataService<dboPersonGruppe>())
-            using (var personDonationReceiptSvc = MdbService.GetDataService<dboPersonGruppe>())
             using (var emailNewsletterSvc = MdbService.GetDataService<dboPersonEmailGruppe>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
@@ -309,23 +302,6 @@ namespace ManualTest
                               orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? "111111111111" : iterfax.GültigMonatArray descending,
                               iterfax.PersonTelefonID descending
                               select iterfax).FirstOrDefault();
-
-                result.email = (from iterEmail in emailSvc.Read(new { PersonID = PersonID })
-                                where iterEmail.GültigVon <= DateTime.Today &&
-                                    iterEmail.GültigBis >= DateTime.Today
-                                orderby string.IsNullOrEmpty(iterEmail.GültigMonatArray) ? "111111111111" : iterEmail.GültigMonatArray descending,
-                                iterEmail.PersonEmailID descending
-                                select iterEmail).FirstOrDefault();
-
-                result.personDonationDeductionOptOut = personDonationDeductionOptOutSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 110493 }).FirstOrDefault();
-
-                result.personDonationReceipt = personDonationReceiptSvc.Read(new { PersonID = PersonID, zGruppeDetailID = 20168 }).FirstOrDefault();
-
-
-                if (result.email != null)
-                {
-                    result.emailNewsletter = emailNewsletterSvc.Read(new { PersonEmailID = result.email.PersonEmailID, zGruppeDetailID = 30104 }).FirstOrDefault();
-                }
             }
 
             result.write_date = GetPersonWriteDate(result);
@@ -342,13 +318,9 @@ namespace ManualTest
             {
                 person.person != null ? person.person.write_date : (DateTime?)null,
                 person.address != null ? person.address.write_date : (DateTime?)null,
-                person.email != null ? person.email.write_date : (DateTime?)null,
                 person.phone != null ? person.phone.write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.write_date : (DateTime?)null,
                 person.fax != null ? person.fax.write_date : (DateTime?)null,
-                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.write_date : (DateTime?)null,
-                person.emailNewsletter != null ? person.emailNewsletter.write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -363,13 +335,9 @@ namespace ManualTest
             {
                 person.person != null ? person.person.sosync_write_date : (DateTime?)null,
                 person.address != null ? person.address.sosync_write_date : (DateTime?)null,
-                person.email != null ? person.email.sosync_write_date : (DateTime?)null,
                 person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
                 person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
-                person.personDonationDeductionOptOut != null ? person.personDonationDeductionOptOut.sosync_write_date : (DateTime?)null,
-                person.emailNewsletter != null ? person.emailNewsletter.sosync_write_date : (DateTime?)null,
-                person.personDonationReceipt != null ? person.personDonationReceipt.sosync_write_date : (DateTime?)null
             }.Where(x => x.HasValue);
 
             if (query.Any())

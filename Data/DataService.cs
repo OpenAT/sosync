@@ -13,6 +13,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace WebSosync.Data
 {
@@ -21,6 +22,10 @@ namespace WebSosync.Data
         #region Constants
         private const string DuplicateTableError = "42P07";
         private const string UndefinedObjectError = "42704";
+        #endregion
+
+        #region Properties
+        public NpgsqlConnection Connection { get { return _con; } }
         #endregion
 
         #region Members
@@ -38,21 +43,21 @@ namespace WebSosync.Data
         static DataService()
         {
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
-            var excludedColumns = new string[] { "job_id", "children", "parent_path" };
+            var excludedColumns = new string[] { "id", "children", "parent_path" };
 
             var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
 
             // Generate the insert statement
-            //   insert into sync_table (prop1, prop2, ...) values (@prop1, @prop2, ...)
+            //   insert into sosync_job (prop1, prop2, ...) values (@prop1, @prop2, ...)
             var propertiesString = string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()));
             var propertyParametersString = string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"));
 
-            SQL_CreateJob = $"insert into sync_table (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sync_table','job_id')) job_id, concat('%%PARENT_PATH%%', currval(pg_get_serial_sequence('sync_table','job_id')), '/') parent_path;";
+            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id, concat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/') parent_path;\n";
 
             // Update statement
-            //   update sync_table set prop1 = @prop1, prop2 = @prop2, ... where job_id = @job_id
-            SQL_UpdateJob = $"update sync_table set\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\" = @end" : $"{x.Name.ToLower()} = @{x.Name.ToLower()}"))}\nwhere job_id = @job_id;";
+            //   update sosync_job set prop1 = @prop1, prop2 = @prop2, ... where id = @id
+            SQL_UpdateJob = $"update sosync_job set\n\t{string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\" = @end" : $"{x.Name.ToLower()} = @{x.Name.ToLower()}"))}\nwhere id = @id;";
         }
         #endregion
 
@@ -76,133 +81,9 @@ namespace WebSosync.Data
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Runs the database creation script on the database.
-        /// </summary>
-        public void Setup()
+        public IDbTransaction BeginTransaction()
         {
-            // Initial table creation, new fields will only be added below over time
-            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.SetupDatabaseScript), commandTimeout: _cmdTimeoutSec);
-
-            // To modify the sync table in production
-            // AddColumnIfNotExists("col_name", "col_type");
-            // DropColumnIfExists("col_name");
-
-            // New fields for additional logging & optimizations
-            AddColumnIfNotExists("job_source_sosync_write_date", "timestamp without time zone");
-            AddColumnIfNotExists("job_source_fields", "text");
-
-            // New FK to reference the job responsible for closing a job
-            AddColumnIfNotExists("job_closed_by_job_id", "integer");
-
-            // New fields for job sync to Odoo
-            AddColumnIfNotExists("job_to_fso_can_sync", "boolean");
-            AddColumnIfNotExists("job_to_fso_sync_date", "timestamp without time zone");
-            AddColumnIfNotExists("job_to_fso_sync_version", "timestamp without time zone");
-
-            // New fields for doublet & deletion handling
-            AddColumnIfNotExists("job_source_type", "text");
-            AddColumnIfNotExists("job_source_type_info", "text");
-            AddColumnIfNotExists("job_source_target_record_id", "integer");
-            AddColumnIfNotExists("job_source_merge_into_record_id", "integer");
-            AddColumnIfNotExists("job_source_target_merge_into_record_id", "integer");
-            AddColumnIfNotExists("sync_source_merge_into_record_id", "integer");
-            AddColumnIfNotExists("sync_target_merge_into_record_id", "integer");
-            AddColumnIfNotExists("job_priority", $"integer not null default {ModelPriority.Default}");
-            AddColumnIfNotExists("parent_path", "text");
-
-            // Drop old indexes. The newest index always has a different name
-            TryQueryIgnoreErrors("drop index get_first_open_jobs_idx", new[] { UndefinedObjectError });
-            // New index
-            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenJobIndexScript), new [] { DuplicateTableError });
-
-            TryQueryIgnoreErrors("drop index sync_table_parent_job_id_job_state", new [] { UndefinedObjectError });
-            TryQueryIgnoreErrors("drop index job_date_parent_job_id_job_state_idx", new [] { UndefinedObjectError });
-
-            TryQueryIgnoreErrors("drop index syncjob_sync_index1", new[] { UndefinedObjectError });
-            TryQueryIgnoreErrors("drop index syncjob_sync_index2", new[] { UndefinedObjectError });
-            TryQueryIgnoreErrors("drop index syncjob_sync_index3", new[] { UndefinedObjectError });
-
-            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.SkipPreviousJobsIndexScript), new[] { DuplicateTableError });
-            TryQueryIgnoreErrors(Resources.ResourceManager.GetString(ResourceNames.CreateProtocolIndexScript), new[] { DuplicateTableError });
-
-            // Compute parent_path for all sync jobs where it's null
-            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.ComputeParentPathWhereNull), commandTimeout: _cmdTimeoutSec);
-        }
-
-        private void TryQueryIgnoreErrors(string ddlQuery, string[] ignoredErrorCodes)
-        {
-            if (ignoredErrorCodes == null)
-                ignoredErrorCodes = new string[0];
-
-            try
-            {
-                _con.Execute(ddlQuery, commandTimeout: 60);
-            }
-            catch (PostgresException ex)
-            {
-                // If the exception happened because the index already exists, ignore it.
-                // Rethrow any other exception
-                if (!ignoredErrorCodes.Contains(ex.SqlState))
-                    throw ex;
-            }
-        }
-
-        /// <summary>
-        /// Used for database setup, in case new columns are needed in production.
-        /// </summary>
-        /// <param name="column">The column name.</param>
-        /// <param name="dataType">The pgSQL data type.</param>
-        private void AddColumnIfNotExists(string column, string dataType)
-        {
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupAddColumnScript), "sync_table", column, dataType), commandTimeout: _cmdTimeoutSec);
-        }
-
-        /// <summary>
-        /// Used for database setup, in case a column needs to be dropped from production
-        /// </summary>
-        /// <param name="column">The column name.</param>
-        private void DropColumnIfExists(string column)
-        {
-            _con.Execute(String.Format(Resources.ResourceManager.GetString(ResourceNames.SetupDropColumnScript), "sync_table", column), commandTimeout: _cmdTimeoutSec);
-        }
-
-        /// <summary>
-        /// Drops the sync_table. Never do this in production!
-        /// </summary>
-        private void DestroySosyncDatabase()
-        {
-            _con.Execute("drop table sync_table;", commandTimeout: _cmdTimeoutSec);
-        }
-
-        /// <summary>
-        /// Reads all open SyncJobs from the database.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<SyncJob> GetJobs(bool onlyOpenJobs)
-        {
-            if (onlyOpenJobs)
-            {
-                var result = _con.Query<SyncJob>(
-                    Resources.ResourceManager.GetString(ResourceNames.GetAllOpenSyncJobsSelect),
-                    commandTimeout: _cmdTimeoutSec);
-
-                foreach (var r in result)
-                    CleanModel(r);
-
-                return result;
-            }
-            else
-            {
-                var result = _con.Query<SyncJob>(
-                    "select * from sync_table",
-                    commandTimeout: _cmdTimeoutSec);
-
-                foreach (var r in result)
-                    CleanModel(r);
-
-                return result;
-            }
+            return _con.BeginTransaction();
         }
 
         public int ClosePreviousJobs(SyncJob closingSourceJob)
@@ -213,9 +94,9 @@ namespace WebSosync.Data
                 job_source_system = closingSourceJob.Job_Source_System,
                 job_source_model = closingSourceJob.Job_Source_Model,
                 job_source_record_id = closingSourceJob.Job_Source_Record_ID,
-                job_closed_by_job_id = closingSourceJob.Job_ID,
-                job_last_change = DateTime.UtcNow,
-                job_log = $"Skipped due to job_id = {closingSourceJob.Job_ID}."
+                job_closed_by_job_id = closingSourceJob.ID,
+                write_date = DateTime.UtcNow,
+                job_log = $"Skipped due to sosync_job.id = {closingSourceJob.ID}."
             };
 
             var updated_rows = _con.ExecuteScalar<int>(
@@ -228,7 +109,7 @@ namespace WebSosync.Data
 
         public void ReopenErrorJobs()
         {
-            _con.Execute("update sync_table set job_state = 'new' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 5;",
+            _con.Execute("update sosync_job set job_state = 'new' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 5;",
                 commandTimeout: 60 * 2);
         }
 
@@ -237,30 +118,17 @@ namespace WebSosync.Data
         /// in the hierarchy as a flat list.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<SyncJob> GetFirstOpenJobHierarchy()
+        public IEnumerable<SyncJob> GetFirstOpenJobHierarchy(int limit)
         {
+            var query = Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren)
+                .Replace("%LIMIT%", limit.ToString("0"));
+
             var result = _con.Query<SyncJob>(
-                Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren),
+                query,
                 commandTimeout: _cmdTimeoutSec);
 
             foreach (var r in result)
                 CleanModel(r);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns the first job to be synced to fso.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<SyncJob> GetJobToSync()
-        {
-            var result = _con.Query<SyncJob>(
-                Resources.ResourceManager.GetString(ResourceNames.GetProtocolToSyncSelect),
-                commandTimeout: _cmdTimeoutSec);
-
-            foreach (var job in result)
-                CleanModel(job);
 
             return result;
         }
@@ -272,7 +140,7 @@ namespace WebSosync.Data
         /// <returns></returns>
         public SyncJob GetJob(int id)
         {
-            var result = _con.Query<SyncJob>("select * from sync_table where job_id = @job_id", new { job_id = id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
+            var result = _con.Query<SyncJob>("select * from sosync_job where id = @id", new { id }, commandTimeout: _cmdTimeoutSec).SingleOrDefault();
             CleanModel(result);
             return result;
         }
@@ -280,7 +148,7 @@ namespace WebSosync.Data
         public SyncJob GetJobBy(int parentJobId, string jobSourceSystem, string jobSourceModel, int jobSourceRecordId)
         {
             var result = _con.Query<SyncJob>(
-                "select * from sync_table where parent_job_id = @parent_job_id and job_source_system = @job_source_system and job_source_model = @job_source_model and job_source_record_id = @job_source_record_id",
+                "select * from sosync_job where parent_job_id = @parent_job_id and job_source_system = @job_source_system and job_source_model = @job_source_model and job_source_record_id = @job_source_record_id",
                 new { parent_job_id = parentJobId, job_source_system = jobSourceSystem, job_source_model = jobSourceModel, job_source_record_id = jobSourceRecordId },
                 commandTimeout: _cmdTimeoutSec)
                 .SingleOrDefault();
@@ -323,7 +191,7 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateJob(SyncJob job, string parentPath)
+        public void CreateJob(SyncJob job, string parentPath, IDbTransaction transaction = null)
         {
             if (parentPath == null)
                 parentPath = "";
@@ -332,9 +200,21 @@ namespace WebSosync.Data
 
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
-            var inserted = _con.Query<JobInsertedInfo>(DataService.SQL_CreateJob.Replace("%%PARENT_PATH%%", parentPath), job).Single();
-            job.Job_ID = inserted.Job_ID;
+            var queryParams = new DynamicParameters(job);
+            queryParams.Add("@ParentPath", parentPath);
+
+            var inserted = _con.Query<JobInsertedInfo>(SQL_CreateJob, queryParams, transaction).Single();
+            job.ID = inserted.ID;
             job.Parent_Path = inserted.Parent_Path;
+        }
+
+        public void CreateJobBulk(IEnumerable<SyncJob> jobs)
+        {
+            // TODO: Create real bulk insert
+            foreach(var job in jobs)
+            {
+                CreateJob(job, "");
+            }
         }
 
         /// <summary>
@@ -345,39 +225,6 @@ namespace WebSosync.Data
         {
             CleanModel(job);
             _con.Execute(DataService.SQL_UpdateJob, job, commandTimeout: _cmdTimeoutSec);
-        }
-
-        /// <summary>
-        /// Updates only the specified field of the job in the database.
-        /// </summary>
-        /// <param name="job">The job to be updated.</param>
-        /// <param name="propertySelector">The member expression for which field should be updated in the database.</param>
-        public void UpdateJob<TProp>(SyncJob job, Expression<Func<SyncJob, TProp>> propertySelector)
-        {
-            CleanModel(job);
-
-            var tblAtt = job.GetType().GetTypeInfo().GetCustomAttribute<DataContractAttribute>();
-            var prop = ((PropertyInfo)((MemberExpression)propertySelector.Body).Member);
-            var propAtt = prop.GetCustomAttribute<DataMemberAttribute>();
-
-            var tblName = tblAtt == null ? typeof(SyncJob).Name : tblAtt.Name;
-            var propName = propAtt == null ? prop.Name : propAtt.Name;
-
-            _con.Execute($"update {tblName} set {propName} = @{propName} where job_id = @job_id", job, commandTimeout: _cmdTimeoutSec);
-        }
-
-        /// <summary>
-        /// Return statistic information from the sync table.
-        /// </summary>
-        /// <returns></returns>
-        public JobStatistic GetJobStatistics()
-        {
-            var query = Resources.ResourceManager.GetString(ResourceNames.JobStatisticsScript);
-
-            return _con.Query<JobStatistic>(
-                query,
-                commandTimeout: _cmdTimeoutSec)
-                .SingleOrDefault();
         }
         #endregion
 

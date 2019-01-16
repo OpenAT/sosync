@@ -6,8 +6,8 @@ namespace WebSosync.Models
     [DataContract(Name = "job_result")]
     public class JobResultDto
     {
-        [DataMember(Name = "job_id")]
-        public int JobID { get; set; }
+        [DataMember(Name = "id")]
+        public int ID { get; set; }
 
         [DataMember(Name = "error_code")]
         public int ErrorCode { get; set; }

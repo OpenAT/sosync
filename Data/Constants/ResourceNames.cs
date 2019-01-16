@@ -9,17 +9,7 @@ namespace WebSosync.Data.Constants
     /// </summary>
     public static class ResourceNames
     {
-        public const string SetupDatabaseScript = "SetupDatabase_SCRIPT";
-        public const string GetAllOpenSyncJobsSelect = "GetAllOpenSyncJobs_SELECT";
         public const string GetFirstOpenSynJobAndChildren = "GetFirstOpenSynJobAndChildren_SELECT";
-        public const string SetupAddColumnScript = "SetupAddColumn_SCRIPT";
-        public const string SetupDropColumnScript = "SetupDropColumn_SCRIPT";
         public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
-        public const string GetProtocolToSyncSelect = "GetProtocolToSync_SELECT";
-        public const string JobStatisticsScript = "JobStatistics_SCRIPT";
-        public const string GetFirstOpenJobIndexScript = "GetFirstOpenJobIndex_SCRIPT";
-        public const string SkipPreviousJobsIndexScript = "SkipPreviousJobsIndex_SCRIPT";
-        public const string CreateProtocolIndexScript = "CreateProtocolIndex_SCRIPT";
-        public const string ComputeParentPathWhereNull = "ComputeParentPathWhereNull_SCRIPT";
     }
 }

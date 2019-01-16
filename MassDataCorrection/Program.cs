@@ -9,6 +9,8 @@ using Dapper;
 using MassDataCorrection.Models;
 using MassDataCorrection.Properties;
 using DaDi.Odoo.Models;
+using WebSosync.Data.Models;
+using WebSosync.Data;
 
 namespace MassDataCorrection
 {
@@ -28,29 +30,8 @@ namespace MassDataCorrection
             if (key.KeyChar == 'y' || key.KeyChar == 'Y')
             {
                 var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
-                //processor.Process(CheckFaultyPhoneNumbers, null);
-                //processor.Process(CheckOpenSyncJobs, null);
-                //processor.Process(FillNewDonationReportFields, new[] { "bsvw" });
-                //processor.Process(FillNewDonationReportFields, null);
-                //processor.Process(FillMissingPartnerBPKFields, new[] { "demo" });
-                //processor.Process(FillMissingPartnerBPKFields, null);
-                //processor.Process(DeleteAndResyncFiscalYears, new[] { "demo" });
-                //processor.Process(DeleteAndResyncFiscalYears, null);
-                //processor.Process(CheckUnsyncedPartners, null);
 
-                //processor.Process(CheckGroups, new[] { "npha" });
-                //processor.Process(CheckGroups, null);
-                //PrintDictionary(groupsStats);
-
-                processor.Process(RestartDonationReportJobs, null);
-                PrintDictionary(_restartDonationReportsCounts);
-
-                //processor.Process(RestartBpkJobs, null);
-                //PrintDictionary(_restartBpkCounts);
-
-                //ShowUnsynchedPartners();
-
-                var dummy = string.Join(Environment.NewLine, _tel.Select(x => $"{x.Key}\t{x.Value}"));
+                processor.Process(InitialSyncPayments, new[] { "demo" });
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -61,6 +42,16 @@ namespace MassDataCorrection
 
             Console.ReadKey();
         }
+
+        private static void PrintDictionary<T>(Dictionary<string, T> dic)
+        {
+            foreach (var item in dic)
+            {
+                Console.WriteLine($"{item.Key}: {item.Value}");
+            }
+        }
+
+        #region Older checks
 
         private static Dictionary<string, int> _tel = new Dictionary<string, int>();
         private static void CheckFaultyPhoneNumbers(InstanceInfo info, Action<float> reportProgress)
@@ -87,7 +78,7 @@ namespace MassDataCorrection
                     Console.WriteLine($"Anzahl Tel: {count}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Could not connect to mssql.");
             }
@@ -128,7 +119,7 @@ namespace MassDataCorrection
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Could not connect to mssql.");
             }
@@ -144,7 +135,7 @@ namespace MassDataCorrection
 
             using (var con = info.CreateOpenSyncerNpgsqlConnection())
             {
-                var cmd = new NpgsqlCommand("select job_source_type, job_source_model, count(*) cnt from sync_table where job_state = 'new' group by job_source_type, job_source_model;", con);
+                var cmd = new NpgsqlCommand("select job_source_type, job_source_model, count(*) cnt from sosync_job where job_state = 'new' group by job_source_type, job_source_model;", con);
 
                 var rdr = cmd.ExecuteReader();
                 while (rdr.Read())
@@ -455,14 +446,6 @@ namespace MassDataCorrection
             }
         }
 
-        private static void PrintDictionary(Dictionary<string, int> dic)
-        {
-            foreach (var item in dic)
-            {
-                Console.WriteLine($"{item.Key}: {item.Value}");
-            }
-        }
-
         private static Dictionary<string, int> _restartBpkCounts = new Dictionary<string, int>();
         private static void RestartBpkJobs(InstanceInfo info, Action<float> reportProgress)
         {
@@ -504,7 +487,7 @@ namespace MassDataCorrection
                         rpc.RunMethod("res.partner.bpk", "create_sync_job", id);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
@@ -557,11 +540,253 @@ namespace MassDataCorrection
                     //    rpc.RunMethod("res.partner.donation_report", "create_sync_job", id);
                     //}
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
             Console.WriteLine();
         }
+
+        private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
+        private static void CheckDonationReports(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new[] {
+                "dadi"
+                ,"aahs"
+                ,"apfo"
+                ,"avnc"
+                ,"deve"
+                ,"rnga"
+                ,"tiqu"
+                ,"diak"
+                ,"jeki"
+                ,"kich"
+                ,"myeu"
+                ,"nphc"
+                ,"otiv"
+                ,"rnde"
+                ,"wdcs"
+                ,"rona"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            Dictionary<int, DonationReport> fsoDonations = null;
+            Dictionary<int, DonationReport> fsDonations = null;
+
+            if (info.host_sosync == "sosync2")
+                CheckSosync2Donations(info, reportProgress, out fsoDonations, out fsDonations);
+            else if (info.host_sosync == "sosync1")
+                CheckSosync1Donations(info, reportProgress, out fsoDonations, out fsDonations);
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+
+            // Compare results
+
+            using (var db = info.CreateOpenMssqlIntegratedConnection())
+            {
+                var diffCount = 0;
+                var missingCount = 0;
+                foreach (var item in fsDonations)
+                {
+                    var fsItem = item.Value;
+                    DonationReport fsoItem = null;
+
+                    if (fsoDonations.ContainsKey(item.Value.ForeignID))
+                        fsoItem = fsoDonations[item.Value.ForeignID];
+
+                    if (fsoItem != null)
+                    {
+                        if (fsItem.State != fsoItem.State)
+                        {
+                            try
+                            {
+                                diffCount++;
+                                Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
+
+                                //db.Execute($@"
+                                //UPDATE dbo.AktionSpendenmeldungBPK
+                                //SET sosync_write_date = DATEADD(HOUR, -3, sosync_write_date)
+                                //WHERE AktionsID = @AktionsID;", new { AktionsID = item.Key });
+
+                                //var i = db.Execute(@"
+                                //insert into sosync.JobQueue
+                                //(
+                                //    JobDate
+                                //    ,JobSourceSystem
+                                //    ,JobSourceModel
+                                //    ,JobSourceRecordID
+                                //    ,JobState
+                                //    ,JobSourceSosyncWriteDate
+                                //    ,JobSourceFields
+                                //)
+                                //values (
+                                //    @JobDate
+                                //    ,@JobSourceSystem
+                                //    ,@JobSourceModel
+                                //    ,@JobSourceRecordID
+                                //    ,@JobState
+                                //    ,@JobSourceSosyncWriteDate
+                                //    ,@JobSourceFields
+                                //)
+                                //",
+                                //    new
+                                //    {
+                                //        JobDate = fsItem.SosyncWriteDate.Value,
+                                //        JobSourceSystem = SosyncSystem.FundraisingStudio,
+                                //        JobSourceModel = "dbo.AktionSpendenmeldungBPK",
+                                //        JobSourceRecordID = fsItem.ID,
+                                //        JobState = "new",
+                                //        JobSourceSosyncWriteDate = fsItem.SosyncWriteDate.Value,
+                                //        JobSourceFields = $"{{ \"sosync_write_date\": \"{fsItem.SosyncWriteDate.Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}\" }}"
+                                //    });
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        missingCount++;
+                    }
+                }
+
+                Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+
+                if (diffCount > 0 || missingCount > 0)
+                    _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+            }
+        }
+
+        private static void CheckSosync2Donations(
+            InstanceInfo info, 
+            Action<float> reportProgress, 
+            out Dictionary<int, DonationReport> fsoDonations, 
+            out Dictionary<int, DonationReport>  fsDonations)
+        {
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoDonations = onlineCon
+                    .Query<DonationReport>("select id ID, sosync_fs_id ForeignID, state State, sosync_write_date SosyncWriteDate from res_partner_donation_report")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsDonations = fsCon
+                    .Query<DonationReport>("select AktionsID ID, sosync_fso_id ForeignID, Status State, sosync_write_date SosyncWriteDate from dbo.AktionSpendenmeldungBPK")
+                    .ToDictionary(x => x.ID);
+            }
+        }
+
+        private static void CheckSosync1Donations(
+            InstanceInfo info,
+            Action<float> reportProgress,
+            out Dictionary<int, DonationReport> fsoDonations,
+            out Dictionary<int, DonationReport> fsDonations)
+        {
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoDonations = onlineCon
+                    .Query<DonationReport>("select id ID, sosync_fs_id ForeignID, state State, null SosyncWriteDate from res_partner_donation_report")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlIntegratedConnection())
+            {
+                fsDonations = fsCon
+                    .Query<DonationReport>(@"SELECT
+	                                            mssqlBPK.AktionsID ID
+	                                            ,odooBPK.id ForeignID
+	                                            ,odooBPK.state
+	                                            ,mssqlBPK.sosync_write_date SosyncWriteDate 
+                                            FROM
+	                                            dbo.xAktionSpendenmeldungBPK mssqlBPK
+	                                            INNER JOIN odoo.res_partner_donation_report odooBPK
+		                                            ON mssqlBPK.AktionsID = odooBPK.MDBID
+                                            ")
+                    .ToDictionary(x => x.ID);
+            }
+        }
+
+        #endregion
+
+        #region Current checks
+
+        private static void InitialSync(string modelName, OdooClient rpc, NpgsqlConnection onlineCon, bool unsyncedOnly)
+        {
+            var query = $@"
+                select id, sosync_fs_id, sosync_write_date from {modelName.Replace(".", "_")}
+                {(unsyncedOnly ? " where coalesce(sosync_fs_id, 0) = 0" : "")}
+                ";
+
+            var models = onlineCon.Query(query);
+
+            foreach (var model in models)
+            {
+                string dummy = $"ID {model.id}";
+                var id = rpc.CreateModel("sosync.job.queue", new
+                {
+                    job_date = model.sosync_write_date ?? DateTime.UtcNow,
+                    job_source_system = "fso",
+                    job_source_model = modelName,
+                    job_source_record_id = (int)model.id,
+                    job_source_target_record_id = (int?)model.sosync_fs_id,
+                    job_source_sosync_write_date = model.sosync_write_date,
+                    //submission_url = submissionUrl
+                });
+            }
+        }
+
+        private static void InitialSyncPayments(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new string[] {
+                //"dadi"
+                //,"aahs"
+                //,"apfo"
+                //,"avnc"
+                //,"deve"
+                //,"rnga"
+                //,"tiqu"
+                //,"diak"
+                //,"jeki"
+                //,"kich"
+                //,"myeu"
+                //,"nphc"
+                //,"otiv"
+                //,"rnde"
+                //,"wdcs"
+                //,"rona"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            var rpc = info.CreateAuthenticatedOdooClient();
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                InitialSync("payment.acquirer", rpc, onlineCon, false);
+                InitialSync("payment.transaction", rpc, onlineCon, false);
+                InitialSync("product.product", rpc, onlineCon, false);
+                InitialSync("sale.order.line", rpc, onlineCon, false);
+            }
+        }
+        #endregion
     }
 }

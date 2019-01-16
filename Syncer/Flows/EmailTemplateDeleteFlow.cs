@@ -8,6 +8,8 @@ using Syncer.Attributes;
 using WebSosync.Data.Constants;
 using System.Linq;
 using Syncer.Exceptions;
+using Microsoft.Extensions.Logging;
+using Syncer.Services;
 
 namespace Syncer.Flows
 {
@@ -16,7 +18,8 @@ namespace Syncer.Flows
     public class EmailTemplateDeleteFlow
         : DeleteSyncFlow
     {
-        public EmailTemplateDeleteFlow(IServiceProvider svc, SosyncOptions conf) : base(svc, conf)
+        public EmailTemplateDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
+            : base(logger, odooService, conf, flowService)
         {
         }
 

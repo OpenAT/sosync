@@ -30,7 +30,6 @@ namespace Syncer.Workers
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
         private TimeService _timeSvc;
-        private IBackgroundJob<ProtocolWorker> _protocolJob;
         #endregion
 
         #region Constructors
@@ -44,8 +43,7 @@ namespace Syncer.Workers
             FlowService flowService, 
             ILogger<SyncWorker> logger, 
             OdooService odoo,
-            TimeService timeSvc,
-            IBackgroundJob<ProtocolWorker> protocolJob
+            TimeService timeSvc
             )
             : base(options)
         {
@@ -55,7 +53,6 @@ namespace Syncer.Workers
             _log = logger;
             _odoo = odoo;
             _timeSvc = timeSvc;
-            _protocolJob = protocolJob;
         }
         #endregion
 
@@ -65,126 +62,201 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
+            var jobLimit = _conf.Job_Package_Size.Value;
+
             using (var db = GetDb())
             {
-                var reCheckTimeMin = 30;
-
                 // Get only the first open job and its hierarchy,
                 // and build the tree in memory
                 var loadTimeUTC = DateTime.UtcNow;
 
                 var s = new Stopwatch();
                 s.Start();
-                var jobs = GetNextOpenJob(db);
+                var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
+
+
+
+                var initialJobCount = jobs.Count;
+                var reCheckTimeMin = 30;
 
                 while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
                 {
-                    foreach (var job in jobs)
+                    var tasks = new List<Task>();
+                    var threadCount = _conf.Max_Threads;
+
+                    var threadWatch = new Stopwatch();
+                    threadWatch.Start();
+                    try
                     {
-                        if (CancellationToken.IsCancellationRequested)
-                            break;
+                        // Check server times
+                        if (IsServerTimeMismatch(reCheckTimeMin))
+                            return;
 
-                        try
+                        // Spin up job threads
+                        _log.LogInformation($"Threading: Starting {threadCount} threads");
+                        for (var i = 1; i <= threadCount; i++)
                         {
-                            // Check server drift once per batch (a batch is every job the while loop captures),
-                            // but also check every reCheckMin minutes within a batch
-                            if (_timeSvc.LastDriftCheck == null || (DateTime.UtcNow - _timeSvc.LastDriftCheck.Value).Minutes >= reCheckTimeMin)
-                                _timeSvc.ThrowOnTimeDrift();
+                            if (CancellationToken.IsCancellationRequested)
+                                break;
 
-                            if (_timeSvc.DriftLockUntil.HasValue && _timeSvc.DriftLockUntil > DateTime.UtcNow)
-                            {
-                                var expiresInMs = (int)(_timeSvc.DriftLockUntil.Value - DateTime.UtcNow).TotalMilliseconds;
-
-                                if (expiresInMs < 0)
-                                    expiresInMs = 0;
-
-                                _log.LogError($"Synchronization locked due to time drift. Lock expires in {SpecialFormat.FromMilliseconds(expiresInMs)} ({_timeSvc.DriftLockUntil.Value.ToString("o")})");
-                                return;
-                            }
-
-                            job.Job_Log += $"GetNextOpenJob: {s.Elapsed.TotalMilliseconds.ToString("0")} ms\n";
-                            UpdateJobRunCount(job);
-                            UpdateJobStart(job, loadTimeUTC);
-
-                            // Get the flow for the job source model, and start it
-                            var constructorParams = new object[] { _svc, _conf };
-                            using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
-                            {
-                                bool requireRestart = false;
-                                string restartReason = "";
-                                flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
-
-                                if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
-#warning TODO: Log time for this query too, once the majority of open sync jobs is completed
-                                    CloseAllPreviousJobs(job);
-
-                                if (requireRestart)
-                                    RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
-
-                                // Throttling
-                                if (Configuration.Throttle_ms > 0)
-                                {
-                                    var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
-                                    var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
-
-                                    if (remainingTimeMs > 0)
-                                    {
-                                        _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
-                                        Thread.Sleep(remainingTimeMs);
-                                    }
-                                    else
-                                    {
-                                        _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
-                                    }
-                                }
-
-                                // Stop processing the queue if cancellation was requested
-                                if (CancellationToken.IsCancellationRequested)
-                                {
-                                    // Raise the cancelling event
-                                    RaiseCancelling();
-                                    // Clean up here, if necessary
-                                }
-                            }
+                            _log.LogInformation($"Threading: Starting thread {i}");
+                            var threadNumber = i;
+                            tasks.Add(Task.Run(() => JobThread(ref jobs, DateTime.UtcNow, threadNumber)));
                         }
-                        catch (TimeDriftException ex)
-                        {
-                            // Set the drift lock to re-check time + 5 seconds
-                            // to make sure another drift check is done before
-                            // the lock expires
-                            _timeSvc.DriftLockUntil = DateTime.UtcNow.AddMinutes(reCheckTimeMin).AddSeconds(5);
+                    }
+                    catch (TimeDriftException ex)
+                    {
+                        // Set the drift lock to re-check time + 5 seconds
+                        // to make sure another drift check is done before
+                        // the lock expires
+                        _timeSvc.DriftLockUntil = DateTime.UtcNow.AddMinutes(reCheckTimeMin).AddSeconds(5);
 
-                            var waitTimeMs = 1000 * 60 * reCheckTimeMin + 5000;
-                            _log.LogError($"{ex.Message} Locking sync for {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
-                        }
-                        catch (SqlException ex)
-                        {
-                            _log.LogError(ex.ToString());
-                            UpdateJobError(job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.LogError(ex.ToString());
-                            UpdateJobError(job, ex.ToString());
-                        }
-
-                        // All finished jobs get flagged for beeing synced to fso
-                        if (job.Job_State == SosyncState.Done || job.Job_State == SosyncState.Error)
-                            UpdateJobAllowSync(job);
-
-                        loadTimeUTC = DateTime.UtcNow;
+                        var waitTimeMs = 1000 * 60 * reCheckTimeMin + 5000;
+                        _log.LogError($"{ex.Message} Locking sync for {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
                     }
 
-                    // Start the background job for synchronization of sync jobs to fso
-                    _protocolJob.Start();
+                    Task.WaitAll(tasks.ToArray());
+                    ThreadService.JobLocks.Clear();
+                    threadWatch.Stop();
+
+                    _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
 
                     // Get the next open job
                     loadTimeUTC = DateTime.UtcNow;
                     s.Reset();
                     s.Start();
-                    jobs = GetNextOpenJob(db);
+                    jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
+                    initialJobCount = jobs.Count;
+                }
+            }
+
+            Dapper.SqlMapper.PurgeQueryCache();
+        }
+
+        private bool IsServerTimeMismatch(int reCheckTimeMin)
+        {
+            if (_timeSvc.LastDriftCheck == null || (DateTime.UtcNow - _timeSvc.LastDriftCheck.Value).Minutes >= reCheckTimeMin)
+                _timeSvc.ThrowOnTimeDrift();
+
+            if (_timeSvc.DriftLockUntil.HasValue && _timeSvc.DriftLockUntil > DateTime.UtcNow)
+            {
+                var expiresInMs = (int)(_timeSvc.DriftLockUntil.Value - DateTime.UtcNow).TotalMilliseconds;
+
+                if (expiresInMs < 0)
+                    expiresInMs = 0;
+
+                _log.LogError($"Synchronization locked due to time drift. Lock expires in {SpecialFormat.FromMilliseconds(expiresInMs)} ({_timeSvc.DriftLockUntil.Value.ToString("o")})");
+                return true;
+            }
+
+            return false;
+        }
+
+        private void JobThread(ref Queue<SyncJob> jobs, DateTime loadTimeUTC, int threadNumber)
+        {
+            try
+            {
+                SyncJob threadJob;
+
+                do
+                {
+                    if (CancellationToken.IsCancellationRequested)
+                        break;
+
+                    // Fetch next job from queue
+                    threadJob = null;
+                    lock (jobs)
+                    {
+                        if (jobs.Count > 0)
+                        {
+                            threadJob = jobs.Dequeue();
+                        }
+                    }
+
+                    // Process job
+                    if (threadJob != null)
+                    {
+                        _log.LogInformation($"Threading: Thread {threadNumber} fetched a job, {jobs.Count} remaining");
+
+                        threadJob.Job_Log += $"GetNextOpenJob: n/a ms (comes from thread queue)\n";
+                        ProcessJob(threadJob, loadTimeUTC);
+                    }
+                }
+                while (threadJob != null);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void ProcessJob(SyncJob job, DateTime loadTimeUTC)
+        {
+            using (var dataService = GetDb())
+            {
+                try
+                {
+                    UpdateJobRunCount(dataService, job);
+                    UpdateJobStart(dataService, job, loadTimeUTC);
+
+                    // Get the flow for the job source model, and start it
+                    var constructorParams = new object[] { _log, _odoo, _conf, _flowService };
+                    using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
+                    {
+                        bool requireRestart = false;
+                        string restartReason = "";
+                        flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
+
+                        if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                        {
+                            var s = new Stopwatch();
+                            s.Start();
+                            CloseAllPreviousJobs(job);
+                            s.Stop();
+                            _log.LogInformation($"{nameof(CloseAllPreviousJobs)}: {s.Elapsed.TotalMilliseconds} ms");
+                        }
+
+                        if (requireRestart)
+                            RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
+
+                        // Throttling
+                        ThrottleJobProcess(loadTimeUTC);
+
+                        // Stop processing the queue if cancellation was requested
+                        if (CancellationToken.IsCancellationRequested)
+                            RaiseCancelling();
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, ex.ToString());
+                }
+            }
+        }
+
+        private void ThrottleJobProcess(DateTime loadTimeUTC)
+        {
+            if (Configuration.Throttle_ms > 0)
+            {
+                var consumedTimeMs = (int)(DateTime.UtcNow - loadTimeUTC).TotalMilliseconds;
+                var remainingTimeMs = Configuration.Throttle_ms - consumedTimeMs;
+
+                if (remainingTimeMs > 0)
+                {
+                    _log.LogInformation($"Throttle set to {Configuration.Throttle_ms}ms, job took {consumedTimeMs}ms, sleeping {remainingTimeMs}ms");
+                    Thread.Sleep(remainingTimeMs);
+                }
+                else
+                {
+                    _log.LogDebug($"Job time ({consumedTimeMs}ms) exceeded throttle time ({Configuration.Throttle_ms}ms), continuing at full speed.");
                 }
             }
         }
@@ -194,13 +266,13 @@ namespace Syncer.Workers
             return new DataService(_conf);
         }
 
-        private IList<SyncJob> GetNextOpenJob(DataService db)
+        private IList<SyncJob> GetNextOpenJob(DataService db, int limit)
         {
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            var result = new List<SyncJob>(db.GetFirstOpenJobHierarchy()).ToTree(
-                    x => x.Job_ID,
+            var result = new List<SyncJob>(db.GetFirstOpenJobHierarchy(limit)).ToTree(
+                    x => x.ID,
                     x => x.Parent_Job_ID,
                     x => x.Children)
                     .ToList();
@@ -216,7 +288,7 @@ namespace Syncer.Workers
         {
             if (!job.Job_Source_Sosync_Write_Date.HasValue)
             {
-                _log.LogWarning($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.Job_ID})");
+                _log.LogWarning($"Submitted {nameof(job.Job_Source_Sosync_Write_Date)} was null, cannot close previous jobs (job_id = {job.ID})");
                 return;
             }
 
@@ -232,63 +304,36 @@ namespace Syncer.Workers
         /// <summary>
         /// Updates the job, indicating processing started.
         /// </summary>
-        private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
+        private void UpdateJobStart(DataService db, SyncJob job, DateTime loadTimeUTC)
         {
-            _log.LogDebug($"Updating job {job.Job_ID}: job start");
+            _log.LogDebug($"Updating job {job.ID}: job start");
 
-            using (var db = GetDb())
-            {
-                job.Job_State = SosyncState.InProgress;
-                job.Job_Start = loadTimeUTC;
-                job.Job_Last_Change = DateTime.UtcNow;
+            job.Job_State = SosyncState.InProgress;
+            job.Job_Start = loadTimeUTC;
+            job.Write_Date = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
 
-        protected void UpdateJobRunCount(SyncJob job)
+        protected void UpdateJobRunCount(DataService db, SyncJob job)
         {
-            _log.LogDebug($"Updating job {job.Job_ID}: run_count");
+            _log.LogDebug($"Updating job {job.ID}: run_count");
 
-            using (var db = GetDb())
-            {
-                job.Job_Run_Count += 1;
-                job.Job_Last_Change = DateTime.UtcNow;
+            job.Job_Run_Count += 1;
+            job.Write_Date = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
 
-        private void UpdateJobError(SyncJob job, string message)
+        private void UpdateJobError(DataService db, SyncJob job, string message)
         {
-            using (var db = GetDb())
-            {
-                job.Job_State = SosyncState.Error;
-                // Set the job_log if it's empty, otherwise concatenate it
-                job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
-                job.Job_Last_Change = DateTime.UtcNow;
-                job.Job_End = DateTime.UtcNow;
+            job.Job_State = SosyncState.Error;
+            // Set the job_log if it's empty, otherwise concatenate it
+            job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
+            job.Write_Date = DateTime.UtcNow;
+            job.Job_End = DateTime.UtcNow;
 
-                db.UpdateJob(job);
-            }
-        }
-
-        private void UpdateJobAllowSync(SyncJob job)
-        {
-            // First recursively update all child jobs to be synced
-            if (job.Children != null && job.Children.Count > 0)
-            {
-                foreach (var childJob in job.Children)
-                    UpdateJobAllowSync(childJob);
-            }
-
-            // Then update the job
-            using (var db = GetDb())
-            {
-                // Don't update job_last_change on job-sync related fields
-                job.Job_To_FSO_Can_Sync = true;
-                db.UpdateJob(job);
-            }
+            db.UpdateJob(job);
         }
         #endregion
     }
