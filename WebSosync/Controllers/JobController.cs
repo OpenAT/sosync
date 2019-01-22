@@ -235,6 +235,7 @@ namespace WebSosync.Controllers
                 .MapText("job_source_model", x => x.Job_Source_Model)
                 .MapInteger("job_source_record_id", x => x.Job_Source_Record_ID)
                 .MapInteger("job_source_merge_into_record_id", x => x.Job_Source_Merge_Into_Record_ID)
+                .MapInteger("job_source_target_merge_into_record_id", x => x.Job_Source_Target_Merge_Into_Record_ID)
                 .MapInteger("job_source_target_record_id", x => x.Job_Source_Target_Record_ID)
                 .MapText("job_source_fields", x => x.Job_Source_Fields)
                 .MapTimeStamp("job_source_sosync_write_date", x => x.Job_Source_Sosync_Write_Date)
