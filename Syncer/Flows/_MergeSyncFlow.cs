@@ -86,7 +86,7 @@ namespace Syncer.Flows
                     var sourceOnlineID = GetOnlineIDFromOdooViaStudioID(modelName, sourceStudioID) ?? job.Job_Source_Target_Record_ID;
 
                     var mergeStudioID = job.Job_Source_Merge_Into_Record_ID;
-                    var mergeOnlineID = GetOnlineIDFromOdooViaStudioID(modelName, mergeStudioID.Value) ?? job.Job_Source_Merge_Into_Record_ID;
+                    var mergeOnlineID = GetOnlineIDFromOdooViaStudioID(modelName, mergeStudioID.Value) ?? job.Job_Source_Target_Merge_Into_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceStudioID;
                     job.Sync_Source_Merge_Into_Record_ID = mergeStudioID;
