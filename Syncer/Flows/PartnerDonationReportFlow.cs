@@ -93,7 +93,7 @@ namespace Syncer.Flows
                     online.Add("info", studio.Info);
                     online.Add("force_submission", studio.ForceSubmission);
                     online.Add("state", studio.Status);
-                    //online.Add("imported", studio.Imported);
+                    online.Add("imported", studio.Imported);
                 });
         }
 
@@ -170,7 +170,7 @@ namespace Syncer.Flows
                     studio.ErrorDetail = online.error_detail;
                     studio.ResponseErrorOrigRefnr = online.response_error_orig_refnr;
                     studio.ForceSubmission = online.force_submission;
-                    //studio.Imported = online.imported;
+                    studio.Imported = online.imported;
 
                     // -- online.report_erstmeldung_id;
                     // -- online.report_follow_up_ids;
