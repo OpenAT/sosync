@@ -32,7 +32,7 @@ namespace Syncer.Services
         {
             _log = logger;
 
-            _client = new OdooClient($"http://{options.Online_Host}/xmlrpc/2/", options.Instance);
+            _client = new OdooClient($"https://{options.Online_Host}/xmlrpc/2/", options.Instance);
             _client.Authenticate(options.Online_Sosync_User, options.Online_Sosync_PW);
         }
         #endregion

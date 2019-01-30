@@ -71,7 +71,7 @@ namespace ManualTest
         private void OdooQuery()
         {
             Stopwatch s = new Stopwatch();
-            var client = new OdooClient($"http://wwfa.datadialog.net/xmlrpc/2/", "wwfa");
+            var client = new OdooClient($"https://wwfa.datadialog.net/xmlrpc/2/", "wwfa");
             client.Authenticate("sosync", "YWGXlaB5cfPUDs9a");
 
             s.Start();

@@ -42,7 +42,7 @@ namespace MassDataCorrection
 
         public OdooClient CreateAuthenticatedOdooClient()
         {
-            var address = $"http://{Instance}.datadialog.net/xmlrpc/2/";
+            var address = $"https://{Instance}.datadialog.net/xmlrpc/2/";
             var client = new OdooClient(address, Instance);
             client.Authenticate("sosync", online_sosync_pw);
             return client;
