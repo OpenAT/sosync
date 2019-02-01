@@ -94,6 +94,8 @@ namespace Syncer.Flows
                     online.Add("force_submission", studio.ForceSubmission);
                     online.Add("state", studio.Status);
                     online.Add("imported", studio.Imported);
+                    online.Add("submission_bpk_private", studio.SubmissionBPKPrivate);
+                    online.Add("submission_refnr", studio.SubmissionRefnr);
                 });
         }
 
