@@ -41,7 +41,6 @@ namespace Syncer.Flows.Payments
                 (online, studio) =>
                 {
                     studio.name = online.name;
-                    studio.active = online.active;
                     studio.xml_id = online.xml_id;
                 });
         }
