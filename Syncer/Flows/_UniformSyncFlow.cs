@@ -12,6 +12,7 @@ using Syncer.Exceptions;
 using WebSosync.Data.Models;
 using Microsoft.Extensions.Logging;
 using Syncer.Services;
+using WebSosync.Common;
 
 namespace Syncer.Flows
 {
@@ -23,8 +24,8 @@ namespace Syncer.Flows
     public abstract class UniformSyncFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public UniformSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public UniformSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
             var t = GetType();
             var attStudio = t.GetCustomAttribute<StudioModelAttribute>();

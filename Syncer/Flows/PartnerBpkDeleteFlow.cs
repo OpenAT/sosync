@@ -10,6 +10,7 @@ using System.Linq;
 using Syncer.Exceptions;
 using Microsoft.Extensions.Logging;
 using Syncer.Services;
+using WebSosync.Common;
 
 namespace Syncer.Flows
 {
@@ -17,8 +18,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.bpk")]
     public class PartnerBpkDeleteFlow : DeleteSyncFlow
     {
-        public PartnerBpkDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public PartnerBpkDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

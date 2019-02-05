@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Services;
+using WebSosync.Common;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -16,8 +17,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonEmailDeleteFlow
         : DeleteSyncFlow
     {
-        public PersonEmailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public PersonEmailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

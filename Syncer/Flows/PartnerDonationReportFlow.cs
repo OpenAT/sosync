@@ -10,6 +10,7 @@ using Syncer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -20,8 +21,8 @@ namespace Syncer.Flows
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public PartnerDonationReportFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public PartnerDonationReportFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
         #endregion

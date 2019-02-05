@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -17,8 +18,8 @@ namespace Syncer.Flows
 {
     public abstract class DeleteSyncFlow : SyncFlow
     {
-        public DeleteSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public DeleteSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

@@ -10,6 +10,7 @@ using WebSosync.Data.Models;
 using dadi_data.Models;
 using DaDi.Odoo.Models.Payments;
 using WebSosync.Data;
+using WebSosync.Common;
 
 namespace Syncer.Flows.Payments
 {
@@ -18,7 +19,8 @@ namespace Syncer.Flows.Payments
     public class ProductPaymentIntervalFlow
         : ReplicateSyncFlow
     {
-        public ProductPaymentIntervalFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService) : base(logger, odooService, conf, flowService)
+        public ProductPaymentIntervalFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

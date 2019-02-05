@@ -30,6 +30,8 @@ namespace Syncer.Workers
         private ILogger<SyncWorker> _log;
         private OdooService _odoo;
         private TimeService _timeSvc;
+        private OdooFormatService _odooFormatService;
+        private SerializationService _serializationService;
         #endregion
 
         #region Constructors
@@ -43,7 +45,9 @@ namespace Syncer.Workers
             FlowService flowService, 
             ILogger<SyncWorker> logger, 
             OdooService odoo,
-            TimeService timeSvc
+            TimeService timeSvc,
+            OdooFormatService odooFormatService,
+            SerializationService serializationService
             )
             : base(options)
         {
@@ -53,6 +57,8 @@ namespace Syncer.Workers
             _log = logger;
             _odoo = odoo;
             _timeSvc = timeSvc;
+            _odooFormatService = odooFormatService;
+            _serializationService = serializationService;
         }
         #endregion
 
@@ -118,6 +124,7 @@ namespace Syncer.Workers
                     ThreadService.JobLocks.Clear();
                     Dapper.SqlMapper.PurgeQueryCache();
                     threadWatch.Stop();
+                    GC.Collect();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
 
@@ -205,7 +212,7 @@ namespace Syncer.Workers
                     UpdateJobStart(dataService, job, loadTimeUTC);
 
                     // Get the flow for the job source model, and start it
-                    var constructorParams = new object[] { _log, _odoo, _conf, _flowService };
+                    var constructorParams = new object[] { _log, _odoo, _conf, _flowService, _odooFormatService, _serializationService };
                     using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(_flowService.GetFlow(job.Job_Source_Type, job.Job_Source_Model), constructorParams))
                     {
                         bool requireRestart = false;

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Services;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -17,7 +18,8 @@ namespace Syncer.Flows.Payments
     public class ProductPaymentIntervalDeleteFlow
         : DeleteSyncFlow
     {
-        public ProductPaymentIntervalDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService) : base(logger, odooService, conf, flowService)
+        public ProductPaymentIntervalDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

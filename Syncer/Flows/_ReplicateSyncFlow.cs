@@ -30,8 +30,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public ReplicateSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public ReplicateSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
         #endregion

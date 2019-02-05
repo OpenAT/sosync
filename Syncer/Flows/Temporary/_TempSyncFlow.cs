@@ -9,6 +9,7 @@ using System.Diagnostics;
 using WebSosync.Data;
 using Syncer.Exceptions;
 using Microsoft.Extensions.Logging;
+using WebSosync.Common;
 
 namespace Syncer.Flows.Temporary
 {
@@ -17,8 +18,8 @@ namespace Syncer.Flows.Temporary
     /// </summary>
     public abstract class TempSyncFlow : SyncFlow
     {
-        public TempSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public TempSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

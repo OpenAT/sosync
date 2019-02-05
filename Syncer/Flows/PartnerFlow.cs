@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using WebSosync.Common;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -30,8 +31,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public PartnerFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public PartnerFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
         #endregion

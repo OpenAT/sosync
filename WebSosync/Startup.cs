@@ -94,11 +94,13 @@ namespace WebSosync
 
             // Register singleton classes with DI container
             services.AddSingleton<IServiceCollection>(services);
-            services.AddSingleton<IHostService, HostService>();
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<MdbService>();
             services.AddSingleton<TimeService>();
             services.AddSingleton<OdooService>();
+            services.AddSingleton<SerializationService>();
+            services.AddSingleton<GitService>();
+            services.AddSingleton<OdooFormatService>();
 
             var flowService = new FlowService();
             services.AddSingleton(flowService);
@@ -107,9 +109,6 @@ namespace WebSosync
 
             // Transient services
             services.AddTransient<DataService>();
-            services.AddTransient<GitService>();
-            services.AddTransient<OdooFormatService>();
-            services.AddTransient<SerializationService>();
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);

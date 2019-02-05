@@ -6,6 +6,10 @@ namespace Syncer.Services
 {
     public class OdooFormatService
     {
+        public OdooFormatService()
+        {
+        }
+
         public object ToString(string s)
         {
             if (string.IsNullOrEmpty(s))

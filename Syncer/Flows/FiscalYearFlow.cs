@@ -21,8 +21,8 @@ namespace Syncer.Flows
     public class FiscalYearFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public FiscalYearFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public FiscalYearFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
         #endregion
