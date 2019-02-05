@@ -116,6 +116,7 @@ namespace Syncer.Workers
 
                     Task.WaitAll(tasks.ToArray());
                     ThreadService.JobLocks.Clear();
+                    Dapper.SqlMapper.PurgeQueryCache();
                     threadWatch.Stop();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
@@ -129,8 +130,6 @@ namespace Syncer.Workers
                     initialJobCount = jobs.Count;
                 }
             }
-
-            Dapper.SqlMapper.PurgeQueryCache();
         }
 
         private bool IsServerTimeMismatch(int reCheckTimeMin)
