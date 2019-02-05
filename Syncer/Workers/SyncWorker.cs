@@ -153,7 +153,7 @@ namespace Syncer.Workers
 
         private void JobThread(ref Queue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)
         {
-            _log.LogWarning($"Thread {threadNumber} started");
+            _log.LogInformation($"Thread {threadNumber} started");
 
             try
             {
@@ -170,7 +170,7 @@ namespace Syncer.Workers
                     {
                         if (jobs.Count > 0)
                         {
-                            _log.LogWarning($"Thread {threadNumber} fetching a job from memory queue");
+                            _log.LogInformation($"Thread {threadNumber} fetching a job from memory queue");
                             threadJob = jobs.Dequeue();
                         }
                     }
@@ -178,21 +178,21 @@ namespace Syncer.Workers
                     // Process job
                     if (threadJob != null)
                     {
-                        _log.LogWarning($"Thread {threadNumber} processing the job");
+                        _log.LogInformation($"Thread {threadNumber} processing the job");
                         threadJob.Job_Log += $"GetNextOpenJob: n/a ms (comes from thread queue)\n";
                         ProcessJob(threadJob, loadTimeUTC);
-                        _log.LogWarning($"Thread {threadNumber} finished job, {jobs.Count} jobs remaining");
+                        _log.LogInformation($"Thread {threadNumber} finished job, {jobs.Count} jobs remaining");
                     }
                 }
                 while (threadJob != null);
             }
             catch (Exception ex)
             {
-                _log.LogWarning($"Thread {threadNumber} threw an exception {ex.ToString()}");
+                _log.LogInformation($"Thread {threadNumber} threw an exception {ex.ToString()}");
                 throw;
             }
 
-            _log.LogWarning($"Thread {threadNumber} clean exit");
+            _log.LogInformation($"Thread {threadNumber} clean exit");
         }
 
         private void ProcessJob(SyncJob job, DateTime loadTimeUTC)
