@@ -118,6 +118,7 @@ namespace Syncer.Workers
                     ThreadService.JobLocks.Clear();
                     Dapper.SqlMapper.PurgeQueryCache();
                     threadWatch.Stop();
+                    GC.Collect();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
 
