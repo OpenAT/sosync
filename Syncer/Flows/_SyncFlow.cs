@@ -65,15 +65,15 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public SyncFlow(ILogger logger, OdooService odooSvc, SosyncOptions conf, FlowService flowService)
+        public SyncFlow(ILogger logger, OdooService odooSvc, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
         {
             Config = conf;
             Log = logger;
             FlowService = flowService;
             OdooService = odooSvc;
             MdbService = new MdbService(conf);
-            OdooFormat = new OdooFormatService();
-            Serializer = new SerializationService();
+            OdooFormat = odooFormatService;
+            Serializer = serializationService;
             SkipAutoSyncSource = false;
             _timeLog = new StringBuilder();
 
@@ -499,7 +499,7 @@ namespace Syncer.Flows
                             // SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model));
 
                             // Get the flow for the job source model, and start it
-                            var constructorParams = new object[] { Log, OdooService, Config, FlowService };
+                            var constructorParams = new object[] { Log, OdooService, Config, FlowService, OdooFormat, Serializer};
                             using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(FlowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model), constructorParams))
                             {
                                 if (request.ForceDirection)

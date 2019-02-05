@@ -22,8 +22,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonEmailFlow
         : ReplicateSyncFlow
     {
-        public PersonEmailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public PersonEmailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

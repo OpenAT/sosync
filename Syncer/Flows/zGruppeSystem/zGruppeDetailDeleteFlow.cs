@@ -9,6 +9,7 @@ using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
+using WebSosync.Common;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -18,8 +19,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailDeleteFlow
         : DeleteSyncFlow
     {
-        public zGruppeDetailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public zGruppeDetailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

@@ -11,6 +11,7 @@ using Syncer.Enumerations;
 using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 
@@ -21,8 +22,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailFlow
         : ReplicateSyncFlow
     {
-        public zGruppeDetailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService)
-            : base(logger, odooService, conf, flowService)
+        public zGruppeDetailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 

@@ -6,11 +6,27 @@ using System.Xml.Serialization;
 
 namespace WebSosync.Common
 {
-    public class SerializationService
+    public class SerializationService : IDisposable
     {
+        #region Members
+        private Dictionary<Type, XmlSerializer> _cache;
+        private MemoryStream _ms;
+        private StreamReader _sr;
+        #endregion
+
         #region Constructors
         public SerializationService()
-        { }
+        {
+            _cache = new Dictionary<Type, XmlSerializer>();
+            _ms = new MemoryStream();
+            _sr = new StreamReader(_ms, Encoding.UTF8, true, 2048);
+        }
+
+        public void Dispose()
+        {
+            _sr.Dispose();
+            _ms.Dispose();
+        }
         #endregion
 
         #region Methods
@@ -19,13 +35,17 @@ namespace WebSosync.Common
             if (o == null)
                 throw new InvalidOperationException($"{nameof(o)} cannot be null.");
 
-            using (var ms = new MemoryStream())
-            using (var sr = new StreamReader(ms))
+            lock(_cache)
             {
-                XmlSerializer serializer = new XmlSerializer(o.GetType(), extraTypes);
-                serializer.Serialize(ms, o);
-                ms.Seek(0, SeekOrigin.Begin);
-                return sr.ReadToEnd();
+                if (!_cache.ContainsKey(o.GetType()))
+                    _cache.Add(o.GetType(), new XmlSerializer(o.GetType(), extraTypes));
+
+                _ms.SetLength(0);
+
+                XmlSerializer serializer = _cache[o.GetType()];
+                serializer.Serialize(_ms, o);
+                _ms.Seek(0, SeekOrigin.Begin);
+                return _sr.ReadToEnd();
             }
         }
         #endregion
