@@ -32,6 +32,7 @@ namespace Syncer.Workers
         private TimeService _timeSvc;
         private OdooFormatService _odooFormatService;
         private SerializationService _serializationService;
+        private IMailService _mail;
         #endregion
 
         #region Constructors
@@ -47,7 +48,8 @@ namespace Syncer.Workers
             OdooService odoo,
             TimeService timeSvc,
             OdooFormatService odooFormatService,
-            SerializationService serializationService
+            SerializationService serializationService,
+            IMailService mailService
             )
             : base(options)
         {
@@ -59,6 +61,7 @@ namespace Syncer.Workers
             _timeSvc = timeSvc;
             _odooFormatService = odooFormatService;
             _serializationService = serializationService;
+            _mail = mailService;
         }
         #endregion
 
@@ -80,6 +83,7 @@ namespace Syncer.Workers
                 s.Start();
                 var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
+                CheckInProgress(jobs);
 
                 var initialJobCount = jobs.Count;
                 var reCheckTimeMin = 30;
@@ -134,11 +138,34 @@ namespace Syncer.Workers
                     s.Start();
                     jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
+                    CheckInProgress(jobs);
                     initialJobCount = jobs.Count;
                 }
             }
         }
 
+        private void CheckInProgress(IEnumerable<SyncJob> jobs)
+        {
+            var inProgressJobCount = jobs
+                .Where(j => j.Job_State == SosyncState.InProgress)
+                .Count();
+
+            if (inProgressJobCount > 0)
+            {
+                var body = $"{Configuration.Instance}: sosync2 found {inProgressJobCount} jobs with status " +
+                    $"\"{SosyncState.InProgress}\" - jobs will be treated like " +
+                    $"status \"{SosyncState.New}\" but with highest priority.\n\n" +
+                    $"max_threads: {Configuration.Max_Threads}\n" +
+                    $"job_package_size: {Configuration.Job_Package_Size}";
+
+                _log.LogWarning(body);
+
+                _mail.Send(
+                    "michael.karrer@datadialog.net,martin.kaip@datadialog.net",
+                    $"{Configuration.Instance} sosync2 - Jobs \"inprogress\" found",
+                    body);
+            }
+        }
         private bool IsServerTimeMismatch(int reCheckTimeMin)
         {
             if (_timeSvc.LastDriftCheck == null || (DateTime.UtcNow - _timeSvc.LastDriftCheck.Value).Minutes >= reCheckTimeMin)
