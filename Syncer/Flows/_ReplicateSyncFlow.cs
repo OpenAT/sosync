@@ -470,7 +470,7 @@ namespace Syncer.Flows
 
         private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
         {
-            var toleranceMS = 2000;
+            var toleranceMS = 60000; // 1 Minute tolerance
             var modelInfo = studioInfo;
 
             if (job.Job_Source_System == SosyncSystem.FSOnline)
