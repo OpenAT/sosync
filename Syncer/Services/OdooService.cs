@@ -16,14 +16,22 @@ namespace Syncer.Services
     public class OdooService
     {
         #region Members
+        [ThreadStatic]
         private OdooClient _client;
         private ILogger _log;
+        private SosyncOptions _options;
         #endregion
 
         #region Properties
         public OdooClient Client
         {
-            get { return _client; }
+            get
+            {
+                if (_client == null)
+                    _client = CreateClient();
+
+                return _client;
+            }
         }
         #endregion
 
@@ -31,9 +39,14 @@ namespace Syncer.Services
         public OdooService(SosyncOptions options, ILogger<OdooService> logger)
         {
             _log = logger;
+            _options = options;
+        }
 
-            _client = new OdooClient($"https://{options.Online_Host}/xmlrpc/2/", options.Instance);
-            _client.Authenticate(options.Online_Sosync_User, options.Online_Sosync_PW);
+        private OdooClient CreateClient()
+        {
+            var client = new OdooClient($"https://{_options.Online_Host}/xmlrpc/2/", _options.Instance);
+            client.Authenticate(_options.Online_Sosync_User, _options.Online_Sosync_PW);
+            return client;
         }
         #endregion
 
