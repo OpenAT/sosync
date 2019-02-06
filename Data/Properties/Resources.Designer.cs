@@ -86,24 +86,24 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to with recursive children as (
+        ///   Looks up a localized string similar to with recursive job as (
         ///	-- roots
         ///	select * from (
         ///		select *
         ///		from sosync_job
-        ///		where parent_job_id is null and job_state = &apos;new&apos;
-        ///        order by job_priority desc, job_date desc
+        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///        order by job_state, job_priority desc, job_date desc
         ///        limit %LIMIT%
         ///	) first_parent
         ///
         ///	union all
         ///	
         ///	-- children
-        ///	select jobs.*
-        ///	from sosync_job jobs
-        ///	inner join children c on c.id = jobs.parent_job_id
+        ///	select child.*
+        ///	from sosync_job child
+        ///	inner join job parent on parent.id = child.parent_job_id
         ///)
-        ///select * from children order by job_date asc;.
+        ///select * from job order by job_priority desc, job_date asc;.
         /// </summary>
         internal static string GetFirstOpenSynJobAndChildren_SELECT {
             get {
