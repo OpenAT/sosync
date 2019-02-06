@@ -18,26 +18,29 @@ namespace WebSosync.Controllers
     {
         #region Members
         private IBackgroundJob<SyncWorker> _syncWorkerJob;
-        private IHostService _hostService;
         private ILogger<ServiceController> _log;
+        private DataService _db;
+        private GitService _git;
         #endregion
 
         #region Constructors
         public ServiceController(
             IBackgroundJob<SyncWorker> syncWorkerJob,
-            IHostService hostService,
-            ILogger<ServiceController> logger)
+            ILogger<ServiceController> logger,
+            DataService db,
+            GitService git)
         {
             _syncWorkerJob = syncWorkerJob;
-            _hostService = hostService;
             _log = logger;
+            _db = db;
+            _git = git;
         }
         #endregion
 
         #region Methods
         // GET service/status
         [HttpGet("status")]
-        public IActionResult Status([FromServices]DataService db)
+        public IActionResult Status()
         {
             var result = new SosyncStatusDto();
 
@@ -50,13 +53,13 @@ namespace WebSosync.Controllers
         // service/version
         [HttpGet("version")]
         [Produces(typeof(string))]
-        public IActionResult Version([FromServices]GitService git)
+        public IActionResult Version()
         {
             var result = "";
 
             try
             {
-                result = git.GetCommitId();
+                result = _git.GetCommitId();
                 return new OkObjectResult(result);
             }
             catch (Exception ex)
