@@ -17,7 +17,7 @@ namespace Syncer.Services
     {
         #region Members
         [ThreadStatic]
-        private OdooClient _client;
+        private static OdooClient _client;
         private ILogger _log;
         private SosyncOptions _options;
         #endregion
