@@ -496,7 +496,7 @@ namespace Syncer.Flows
                 sosyncDate.ToString(format));
 
             if (isSimilar)
-                Log.ErrorInformation(logMsg);
+                Log.LogInformation(logMsg);
             //else
             //    Log.LogWarning(logMsg);
 
