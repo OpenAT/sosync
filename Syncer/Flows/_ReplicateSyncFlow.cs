@@ -407,7 +407,11 @@ namespace Syncer.Flows
             //  - Use job_date as sosync_write_date in the current flow is for a multi model
             //  - Throw and exception, if it is not a multi model
 
-            var isJobDateSimilar = IsJobDateSimilarToWriteDate(job, studioInfo, onlineInfo);
+            var isJobDateSimilar = IsJobDateSimilarToWriteDate(
+                job, 
+                studioInfo, 
+                onlineInfo,
+                out var usedModelInfo);
 
             if (!isJobDateSimilar && IsStudioMultiModel)
             {
@@ -419,7 +423,10 @@ namespace Syncer.Flows
             if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
             {
                 // For normal main jobs (not child jobs!) this is an invalid state
-                throw new SyncerException($"Job {job.ID}: job_date differs from sosync_write_date, aborting synchronization.");
+                throw new SyncerException(
+                    $"Job {job.ID}: job_date ({job.Job_Date.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}) differs from " + 
+                    $"sosync_write_date ({(usedModelInfo.SosyncWriteDate ?? usedModelInfo.WriteDate).Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}" + 
+                    $", taken from {job.Job_Source_System}), aborting synchronization.");
             }
 
             // Figure out sync direction
@@ -468,20 +475,20 @@ namespace Syncer.Flows
             }
         }
 
-        private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
+        private bool IsJobDateSimilarToWriteDate(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo, out ModelInfo usedModelInfo)
         {
             var toleranceMS = 60000; // 1 Minute tolerance
-            var modelInfo = studioInfo;
+            usedModelInfo = studioInfo;
 
             if (job.Job_Source_System == SosyncSystem.FSOnline)
-                modelInfo = onlineInfo;
+                usedModelInfo = onlineInfo;
 
-            var sosyncDate = (modelInfo.SosyncWriteDate ?? modelInfo.WriteDate.Value);
+            var sosyncDate = (usedModelInfo.SosyncWriteDate ?? usedModelInfo.WriteDate.Value);
             var diff = job.Job_Date - sosyncDate;
 
             var isSimilar = false;
 
-            if (diff.TotalMilliseconds <= toleranceMS)
+            if (diff.TotalMilliseconds > -999 && diff.TotalMilliseconds <= toleranceMS)
                 isSimilar = true;
 
             var format = "yyyy-MM-dd HH:mm:ss.fffffff";
