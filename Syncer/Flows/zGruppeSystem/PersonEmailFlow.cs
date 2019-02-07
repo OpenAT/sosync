@@ -42,7 +42,7 @@ namespace Syncer.Flows.zGruppeSystem
 
             var searchArgs = new[] {
                 new OdooSearchArgument("partner_id", "=", partnerID.Value),
-                new OdooSearchArgument("email", "=", mail)
+                new OdooSearchArgument("email", "=ilike", mail)
             };
 
             onlineID = OdooService.Client.SearchBy(OnlineModelName, searchArgs)
