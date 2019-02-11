@@ -75,7 +75,7 @@
 //                {
 //                    { "name", studioGroup.name },
 //                    { "full_name", studioGroup.full_name },
-//                    { "sosync_write_date", (studioGroup.sosync_write_date ?? studioGroup.write_date.ToUniversalTime()) }
+//                    { "sosync_write_date", (studioGroup.sosync_write_date ?? studioGroup.write_date) }
 //                };
 
 //                if (action == TransformType.CreateNew)
