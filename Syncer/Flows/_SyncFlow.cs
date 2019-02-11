@@ -763,7 +763,7 @@ namespace Syncer.Flows
             using (var db = GetDb())
             {
                 Job.Sync_Target_Data_Before = data;
-                Job.Write_Date = DateTime.Now.ToUniversalTime();
+                Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateSyncTargetDataBeforeUpdate), db, Job);
             }
@@ -776,7 +776,7 @@ namespace Syncer.Flows
             using (var db = GetDb())
             {
                 Job.Sync_Source_Data = data;
-                Job.Write_Date = DateTime.Now.ToUniversalTime();
+                Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateSyncSourceData), db, Job);
             }
@@ -789,7 +789,7 @@ namespace Syncer.Flows
             using (var db = GetDb())
             {
                 Job.Sync_Target_Request = requestData;
-                Job.Write_Date = DateTime.Now.ToUniversalTime();
+                Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateSyncTargetRequest), db, Job);
             }
@@ -805,7 +805,7 @@ namespace Syncer.Flows
                     Job.Sync_Target_Record_ID = createdID.Value;
 
                 Job.Sync_Target_Answer = answerData;
-                Job.Write_Date = DateTime.Now.ToUniversalTime();
+                Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateSyncTargetAnswer), db, Job);
             }
@@ -834,7 +834,7 @@ namespace Syncer.Flows
                 job.Sync_Target_Record_ID = targetId;
 
                 job.Job_Log = (job.Job_Log ?? "") + (log ?? "");
-                job.Write_Date = DateTime.Now.ToUniversalTime();
+                job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSourceAndTarget), db, job);
             }
@@ -961,7 +961,7 @@ namespace Syncer.Flows
             using (var db = GetDb())
             {
                 Job.Job_State = SosyncState.Done;
-                Job.Job_End = DateTime.Now.ToUniversalTime();
+                Job.Job_End = DateTime.UtcNow;
                 Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSuccess), db, Job);
@@ -982,7 +982,7 @@ namespace Syncer.Flows
             {
                 Job.Job_State = SosyncState.Done;
                 Job.Job_Log += "\n" + msg;
-                Job.Job_End = DateTime.Now.ToUniversalTime();
+                Job.Job_End = DateTime.UtcNow;
                 Job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobSuccess), db, Job);
