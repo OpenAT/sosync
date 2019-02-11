@@ -612,7 +612,7 @@ namespace Syncer.Flows
                 var data = new Dictionary<string, object>();
 
                 copyStudioToDictionary(studioModel, data);
-                data.Add("sosync_write_date", (studioModel.sosync_write_date ?? studioModel.write_date.ToUniversalTime()));
+                data.Add("sosync_write_date", (studioModel.sosync_write_date ?? studioModel.write_date));
 
                 if (action == TransformType.CreateNew)
                 {
