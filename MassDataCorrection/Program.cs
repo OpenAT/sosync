@@ -11,6 +11,8 @@ using MassDataCorrection.Properties;
 using DaDi.Odoo.Models;
 using WebSosync.Data.Models;
 using WebSosync.Data;
+using dadi_data.Models;
+using dadi_data;
 
 namespace MassDataCorrection
 {
@@ -18,30 +20,44 @@ namespace MassDataCorrection
     {
         static void Main(string[] args)
         {
-            var repoBasePath = @"C:\WorkingFolder\saltstack";
+            //var repoBasePath = @"C:\WorkingFolder\saltstack";
 
-            Console.WriteLine("Make sure the saltstack repository path is correct:");
-            Console.WriteLine(repoBasePath);
+            //Console.WriteLine("Make sure the saltstack repository path is correct:");
+            //Console.WriteLine(repoBasePath);
 
-            Console.Write("\nMake sure the repository is up to date.\nPress [Y] to continue: ");
-            var key = Console.ReadKey();
-            Console.WriteLine();
+            //Console.Write("\nMake sure the repository is up to date.\nPress [Y] to continue: ");
+            //var key = Console.ReadKey();
+            //Console.WriteLine();
 
-            if (key.KeyChar == 'y' || key.KeyChar == 'Y')
-            {
-                var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
+            //if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+            //{
+            //    var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
 
-                //processor.Process(InitialSyncPayments, new[] { "demo" });
-                processor.Process(CheckBranch, null);
+            //    //processor.Process(InitialSyncPayments, new[] { "demo" });
+            //    processor.Process(CheckBranch, null);
 
-                Console.WriteLine("\nDone. Press any key to quit.");
-            }
-            else
-            {
-                Console.WriteLine("\nCancelled. Press any key to quit.");
-            }
+            //    Console.WriteLine("\nDone. Press any key to quit.");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("\nCancelled. Press any key to quit.");
+            //}
+
+            TestAddress();
 
             Console.ReadKey();
+        }
+
+        private static void TestAddress()
+        {
+            using (var db = new DataService<dboPersonAdresse>("Data Source=mssql1; Initial Catalog=mdb_dev1; Integrated Security=true;"))
+            {
+                var model = db.Read(new { PersonAdresseID = 2485600 })
+                    .SingleOrDefault();
+
+                model.Postfach = "TEST-MKA";
+                db.Update(model);
+            }
         }
 
         private static void PrintDictionary<T>(Dictionary<string, T> dic)
