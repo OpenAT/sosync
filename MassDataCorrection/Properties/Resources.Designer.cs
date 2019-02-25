@@ -97,14 +97,14 @@ namespace MassDataCorrection.Properties {
         ///    JobSourceType
         ///)
         ///VALUES
-        ///(   SYSDATETIME(), -- JobDate - datetime2(7)
-        ///    &apos;fs&apos;,            -- JobSourceSystem - varchar(32)
-        ///    N&apos;dbo.AktionSpendenmeldungBPK&apos;,           -- JobSourceModel - nvarchar(128)
-        ///    @ID,          [rest of string was truncated]&quot;;.
+        ///(   @sosyncWriteDate, -- JobDate - datetime2(7)
+        ///    @system,            -- JobSourceSystem - varchar(32)
+        ///    @model,           -- JobSourceModel - nvarchar(128)
+        ///    @ID,             -- JobSourceRe [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string SubmitSpendenmeldungSyncJob {
+        internal static string InsertSyncJobMSSQL {
             get {
-                return ResourceManager.GetString("SubmitSpendenmeldungSyncJob", resourceCulture);
+                return ResourceManager.GetString("InsertSyncJobMSSQL", resourceCulture);
             }
         }
         

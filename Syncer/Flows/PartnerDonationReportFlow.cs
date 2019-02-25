@@ -97,6 +97,10 @@ namespace Syncer.Flows
                     online.Add("imported", studio.Imported);
                     online.Add("submission_bpk_private", studio.SubmissionBPKPrivate);
                     online.Add("submission_refnr", studio.SubmissionRefnr);
+
+                    // Sync submission date only for imported donation reports
+                    if (studio.Imported == true)
+                        online.Add("submission_id_datetime", studio.SubmissionIdDate);
                 });
         }
 
