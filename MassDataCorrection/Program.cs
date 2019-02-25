@@ -20,30 +20,33 @@ namespace MassDataCorrection
     {
         static void Main(string[] args)
         {
-            //var repoBasePath = @"C:\WorkingFolder\saltstack";
+            var repoBasePath = @"C:\WorkingFolder\saltstack";
 
-            //Console.WriteLine("Make sure the saltstack repository path is correct:");
-            //Console.WriteLine(repoBasePath);
+            Console.WriteLine("Make sure the saltstack repository path is correct:");
+            Console.WriteLine(repoBasePath);
 
-            //Console.Write("\nMake sure the repository is up to date.\nPress [Y] to continue: ");
-            //var key = Console.ReadKey();
-            //Console.WriteLine();
+            Console.Write("\nMake sure the repository is up to date.\nPress [Y] to continue: ");
+            var key = Console.ReadKey();
+            Console.WriteLine();
 
-            //if (key.KeyChar == 'y' || key.KeyChar == 'Y')
-            //{
-            //    var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
+            if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+            {
+                var processor = new PillarProcessor(Path.Combine(repoBasePath, "pillar", "instances"));
 
-            //    //processor.Process(InitialSyncPayments, new[] { "demo" });
-            //    processor.Process(CheckBranch, null);
+                //processor.Process(InitialSyncPayments, new[] { "demo" });
+                //processor.Process(CheckBranch, null);
+                //processor.Process(CheckDonationReports, new[] { "bsvv" });
+                processor.Process(CheckPersonBPKs, new[] { "freu" });
+                //processor.Process(CheckPersonBPKs, null);
+                //processor.Process(CheckPartners, new[] { "dev1" });
+                PrintDictionary(_checkBpk);
 
-            //    Console.WriteLine("\nDone. Press any key to quit.");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("\nCancelled. Press any key to quit.");
-            //}
-
-            TestAddress();
+                Console.WriteLine("\nDone. Press any key to quit.");
+            }
+            else
+            {
+                Console.WriteLine("\nCancelled. Press any key to quit.");
+            }
 
             Console.ReadKey();
         }
@@ -520,6 +523,31 @@ namespace MassDataCorrection
                 return;
             }
 
+            var skip = new[] {
+                "dadi"
+                ,"aahs"
+                ,"apfo"
+                ,"avnc"
+                ,"deve"
+                ,"rnga"
+                ,"tiqu"
+                ,"diak"
+                ,"jeki"
+                ,"kich"
+                ,"myeu"
+                ,"nphc"
+                ,"otiv"
+                ,"rnde"
+                ,"wdcs"
+                ,"rona"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
             var rpc = info.CreateAuthenticatedOdooClient();
 
             var searchArgs = new List<OdooSearchArgument>();
@@ -548,7 +576,13 @@ namespace MassDataCorrection
 
                     using (var mdb = info.CreateOpenMssqlConnection())
                     {
-                        mdb.Execute(Properties.Resources.SubmitSpendenmeldungSyncJob, new { ID = id });
+                        mdb.Execute(
+                            Resources.InsertSyncJobMSSQL,
+                            new { ID = id, model = "dbo.AktionSpendenmeldungBPK",
+                                sosyncWriteDate = DateTime.UtcNow,
+                                system = "fs",
+                                jobSourceFields = "{ \"info\": \"manual\" }"
+                            });
                     }
 
                     //if (!ids.Contains(id))
@@ -562,6 +596,137 @@ namespace MassDataCorrection
                 }
             }
             Console.WriteLine();
+        }
+
+
+        private static Dictionary<string, Tuple<int, int>> _checkBpk = new Dictionary<string, Tuple<int, int>>();
+        private static void CheckPersonBPKs(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new[] {
+                "rnga"
+                ,"tiqu"
+                ,"kich"
+                ,"nphc"
+                ,"otiv"
+                ,"rnde"
+                ,"rona"
+                ,"diak"
+                };
+
+            if (skip.Contains(info.Instance))
+                return;
+
+            Dictionary<int, PersonBPK> fsoBpks = null;
+            Dictionary<int, PersonBPK> fsBpks = null;
+
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoBpks = onlineCon
+                    .Query<PersonBPK>("select id ID, sosync_fs_id ForeignID, bpk_request_firstname Vorname, sosync_write_date, bpk_private BpkPrivat from res_partner_bpk")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsBpks = fsCon
+                    .Query<PersonBPK>("select PersonBPKID ID, sosync_fso_id ForeignID, Vorname, sosync_write_date, BpkPrivat from dbo.PersonBPK")
+                    .ToDictionary(x => x.ID);
+            }
+
+            // Compare data
+
+            var bpkErrCount = 0;
+            var notFoundCount = 0;
+
+            foreach (var fsoKvp in fsoBpks)
+            {
+                var fsoBPK = fsoKvp.Value;
+
+                if (fsoBPK.ForeignID.HasValue && fsBpks.ContainsKey(fsoBPK.ForeignID.Value))
+                {
+                    var fsBPK = fsBpks[fsoBPK.ForeignID.Value];
+
+                    if ((fsoBPK.BpkPrivat ?? "") != (fsBPK.BpkPrivat ?? ""))
+                    {
+                        Console.WriteLine($"ID={fsoBPK.ID} PersonBPKID={fsBPK.ID} different bpk " +
+                            $"'{fsoBPK.Vorname}' != '{fsBPK.Vorname}'");
+                        bpkErrCount++;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"ID={fsoBPK.ID} PersonBPKID={fsoBPK.ForeignID} not found.");
+
+                    //using (var mdb = info.CreateOpenMssqlConnection())
+                    //{
+                    //    mdb.Execute(
+                    //        Resources.InsertSyncJobMSSQL,
+                    //        new
+                    //        {
+                    //            ID = fsoBPK.ID,
+                    //            model = "res.partner.bpk",
+                    //            sosyncWriteDate = fsoBPK.sosync_write_date,
+                    //            system = SosyncSystem.FSOnline,
+                    //            jobSourceFields = "{ \"info\": \"Manual re-sync for missing BPK by MKA\" }"
+                    //        });
+                    //}
+
+                    notFoundCount++;
+                }
+            }
+
+            if (bpkErrCount > 0 || notFoundCount > 0)
+                _checkBpk.Add(info.Instance, new Tuple<int, int>(bpkErrCount, notFoundCount));
+        }
+
+        private static Dictionary<string, int> _checkPartner = new Dictionary<string, int>();
+        private static void CheckPartners(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            Dictionary<int, Partner> fsoListe = null;
+            Dictionary<int, Partner> fsListe = null;
+
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoListe = onlineCon
+                    .Query<Partner>("select id ID, sosync_fs_id ForeignID from res_partner")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsListe = fsCon
+                    .Query<Partner>("select PersonBPKID ID, sosync_fso_id ForeignID from dbo.Person")
+                    .ToDictionary(x => x.ID);
+            }
+
+            // Compare data
+
+            var bpkErrCount = 0;
+            var notFoundCount = 0;
+
+            foreach (var fsoModelKvp in fsoListe)
+            {
+                var fsoModel = fsoModelKvp.Value;
+
+                if (fsoModel.ForeignID.HasValue && fsListe.ContainsKey(fsoModel.ForeignID.Value))
+                {
+                    var fsBPK = fsListe[fsoModel.ForeignID.Value];
+                }
+                else
+                {
+                    Console.WriteLine($"ID={fsoModel.ID} PersonBPKID={fsoModel.ForeignID} not found.");
+                    notFoundCount++;
+                }
+            }
+
+            if (notFoundCount > 0)
+                _checkPartner.Add(info.Instance, notFoundCount);
         }
 
         private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
