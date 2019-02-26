@@ -42,14 +42,14 @@ namespace Syncer.Services
                     $"Initial Catalog=mdb_{_config.Instance}",
                     $"User ID={_config.Studio_Sosync_User}",
                     $"Password ={_config.Studio_Sosync_PW}",
-                    $"Connect Timeout=30"
+                    $"Connect Timeout=60"
                     });
 
-                return new DataService<TModel>(conStr);
+                return new DataService<TModel>(conStr, 60);
             }
             else
             {
-                return new DataService<TModel>(con, transaction);
+                return new DataService<TModel>(con, transaction, 60);
             }
         }
 
