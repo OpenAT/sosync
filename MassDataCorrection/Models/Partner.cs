@@ -8,5 +8,8 @@ namespace MassDataCorrection.Models
     {
         public int ID { get; set; }
         public int? ForeignID { get; set; }
+        public string Nachname { get; set; }
+        public string Vorname { get; set; }
+        public DateTime? Geburtsdatum { get; set; }
     }
 }

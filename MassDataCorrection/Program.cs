@@ -36,10 +36,10 @@ namespace MassDataCorrection
                 //processor.Process(InitialSyncPayments, new[] { "demo" });
                 //processor.Process(CheckBranch, null);
                 //processor.Process(CheckDonationReports, new[] { "bsvv" });
-                processor.Process(CheckPersonBPKs, new[] { "freu" });
+                processor.Process(CheckPartners, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckPartners, new[] { "dev1" });
-                PrintDictionary(_checkBpk);
+                PrintDictionary(_checkPartner);
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -682,7 +682,7 @@ namespace MassDataCorrection
                 _checkBpk.Add(info.Instance, new Tuple<int, int>(bpkErrCount, notFoundCount));
         }
 
-        private static Dictionary<string, int> _checkPartner = new Dictionary<string, int>();
+        private static Dictionary<string, Tuple<int, int>> _checkPartner = new Dictionary<string, Tuple<int, int>>();
         private static void CheckPartners(InstanceInfo info, Action<float> reportProgress)
         {
             if (info.host_sosync != "sosync2")
@@ -694,20 +694,20 @@ namespace MassDataCorrection
             using (var onlineCon = info.CreateOpenNpgsqlConnection())
             {
                 fsoListe = onlineCon
-                    .Query<Partner>("select id ID, sosync_fs_id ForeignID from res_partner")
+                    .Query<Partner>("select id ID, sosync_fs_id ForeignID, firstname Vorname, lastname Nachname, birthdate_web Geburtsdatum from res_partner")
                     .ToDictionary(x => x.ID);
             }
 
             using (var fsCon = info.CreateOpenMssqlConnection())
             {
                 fsListe = fsCon
-                    .Query<Partner>("select PersonBPKID ID, sosync_fso_id ForeignID from dbo.Person")
+                    .Query<Partner>("select PersonID ID, sosync_fso_id ForeignID, Vorname, Name Nachname, Geburtsdatum from dbo.Person")
                     .ToDictionary(x => x.ID);
             }
 
             // Compare data
 
-            var bpkErrCount = 0;
+            var errCount = 0;
             var notFoundCount = 0;
 
             foreach (var fsoModelKvp in fsoListe)
@@ -716,17 +716,25 @@ namespace MassDataCorrection
 
                 if (fsoModel.ForeignID.HasValue && fsListe.ContainsKey(fsoModel.ForeignID.Value))
                 {
-                    var fsBPK = fsListe[fsoModel.ForeignID.Value];
+                    var fsModel = fsListe[fsoModel.ForeignID.Value];
+
+                    if ((fsoModel.Nachname ?? "") != (fsModel.Nachname ?? "")
+                        || (fsoModel.Vorname ?? "") != (fsModel.Vorname ?? "")
+                        || fsoModel.Geburtsdatum != fsModel.Geburtsdatum)
+                    {
+                        errCount++;
+                        Console.WriteLine($"Data mismatch: id={fsoModel.ID} PersonID={fsModel.ID}");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine($"ID={fsoModel.ID} PersonBPKID={fsoModel.ForeignID} not found.");
+                    Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
                     notFoundCount++;
                 }
             }
 
             if (notFoundCount > 0)
-                _checkPartner.Add(info.Instance, notFoundCount);
+                _checkPartner.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
         }
 
         private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
