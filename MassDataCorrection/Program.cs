@@ -41,13 +41,19 @@ namespace MassDataCorrection
                 //processor.Process(CheckPartners, new[] { "dev1" });
                 PrintDictionary(_checkPartner);
 
-                File.WriteAllText("missing_person_ids.txt", string.Join(",\n", _missingPartnerIDs));
-                var fi = new FileInfo("missing_person_ids.txt");
-                Console.WriteLine($"Written missing person ids to {fi.FullName}");
+                foreach (var kvp in _missingPartnerIDs)
+                {
+                    File.WriteAllText($"{kvp.Key}_missing_person_ids.txt", string.Join(",\r\n", kvp.Value));
+                    var fi = new FileInfo($"{kvp.Key}_missing_person_ids.txt");
+                    Console.WriteLine($"Written missing person ids to {fi.FullName}");
+                }
 
-                File.WriteAllText("mismatch_person_ids.txt", string.Join(",\n", _PersonIDsNotUpToDate));
-                fi = new FileInfo("mismatch_person_ids.txt");
-                Console.WriteLine($"Written mismatch person ids to {fi.FullName}");
+                foreach (var kvp in _PersonIDsNotUpToDate)
+                {
+                    File.WriteAllText($"{kvp.Key}_mismatch_person_ids.txt", string.Join(",\r\n", kvp.Value));
+                    var fi = new FileInfo($"{kvp.Key}_mismatch_person_ids.txt");
+                    Console.WriteLine($"Written mismatch person ids to {fi.FullName}");
+                }
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -690,8 +696,8 @@ namespace MassDataCorrection
                 _checkBpk.Add(info.Instance, new Tuple<int, int>(bpkErrCount, notFoundCount));
         }
 
-        private static List<int> _missingPartnerIDs = new List<int>(100000);
-        private static List<int> _PersonIDsNotUpToDate = new List<int>(100);
+        private static Dictionary<string, List<int>> _missingPartnerIDs = new Dictionary<string, List<int>>();
+        private static Dictionary<string, List<int>> _PersonIDsNotUpToDate = new Dictionary<string, List<int>>();
         private static Dictionary<string, Tuple<int, int>> _checkPartner = new Dictionary<string, Tuple<int, int>>();
         private static void CheckPartners(InstanceInfo info, Action<float> reportProgress)
         {
@@ -704,14 +710,41 @@ namespace MassDataCorrection
             using (var onlineCon = info.CreateOpenNpgsqlConnection())
             {
                 fsoListe = onlineCon
-                    .Query<Partner>("select id ID, sosync_fs_id ForeignID, firstname Vorname, lastname Nachname, birthdate_web Geburtsdatum from res_partner")
+                    .Query<Partner>(
+                        @"select 
+                            id ID
+                            ,sosync_fs_id ForeignID
+                            ,firstname Vorname
+                            ,lastname Nachname
+                            ,birthdate_web Geburtsdatum
+                            ,street Strasse
+                            ,street_number_web Hausnr
+                            ,zip Plz
+                            ,city Ort
+                        from
+                            res_partner")
                     .ToDictionary(x => x.ID);
             }
 
             using (var fsCon = info.CreateOpenMssqlConnection())
             {
                 fsListe = fsCon
-                    .Query<Partner>("select PersonID ID, sosync_fso_id ForeignID, Vorname, Name Nachname, Geburtsdatum from dbo.Person")
+                    .Query<Partner>(
+                        @"select
+                            Person.PersonID ID
+                            ,Person.sosync_fso_id ForeignID
+                            ,Vorname
+                            ,Name Nachname
+                            ,Geburtsdatum
+                            ,PersonAdresse.Strasse
+                            ,PersonAdresse.Hausnummer
+                            ,PersonAdresse.PLZ
+                            ,PersonAdresse.Ort
+                        from
+                            dbo.Person
+                            left join dbo.PersonAdresse
+                                on Person.PersonID = PersonAdresse.PersonID
+                                and Person.sosync_fso_id = PersonAdresse.sosync_fso_id")
                     .ToDictionary(x => x.ID);
             }
 
@@ -730,9 +763,17 @@ namespace MassDataCorrection
 
                     if ((fsoModel.Nachname ?? "").Trim() != (fsModel.Nachname ?? "").Trim()
                         || (fsoModel.Vorname ?? "").Trim() != (fsModel.Vorname ?? "").Trim()
-                        || fsoModel.Geburtsdatum != fsModel.Geburtsdatum)
+                        || fsoModel.Geburtsdatum != fsModel.Geburtsdatum
+                        || (fsoModel.Strasse ?? "").Trim() != (fsoModel.Strasse ?? "").Trim()
+                        || (fsoModel.Hausnr ?? "").Trim() != (fsoModel.Hausnr ?? "").Trim()
+                        || (fsoModel.Plz ?? "").Trim() != (fsoModel.Plz ?? "").Trim()
+                        || (fsoModel.Ort ?? "").Trim() != (fsoModel.Ort ?? "").Trim()
+                        )
                     {
-                        _PersonIDsNotUpToDate.Add(fsModel.ID);
+                        if (!_PersonIDsNotUpToDate.ContainsKey(info.Instance))
+                            _PersonIDsNotUpToDate.Add(info.Instance, new List<int>());
+
+                        _PersonIDsNotUpToDate[info.Instance].Add(fsModel.ID);
 
                         errCount++;
                         Console.WriteLine($"Data mismatch: id={fsoModel.ID} PersonID={fsModel.ID}");
@@ -741,9 +782,14 @@ namespace MassDataCorrection
                 else
                 {
                     if (fsoModel.ForeignID.HasValue)
-                        _missingPartnerIDs.Add(fsoModel.ForeignID.Value);
+                    {
+                        if (!_missingPartnerIDs.ContainsKey(info.Instance))
+                            _missingPartnerIDs.Add(info.Instance, new List<int>());
 
-                    Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
+                        _missingPartnerIDs[info.Instance].Add(fsoModel.ForeignID.Value);
+                    }
+
+                    // Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
                     notFoundCount++;
                 }
             }
