@@ -41,6 +41,14 @@ namespace MassDataCorrection
                 //processor.Process(CheckPartners, new[] { "dev1" });
                 PrintDictionary(_checkPartner);
 
+                File.WriteAllText("missing_person_ids.txt", string.Join(",\n", _missingPartnerIDs));
+                var fi = new FileInfo("missing_person_ids.txt");
+                Console.WriteLine($"Written missing person ids to {fi.FullName}");
+
+                File.WriteAllText("mismatch_person_ids.txt", string.Join(",\n", _PersonIDsNotUpToDate));
+                fi = new FileInfo("mismatch_person_ids.txt");
+                Console.WriteLine($"Written mismatch person ids to {fi.FullName}");
+
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
             else
@@ -682,6 +690,8 @@ namespace MassDataCorrection
                 _checkBpk.Add(info.Instance, new Tuple<int, int>(bpkErrCount, notFoundCount));
         }
 
+        private static List<int> _missingPartnerIDs = new List<int>(100000);
+        private static List<int> _PersonIDsNotUpToDate = new List<int>(100);
         private static Dictionary<string, Tuple<int, int>> _checkPartner = new Dictionary<string, Tuple<int, int>>();
         private static void CheckPartners(InstanceInfo info, Action<float> reportProgress)
         {
@@ -718,16 +728,21 @@ namespace MassDataCorrection
                 {
                     var fsModel = fsListe[fsoModel.ForeignID.Value];
 
-                    if ((fsoModel.Nachname ?? "") != (fsModel.Nachname ?? "")
-                        || (fsoModel.Vorname ?? "") != (fsModel.Vorname ?? "")
+                    if ((fsoModel.Nachname ?? "").Trim() != (fsModel.Nachname ?? "").Trim()
+                        || (fsoModel.Vorname ?? "").Trim() != (fsModel.Vorname ?? "").Trim()
                         || fsoModel.Geburtsdatum != fsModel.Geburtsdatum)
                     {
+                        _PersonIDsNotUpToDate.Add(fsModel.ID);
+
                         errCount++;
                         Console.WriteLine($"Data mismatch: id={fsoModel.ID} PersonID={fsModel.ID}");
                     }
                 }
                 else
                 {
+                    if (fsoModel.ForeignID.HasValue)
+                        _missingPartnerIDs.Add(fsoModel.ForeignID.Value);
+
                     Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
                     notFoundCount++;
                 }
