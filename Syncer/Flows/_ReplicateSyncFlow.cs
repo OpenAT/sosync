@@ -56,6 +56,7 @@ namespace Syncer.Flows
             ModelInfo studioInfo = null;
 
             GetInfos(Job, out studioInfo, out onlineInfo);
+            FixForeignKeys(Job, studioInfo, onlineInfo);
 
             if (!SkipAutoSyncSource)
             {
@@ -377,6 +378,63 @@ namespace Syncer.Flows
                 GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
         }
 
+        private void FixForeignKeys(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
+        {
+            // Both systems need to have the model
+            if (studioInfo == null || onlineInfo == null)
+                return;
+
+            // FRST is missing foreign key, but FSO has a matching foreign key
+            if (!studioInfo.ForeignID.HasValue
+                && onlineInfo.ForeignID.HasValue
+                && onlineInfo.ForeignID == studioInfo.ID)
+            {
+                var warning = $"{StudioModelName} {studioInfo.ID} has no sosync_fso_id but {OnlineModelName} {onlineInfo.ID} has sosync_fs_id {onlineInfo.ForeignID} - updating {SosyncSystem.FundraisingStudio}";
+                job.Job_Log += warning;
+
+                var desc = $"Fix {SosyncSystem.FundraisingStudio}.sosync_fso_id";
+                UpdateJob(job, desc);
+
+                Log.LogWarning(warning);
+
+                var s = Stopwatch.StartNew();
+                using (var db = MdbService.GetDataService<dboTypen>())
+                {
+                    var query = $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @studioID";
+                    db.ExecuteNonQuery(
+                        query,
+                        new { studioID = studioInfo.ID, sosync_fso_id = onlineInfo.ID });
+                }
+
+                studioInfo.ForeignID = onlineInfo.ID;
+                s.Stop();
+                LogMs(0, desc, Job.ID, s.ElapsedMilliseconds);
+            }
+            else if (!onlineInfo.ForeignID.HasValue
+                && studioInfo.ForeignID.HasValue
+                && studioInfo.ForeignID == onlineInfo.ID)
+            {
+                var warning = $"{OnlineModelName} {onlineInfo.ID} has no sosync_fs_id but {StudioModelName} {studioInfo.ID} has sosync_fso_id {studioInfo.ForeignID} - updating {SosyncSystem.FSOnline}";
+                job.Job_Log += warning;
+
+                var desc = $"Fix {SosyncSystem.FSOnline}.sosync_fs_id";
+                UpdateJob(job, desc);
+
+                Log.LogWarning(warning);
+
+                var s = Stopwatch.StartNew();
+
+                OdooService.Client.UpdateModel(
+                    OnlineModelName,
+                    new { sosync_fs_id = studioInfo.ID },
+                    onlineInfo.ID);
+
+                onlineInfo.ForeignID = studioInfo.ID;
+                s.Stop();
+                LogMs(0, desc, Job.ID, s.ElapsedMilliseconds);
+            }
+        }
+
         private void ThrowOnInvalidState(SyncJob job, ModelInfo studioInfo, ModelInfo onlineInfo)
         {
             if (onlineInfo != null && onlineInfo.ForeignID.HasValue && !(onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate).HasValue)
@@ -560,6 +618,16 @@ namespace Syncer.Flows
                 s.Stop();
                 LogMs(1, nameof(GetModelInfosViaOnline) + "-MSSQL", job.ID, s.ElapsedMilliseconds);
             }
+            else
+            {
+                var lookupStudioID = GetStudioIDFromMssqlViaOnlineID(
+                    StudioModelName,
+                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    onlineInfo.ID);
+
+                if (lookupStudioID.HasValue)
+                    studioInfo = GetStudioInfo(lookupStudioID.Value);
+            }
         }
 
         private void GetModelInfosViaStudio(SyncJob job, out ModelInfo studioInfo, out ModelInfo onlineInfo)
@@ -582,6 +650,12 @@ namespace Syncer.Flows
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
                LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.ID, OdooService.Client.LastRpcTime);
+            }
+            else
+            {
+                var lookupOnlineID = GetOnlineIDFromOdooViaStudioID(OnlineModelName, studioInfo.ID);
+                if (lookupOnlineID.HasValue)
+                    onlineInfo = GetOnlineInfo(lookupOnlineID.Value);
             }
         }
 
