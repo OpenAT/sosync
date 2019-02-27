@@ -121,9 +121,6 @@ namespace WebSosync.Data.Models
         [DataMember(Name = "parent_job_id")]
         public int? Parent_Job_ID { get; set; }
 
-        [DataMember(Name = "parent_path")]
-        public string Parent_Path { get; set; }
-
         // Child jobs processing time
 
         [DataMember(Name = "child_job_start")]

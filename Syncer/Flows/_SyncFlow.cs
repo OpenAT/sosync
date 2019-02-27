@@ -466,7 +466,7 @@ namespace Syncer.Flows
                             if (entry == null)
                             {
                                 Log.LogInformation($"Creating {childDescription} for job ({Job.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
-                                db.CreateJob(childJob, Job.Parent_Path);
+                                db.CreateJob(childJob);
                                 Job.Children.Add(childJob);
 
                                 entry = childJob;

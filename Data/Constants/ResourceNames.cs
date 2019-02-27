@@ -11,6 +11,5 @@ namespace WebSosync.Data.Constants
     {
         public const string GetFirstOpenSynJobAndChildren = "GetFirstOpenSynJobAndChildren_SELECT";
         public const string ClosePreviousJobsUpdateScript = "ClosePreviousJobs_Update_SCRIPT";
-        public const string UpdateAllParentPaths = "UpdateAllParentPaths";
     }
 }

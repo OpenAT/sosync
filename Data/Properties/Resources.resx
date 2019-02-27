@@ -157,12 +157,4 @@ select count(*) affected_rows from updated_rows;</value>
 )
 select * from job order by job_priority desc, job_date asc;</value>
   </data>
-  <data name="UpdateAllParentPaths" xml:space="preserve">
-    <value>update
-	sosync_job
-set
-	parent_path = concat(cast(id as varchar), '/')
-where
-	parent_path is null</value>
-  </data>
 </root>
