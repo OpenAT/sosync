@@ -75,6 +75,9 @@ namespace Syncer.Workers
 
             using (var db = GetDb())
             {
+                _log.LogInformation("Updating parent paths.");
+                db.UpdateAllParentPaths();
+
                 // Get only the first open job and its hierarchy,
                 // and build the tree in memory
                 var loadTimeUTC = DateTime.UtcNow;

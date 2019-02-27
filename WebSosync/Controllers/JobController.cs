@@ -249,6 +249,9 @@ namespace WebSosync.Controllers
                 var trans = db.BeginTransaction();
                 bulk.SaveAll(db.Connection, jobs);
                 trans.Commit();
+
+                _log.LogInformation("Updating parent paths.");
+                db.UpdateAllParentPaths();
             }
 
             s.Stop();

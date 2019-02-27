@@ -110,5 +110,19 @@ namespace WebSosync.Data.Properties {
                 return ResourceManager.GetString("GetFirstOpenSynJobAndChildren_SELECT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to update
+        ///	sosync_job
+        ///set
+        ///	parent_path = concat(cast(id as varchar), &apos;/&apos;)
+        ///where
+        ///	parent_path is null.
+        /// </summary>
+        internal static string UpdateAllParentPaths {
+            get {
+                return ResourceManager.GetString("UpdateAllParentPaths", resourceCulture);
+            }
+        }
     }
 }

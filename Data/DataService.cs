@@ -113,6 +113,11 @@ namespace WebSosync.Data
                 commandTimeout: 60 * 2);
         }
 
+        public void UpdateAllParentPaths()
+        {
+            _con.Execute(Resources.ResourceManager.GetString(ResourceNames.UpdateAllParentPaths));
+        }
+
         /// <summary>
         /// Returns the first unfinished parent job from the sync table and all its children
         /// in the hierarchy as a flat list.
