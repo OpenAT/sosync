@@ -35,25 +35,17 @@ namespace MassDataCorrection
 
                 //processor.Process(InitialSyncPayments, new[] { "demo" });
                 //processor.Process(CheckBranch, null);
-                //processor.Process(CheckDonationReports, new[] { "bsvv" });
-                processor.Process(CheckPartners, new[] { "dev1" });
+                processor.Process(CheckDonationReports, new[] { "dev1" });
+                //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckPartners, new[] { "dev1" });
-                PrintDictionary(_checkPartner);
+                //PrintDictionary(_checkEmail);
 
-                foreach (var kvp in _missingPartnerIDs)
-                {
-                    File.WriteAllText($"{kvp.Key}_missing_person_ids.txt", string.Join(",\r\n", kvp.Value));
-                    var fi = new FileInfo($"{kvp.Key}_missing_person_ids.txt");
-                    Console.WriteLine($"Written missing person ids to {fi.FullName}");
-                }
+                //SaveStat(_missingEmails, "emails_missing");
+                //SaveStat(_emailsNotSync, "emails_mismatch");
 
-                foreach (var kvp in _PersonIDsNotUpToDate)
-                {
-                    File.WriteAllText($"{kvp.Key}_mismatch_person_ids.txt", string.Join(",\r\n", kvp.Value));
-                    var fi = new FileInfo($"{kvp.Key}_mismatch_person_ids.txt");
-                    Console.WriteLine($"Written mismatch person ids to {fi.FullName}");
-                }
+                //SaveStat(_missingPartnerIDs, "person_missing");
+                //SaveStat(_PersonIDsNotUpToDate, "person_mismatch");
 
                 Console.WriteLine("\nDone. Press any key to quit.");
             }
@@ -63,6 +55,16 @@ namespace MassDataCorrection
             }
 
             Console.ReadKey();
+        }
+
+        private static void SaveStat(Dictionary<string, List<int>> dictionary, string fileSuffix)
+        {
+            foreach (var kvp in dictionary)
+            {
+                File.WriteAllText($"{kvp.Key}_{fileSuffix}.txt", string.Join(",\r\n", kvp.Value));
+                var fi = new FileInfo($"{kvp.Key}_{fileSuffix}.txt");
+                Console.WriteLine($"Data written to {fi.FullName}");
+            }
         }
 
         private static void TestAddress()
@@ -696,6 +698,96 @@ namespace MassDataCorrection
                 _checkBpk.Add(info.Instance, new Tuple<int, int>(bpkErrCount, notFoundCount));
         }
 
+        private static Dictionary<string, List<int>> _missingEmails = new Dictionary<string, List<int>>();
+        private static Dictionary<string, List<int>> _emailsNotSync = new Dictionary<string, List<int>>();
+        private static Dictionary<string, Tuple<int, int>> _checkEmail = new Dictionary<string, Tuple<int, int>>();
+        private static void CheckEmails(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            Dictionary<int, PersonEmail> fsoListe = null;
+            Dictionary<int, PersonEmail> fsListe = null;
+
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoListe = onlineCon
+                    .Query<PersonEmail>(
+                        @"select 
+                            id ID
+                            ,sosync_fs_id ForeignID
+                            ,sosync_write_date SosyncWriteDate
+                            ,email Email
+                        from
+                            frst_personemail")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsListe = fsCon
+                    .Query<PersonEmail>(
+                        @"select
+                            PersonEmailID ID
+                            ,sosync_fso_id ForeignID
+                            ,sosync_write_date SosyncWriteDate
+                            ,case when isnull(EmailVor, '') + isnull(EmailNach, '') <> '' then isnull(EmailVor, '') + '@' + isnull(EmailNach, '') else null end Email
+                        from
+                            dbo.PersonEmail")
+                    .ToDictionary(x => x.ID);
+            }
+
+            // Compare data
+
+            var errCount = 0;
+            var notFoundCount = 0;
+
+            foreach (var fsModelKvp in fsListe)
+            {
+                var fsModel = fsModelKvp.Value;
+
+                if (fsModel.ForeignID.HasValue && !fsoListe.ContainsKey(fsModel.ForeignID.Value))
+                {
+                    Console.WriteLine($"dbo.PersonEmail {fsModel.ID} has sosync_fso_id {fsModel.ForeignID} but it was not found in frst.personemail");
+                }
+            }
+
+            foreach (var fsoModelKvp in fsoListe)
+            {
+                var fsoModel = fsoModelKvp.Value;
+
+                if (fsoModel.ForeignID.HasValue && fsListe.ContainsKey(fsoModel.ForeignID.Value))
+                {
+                    var fsModel = fsListe[fsoModel.ForeignID.Value];
+
+                    if ((fsoModel.Email ?? "").ToLower().Trim() != (fsModel.Email ?? "").ToLower().Trim())
+                    {
+                        if (!_emailsNotSync.ContainsKey(info.Instance))
+                            _emailsNotSync.Add(info.Instance, new List<int>());
+
+                        _emailsNotSync[info.Instance].Add(fsModel.ID);
+
+                        errCount++;
+                        Console.WriteLine($"Data mismatch: id={fsoModel.ID} PersonEmailID={fsModel.ID} ({fsoModel.Email} != {fsModel.Email})");
+                        Console.WriteLine($"               online={fsoModel.SosyncWriteDate} studio={fsModel.SosyncWriteDate}");
+                    }
+                }
+                else
+                {
+                    if (!_missingEmails.ContainsKey(info.Instance))
+                        _missingEmails.Add(info.Instance, new List<int>());
+
+                    _missingEmails[info.Instance].Add(fsoModel.ID);
+
+                    // Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
+                    notFoundCount++;
+                }
+            }
+
+            if (notFoundCount > 0)
+                _checkEmail.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
+        }
+
         private static Dictionary<string, List<int>> _missingPartnerIDs = new Dictionary<string, List<int>>();
         private static Dictionary<string, List<int>> _PersonIDsNotUpToDate = new Dictionary<string, List<int>>();
         private static Dictionary<string, Tuple<int, int>> _checkPartner = new Dictionary<string, Tuple<int, int>>();
@@ -861,44 +953,6 @@ namespace MassDataCorrection
                             {
                                 diffCount++;
                                 Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
-
-                                //db.Execute($@"
-                                //UPDATE dbo.AktionSpendenmeldungBPK
-                                //SET sosync_write_date = DATEADD(HOUR, -3, sosync_write_date)
-                                //WHERE AktionsID = @AktionsID;", new { AktionsID = item.Key });
-
-                                //var i = db.Execute(@"
-                                //insert into sosync.JobQueue
-                                //(
-                                //    JobDate
-                                //    ,JobSourceSystem
-                                //    ,JobSourceModel
-                                //    ,JobSourceRecordID
-                                //    ,JobState
-                                //    ,JobSourceSosyncWriteDate
-                                //    ,JobSourceFields
-                                //)
-                                //values (
-                                //    @JobDate
-                                //    ,@JobSourceSystem
-                                //    ,@JobSourceModel
-                                //    ,@JobSourceRecordID
-                                //    ,@JobState
-                                //    ,@JobSourceSosyncWriteDate
-                                //    ,@JobSourceFields
-                                //)
-                                //",
-                                //    new
-                                //    {
-                                //        JobDate = fsItem.SosyncWriteDate.Value,
-                                //        JobSourceSystem = SosyncSystem.FundraisingStudio,
-                                //        JobSourceModel = "dbo.AktionSpendenmeldungBPK",
-                                //        JobSourceRecordID = fsItem.ID,
-                                //        JobState = "new",
-                                //        JobSourceSosyncWriteDate = fsItem.SosyncWriteDate.Value,
-                                //        JobSourceFields = $"{{ \"sosync_write_date\": \"{fsItem.SosyncWriteDate.Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}\" }}"
-                                //    });
-
                             }
                             catch (Exception ex)
                             {
@@ -907,6 +961,20 @@ namespace MassDataCorrection
                         }
                     }
                     else
+                    {
+                        missingCount++;
+                    }
+                }
+
+                foreach (var item in fsoDonations)
+                {
+                    var fsoItem = item.Value;
+                    DonationReport fsItem = null;
+
+                    if (fsDonations.ContainsKey(item.Value.ForeignID))
+                        fsItem = fsDonations[item.Value.ForeignID];
+
+                    if (fsItem == null)
                     {
                         missingCount++;
                     }
