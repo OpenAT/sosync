@@ -40,6 +40,9 @@ namespace Syncer.Flows.zGruppeSystem
 
             FetchStudioData(studioID, out mail, out partnerID);
 
+            if (string.IsNullOrEmpty(mail))
+                return null;
+
             var searchArgs = new[] {
                 new OdooSearchArgument("partner_id", "=", partnerID.Value),
                 new OdooSearchArgument("email", "=ilike", mail)

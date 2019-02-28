@@ -217,7 +217,7 @@ namespace WebSosync.Controllers
         {
             using (var db = (DataService)services.GetService(typeof(DataService)))
             {
-                db.CreateJob(job, "");
+                db.CreateJob(job);
             }
         }
 

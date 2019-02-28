@@ -123,17 +123,7 @@ namespace Syncer.Flows
         /// <returns></returns>
         protected virtual ModelInfo GetOnlineInfo(int onlineID)
         {
-            var info = GetDefaultOnlineModelInfo(onlineID, OnlineModelName);
-
-            // If there was no foreign ID in fso, try to check the mssql side
-            // for the referenced ID too
-            if (!info.ForeignID.HasValue)
-                info.ForeignID = GetStudioIDFromMssqlViaOnlineID(
-                    StudioModelName,
-                    MdbService.GetStudioModelIdentity(StudioModelName),
-                    onlineID);
-
-            return info;
+            return GetDefaultOnlineModelInfo(onlineID, OnlineModelName);
         }
 
         /// <summary>
@@ -283,7 +273,7 @@ namespace Syncer.Flows
                 s.Start();
 
                 var studioModel = db.Read(
-                    $"select write_date, sosync_write_date from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select write_date, sosync_write_date, sosync_fso_id from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
@@ -299,9 +289,6 @@ namespace Syncer.Flows
 
                 if (studioModel != null)
                 {
-                    if (!studioModel.sosync_fso_id.HasValue)
-                        studioModel.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, studioID);
-
                     return new ModelInfo(studioID, studioModel.sosync_fso_id, studioModel.sosync_write_date, studioModel.write_date);
                 }
             }
@@ -341,7 +328,7 @@ namespace Syncer.Flows
                     return foundStudioID;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }
@@ -479,7 +466,7 @@ namespace Syncer.Flows
                             if (entry == null)
                             {
                                 Log.LogInformation($"Creating {childDescription} for job ({Job.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
-                                db.CreateJob(childJob, Job.Parent_Path);
+                                db.CreateJob(childJob);
                                 Job.Children.Add(childJob);
 
                                 entry = childJob;

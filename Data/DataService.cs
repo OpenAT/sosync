@@ -43,7 +43,7 @@ namespace WebSosync.Data
         static DataService()
         {
             // List of properties to be excluded from the statement generation (primary key, relational properties, etc.)
-            var excludedColumns = new string[] { "id", "children", "parent_path" };
+            var excludedColumns = new string[] { "id", "children" };
 
             var properties = typeof(SyncJob).GetProperties()
                 .Where(x => !excludedColumns.Contains(x.Name.ToLower()));
@@ -53,7 +53,7 @@ namespace WebSosync.Data
             var propertiesString = string.Join(",\n\t", properties.Select(x => x.Name.ToLower() == "end" ? "\"end\"" : x.Name.ToLower()));
             var propertyParametersString = string.Join(",\n\t", properties.Select(x => $"@{x.Name.ToLower()}"));
 
-            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString},\n\tparent_path\n) values (\n\t{propertyParametersString},\n\tconcat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/')\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id, concat(@ParentPath, currval(pg_get_serial_sequence('sosync_job','id')), '/') parent_path;\n";
+            SQL_CreateJob = $"insert into sosync_job (\n\t{propertiesString}\n) values (\n\t{propertyParametersString}\n);\nSELECT currval(pg_get_serial_sequence('sosync_job','id')) id;\n";
 
             // Update statement
             //   update sosync_job set prop1 = @prop1, prop2 = @prop2, ... where id = @id
@@ -191,21 +191,16 @@ namespace WebSosync.Data
         /// Creates a new sync job in the database.
         /// </summary>
         /// <param name="job">The sync job to be created.</param>
-        public void CreateJob(SyncJob job, string parentPath, IDbTransaction transaction = null)
+        public void CreateJob(SyncJob job, IDbTransaction transaction = null)
         {
-            if (parentPath == null)
-                parentPath = "";
-
             CleanModel(job);
 
             // The insert statement is dynamically created as a static value in the class initializer,
             // hence it is not read from resources
             var queryParams = new DynamicParameters(job);
-            queryParams.Add("@ParentPath", parentPath);
 
             var inserted = _con.Query<JobInsertedInfo>(SQL_CreateJob, queryParams, transaction).Single();
             job.ID = inserted.ID;
-            job.Parent_Path = inserted.Parent_Path;
         }
 
         public void CreateJobBulk(IEnumerable<SyncJob> jobs)
@@ -213,7 +208,7 @@ namespace WebSosync.Data
             // TODO: Create real bulk insert
             foreach(var job in jobs)
             {
-                CreateJob(job, "");
+                CreateJob(job);
             }
         }
 

@@ -90,9 +90,6 @@ namespace Syncer.Flows
                 if (result.person == null)
                     throw new SyncerException($"{StudioModelName} {PersonID} did not exist");
 
-                if (!result.person.sosync_fso_id.HasValue)
-                    result.person.sosync_fso_id = GetOnlineIDFromOdooViaStudioID("res.partner", result.person.PersonID);
-
                 result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
                                   where iterAddress.GültigVon <= DateTime.Today &&
                                       iterAddress.GültigBis >= DateTime.Today
