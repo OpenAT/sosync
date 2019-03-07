@@ -101,6 +101,7 @@ namespace WebSosync
             services.AddSingleton<SerializationService>();
             services.AddSingleton<GitService>();
             services.AddSingleton<OdooFormatService>();
+            services.AddSingleton<StatisticService>();
 
             var mailService = new MailService("192.168.37.120", 0, "contact@datadialog.net");
             services.AddSingleton<IMailService>(mailService);
