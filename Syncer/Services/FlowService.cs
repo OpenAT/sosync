@@ -183,6 +183,12 @@ namespace Syncer.Services
                 .GetTypes()
                 .Where(x => typeof(SyncFlow) != x && x.IsAbstract == false && typeof(SyncFlow).IsAssignableFrom(x));
         }
+
+        public IEnumerable<Type> GetFlowTypes<T>()
+        {
+            return FlowTypes
+                .Where(ft => ft.BaseType == typeof(T));
+        }
         #endregion
     }
 }
