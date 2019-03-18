@@ -3,6 +3,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 
 namespace MassDataCorrection
@@ -58,7 +59,10 @@ namespace MassDataCorrection
 
         public NpgsqlConnection CreateOpenSyncerNpgsqlConnection()
         {
-            var conStr = $"User ID={Instance}; Password={sosync_pgsql_pw}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}_sosync_gui; Pooling=true;";
+            var sosync2File = File.ReadAllText( @"C:\WorkingFolder\saltstack\pillar\hosts\sosync2.sls");
+            var pass = sosync2File.Substring(sosync2File.IndexOf("sosync_gui_db_password:") + 24, 20).Trim();
+
+            var conStr = $"User ID=sosync_gui; Password={pass}; Host=sosync.{Instance}.datadialog.net; Port=5432; Database={Instance}_sosync_gui; Pooling=true;";
             var con = new NpgsqlConnection(conStr);
             con.Open();
             return con;
