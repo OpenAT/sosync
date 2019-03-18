@@ -97,10 +97,17 @@ namespace Syncer.Flows
                     online.Add("imported", studio.Imported);
                     online.Add("submission_bpk_private", studio.SubmissionBPKPrivate);
                     online.Add("submission_refnr", studio.SubmissionRefnr);
+                    online.Add("create_reason", studio.create_reason);
 
                     // Sync submission date only for imported donation reports
                     if (studio.Imported == true)
                         online.Add("submission_id_datetime", studio.SubmissionIdDate);
+
+                    if (!string.IsNullOrEmpty(studio.donor_instruction))
+                    {
+                        online.Add("donor_instruction", studio.donor_instruction);
+                        online.Add("donor_instruction_info", studio.donor_instruction_info);
+                    }
                 });
         }
 
@@ -178,6 +185,10 @@ namespace Syncer.Flows
                     studio.ResponseErrorOrigRefnr = online.response_error_orig_refnr;
                     studio.ForceSubmission = online.force_submission;
                     studio.Imported = online.imported;
+
+                    studio.create_reason = online.create_reason;
+                    studio.donor_instruction = online.donor_instruction;
+                    studio.donor_instruction_info = online.donor_instruction_info;
 
                     // -- online.report_erstmeldung_id;
                     // -- online.report_follow_up_ids;

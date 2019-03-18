@@ -35,14 +35,15 @@ namespace MassDataCorrection
 
                 //processor.Process(InitialSyncPayments, new[] { "demo" });
                 //processor.Process(CheckBranch, null);
-                processor.Process(CheckDonationReports, new[] { "diaw" });
+                //processor.Process(CheckDonationReports, new[] { "diaw" });
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckEmails, new[] { "kino" });
+                processor.Process(CheckOpenSyncJobs, null);
                 //PrintDictionary(_checkEmail);
 
-                SaveStat(_missingEmails, "emails_missing");
-                SaveStat(_emailsNotSync, "emails_mismatch");
+                //SaveStat(_missingEmails, "emails_missing");
+                //SaveStat(_emailsNotSync, "emails_mismatch");
 
                 //SaveStat(_missingPartnerIDs, "person_missing");
                 //SaveStat(_PersonIDsNotUpToDate, "person_mismatch");
