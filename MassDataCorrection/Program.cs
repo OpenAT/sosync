@@ -35,11 +35,11 @@ namespace MassDataCorrection
 
                 //processor.Process(InitialSyncPayments, new[] { "demo" });
                 //processor.Process(CheckBranch, null);
-                //processor.Process(CheckDonationReports, new[] { "diaw" });
+                processor.Process(CheckDonationReports, new[] { "bsvw" });
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckEmails, new[] { "kino" });
-                processor.Process(CheckOpenSyncJobs, null);
+                //processor.Process(CheckOpenSyncJobs, null);
                 //PrintDictionary(_checkEmail);
 
                 //SaveStat(_missingEmails, "emails_missing");
@@ -934,6 +934,7 @@ namespace MassDataCorrection
 
             // Compare results
 
+            var toUpdate = new List<int>();
             using (var db = info.CreateOpenMssqlIntegratedConnection())
             {
                 var diffCount = 0;
@@ -954,6 +955,7 @@ namespace MassDataCorrection
                             {
                                 diffCount++;
                                 Console.WriteLine($"Different state for AktionsID {item.Key} / res.partner.donation_report.id {item.Value.ForeignID}");
+                                toUpdate.Add(item.Key);
                             }
                             catch (Exception ex)
                             {
@@ -966,6 +968,7 @@ namespace MassDataCorrection
                         missingCount++;
                     }
                 }
+                var debug1 = string.Join(", ", toUpdate);
 
                 foreach (var item in fsoDonations)
                 {
