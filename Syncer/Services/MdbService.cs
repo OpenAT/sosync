@@ -3,6 +3,7 @@ using dadi_data.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using WebSosync.Data.Models;
 
@@ -64,6 +65,22 @@ namespace Syncer.Services
         public string GetStudioModelReadView(string studioModelName)
         {
             return $"orm.[{studioModelName.Replace(".", "")}.read.view]";
+        }
+
+        public int? GetLandIDFromIsoCode(string isoCode)
+        {
+            using (var dbSvc = GetDataService<dboTypen>())
+            {
+                var foundLandID = dbSvc.ExecuteQuery<int?>(
+                    "select sosync.IsoCountryCode2_to_LandID(@Code)",
+                    new { Code = isoCode })
+                    .FirstOrDefault();
+
+                if (foundLandID.HasValue && foundLandID.Value != 0)
+                    return foundLandID.Value;
+            }
+
+            return null;
         }
         #endregion
     }
