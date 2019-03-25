@@ -5,6 +5,7 @@ using DaDi.Odoo.Models;
 using DaDi.Odoo.Models.GL2K.Garden;
 using dadi_data.Models;
 using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Models;
 using Syncer.Services;
@@ -14,6 +15,8 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows.gl2k.garden
 {
+    [StudioModel(Name = "fson.garden")]
+    [OnlineModel(Name = "gl2k.garden")]
     public class GardenFlow
         : ReplicateSyncFlow
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using dadi_data.Models;
 using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Services;
 using WebSosync.Common;
@@ -11,6 +12,8 @@ using WebSosync.Data.Models;
 
 namespace Syncer.Flows.gl2k.garden
 {
+    [StudioModel(Name = "fson.garden")]
+    [OnlineModel(Name = "gl2k.garden")]
     public class GardenDeleteFlow
         : DeleteSyncFlow
     {
