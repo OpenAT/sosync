@@ -69,23 +69,9 @@ namespace Syncer.Flows.gl2k.garden
                     studio.garden_image_name = online.garden_image_name;
                     studio.garden_image_file = online.garden_image_file;
 
-                    studio.cmp_image_file = online.cmp_image_file;
-                    studio.cmp_thumbnail_file = online.cmp_thumbnail_file;
-                    studio.cmp_better_zip_id = Convert.ToInt32(online.cmp_better_zip_id[0]);
-                    studio.cmp_state_id = Convert.ToInt32(online.cmp_state_id[0]);
-                    studio.cmp_county_province = online.cmp_county_province;
-                    studio.cmp_county_province_code = online.cmp_county_province_code;
-                    studio.cmp_community = online.cmp_community;
-                    studio.cmp_community_code = online.cmp_community_code;
-                    studio.cmp_city = online.cmp_city;
-                    studio.cmp_latitude = online.cmp_latitude;
-                    studio.cmp_longitude = online.cmp_longitude;
-
-                    studio.login_token_used = online.login_token_used;
-
-                    studio.email_validate = online.email_validate;
-                    studio.email_validate_token = online.email_validate_token;
-                    studio.email_validated_at = online.email_validated_at;
+                    // Computed fields not needed
+                    // Login token not needed
+                    // Email validation fields not needed
 
                     studio.fso_create_date = online.create_date;
                 });
