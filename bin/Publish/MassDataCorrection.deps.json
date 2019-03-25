@@ -1,25 +1,25 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "7d85d2969599eaadc645e31e7741ff447db1980d"
+    "signature": "44be5df08ecf21f602e655dcd312fca04d6eabcf"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
-          "DaDi.Odoo": "1.3.4",
+          "DaDi.Odoo": "1.3.6",
           "Dapper": "1.50.5",
           "Npgsql": "4.0.3",
           "System.Data.SqlClient": "4.4.3",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.5.8"
+          "dadi-data": "1.5.9"
         },
         "runtime": {
           "MassDataCorrection.dll": {}
         }
       },
-      "dadi-data/1.5.8": {
+      "dadi-data/1.5.9": {
         "dependencies": {
           "Dapper": "1.50.5",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -34,7 +34,7 @@
           "lib/netstandard1.4/dadi-data.dll": {}
         }
       },
-      "DaDi.Odoo/1.3.4": {
+      "DaDi.Odoo/1.3.6": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.2",
           "Microsoft.CSharp": "4.4.1"
@@ -628,19 +628,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.5.8": {
+    "dadi-data/1.5.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-HhNae3QyVrNtFix88X27RZ3eIl2g10rToZ0MloXf49DDwj5QP0T8puCNjY7X52gjnkFKug4kL03koEQedSE6tQ==",
-      "path": "dadi-data/1.5.8",
-      "hashPath": "dadi-data.1.5.8.nupkg.sha512"
+      "sha512": "sha512-qOQWbAeUl2Rtp3DrZVdEmKpwWf6nBT+y8B5URZLlzPRz+T9eQ3NSlckWHlkMZcOQGdAj8iZ2FvjDJC6ujo5+aA==",
+      "path": "dadi-data/1.5.9",
+      "hashPath": "dadi-data.1.5.9.nupkg.sha512"
     },
-    "DaDi.Odoo/1.3.4": {
+    "DaDi.Odoo/1.3.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-PNy8dwGh75B2SywTwnQF6TDKilRmyneYQkAYYRXlpM7EPUiL7j+9Ik3dABG3iG3I0AsImFHYIU2n0d0GjOQutQ==",
-      "path": "dadi.odoo/1.3.4",
-      "hashPath": "dadi.odoo.1.3.4.nupkg.sha512"
+      "sha512": "sha512-71EA1tGq3qbKra/A7dBxxlYqU7mUVDom/JzAvVTSXvdvsxtOKnveFmfNHzbC/30yzwd2Kt1lOsvsKSvlGlgnSQ==",
+      "path": "dadi.odoo/1.3.6",
+      "hashPath": "dadi.odoo.1.3.6.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.2": {
       "type": "package",
