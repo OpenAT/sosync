@@ -38,7 +38,7 @@ namespace WebSosync.Controllers
                 .Select(f => f.GetCustomAttribute<StudioModelAttribute>().Name);
 
             var result = new FlowStatistic() {
-                UnsynchronizedModels = await _stat.GetMssqlModelStatisticsAsync(flowNames)
+                UnsynchronizedModelsCount = await _stat.GetMssqlModelStatisticsAsync(flowNames)
             };
 
             return new OkObjectResult(result);

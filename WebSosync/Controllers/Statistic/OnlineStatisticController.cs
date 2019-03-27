@@ -58,7 +58,7 @@ namespace WebSosync.Controllers.Statistic
 
                 foreach (var flowName in flowNames)
                 {
-                    stat.UnsynchronizedModels.Add(
+                    stat.UnsynchronizedModelsCount.Add(
                         flowName,
                         _odoo.Client.SearchCount(flowName, searchArgs));
                 }

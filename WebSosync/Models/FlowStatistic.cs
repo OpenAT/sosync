@@ -9,9 +9,9 @@ namespace WebSosync.Models
     {
         public FlowStatistic()
         {
-            UnsynchronizedModels = new Dictionary<string, int>();
+            UnsynchronizedModelsCount = new Dictionary<string, int>();
         }
 
-        public Dictionary<string, int> UnsynchronizedModels { get; set; }
+        public Dictionary<string, int> UnsynchronizedModelsCount { get; set; }
     }
 }
