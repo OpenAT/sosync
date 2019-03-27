@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
@@ -86,13 +87,22 @@ namespace WebSosync.Controllers
 
             var isBadRequest = false;
 
+            StringBuilder errorLog = new StringBuilder(1024 * 2);
+
             // Validate all dictionaries in batch
             foreach (var dictionary in dictionaryList)
             {
                 var validationResult = ValidateDictionary(dictionary);
 
                 if (validationResult.ErrorCode != (int)JobErrorCode.None)
+                {
+                    if (dictionary.ContainsKey("job_source_record_id") && Convert.ToString(dictionary["job_source_record_id"]) == "0")
+                    {
+                        errorLog.AppendLine("job_source_record_id = 0 is invalid");
+                    }
+
                     isBadRequest = true;
+                }
             }
 
             // If no validation failed, create all jobs
@@ -114,7 +124,7 @@ namespace WebSosync.Controllers
                 return new OkObjectResult("success");
             }
 
-            return new BadRequestObjectResult("error");
+            return new BadRequestObjectResult("error\n" + errorLog.ToString());
         }
 
         private JobResultDto ValidateDictionary(Dictionary<string, object> data)
