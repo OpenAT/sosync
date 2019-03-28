@@ -83,7 +83,7 @@ namespace Syncer.Workers
                 s.Start();
                 var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
-                _log.LogWarning($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+                _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
 
                 CheckInProgress(jobs);
 
@@ -116,7 +116,7 @@ namespace Syncer.Workers
                             tasks.Add(Task.Run(() => JobThread(ref jobs, DateTime.UtcNow, threadNumber)));
                         }
                         threadStartWatch.Stop();
-                        _log.LogWarning($"Threading: Needed {SpecialFormat.FromMilliseconds((int)threadStartWatch.Elapsed.TotalMilliseconds)} for {threadCount} threads");
+                        _log.LogInformation($"Threading: Needed {SpecialFormat.FromMilliseconds((int)threadStartWatch.Elapsed.TotalMilliseconds)} for {threadCount} threads");
                     }
                     catch (TimeDriftException ex)
                     {
@@ -131,7 +131,7 @@ namespace Syncer.Workers
 
                     Task.WaitAll(tasks.ToArray());
                     threadWatch.Stop();
-                    _log.LogWarning($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
+                    _log.LogInformation($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
                     threadWatch.Reset();
 
                     ThreadService.JobLocks.Clear();
@@ -146,7 +146,7 @@ namespace Syncer.Workers
                     s.Start();
                     jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
-                    _log.LogWarning($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+                    _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
 
                     CheckInProgress(jobs);
                     initialJobCount = jobs.Count;
