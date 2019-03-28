@@ -83,17 +83,19 @@ namespace Syncer.Workers
                 s.Start();
                 var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
+                _log.LogWarning($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
                 CheckInProgress(jobs);
 
                 var initialJobCount = jobs.Count;
                 var reCheckTimeMin = 30;
 
+                var threadWatch = new Stopwatch();
                 while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
                 {
                     var tasks = new List<Task>();
                     var threadCount = _conf.Max_Threads;
 
-                    var threadWatch = new Stopwatch();
                     threadWatch.Start();
                     try
                     {
@@ -102,6 +104,7 @@ namespace Syncer.Workers
                             return;
 
                         // Spin up job threads
+                        var threadStartWatch = Stopwatch.StartNew();
                         _log.LogInformation($"Threading: Starting {threadCount} threads");
                         for (var i = 1; i <= threadCount; i++)
                         {
@@ -112,6 +115,8 @@ namespace Syncer.Workers
                             var threadNumber = Guid.NewGuid();
                             tasks.Add(Task.Run(() => JobThread(ref jobs, DateTime.UtcNow, threadNumber)));
                         }
+                        threadStartWatch.Stop();
+                        _log.LogWarning($"Threading: Needed {SpecialFormat.FromMilliseconds((int)threadStartWatch.Elapsed.TotalMilliseconds)} for {threadCount} threads");
                     }
                     catch (TimeDriftException ex)
                     {
@@ -125,9 +130,12 @@ namespace Syncer.Workers
                     }
 
                     Task.WaitAll(tasks.ToArray());
+                    threadWatch.Stop();
+                    _log.LogWarning($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
+                    threadWatch.Reset();
+
                     ThreadService.JobLocks.Clear();
                     Dapper.SqlMapper.PurgeQueryCache();
-                    threadWatch.Stop();
                     GC.Collect();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
@@ -138,6 +146,8 @@ namespace Syncer.Workers
                     s.Start();
                     jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
+                    _log.LogWarning($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
                     CheckInProgress(jobs);
                     initialJobCount = jobs.Count;
                 }
