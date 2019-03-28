@@ -214,7 +214,7 @@ namespace Syncer.Workers
                     {
                         _log.LogInformation($"Thread {threadNumber} processing the job");
                         threadJob.Job_Log += $"GetNextOpenJob: n/a ms (comes from thread queue)\n";
-                        ProcessJob(threadJob, loadTimeUTC);
+                        ProcessJob(threadJob, DateTime.UtcNow);
                         _log.LogInformation($"Thread {threadNumber} finished job, {jobs.Count} jobs remaining");
                     }
                 }
