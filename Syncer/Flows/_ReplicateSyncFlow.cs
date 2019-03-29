@@ -96,6 +96,8 @@ namespace Syncer.Flows
             var locked = true;
             var lockT1 = DateTime.Now;
             var timeoutMS = Config.Model_Lock_Timeout;
+            var lockWatch = Stopwatch.StartNew();
+            LogMs(0, $"\nThread lock start", Job.ID, 0);
             while (locked)
             {
                 lock (ThreadService.JobLocks)
@@ -106,6 +108,7 @@ namespace Syncer.Flows
                         {
                             locked = false;
                             UpdateJobSuccessOtherThread(ThreadService.JobLocks[hash]);
+                            LogMs(0, $"\nThread lock end (other thread)", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
                             return;
                         }
                         else
@@ -130,6 +133,7 @@ namespace Syncer.Flows
                         throw new SyncerException($"Lock for hash {hash} timed out.");
                 }
             }
+            LogMs(0, $"Thread lock end", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
 
             try
             {
