@@ -56,7 +56,12 @@ namespace Syncer.Flows
             ModelInfo studioInfo = null;
 
             GetInfos(Job, out studioInfo, out onlineInfo);
+
+            var fixKeysWatch = Stopwatch.StartNew();
+            LogMs(0, $"\nFixForeignKeys start", Job.ID, 0);
             FixForeignKeys(Job, studioInfo, onlineInfo);
+            fixKeysWatch.Stop();
+            LogMs(0, $"FixForeignKeys end", Job.ID, (long)fixKeysWatch.Elapsed.TotalMilliseconds);
 
             if (!SkipAutoSyncSource)
             {
@@ -108,6 +113,7 @@ namespace Syncer.Flows
                         {
                             locked = false;
                             UpdateJobSuccessOtherThread(ThreadService.JobLocks[hash]);
+                            lockWatch.Stop();
                             LogMs(0, $"\nThread lock end (other thread)", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
                             return;
                         }
@@ -133,6 +139,7 @@ namespace Syncer.Flows
                         throw new SyncerException($"Lock for hash {hash} timed out.");
                 }
             }
+            lockWatch.Stop();
             LogMs(0, $"Thread lock end", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
 
             try
