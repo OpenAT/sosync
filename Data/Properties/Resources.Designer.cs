@@ -110,5 +110,32 @@ namespace WebSosync.Data.Properties {
                 return ResourceManager.GetString("GetFirstOpenSynJobAndChildren_SELECT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WITH target AS (
+        ///	SELECT * FROM fson.sale_order_line_zGruppeDetail
+        ///	WHERE sale_order_lineID = @sale_order_lineID
+        ///)
+        ///MERGE target
+        ///USING (
+        ///	SELECT zGruppeDetailID
+        ///	FROM #temp_table_name
+        ///) AS source
+        ///ON
+        ///	(source.zGruppeDetailID = target.zGruppeDetailID)
+        ///
+        ///WHEN NOT MATCHED THEN
+        ///	INSERT (sale_order_lineID, zGruppeDetailID)
+        ///	VALUES (@sale_order_lineID, source.zGruppeDetailID)
+        ///
+        ///WHEN NOT MATCHED BY SOURCE THEN
+        ///	DELETE
+        ///;.
+        /// </summary>
+        internal static string MSSQL_Merge_SaleOrderGroups {
+            get {
+                return ResourceManager.GetString("MSSQL_Merge_SaleOrderGroups", resourceCulture);
+            }
+        }
     }
 }
