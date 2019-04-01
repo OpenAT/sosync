@@ -196,7 +196,7 @@ namespace Syncer.Flows
                     // -- online.skipped;
                 },
                 spendenmeldungAktion,
-                (a, asm) => { a.AktionsID = asm.AktionsID; });
+                (online, aktionsID, asm) => { asm.AktionsID = aktionsID; });
         }
 
         private dboAktion GetSpendenmeldungAktionViaOnlineID(int onlineID, TransformType action)

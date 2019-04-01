@@ -739,7 +739,7 @@ namespace Syncer.Flows
             Func<TStudio, int> getStudioIdentity,
             Action<TOdoo, TStudio> copyOdooToStudio,
             dboAktion parentAction = null,
-            Action<dboAktion, TStudio> applyIdentity = null
+            Action<TOdoo, int, TStudio> applyIdentity = null
             )
             where TOdoo : SosyncModelBase
             where TStudio : MdbModelBase, ISosyncable, new()
@@ -795,12 +795,13 @@ namespace Syncer.Flows
                             using (var dbAk = MdbService.GetDataService<dboAktion>())
                             {
                                 dbAk.Create(parentAction);
-                                applyIdentity(parentAction, studioModel);
+                                applyIdentity(onlineModel, parentAction.AktionsID, studioModel);
                             }
                         }
 
                         db.Create(studioModel);
                         studioModelID = getStudioIdentity(studioModel);
+                        applyIdentity?.Invoke(onlineModel, studioModelID, studioModel);
                         UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, studioModelID);
                     }
                     catch (Exception ex)
