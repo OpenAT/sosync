@@ -13,11 +13,20 @@ namespace WebSosync.Data.Extensions
         private static void PrepareMssqlzGruppeDetailIDs<TStudio>(DataService<TStudio> db, int[] onlineIDs, string tempTableName)
             where TStudio : MdbModelBase, ISosyncable, new()
         {
-            if (onlineIDs == null)
-                onlineIDs = new int[] { -1 };
+            var whereClause = "";
+
+            if (onlineIDs == null || onlineIDs.Length == 0)
+            {
+                onlineIDs = new int[] { };
+                whereClause = "1 = 2"; // Ensure query returns no rows
+            }
+            else
+            {
+                whereClause = $"sosync_fso_id IN({string.Join(", ", onlineIDs)})";
+            }
 
             var count = db.ExecuteQuery<int>(
-                $"SELECT zGruppeDetailID INTO {tempTableName} FROM zGruppeDetail WHERE sosync_fso_id IN ({ string.Join(", ", onlineIDs) }); " +
+                $"SELECT zGruppeDetailID INTO {tempTableName} FROM zGruppeDetail WHERE {whereClause}; " +
                 $"SELECT COUNT(*) FROM {tempTableName};")
                 .SingleOrDefault();
 
