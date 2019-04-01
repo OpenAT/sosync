@@ -98,6 +98,7 @@ namespace Syncer.Flows.Payments
                     studio.state = online.state;
                     studio.fs_ptoken = online.fs_ptoken;
                     studio.fs_origin = online.fs_origin;
+                    studio.fs_product_type = online.fs_product_type;
 
                     if (studio.sale_order_lineID != 0)
                         SaveDetails(studio.sale_order_lineID, online.zgruppedetail_ids);
