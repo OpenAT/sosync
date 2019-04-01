@@ -4,6 +4,7 @@ using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -81,7 +82,7 @@ namespace Syncer.Workers
 
                 var s = new Stopwatch();
                 s.Start();
-                var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                var jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
                 _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
 
@@ -144,7 +145,7 @@ namespace Syncer.Workers
                     loadTimeUTC = DateTime.UtcNow;
                     s.Reset();
                     s.Start();
-                    jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                    jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
                     _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
 
@@ -195,7 +196,7 @@ namespace Syncer.Workers
             return false;
         }
 
-        private void JobThread(ref Queue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)
+        private void JobThread(ref ConcurrentQueue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)
         {
             _log.LogInformation($"Thread {threadNumber} started");
 
@@ -210,13 +211,10 @@ namespace Syncer.Workers
 
                     // Fetch next job from queue
                     threadJob = null;
-                    lock (jobs)
+
+                    if (jobs.TryDequeue(out threadJob))
                     {
-                        if (jobs.Count > 0)
-                        {
-                            _log.LogInformation($"Thread {threadNumber} fetching a job from memory queue");
-                            threadJob = jobs.Dequeue();
-                        }
+                        _log.LogInformation($"Thread {threadNumber} fetched a job from memory queue");
                     }
 
                     // Process job
