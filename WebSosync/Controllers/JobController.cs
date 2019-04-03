@@ -210,19 +210,24 @@ namespace WebSosync.Controllers
                     throw new Exception("Content of job_source_fields was not recognized.");
             }
 
-            var flowService = (FlowService)services.GetService(typeof(FlowService));
-
             job.Job_State = SosyncState.New;
             job.Job_Fetched = DateTime.UtcNow;
 
-            if (data.ContainsKey("job_priority"))
-                job.Job_Priority = Convert.ToInt32(data["job_priority"]);
-            else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
-                job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
-            else
-                job.Job_Priority = ModelPriority.Default;
+            job.Job_Priority = ParseJobPriority(services, job, data);
 
             return job;
+        }
+
+        private int ParseJobPriority(IServiceProvider services, SyncJob job, Dictionary<string, object> data)
+        {
+            var flowService = (FlowService)services.GetService(typeof(FlowService));
+
+            if (data.ContainsKey("job_priority"))
+                return Convert.ToInt32(data["job_priority"]);
+            else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
+                return flowService.ModelPriorities[job.Job_Source_Model];
+            else
+                return ModelPriority.Default;
         }
 
         private void StoreJob(IServiceProvider services, SyncJob job)
