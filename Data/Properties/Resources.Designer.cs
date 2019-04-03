@@ -91,7 +91,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sosync_job
-        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;, &apos;error_retry&apos;)
         ///        order by job_state, job_priority desc, job_date desc
         ///        limit %LIMIT%
         ///	) first_parent
