@@ -178,7 +178,11 @@ namespace Syncer.Workers
             catch (Exception ex)
             {
                 archiveWatch.Stop();
-                _log.LogError($"Failed to archive: {ex.ToString()} elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+
+                if (ex.HResult == -2147467259)
+                    _log.LogWarning($"Timeout while archiving. Elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+                else
+                    _log.LogError($"Failed to archive: {ex.ToString()} elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
             }
         }
 
