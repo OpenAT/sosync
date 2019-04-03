@@ -194,21 +194,7 @@ namespace WebSosync.Controllers
                     throw new Exception($"Unrecognized format ({val}) in field job_source_sosync_write_date.");
             }
 
-            if (data.ContainsKey("job_source_fields"))
-            {
-                if (data["job_source_fields"].GetType() == typeof(string))
-                    job.Job_Source_Fields = new JValue((string)data["job_source_fields"]).ToString();
-                else if (data["job_source_fields"].GetType() == typeof(JObject))
-                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
-                else if (data["job_source_fields"].GetType() == typeof(JValue))
-                    job.Job_Source_Fields = ((JValue)data["job_source_fields"]).ToString();
-                else if (data["job_source_fields"].GetType() == typeof(string))
-                    job.Job_Source_Fields = ((JObject)data["job_source_fields"]).ToString();
-                else if (data["job_source_fields"].GetType() == typeof(bool))
-                    job.Job_Source_Fields = null;
-                else
-                    throw new Exception("Content of job_source_fields was not recognized.");
-            }
+            job.Job_Source_Fields = ParseJobSourceFields(services, job, data);
 
             job.Job_State = SosyncState.New;
             job.Job_Fetched = DateTime.UtcNow;
@@ -216,6 +202,26 @@ namespace WebSosync.Controllers
             job.Job_Priority = ParseJobPriority(services, job, data);
 
             return job;
+        }
+
+        private string ParseJobSourceFields(IServiceProvider services, SyncJob job, Dictionary<string, object> data)
+        {
+            if (data.ContainsKey("job_source_fields"))
+            {
+                if (data["job_source_fields"].GetType() == typeof(string))
+                    return new JValue((string)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(JObject))
+                    return ((JObject)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(JValue))
+                    return ((JValue)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(string))
+                    return ((JObject)data["job_source_fields"]).ToString();
+                else if (data["job_source_fields"].GetType() == typeof(bool))
+                    return null;
+                else
+                    throw new Exception("Content of job_source_fields was not recognized.");
+            }
+            return null;
         }
 
         private int ParseJobPriority(IServiceProvider services, SyncJob job, Dictionary<string, object> data)
