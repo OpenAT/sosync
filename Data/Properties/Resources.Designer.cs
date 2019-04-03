@@ -61,6 +61,32 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to with recursive to_be_moved as (
+        ///			-- roots
+        ///			select id, parent_job_id from (
+        ///				select id, parent_job_id
+        ///				from sosync_job
+        ///				where
+        ///					parent_job_id is null
+        ///					and (job_state in (&apos;done&apos;, &apos;skipped&apos;) or (job_state = &apos;error&apos; and job_run_count &gt;= 10))
+        ///					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive))
+        ///				limit 1000
+        ///			) first_parent
+        ///
+        ///			union all
+        ///
+        ///			-- children
+        ///			select child.id, child.parent_job_id
+        ///			from sosync_job child
+        ///			inn [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Archive_finished_SyncJobs {
+            get {
+                return ResourceManager.GetString("Archive_finished_SyncJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to with updated_rows as (
         ///	update sosync_job
         ///	set

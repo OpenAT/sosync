@@ -113,6 +113,18 @@ namespace WebSosync.Data
                 commandTimeout: 60 * 2);
         }
 
+        public int ArchiveFinishedSyncJobs()
+        {
+            return _con.Query<int>(Resources.Archive_finished_SyncJobs)
+                .SingleOrDefault();
+        }
+
+        public async Task<int> ArchiveFinishedSyncJobsAsync()
+        {
+            return (await _con.QueryAsync<int>(Resources.Archive_finished_SyncJobs))
+                .SingleOrDefault();
+        }
+
         /// <summary>
         /// Returns the first unfinished parent job from the sync table and all its children
         /// in the hierarchy as a flat list.
