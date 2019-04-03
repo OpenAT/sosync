@@ -1,15 +1,20 @@
 ﻿using DaDi.Odoo.Models.Payments;
+using dadi_data;
 using dadi_data.Models;
 using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
+using Syncer.Exceptions;
 using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
+using WebSosync.Data.Extensions;
 
 namespace Syncer.Flows.Payments
 {
@@ -18,7 +23,8 @@ namespace Syncer.Flows.Payments
     public class SaleOrderLineFlow
         : ReplicateSyncFlow
     {
-        public SaleOrderLineFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService) : base(logger, odooService, conf, flowService)
+        public SaleOrderLineFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
 
@@ -41,6 +47,12 @@ namespace Syncer.Flows.Payments
 
             if (model.payment_interval_id != null && model.payment_interval_id.Length > 1)
                 RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", Convert.ToInt32(model.payment_interval_id[0]));
+
+            if (model.zgruppedetail_ids != null)
+            {
+                foreach (var detailID in model.zgruppedetail_ids)
+                    RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", detailID);
+            }
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }
@@ -86,7 +98,23 @@ namespace Syncer.Flows.Payments
                     studio.state = online.state;
                     studio.fs_ptoken = online.fs_ptoken;
                     studio.fs_origin = online.fs_origin;
+                    studio.fs_product_type = online.fs_product_type;
+
+                    if (studio.sale_order_lineID != 0)
+                        SaveDetails(studio.sale_order_lineID, online.zgruppedetail_ids);
+                },
+                null,
+                (online, saleOrderLineID, studio) => {
+                    SaveDetails(studio.sale_order_lineID, online.zgruppedetail_ids);
                 });
+        }
+
+        private void SaveDetails(int studioID, int[] onlineDetailIDs)
+        {
+            using (var db = MdbService.GetDataService<fsonsale_order_line>())
+            {
+                db.MergeSaleOrderGroups(studioID, onlineDetailIDs);
+            }
         }
     }
 }

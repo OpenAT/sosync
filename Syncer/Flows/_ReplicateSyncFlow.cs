@@ -56,7 +56,12 @@ namespace Syncer.Flows
             ModelInfo studioInfo = null;
 
             GetInfos(Job, out studioInfo, out onlineInfo);
+
+            var fixKeysWatch = Stopwatch.StartNew();
+            LogMs(0, $"\nFixForeignKeys start", Job.ID, 0);
             FixForeignKeys(Job, studioInfo, onlineInfo);
+            fixKeysWatch.Stop();
+            LogMs(0, $"FixForeignKeys end", Job.ID, (long)fixKeysWatch.Elapsed.TotalMilliseconds);
 
             if (!SkipAutoSyncSource)
             {
@@ -96,6 +101,8 @@ namespace Syncer.Flows
             var locked = true;
             var lockT1 = DateTime.Now;
             var timeoutMS = Config.Model_Lock_Timeout;
+            var lockWatch = Stopwatch.StartNew();
+            LogMs(0, $"\nThread lock start", Job.ID, 0);
             while (locked)
             {
                 lock (ThreadService.JobLocks)
@@ -106,6 +113,8 @@ namespace Syncer.Flows
                         {
                             locked = false;
                             UpdateJobSuccessOtherThread(ThreadService.JobLocks[hash]);
+                            lockWatch.Stop();
+                            LogMs(0, $"\nThread lock end (other thread)", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
                             return;
                         }
                         else
@@ -130,6 +139,8 @@ namespace Syncer.Flows
                         throw new SyncerException($"Lock for hash {hash} timed out.");
                 }
             }
+            lockWatch.Stop();
+            LogMs(0, $"Thread lock end", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
 
             try
             {
@@ -728,7 +739,7 @@ namespace Syncer.Flows
             Func<TStudio, int> getStudioIdentity,
             Action<TOdoo, TStudio> copyOdooToStudio,
             dboAktion parentAction = null,
-            Action<dboAktion, TStudio> applyIdentity = null
+            Action<TOdoo, int, TStudio> applyIdentity = null
             )
             where TOdoo : SosyncModelBase
             where TStudio : MdbModelBase, ISosyncable, new()
@@ -784,12 +795,13 @@ namespace Syncer.Flows
                             using (var dbAk = MdbService.GetDataService<dboAktion>())
                             {
                                 dbAk.Create(parentAction);
-                                applyIdentity(parentAction, studioModel);
+                                applyIdentity(onlineModel, parentAction.AktionsID, studioModel);
                             }
                         }
 
                         db.Create(studioModel);
                         studioModelID = getStudioIdentity(studioModel);
+                        applyIdentity?.Invoke(onlineModel, studioModelID, studioModel);
                         UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, studioModelID);
                     }
                     catch (Exception ex)

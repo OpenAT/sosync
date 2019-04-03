@@ -13,6 +13,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSosync.Common;
+using WebSosync.Data.Extensions;
 
 namespace ManualTest
 {
@@ -20,16 +21,11 @@ namespace ManualTest
     {
         static void Main(string[] args)
         {
-            //var sc = new ServiceCollection();
-            //var svc = sc.BuildServiceProvider();
-
-            //var f = new ProductTemplateFlow(svc);
-
-            var vor = "";
-            var nach = "";
-
-            string result = EmailHelper.MergeEmail(vor, nach);
-            Console.WriteLine(result);
+            using (var db = new DataService<fsonsale_order_line>(ConnectionService.GetConnectionString("mssql1", "mdb_demo")))
+            {
+                //db.MergeSaleOrderGroups(73, new[] { 15343, 15342, 15322 });
+                db.MergeSaleOrderGroups(73, new[] { 15343, 15342 });
+            }
 
             Console.WriteLine("Done");
             Console.ReadKey();
