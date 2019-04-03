@@ -4,6 +4,7 @@ using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -81,19 +82,21 @@ namespace Syncer.Workers
 
                 var s = new Stopwatch();
                 s.Start();
-                var jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                var jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
+                _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
                 CheckInProgress(jobs);
 
                 var initialJobCount = jobs.Count;
                 var reCheckTimeMin = 30;
 
+                var threadWatch = new Stopwatch();
                 while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
                 {
                     var tasks = new List<Task>();
                     var threadCount = _conf.Max_Threads;
 
-                    var threadWatch = new Stopwatch();
                     threadWatch.Start();
                     try
                     {
@@ -102,6 +105,7 @@ namespace Syncer.Workers
                             return;
 
                         // Spin up job threads
+                        var threadStartWatch = Stopwatch.StartNew();
                         _log.LogInformation($"Threading: Starting {threadCount} threads");
                         for (var i = 1; i <= threadCount; i++)
                         {
@@ -112,6 +116,8 @@ namespace Syncer.Workers
                             var threadNumber = Guid.NewGuid();
                             tasks.Add(Task.Run(() => JobThread(ref jobs, DateTime.UtcNow, threadNumber)));
                         }
+                        threadStartWatch.Stop();
+                        _log.LogInformation($"Threading: Needed {SpecialFormat.FromMilliseconds((int)threadStartWatch.Elapsed.TotalMilliseconds)} for {threadCount} threads");
                     }
                     catch (TimeDriftException ex)
                     {
@@ -125,9 +131,12 @@ namespace Syncer.Workers
                     }
 
                     Task.WaitAll(tasks.ToArray());
+                    threadWatch.Stop();
+                    _log.LogInformation($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
+                    threadWatch.Reset();
+
                     ThreadService.JobLocks.Clear();
                     Dapper.SqlMapper.PurgeQueryCache();
-                    threadWatch.Stop();
                     GC.Collect();
 
                     _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
@@ -136,8 +145,10 @@ namespace Syncer.Workers
                     loadTimeUTC = DateTime.UtcNow;
                     s.Reset();
                     s.Start();
-                    jobs = new Queue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                    jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
                     s.Stop();
+                    _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
                     CheckInProgress(jobs);
                     initialJobCount = jobs.Count;
                 }
@@ -185,7 +196,7 @@ namespace Syncer.Workers
             return false;
         }
 
-        private void JobThread(ref Queue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)
+        private void JobThread(ref ConcurrentQueue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)
         {
             _log.LogInformation($"Thread {threadNumber} started");
 
@@ -200,13 +211,10 @@ namespace Syncer.Workers
 
                     // Fetch next job from queue
                     threadJob = null;
-                    lock (jobs)
+
+                    if (jobs.TryDequeue(out threadJob))
                     {
-                        if (jobs.Count > 0)
-                        {
-                            _log.LogInformation($"Thread {threadNumber} fetching a job from memory queue");
-                            threadJob = jobs.Dequeue();
-                        }
+                        _log.LogInformation($"Thread {threadNumber} fetched a job from memory queue");
                     }
 
                     // Process job
@@ -214,7 +222,7 @@ namespace Syncer.Workers
                     {
                         _log.LogInformation($"Thread {threadNumber} processing the job");
                         threadJob.Job_Log += $"GetNextOpenJob: n/a ms (comes from thread queue)\n";
-                        ProcessJob(threadJob, loadTimeUTC);
+                        ProcessJob(threadJob, DateTime.UtcNow);
                         _log.LogInformation($"Thread {threadNumber} finished job, {jobs.Count} jobs remaining");
                     }
                 }

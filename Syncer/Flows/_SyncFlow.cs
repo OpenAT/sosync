@@ -356,12 +356,16 @@ namespace Syncer.Flows
 
         public void SetupChildJobRequests()
         {
-            LogMs(0, $"\n{nameof(HandleChildJobs)} start", Job.ID, 0);
+            var s = Stopwatch.StartNew();
+            LogMs(0, $"\n{nameof(SetupChildJobRequests)} start", Job.ID, 0);
 
             if (Job.Sync_Source_System == SosyncSystem.FSOnline)
                 SetupOnlineToStudioChildJobs(Job.Sync_Source_Record_ID.Value);
             else
                 SetupStudioToOnlineChildJobs(Job.Sync_Source_Record_ID.Value);
+
+            s.Stop();
+            LogMs(0, $"{nameof(SetupChildJobRequests)} end", Job.ID, s.ElapsedMilliseconds);
         }
 
         protected void HandleChildJobs(

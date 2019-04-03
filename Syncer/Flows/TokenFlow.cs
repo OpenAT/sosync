@@ -120,7 +120,7 @@ namespace Syncer.Flows
                     studio.AnzahlÜberprüfungen = online.number_of_checks;
                 },
                 tokenAktion,
-                (a, aot) => aot.AktionsID = a.AktionsID);
+                (online, aktionsID, aot) => aot.AktionsID = aktionsID);
         }
 
         private dboAktion GetTokenAktionViaOnlineID(int onlineID, TransformType action)

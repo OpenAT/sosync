@@ -46,11 +46,11 @@ namespace Syncer.Services
                     $"Connect Timeout=60"
                     });
 
-                return new DataService<TModel>(conStr, 60);
+                return new DataService<TModel>(conStr, 60, true);
             }
             else
             {
-                return new DataService<TModel>(con, transaction, 60);
+                return new DataService<TModel>(con, transaction, 60, true);
             }
         }
 

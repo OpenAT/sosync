@@ -244,9 +244,16 @@ namespace WebSosync
         /// <param name="svc">The host service to request termination.</param>
         private static void HandleSigTerm(IServiceProvider ioc, ILogger<Program> log, IHostService svc)
         {
+            log.LogWarning($"SigTerm received: ico={(ioc == null ? "<NULL>" : "<INSTANCE>")}");
+            log.LogWarning($"                  log={(log == null ? "<NULL>" : "<INSTANCE>")}");
+            log.LogWarning($"                  svc={(svc == null ? "<NULL>" : "<INSTANCE>")}");
+
             IBackgroundJob<SyncWorker> job = (IBackgroundJob<SyncWorker>)ioc.GetService(typeof(Common.Interfaces.IBackgroundJob<SyncWorker>));
             IWebHost host = (IWebHost)ioc.GetService(typeof(IWebHost));
             log.LogInformation($"Process termination requested (job status: {job.Status})");
+
+            log.LogWarning($"                  job={(job == null ? "<NULL>" : "<INSTANCE>")}");
+            log.LogWarning($"                  host={(host == null ? "<NULL>" : "<INSTANCE>")}");
 
             job.ShutdownPending = true;
 

@@ -157,4 +157,25 @@ select count(*) affected_rows from updated_rows;</value>
 )
 select * from job order by job_priority desc, job_date asc;</value>
   </data>
+  <data name="MSSQL_Merge_SaleOrderGroups" xml:space="preserve">
+    <value>WITH target AS (
+	SELECT * FROM fson.sale_order_line_zGruppeDetail
+	WHERE sale_order_lineID = @sale_order_lineID
+)
+MERGE target
+USING (
+	SELECT zGruppeDetailID
+	FROM #temp_table_name
+) AS source
+ON
+	(source.zGruppeDetailID = target.zGruppeDetailID)
+
+WHEN NOT MATCHED THEN
+	INSERT (sale_order_lineID, zGruppeDetailID)
+	VALUES (@sale_order_lineID, source.zGruppeDetailID)
+
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+;</value>
+  </data>
 </root>
