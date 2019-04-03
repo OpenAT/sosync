@@ -215,7 +215,9 @@ namespace WebSosync.Controllers
             job.Job_State = SosyncState.New;
             job.Job_Fetched = DateTime.UtcNow;
 
-            if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
+            if (data.ContainsKey("job_priority"))
+                job.Job_Priority = Convert.ToInt32(data["job_priority"]);
+            else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
                 job.Job_Priority = flowService.ModelPriorities[job.Job_Source_Model];
             else
                 job.Job_Priority = ModelPriority.Default;
