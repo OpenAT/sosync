@@ -115,13 +115,13 @@ namespace WebSosync.Data
 
         public int ArchiveFinishedSyncJobs()
         {
-            return _con.Query<int>(Resources.Archive_finished_SyncJobs)
+            return _con.Query<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 15)
                 .SingleOrDefault();
         }
 
         public async Task<int> ArchiveFinishedSyncJobsAsync()
         {
-            return (await _con.QueryAsync<int>(Resources.Archive_finished_SyncJobs))
+            return (await _con.QueryAsync<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 15))
                 .SingleOrDefault();
         }
 
