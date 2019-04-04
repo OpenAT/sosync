@@ -10,6 +10,7 @@ namespace WebSosync.Data
         public const string InProgress = "inprogress";
         public const string Done = "done";
         public const string Error = "error";
+        public const string ErrorRetry = "error_retry";
         public const string Skipped = "skipped";
     }
 }

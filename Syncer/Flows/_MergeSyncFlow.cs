@@ -10,6 +10,7 @@ using WebSosync.Data;
 using Syncer.Exceptions;
 using Microsoft.Extensions.Logging;
 using WebSosync.Common;
+using Syncer.Helpers;
 
 namespace Syncer.Flows
 {
@@ -33,7 +34,7 @@ namespace Syncer.Flows
         /// <param name="restartReason">Reference parameter to indicate the reason why the restart was requested.</param>
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            CheckRunCount(MaxRunCount);
+            CheckRunCount(JobHelper.MaxJobRunCount);
 
             if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
                 // If source is studio, set merge IDs via online

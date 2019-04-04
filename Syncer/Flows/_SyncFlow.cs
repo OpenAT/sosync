@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Exceptions;
+using Syncer.Helpers;
 using Syncer.Models;
 using Syncer.Services;
 using System;
@@ -30,7 +31,6 @@ namespace Syncer.Flows
     {
         #region Constants
         public const string MssqlTargetSuccessMessage = "success";
-        public const int MaxRunCount = 10;
         #endregion
 
         #region Members
@@ -992,12 +992,7 @@ namespace Syncer.Flows
 
             using (var db = GetDb())
             {
-                Job.Job_State = SosyncState.Error;
-                Job.Job_End = DateTime.UtcNow;
-                Job.Job_Error_Code = errorCode;
-                Job.Job_Error_Text = (string.IsNullOrEmpty(Job.Job_Error_Text) ? "" : Job.Job_Error_Text + "\n\n") + errorText;
-                Job.Write_Date = DateTime.UtcNow;
-
+                JobHelper.SetJobError(Job, errorCode, errorText);
                 UpdateJob(nameof(UpdateJobError), db, Job);
             }
         }

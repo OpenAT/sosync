@@ -17,6 +17,7 @@ using DaDi.Odoo.Models;
 using dadi_data.Interfaces;
 using System.Linq;
 using DaDi.Odoo;
+using Syncer.Helpers;
 
 namespace Syncer.Flows
 {
@@ -47,7 +48,7 @@ namespace Syncer.Flows
         /// <param name="restartReason">Reference parameter to indicate the reason why the restart was requested.</param>
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            CheckRunCount(MaxRunCount);
+            CheckRunCount(JobHelper.MaxJobRunCount);
 
             DateTime? initialWriteDate = null;
             Stopwatch consistencyWatch = new Stopwatch();

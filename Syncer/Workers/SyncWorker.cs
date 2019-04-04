@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
 using Syncer.Flows;
+using Syncer.Helpers;
 using Syncer.Services;
 using System;
 using System.Collections.Concurrent;
@@ -414,12 +415,7 @@ namespace Syncer.Workers
 
         private void UpdateJobError(DataService db, SyncJob job, string message)
         {
-            job.Job_State = SosyncState.Error;
-            // Set the job_log if it's empty, otherwise concatenate it
-            job.Job_Error_Text = string.IsNullOrEmpty(job.Job_Error_Text) ? message : job.Job_Error_Text + "\n\n" + message;
-            job.Write_Date = DateTime.UtcNow;
-            job.Job_End = DateTime.UtcNow;
-
+            JobHelper.SetJobError(job, SosyncError.Unknown, message);
             db.UpdateJob(job);
         }
         #endregion

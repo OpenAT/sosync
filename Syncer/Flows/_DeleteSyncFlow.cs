@@ -3,6 +3,7 @@ using dadi_data.Interfaces;
 using dadi_data.Models;
 using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
+using Syncer.Helpers;
 using Syncer.Models;
 using Syncer.Services;
 using System;
@@ -25,7 +26,7 @@ namespace Syncer.Flows
 
         protected override void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
-            CheckRunCount(MaxRunCount);
+            CheckRunCount(JobHelper.MaxJobRunCount);
 
             if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
                 SetDeleteInfos(OnlineModelName, Job);

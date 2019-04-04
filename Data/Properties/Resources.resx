@@ -126,7 +126,7 @@
 				where
 					parent_job_id is null
 					and (job_state in ('done', 'skipped') or (job_state = 'error' and job_run_count &gt;= 10))
-					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive))
+					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
 				order by id asc
 				limit 100
 			) first_parent
@@ -275,7 +275,7 @@ select count(*) affected_rows from updated_rows;</value>
 	select * from (
 		select *
 		from sosync_job
-		where parent_job_id is null and job_state in ('new', 'inprogress', 'error_retry')
+		where parent_job_id is null and job_state in ('new', 'inprogress')
         order by job_state, job_priority desc, job_date desc
         limit %LIMIT%
 	) first_parent

@@ -109,7 +109,7 @@ namespace WebSosync.Data
 
         public void ReopenErrorJobs()
         {
-            _con.Execute("update sosync_job set job_state = 'error_retry' where job_date > now() - interval '100 days' and parent_job_id is null and job_state = 'error' and job_run_count < 10;",
+            _con.Execute("update sosync_job set job_state = 'new' where job_state = 'error_retry';",
                 commandTimeout: 60 * 2);
         }
 

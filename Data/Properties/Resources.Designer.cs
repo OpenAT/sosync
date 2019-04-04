@@ -69,7 +69,7 @@ namespace WebSosync.Data.Properties {
         ///				where
         ///					parent_job_id is null
         ///					and (job_state in (&apos;done&apos;, &apos;skipped&apos;) or (job_state = &apos;error&apos; and job_run_count &gt;= 10))
-        ///					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive))
+        ///					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
         ///				order by id asc
         ///				limit 100
         ///			) first_parent
@@ -77,8 +77,7 @@ namespace WebSosync.Data.Properties {
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, child.parent_job_id
-        ///			from sosy [rest of string was truncated]&quot;;.
+        ///			select child.id, child.parent_job [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs {
             get {
@@ -117,7 +116,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sosync_job
-        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;, &apos;error_retry&apos;)
+        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
         ///        order by job_state, job_priority desc, job_date desc
         ///        limit %LIMIT%
         ///	) first_parent
