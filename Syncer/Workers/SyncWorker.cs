@@ -180,9 +180,14 @@ namespace Syncer.Workers
                 archiveWatch.Stop();
 
                 if (ex.HResult == -2147467259)
+                {
                     _log.LogWarning($"Timeout while archiving. Elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+                    RaiseRequireRestart($"Archiving timed out after {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}. Requesting restart to try again.");
+                }
                 else
+                {
                     _log.LogError($"Failed to archive: {ex.ToString()} elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+                }
             }
         }
 
