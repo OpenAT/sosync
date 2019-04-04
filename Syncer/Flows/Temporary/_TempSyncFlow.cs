@@ -36,7 +36,7 @@ namespace Syncer.Flows.Temporary
         {
             CheckRunCount(JobHelper.MaxJobRunCount);
 
-            if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
+            if (Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value)
                 // If source is studio, set merge IDs via online
                 SetProcessInfos(OnlineModelName, Job);
             else
@@ -72,10 +72,10 @@ namespace Syncer.Flows.Temporary
         {
             using (var db = GetDb())
             {
-                if (job.Job_Source_System == SosyncSystem.FSOnline)
+                if (job.Job_Source_System == SosyncSystem.FSOnline.Value)
                 {
-                    job.Sync_Source_System = SosyncSystem.FSOnline;
-                    job.Sync_Target_System = SosyncSystem.FundraisingStudio;
+                    job.Sync_Source_System = SosyncSystem.FSOnline.Value;
+                    job.Sync_Target_System = SosyncSystem.FundraisingStudio.Value;
 
                     job.Sync_Source_Model = OnlineModelName;
                     job.Sync_Target_Model = StudioModelName;
@@ -90,8 +90,8 @@ namespace Syncer.Flows.Temporary
                 }
                 else
                 {
-                    job.Sync_Source_System = SosyncSystem.FundraisingStudio;
-                    job.Sync_Target_System = SosyncSystem.FSOnline;
+                    job.Sync_Source_System = SosyncSystem.FundraisingStudio.Value;
+                    job.Sync_Target_System = SosyncSystem.FSOnline.Value;
 
                     job.Sync_Source_Model = StudioModelName;
                     job.Sync_Target_Model = OnlineModelName;

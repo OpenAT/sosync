@@ -359,7 +359,7 @@ namespace Syncer.Flows
             var s = Stopwatch.StartNew();
             LogMs(0, $"\n{nameof(SetupChildJobRequests)} start", Job.ID, 0);
 
-            if (Job.Sync_Source_System == SosyncSystem.FSOnline)
+            if (Job.Sync_Source_System == SosyncSystem.FSOnline.Value)
                 SetupOnlineToStudioChildJobs(Job.Sync_Source_Record_ID.Value);
             else
                 SetupStudioToOnlineChildJobs(Job.Sync_Source_Record_ID.Value);
@@ -443,17 +443,17 @@ namespace Syncer.Flows
                             childJob.Sync_Source_Record_ID = request.JobSourceRecordID;
 
                             childJob.Sync_Target_System =
-                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
-                                ? SosyncSystem.FSOnline
-                                : SosyncSystem.FundraisingStudio;
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value
+                                ? SosyncSystem.FSOnline.Value
+                                : SosyncSystem.FundraisingStudio.Value;
 
                             childJob.Sync_Target_Model =
-                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value
                                 ? OnlineModelName
                                 : StudioModelName;
 
                             childJob.Sync_Target_Record_ID =
-                                Job.Job_Source_System == SosyncSystem.FundraisingStudio
+                                Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value
                                 ? GetOnlineIDFromOdooViaStudioID(OnlineModelName, request.JobSourceRecordID)
                                 : GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
 
@@ -567,7 +567,7 @@ namespace Syncer.Flows
 
                     Log.LogInformation(description);
 
-                    if (Job.Sync_Source_System == SosyncSystem.FSOnline)
+                    if (Job.Sync_Source_System == SosyncSystem.FSOnline.Value)
                         TransformToStudio(Job.Sync_Source_Record_ID.Value, action);
                     else
                         TransformToOnline(Job.Sync_Source_Record_ID.Value, action);
@@ -603,7 +603,7 @@ namespace Syncer.Flows
         /// <param name="system">The job source system, use <see cref="SosyncSystem"/> constants.</param>
         /// <param name="model">The requested source model.</param>
         /// <param name="id">The requested source ID for the model.</param>
-        protected void RequestChildJob(string system, string model, int id)
+        protected void RequestChildJob(SosyncSystem system, string model, int id)
         {
             _requiredChildJobs.Add(new ChildJobRequest(system, model, id, false));
         }
@@ -615,7 +615,7 @@ namespace Syncer.Flows
         /// <param name="system">The job source system, use <see cref="SosyncSystem"/> constants.</param>
         /// <param name="model">The requested source model.</param>
         /// <param name="id">The requested source ID for the model.</param>
-        protected void RequestPostTransformChildJob(string system, string model, int id, bool forceDirection)
+        protected void RequestPostTransformChildJob(SosyncSystem system, string model, int id, bool forceDirection)
         {
             _requiredPostChildJobs.Add(new ChildJobRequest(system, model, id, forceDirection));
         }
@@ -730,7 +730,7 @@ namespace Syncer.Flows
 
             ModelInfo currentInfo = null;
 
-            if (job.Sync_Source_System == SosyncSystem.FSOnline)
+            if (job.Sync_Source_System == SosyncSystem.FSOnline.Value)
                 currentInfo = GetOnlineInfo(job.Sync_Source_Record_ID.Value);
             else
                 currentInfo = GetStudioInfo(job.Sync_Source_Record_ID.Value);
@@ -810,17 +810,17 @@ namespace Syncer.Flows
         /// <param name="srcModel">The sync source model.</param>
         /// <param name="srcId">The sync source ID.</param>
         /// <param name="log">Information to be logged.</param>
-        protected void UpdateJobSourceAndTarget(SyncJob job, string srcSystem, string srcModel, int? srcId, string targetSystem, string targetModel, int? targetId, string log)
+        protected void UpdateJobSourceAndTarget(SyncJob job, SosyncSystem srcSystem, string srcModel, int? srcId, SosyncSystem targetSystem, string targetModel, int? targetId, string log)
         {
             Log.LogDebug($"Updating job {job.ID}: check source");
 
             using (var db = GetDb())
             {
-                job.Sync_Source_System = srcSystem;
+                job.Sync_Source_System = srcSystem?.Value;
                 job.Sync_Source_Model = srcModel;
                 job.Sync_Source_Record_ID = srcId;
 
-                job.Sync_Target_System = targetSystem;
+                job.Sync_Target_System = targetSystem?.Value;
                 job.Sync_Target_Model = targetModel;
                 job.Sync_Target_Record_ID = targetId;
 

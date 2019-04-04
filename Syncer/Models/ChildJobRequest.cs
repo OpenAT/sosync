@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WebSosync.Data;
 
 namespace Syncer.Models
 {
@@ -14,9 +15,9 @@ namespace Syncer.Models
         #endregion
 
         #region Constructors
-        public ChildJobRequest(string system, string model, int recordID, bool forceDirection)
+        public ChildJobRequest(SosyncSystem system, string model, int recordID, bool forceDirection)
         {
-            JobSourceSystem = system;
+            JobSourceSystem = system.Value;
             JobSourceModel = model;
             JobSourceRecordID = recordID;
             ForceDirection = forceDirection;

@@ -28,7 +28,7 @@ namespace Syncer.Flows
         {
             CheckRunCount(JobHelper.MaxJobRunCount);
 
-            if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
+            if (Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value)
                 SetDeleteInfos(OnlineModelName, Job);
             else
                 SetDeleteInfos(StudioModelName, Job);
@@ -62,10 +62,10 @@ namespace Syncer.Flows
         {
             using (var db = GetDb())
             {
-                if (job.Job_Source_System == SosyncSystem.FSOnline)
+                if (job.Job_Source_System == SosyncSystem.FSOnline.Value)
                 {
-                    job.Sync_Source_System = SosyncSystem.FSOnline;
-                    job.Sync_Target_System = SosyncSystem.FundraisingStudio;
+                    job.Sync_Source_System = SosyncSystem.FSOnline.Value;
+                    job.Sync_Target_System = SosyncSystem.FundraisingStudio.Value;
 
                     job.Sync_Source_Model = OnlineModelName;
                     job.Sync_Target_Model = StudioModelName;
@@ -80,8 +80,8 @@ namespace Syncer.Flows
                 }
                 else
                 {
-                    job.Sync_Source_System = SosyncSystem.FundraisingStudio;
-                    job.Sync_Target_System = SosyncSystem.FSOnline;
+                    job.Sync_Source_System = SosyncSystem.FundraisingStudio.Value;
+                    job.Sync_Target_System = SosyncSystem.FSOnline.Value;
 
                     job.Sync_Source_Model = StudioModelName;
                     job.Sync_Target_Model = OnlineModelName;

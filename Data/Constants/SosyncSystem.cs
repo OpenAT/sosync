@@ -4,9 +4,16 @@ using System.Text;
 
 namespace WebSosync.Data
 {
-    public static class SosyncSystem
+    public class SosyncSystem
     {
-        public const string FSOnline = "fso";
-        public const string FundraisingStudio = "fs";
+        public string Value { get; private set; }
+
+        public static SosyncSystem FSOnline { get { return new SosyncSystem("fso"); } }
+        public static SosyncSystem FundraisingStudio { get { return new SosyncSystem("fs"); } }
+
+        private SosyncSystem(string value)
+        {
+            Value = value;
+        }
     }
 }

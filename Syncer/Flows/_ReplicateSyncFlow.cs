@@ -73,7 +73,7 @@ namespace Syncer.Flows
                 // If automatic sync source detection is disabled,
                 // just fetch the initial write dates depending on
                 // the job values
-                if (Job.Job_Source_System == SosyncSystem.FundraisingStudio)
+                if (Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value)
                 {
                     var info = GetStudioInfo(Job.Job_Source_Record_ID);
                     initialWriteDate = info.SosyncWriteDate ?? info.WriteDate;
@@ -384,7 +384,7 @@ namespace Syncer.Flows
         {
             // First off, get the model info from the system that
             // initiated the sync job
-            if (job.Job_Source_System == SosyncSystem.FSOnline)
+            if (job.Job_Source_System == SosyncSystem.FSOnline.Value)
                 GetModelInfosViaOnline(job, out onlineInfo, out studioInfo);
             else
                 GetModelInfosViaStudio(job, out studioInfo, out onlineInfo);
@@ -510,7 +510,7 @@ namespace Syncer.Flows
 
                 // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
                 UpdateJobSourceAndTarget(
-                    job, "", "", null, "", "", null,
+                    job, null, "", null, null, "", null,
                     $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
             }
             else if (diff.TotalMilliseconds < 0)
@@ -550,7 +550,7 @@ namespace Syncer.Flows
             var toleranceMS = 60000; // 1 Minute tolerance
             usedModelInfo = studioInfo;
 
-            if (job.Job_Source_System == SosyncSystem.FSOnline)
+            if (job.Job_Source_System == SosyncSystem.FSOnline.Value)
                 usedModelInfo = onlineInfo;
 
             var sosyncDate = (usedModelInfo.SosyncWriteDate ?? usedModelInfo.WriteDate.Value);
