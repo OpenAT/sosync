@@ -8,8 +8,14 @@ namespace WebSosync.Data
     {
         public string Value { get; private set; }
 
-        public static SosyncSystem FSOnline { get { return new SosyncSystem("fso"); } }
-        public static SosyncSystem FundraisingStudio { get { return new SosyncSystem("fs"); } }
+        public static SosyncSystem FSOnline { get; private set; }
+        public static SosyncSystem FundraisingStudio { get; private set; }
+
+        static SosyncSystem()
+        {
+            FSOnline = new SosyncSystem("fso");
+            FundraisingStudio = new SosyncSystem("fs");
+        }
 
         private SosyncSystem(string value)
         {
