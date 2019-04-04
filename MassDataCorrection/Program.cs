@@ -35,12 +35,14 @@ namespace MassDataCorrection
 
                 //processor.Process(InitialSyncPayments, new[] { "demo" });
                 //processor.Process(CheckBranch, null);
-                processor.Process(CheckDonationReports, new[] { "bsvw" });
+                //processor.Process(CheckDonationReports, new[] { "bsvw" });
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckEmails, new[] { "kino" });
                 //processor.Process(CheckOpenSyncJobs, null);
-                //PrintDictionary(_checkEmail);
+                processor.Process(UpdateErrorJobs, new[] { "demo" });
+                //processor.Process(UpdateErrorJobs, null);
+                PrintDictionary(_errorJobs);
 
                 //SaveStat(_missingEmails, "emails_missing");
                 //SaveStat(_emailsNotSync, "emails_mismatch");
@@ -302,7 +304,8 @@ namespace MassDataCorrection
                         if (update)
                         {
                             msCon.Execute("UPDATE dbo.PersonBPK SET PLZ = @PLZ, FehlerPLZ = @FehlerPLZ, RequestLog = @RequestLog, LastRequest = @LastRequest, RequestUrl = @RequestUrl, ErrorRequestUrl = @ErrorRequestUrl, fso_state = @fso_state, noSyncJobSwitch = 1 WHERE PersonBPKID = @PersonBPKID;",
-                                new {
+                                new
+                                {
                                     PersonBPKID = msPersonBPK.PersonBPKID,
                                     PLZ = msPersonBPK.PLZ,
                                     FehlerPLZ = msPersonBPK.FehlerPLZ,
@@ -595,7 +598,10 @@ namespace MassDataCorrection
                     {
                         mdb.Execute(
                             Resources.InsertSyncJobMSSQL,
-                            new { ID = id, model = "dbo.AktionSpendenmeldungBPK",
+                            new
+                            {
+                                ID = id,
+                                model = "dbo.AktionSpendenmeldungBPK",
                                 sosyncWriteDate = DateTime.UtcNow,
                                 system = "fs",
                                 jobSourceFields = "{ \"info\": \"manual\" }"
@@ -992,10 +998,10 @@ namespace MassDataCorrection
         }
 
         private static void CheckSosync2Donations(
-            InstanceInfo info, 
-            Action<float> reportProgress, 
-            out Dictionary<int, DonationReport> fsoDonations, 
-            out Dictionary<int, DonationReport>  fsDonations)
+            InstanceInfo info,
+            Action<float> reportProgress,
+            out Dictionary<int, DonationReport> fsoDonations,
+            out Dictionary<int, DonationReport> fsDonations)
         {
             using (var onlineCon = info.CreateOpenNpgsqlConnection())
             {
@@ -1120,5 +1126,35 @@ namespace MassDataCorrection
             }
         }
         #endregion
+
+        private static Dictionary<string, int> _errorJobs = new Dictionary<string, int>();
+        private static void UpdateErrorJobs(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new string[] {
+                "dev1"
+                ,"dev2"
+                ,"deve"
+                ,"veme"
+                ,"wuni"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+
+            using (var db = info.CreateOpenSyncerNpgsqlConnection())
+            {
+                var query = "update sosync_job set job_state = 'error_retry' where job_date > now() - interval '10 days' and parent_job_id is null and job_state = 'error' and job_run_count < 10;";
+                var count = db.Query<int>(query, commandTimeout: 120).SingleOrDefault();
+                _errorJobs.Add(info.Instance, count);
+                Console.WriteLine($"{info.Instance}: {count}");
+            }
+        }
     }
 }
