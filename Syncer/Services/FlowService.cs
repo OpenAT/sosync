@@ -133,7 +133,7 @@ namespace Syncer.Services
                                 return type;
                         }
                     }
-                    else if (jobType == SosyncJobSourceType.MergeInto)
+                    else if (jobType == SosyncJobSourceType.MergeInto.Value)
                     {
                         if (typeof(MergeSyncFlow).IsAssignableFrom(type))
                         {
@@ -142,7 +142,7 @@ namespace Syncer.Services
                                 return type;
                         }
                     }
-                    else if (jobType == SosyncJobSourceType.Delete)
+                    else if (jobType == SosyncJobSourceType.Delete.Value)
                     {
                         if (typeof(DeleteSyncFlow).IsAssignableFrom(type))
                         {
@@ -151,7 +151,7 @@ namespace Syncer.Services
                                 return type;
                         }
                     }
-                    else if (jobType == SosyncJobSourceType.Temp)
+                    else if (jobType == SosyncJobSourceType.Temp.Value)
                     {
                         if (typeof(TempSyncFlow).IsAssignableFrom(type))
                         {

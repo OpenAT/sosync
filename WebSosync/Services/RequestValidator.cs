@@ -64,7 +64,7 @@ namespace WebSosync.Services
 
                 CheckJobSourceValue(type, dataErrors);
 
-                if (type == SosyncJobSourceType.MergeInto)
+                if (type == SosyncJobSourceType.MergeInto.Value)
                 {
                     if (data.ContainsKey("job_source_merge_into_record_id"))
                         CheckInteger("job_source_merge_into_record_id", data, dataErrors, 1, null);
@@ -94,9 +94,9 @@ namespace WebSosync.Services
         private static void CheckJobSourceValue(string value, Dictionary<string, string> errorList)
         {
             if (!string.IsNullOrEmpty(value)
-                && value != SosyncJobSourceType.MergeInto
-                && value != SosyncJobSourceType.Delete
-                && value != SosyncJobSourceType.Temp
+                && value != SosyncJobSourceType.MergeInto.Value
+                && value != SosyncJobSourceType.Delete.Value
+                && value != SosyncJobSourceType.Temp.Value
                 )
             {
                 errorList.Add("job_source_type", $"job_source_type must be NULL, '', 'merge_into', 'temp' or 'delete'");

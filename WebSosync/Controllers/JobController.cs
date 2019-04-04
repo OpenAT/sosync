@@ -165,7 +165,7 @@ namespace WebSosync.Controllers
             {
                 job.Job_Source_Type = (string)data["job_source_type"];
 
-                if (job.Job_Source_Type == SosyncJobSourceType.MergeInto)
+                if (job.Job_Source_Type == SosyncJobSourceType.MergeInto.Value)
                 {
                     job.Job_Source_Merge_Into_Record_ID = Convert.ToInt32(data["job_source_merge_into_record_id"]);
 
