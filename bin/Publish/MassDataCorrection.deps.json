@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "face9f6eace22df12d678598ae664f3c0d997655"
+    "signature": "8764cd7cbce2049063a3cdfc740fdaa3896178a6"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,8 +9,8 @@
       "MassDataCorrection/1.0.0": {
         "dependencies": {
           "DaDi.Odoo": "1.4.0",
-          "Dapper": "1.50.5",
-          "Npgsql": "4.0.3",
+          "Dapper": "1.60.6",
+          "Npgsql": "4.0.5",
           "System.Data.SqlClient": "4.4.3",
           "WebSosync.Data": "1.0.0",
           "dadi-data": "1.6.4"
@@ -21,7 +21,7 @@
       },
       "dadi-data/1.6.4": {
         "dependencies": {
-          "Dapper": "1.50.5",
+          "Dapper": "1.60.6",
           "Microsoft.EntityFrameworkCore": "1.1.2",
           "System.Data.Common": "4.3.0",
           "System.Data.SqlClient": "4.4.3",
@@ -48,7 +48,7 @@
           "lib/netstandard2.0/DaDi.XmlRpc.dll": {}
         }
       },
-      "Dapper/1.50.5": {
+      "Dapper/1.60.6": {
         "dependencies": {
           "System.Data.SqlClient": "4.4.3",
           "System.Reflection.Emit.Lightweight": "4.3.0",
@@ -134,7 +134,7 @@
       },
       "Microsoft.Extensions.Primitives/1.1.0": {
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "4.5.0"
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
         },
         "runtime": {
           "lib/netstandard1.0/Microsoft.Extensions.Primitives.dll": {}
@@ -157,19 +157,20 @@
           }
         }
       },
-      "Npgsql/4.0.3": {
+      "Npgsql/4.0.5": {
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "4.5.0",
-          "System.Threading.Tasks.Extensions": "4.5.0",
+          "System.Memory": "4.5.2",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2",
+          "System.Threading.Tasks.Extensions": "4.5.2",
           "System.ValueTuple": "4.5.0"
         },
         "runtime": {
           "lib/netstandard2.0/Npgsql.dll": {}
         }
       },
-      "PostgreSQLCopyHelper/2.4.0": {
+      "PostgreSQLCopyHelper/2.4.1": {
         "dependencies": {
-          "Npgsql": "4.0.3"
+          "Npgsql": "4.0.5"
         },
         "runtime": {
           "lib/netstandard2.0/PostgreSQLCopyHelper.dll": {}
@@ -438,6 +439,14 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Memory/4.5.2": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Memory.dll": {}
+        }
+      },
       "System.ObjectModel/4.3.0": {
         "dependencies": {
           "System.Collections": "4.3.0",
@@ -506,7 +515,7 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         }
       },
-      "System.Runtime.CompilerServices.Unsafe/4.5.0": {
+      "System.Runtime.CompilerServices.Unsafe/4.5.2": {
         "runtime": {
           "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
         }
@@ -599,9 +608,9 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Threading.Tasks.Extensions/4.5.0": {
+      "System.Threading.Tasks.Extensions/4.5.2": {
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "4.5.0"
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
         },
         "runtime": {
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {}
@@ -610,9 +619,9 @@
       "System.ValueTuple/4.5.0": {},
       "WebSosync.Data/1.0.0": {
         "dependencies": {
-          "Dapper": "1.50.5",
-          "Npgsql": "4.0.3",
-          "PostgreSQLCopyHelper": "2.4.0",
+          "Dapper": "1.60.6",
+          "Npgsql": "4.0.5",
+          "PostgreSQLCopyHelper": "2.4.1",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
           "dadi-data": "1.6.4"
@@ -650,12 +659,12 @@
       "path": "dadi.xmlrpc/1.0.3",
       "hashPath": "dadi.xmlrpc.1.0.3.nupkg.sha512"
     },
-    "Dapper/1.50.5": {
+    "Dapper/1.60.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-AzAdZ9fEzUtav3Sbc5CMgz5O2oYkc5g1r+g1h/Vn+wqcInII+xtNEfyZryeW90Wq72bxjEBJhe18j+2SrGrc5A==",
-      "path": "dapper/1.50.5",
-      "hashPath": "dapper.1.50.5.nupkg.sha512"
+      "sha512": "sha512-ZqK3znlm8dapfO8M0vCgV5+wJrl5Uv00WYmj27wQ6zufSLcklVNJ2fdVMUj59o89p+lmRD6QivTRe0Gdfm6UAQ==",
+      "path": "dapper/1.60.6",
+      "hashPath": "dapper.1.60.6.nupkg.sha512"
     },
     "Microsoft.CSharp/4.4.1": {
       "type": "package",
@@ -741,19 +750,19 @@
       "path": "microsoft.win32.registry/4.4.0",
       "hashPath": "microsoft.win32.registry.4.4.0.nupkg.sha512"
     },
-    "Npgsql/4.0.3": {
+    "Npgsql/4.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-kI2cGnKNexseCVn4a8EWA0gz2pXJOrkV9snlSb4How77a5uOu5oILv1FgBxteI2R0FgKfjXnnJnqmEuyAMNG3g==",
-      "path": "npgsql/4.0.3",
-      "hashPath": "npgsql.4.0.3.nupkg.sha512"
+      "sha512": "sha512-gKEhp3ICU2TY3yLnxda9QJf3g6aDHZ/PkRFoPXbjFjuCX18jbY58EYP7VGpXSzfzsQAGSOEB9vjdgEfnnvnRyQ==",
+      "path": "npgsql/4.0.5",
+      "hashPath": "npgsql.4.0.5.nupkg.sha512"
     },
-    "PostgreSQLCopyHelper/2.4.0": {
+    "PostgreSQLCopyHelper/2.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Om4c4qhNxQXuPRmS9Jc0a96dvhJSUuWQGJRY3fE6fgcvJKqy8K29isnEygbzk/xc9m/Lynra1AD16StiboMwjQ==",
-      "path": "postgresqlcopyhelper/2.4.0",
-      "hashPath": "postgresqlcopyhelper.2.4.0.nupkg.sha512"
+      "sha512": "sha512-1d1BYqvfmp3r09EBFQMi+35uxvE4XdSp/8IuUa0itY7rcdg8HKtkD3vHbtJ+oCtCmuDK7OadDSMT4X8W/IHZOw==",
+      "path": "postgresqlcopyhelper/2.4.1",
+      "hashPath": "postgresqlcopyhelper.2.4.1.nupkg.sha512"
     },
     "Remotion.Linq/2.1.1": {
       "type": "package",
@@ -916,6 +925,13 @@
       "path": "system.linq.queryable/4.3.0",
       "hashPath": "system.linq.queryable.4.3.0.nupkg.sha512"
     },
+    "System.Memory/4.5.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ohf9h6em5CjPaAzupGtW/TWMzX6aVfIGPh7bq5KQmfvYJr+DqvOa0cRS9ggFKGIuvKTModCQEacGC/CwE8j7cg==",
+      "path": "system.memory/4.5.2",
+      "hashPath": "system.memory.4.5.2.nupkg.sha512"
+    },
     "System.ObjectModel/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -986,12 +1002,12 @@
       "path": "system.runtime/4.3.0",
       "hashPath": "system.runtime.4.3.0.nupkg.sha512"
     },
-    "System.Runtime.CompilerServices.Unsafe/4.5.0": {
+    "System.Runtime.CompilerServices.Unsafe/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-6zBxkHYemB0kQiHP3vGXGRXejZVoNVuMn2paUuqKKi5Wyjkxfkp+D0rd0c3VrGwotidRINt6KpOi2smL4VkJKw==",
-      "path": "system.runtime.compilerservices.unsafe/4.5.0",
-      "hashPath": "system.runtime.compilerservices.unsafe.4.5.0.nupkg.sha512"
+      "sha512": "sha512-hMkdWxksypQlFXB7JamQegDscxEAQO4FHd/lw/zlSZU9dZgAij65xjCrXer183wvoNAzJic5zzjj2oc9/dloWg==",
+      "path": "system.runtime.compilerservices.unsafe/4.5.2",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
     },
     "System.Runtime.Extensions/4.3.0": {
       "type": "package",
@@ -1070,12 +1086,12 @@
       "path": "system.threading.tasks/4.3.0",
       "hashPath": "system.threading.tasks.4.3.0.nupkg.sha512"
     },
-    "System.Threading.Tasks.Extensions/4.5.0": {
+    "System.Threading.Tasks.Extensions/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xPuXi6WJrAoJIf/7KPtmOIiMkUHQkldNeR/IiQRwkRYezgutxY1K2gWkwenV/ON07bUoFr4Lgh+/0SmEugM+Tg==",
-      "path": "system.threading.tasks.extensions/4.5.0",
-      "hashPath": "system.threading.tasks.extensions.4.5.0.nupkg.sha512"
+      "sha512": "sha512-5HCu8V3QB+gouMZmGrA666weZ0UQRt+OTD16rSE3Hyhu4Qhlvxkf4nTPI0GLy52s0rxgi7C8t2ayFAzw7UK1og==",
+      "path": "system.threading.tasks.extensions/4.5.2",
+      "hashPath": "system.threading.tasks.extensions.4.5.2.nupkg.sha512"
     },
     "System.ValueTuple/4.5.0": {
       "type": "package",
