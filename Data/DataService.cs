@@ -100,7 +100,7 @@ namespace WebSosync.Data
             };
 
             var updated_rows = _con.ExecuteScalar<int>(
-                Resources.ResourceManager.GetString(ResourceNames.ClosePreviousJobsUpdateScript),
+                Resources.ClosePreviousJobs_Update_SCRIPT,
                 parameters
                 );
 
@@ -132,7 +132,7 @@ namespace WebSosync.Data
         /// <returns></returns>
         public IEnumerable<SyncJob> GetFirstOpenJobHierarchy(int limit)
         {
-            var query = Resources.ResourceManager.GetString(ResourceNames.GetFirstOpenSynJobAndChildren)
+            var query = Resources.GetFirstOpenSynJobAndChildren_SELECT
                 .Replace("%LIMIT%", limit.ToString("0"));
 
             var result = _con.Query<SyncJob>(
