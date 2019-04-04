@@ -4,14 +4,32 @@ using System.Text;
 
 namespace WebSosync.Data
 {
-    public static class SosyncError
+    public class SosyncError
     {
-        public const string Timeout = "timeout";
-        public const string RunCounter = "run_counter";
-        public const string SyncSource = "sync_source";
-        public const string ChildJob = "child_job";
-        public const string Transformation = "transformation";
-        public const string Cleanup = "cleanup";
-        public const string Unknown = "unknown";
+        public string Value { get; private set; }
+
+        public static SosyncError Timeout { get; private set; }
+        public static SosyncError RunCounter { get; private set; }
+        public static SosyncError SyncSource { get; private set; }
+        public static SosyncError ChildJob { get; private set; }
+        public static SosyncError Transformation { get; private set; }
+        public static SosyncError Cleanup { get; private set; }
+        public static SosyncError Unknown { get; private set; }
+
+        static SosyncError()
+        {
+            Timeout = new SosyncError("timeout");
+            RunCounter = new SosyncError("run_counter");
+            SyncSource = new SosyncError("sync_source");
+            ChildJob = new SosyncError("child_job");
+            Transformation = new SosyncError("transformation");
+            Cleanup = new SosyncError("cleanup");
+            Unknown = new SosyncError("unknown");
+        }
+
+        private SosyncError(string value)
+        {
+            Value = value;
+        }
     }
 }

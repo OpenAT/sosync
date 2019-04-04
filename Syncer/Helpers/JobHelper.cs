@@ -10,11 +10,11 @@ namespace Syncer.Helpers
     {
         public const int MaxJobRunCount = 10;
 
-        public static void SetJobError(SyncJob job, string errorCode, string errorText)
+        public static void SetJobError(SyncJob job, SosyncError error, string errorText)
         {
             job.Job_State = (job.Job_Run_Count < MaxJobRunCount ? SosyncState.ErrorRetry.Value : SosyncState.Error.Value);
             job.Job_End = DateTime.UtcNow;
-            job.Job_Error_Code = errorCode;
+            job.Job_Error_Code = error.Value;
             job.Job_Error_Text = (string.IsNullOrEmpty(job.Job_Error_Text) ? "" : job.Job_Error_Text + "\n\n") + errorText;
             job.Write_Date = DateTime.UtcNow;
         }

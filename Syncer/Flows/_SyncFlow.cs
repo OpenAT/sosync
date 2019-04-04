@@ -984,15 +984,15 @@ namespace Syncer.Flows
         /// <summary>
         /// Updates the job, indicating an an error occured while processing.
         /// </summary>
-        /// <param name="errorCode">Use one of the values from <see cref="SosyncError"/>.</param>
+        /// <param name="error">Use one of the values from <see cref="SosyncError"/>.</param>
         /// <param name="errorText">The custom error text.</param>
-        protected void UpdateJobError(string errorCode, string errorText)
+        protected void UpdateJobError(SosyncError error, string errorText)
         {
             Log.LogDebug($"Updating job {Job.ID}: job error");
 
             using (var db = GetDb())
             {
-                JobHelper.SetJobError(Job, errorCode, errorText);
+                JobHelper.SetJobError(Job, error, errorText);
                 UpdateJob(nameof(UpdateJobError), db, Job);
             }
         }
