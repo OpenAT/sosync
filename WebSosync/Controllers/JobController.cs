@@ -196,7 +196,7 @@ namespace WebSosync.Controllers
 
             job.Job_Source_Fields = ParseJobSourceFields(services, job, data);
 
-            job.Job_State = SosyncState.New;
+            job.Job_State = SosyncState.New.Value;
             job.Job_Fetched = DateTime.UtcNow;
 
             job.Job_Priority = ParseJobPriority(services, job, data);

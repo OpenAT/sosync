@@ -187,7 +187,7 @@ namespace Syncer.Flows
             {
                 lock (ThreadService.JobLocks)
                 {
-                    if (Job.Job_State == SosyncState.Done)
+                    if (Job.Job_State == SosyncState.Done.Value)
                     {
                         // Set the job_id for the hash, indicating success
                         ThreadService.JobLocks[hash] = Job.ID;

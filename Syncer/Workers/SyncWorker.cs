@@ -201,7 +201,7 @@ namespace Syncer.Workers
         private void CheckInProgress(IEnumerable<SyncJob> jobs)
         {
             var inProgressJobCount = jobs
-                .Where(j => j.Job_State == SosyncState.InProgress)
+                .Where(j => j.Job_State == SosyncState.InProgress.Value)
                 .Count();
 
             if (inProgressJobCount > 0)
@@ -396,7 +396,7 @@ namespace Syncer.Workers
         {
             _log.LogDebug($"Updating job {job.ID}: job start");
 
-            job.Job_State = SosyncState.InProgress;
+            job.Job_State = SosyncState.InProgress.Value;
             job.Job_Start = loadTimeUTC;
             job.Write_Date = DateTime.UtcNow;
 

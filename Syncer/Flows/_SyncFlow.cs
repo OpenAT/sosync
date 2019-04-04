@@ -427,7 +427,7 @@ namespace Syncer.Flows
                         var childJob = new SyncJob()
                         {
                             Parent_Job_ID = Job.ID,
-                            Job_State = SosyncState.New,
+                            Job_State = SosyncState.New.Value,
                             Job_Date = DateTime.UtcNow,
                             Job_Fetched = DateTime.UtcNow,
                             Job_Source_System = request.JobSourceSystem,
@@ -477,11 +477,11 @@ namespace Syncer.Flows
                             }
                         }
 
-                        if (entry.Job_State == SosyncState.Error)
+                        if (entry.Job_State == SosyncState.Error.Value)
                             throw new SyncerException($"{childDescription} ({entry.ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
 
                         // If the job is new or marked as "in progress", run it
-                        if (entry.Job_State == SosyncState.New || entry.Job_State == SosyncState.InProgress)
+                        if (entry.Job_State == SosyncState.New.Value || entry.Job_State == SosyncState.InProgress.Value)
                         {
                             Log.LogDebug($"Executing {childDescription} ({entry.ID})");
 
@@ -499,7 +499,7 @@ namespace Syncer.Flows
                                 flow.Start(flowService, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
                                 // Be sure to use logic & operator
-                                if (entry.Job_State == SosyncState.Done)
+                                if (entry.Job_State == SosyncState.Done.Value)
                                     allChildJobsFinished &= true;
                                 else
                                     allChildJobsFinished &= false;
@@ -918,7 +918,7 @@ namespace Syncer.Flows
             using (var db = GetDb())
             {
                 job.Job_Run_Count += 1;
-                job.Job_State = SosyncState.InProgress;
+                job.Job_State = SosyncState.InProgress.Value;
                 job.Job_Start = loadTimeUTC;
                 job.Write_Date = DateTime.UtcNow;
 
@@ -951,7 +951,7 @@ namespace Syncer.Flows
 
             using (var db = GetDb())
             {
-                Job.Job_State = SosyncState.Done;
+                Job.Job_State = SosyncState.Done.Value;
                 Job.Job_End = DateTime.UtcNow;
                 Job.Write_Date = DateTime.UtcNow;
 
@@ -971,7 +971,7 @@ namespace Syncer.Flows
 
             using (var db = GetDb())
             {
-                Job.Job_State = SosyncState.Done;
+                Job.Job_State = SosyncState.Done.Value;
                 Job.Job_Log += "\n" + msg;
                 Job.Job_End = DateTime.UtcNow;
                 Job.Write_Date = DateTime.UtcNow;
