@@ -137,7 +137,7 @@ namespace Syncer.Workers
 
                     ThreadService.JobLocks.Clear();
 
-                    ArchiveJobs(db);
+                    ArchiveJobs();
 
                     Dapper.SqlMapper.PurgeQueryCache();
                     GC.Collect();
@@ -159,16 +159,22 @@ namespace Syncer.Workers
                 // Before ending the worker, always do another archive run,
                 // unless a cancellation is pending
                 if (!CancellationToken.IsCancellationRequested)
-                    ArchiveJobs(db);
+                    ArchiveJobs();
             }
         }
 
-        private void ArchiveJobs(DataService db)
+        private void ArchiveJobs()
         {
             var archiveWatch = Stopwatch.StartNew();
             try
             {
-                var archivedCount = db.ArchiveFinishedSyncJobs();
+                var archivedCount = 0;
+
+                using (var db = GetDb())
+                {
+                    archivedCount = db.ArchiveFinishedSyncJobs();
+                }
+
                 archiveWatch.Stop();
                 _log.LogInformation($"Archived {archivedCount} jobs in {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
 
