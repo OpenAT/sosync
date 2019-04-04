@@ -15,11 +15,13 @@ using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Data.Extensions;
+using WebSosync.Data.Constants;
 
 namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.sale_order_line")]
     [OnlineModel(Name = "sale.order.line")]
+    [ModelPriority(ModelPriority.P4)]
     public class SaleOrderLineFlow
         : ReplicateSyncFlow
     {

@@ -12,12 +12,14 @@ using System.Collections.Generic;
 using System.Linq;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.AktionSpendenmeldungBPK")]
     [OnlineModel(Name = "res.partner.donation_report")]
+    [ModelPriority(ModelPriority.P3)]
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
         #region Constructors
