@@ -166,36 +166,36 @@ namespace Syncer.Workers
 
         private void ArchiveJobs()
         {
-            var archiveWatch = Stopwatch.StartNew();
-            try
-            {
-                var archivedCount = 0;
+            //var archiveWatch = Stopwatch.StartNew();
+            //try
+            //{
+            //    var archivedCount = 0;
 
-                using (var db = GetDb())
-                {
-                    archivedCount = db.ArchiveFinishedSyncJobs();
-                }
+            //    using (var db = GetDb())
+            //    {
+            //        archivedCount = db.ArchiveFinishedSyncJobs();
+            //    }
 
-                archiveWatch.Stop();
-                _log.LogInformation($"Archived {archivedCount} jobs in {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+            //    archiveWatch.Stop();
+            //    _log.LogInformation($"Archived {archivedCount} jobs in {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
 
-                if (archivedCount > 0)
-                    RaiseRequireRestart("Archive finished SyncJobs");
-            }
-            catch (Exception ex)
-            {
-                archiveWatch.Stop();
+            //    if (archivedCount > 0)
+            //        RaiseRequireRestart("Archive finished SyncJobs");
+            //}
+            //catch (Exception ex)
+            //{
+            //    archiveWatch.Stop();
 
-                if (ex.HResult == -2147467259)
-                {
-                    _log.LogWarning($"Timeout while archiving. Elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
-                    RaiseRequireRestart($"Archiving timed out after {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}. Requesting restart to try again.");
-                }
-                else
-                {
-                    _log.LogError($"Failed to archive: {ex.ToString()} elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
-                }
-            }
+            //    if (ex.HResult == -2147467259)
+            //    {
+            //        _log.LogWarning($"Timeout while archiving. Elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+            //        RaiseRequireRestart($"Archiving timed out after {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}. Requesting restart to try again.");
+            //    }
+            //    else
+            //    {
+            //        _log.LogError($"Failed to archive: {ex.ToString()} elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+            //    }
+            //}
         }
 
         private void CheckInProgress(IEnumerable<SyncJob> jobs)
