@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "fb468f69fd04ec3bae050d2e48237fac4022ba81"
+    "signature": "71ec160dc9b24f20ba5e7dfdc45c322a13181b48"
   },
   "compilationOptions": {},
   "targets": {
@@ -11,13 +11,13 @@
           "Syncer": "1.0.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.6.5"
+          "dadi-data": "1.6.6"
         },
         "runtime": {
           "ManualTest.dll": {}
         }
       },
-      "dadi-data/1.6.5": {
+      "dadi-data/1.6.6": {
         "dependencies": {
           "Dapper": "1.60.6",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -1269,7 +1269,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.6.5"
+          "dadi-data": "1.6.6"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -1291,7 +1291,7 @@
           "PostgreSQLCopyHelper": "2.4.1",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.6.5"
+          "dadi-data": "1.6.6"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -1305,12 +1305,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.6.5": {
+    "dadi-data/1.6.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Y1/7hirZlu4fdwZCmXaAeJlzxJX26VWi+9HCqRCWdIte6ooND00Qoelsd4d+3Uz66ZZB/Ffw/FK5Rqk/5SwZfw==",
-      "path": "dadi-data/1.6.5",
-      "hashPath": "dadi-data.1.6.5.nupkg.sha512"
+      "sha512": "sha512-TiMae7m78oDQ+IqQ8+VBCSST616ShgnM4srlkQTP2oHG+ei6S25wg682/tk27h6FOJ96jnuATBcMgWnf21334g==",
+      "path": "dadi-data/1.6.6",
+      "hashPath": "dadi-data.1.6.6.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
