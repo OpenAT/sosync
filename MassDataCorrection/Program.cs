@@ -40,8 +40,8 @@ namespace MassDataCorrection
                 //processor.Process(CheckPersonBPKs, null);
                 //processor.Process(CheckEmails, new[] { "kino" });
                 //processor.Process(CheckOpenSyncJobs, null);
-                processor.Process(UpdateErrorJobs, new[] { "demo" });
-                //processor.Process(UpdateErrorJobs, null);
+                //processor.Process(UpdateErrorJobs, new[] { "demo" });
+                processor.Process(UpdateErrorJobs, null);
                 PrintDictionary(_errorJobs);
 
                 //SaveStat(_missingEmails, "emails_missing");
