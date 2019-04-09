@@ -1166,7 +1166,7 @@ namespace MassDataCorrection
             public double Archive;
         }
 
-        private static Dictionary<string, double> _archiveProgress = new Dictionary<string, double>();
+        private static Dictionary<string, int> _archiveProgress = new Dictionary<string, int>();
         private static void GetArchiveProgress(InstanceInfo info, Action<float> reportProgress)
         {
             if (info.host_sosync != "sosync2")
@@ -1191,7 +1191,13 @@ namespace MassDataCorrection
                 var counts = db.QuerySingle<ArchiveProgress>(
                     "select (SELECT n_live_tup FROM pg_stat_all_tables WHERE relname = 'sosync_job') Jobs,(SELECT n_live_tup FROM pg_stat_all_tables WHERE relname = 'sosync_job_archive') Archive",
                     commandTimeout: 240);
-                _archiveProgress.Add(info.Instance, counts.Archive / (counts.Jobs + counts.Archive) * 100f);
+
+                var percent = (int)(counts.Archive / (counts.Jobs + counts.Archive) * 100f);
+
+                if (percent < 0)
+                    percent = 0;
+
+                _archiveProgress.Add(info.Instance, percent);
             }
         }
 
