@@ -41,8 +41,10 @@ namespace MassDataCorrection
                 //processor.Process(CheckEmails, new[] { "kino" });
                 //processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(UpdateErrorJobs, new[] { "demo" });
-                processor.Process(UpdateErrorJobs, null);
-                PrintDictionary(_errorJobs);
+                //processor.Process(UpdateErrorJobs, null);
+                //processor.Process(GetArchiveProgress, new[] { "demo" });
+                processor.Process(GetArchiveProgress, null);
+                PrintDictionary(_archiveProgress);
 
                 //SaveStat(_missingEmails, "emails_missing");
                 //SaveStat(_emailsNotSync, "emails_mismatch");
@@ -1156,5 +1158,42 @@ namespace MassDataCorrection
                 Console.WriteLine($"{info.Instance}: {count}");
             }
         }
+
+
+        private struct ArchiveProgress
+        {
+            public double Jobs;
+            public double Archive;
+        }
+
+        private static Dictionary<string, double> _archiveProgress = new Dictionary<string, double>();
+        private static void GetArchiveProgress(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            var skip = new string[] {
+                "dev1"
+                ,"dev2"
+                ,"deve"
+                ,"veme"
+                ,"wuni"
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            using (var db = info.CreateOpenSyncerNpgsqlConnection())
+            {
+                var counts = db.QuerySingle<ArchiveProgress>(
+                    "select (SELECT n_live_tup FROM pg_stat_all_tables WHERE relname = 'sosync_job') Jobs,(SELECT n_live_tup FROM pg_stat_all_tables WHERE relname = 'sosync_job_archive') Archive",
+                    commandTimeout: 240);
+                _archiveProgress.Add(info.Instance, counts.Archive / (counts.Jobs + counts.Archive) * 100f);
+            }
+        }
+
     }
 }
