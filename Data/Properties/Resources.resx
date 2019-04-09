@@ -128,7 +128,7 @@
 					and job_state in ('done', 'skipped', 'error')
 					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
 				order by id asc
-				limit 100
+				limit 1000
 			) first_parent
 
 			union all
