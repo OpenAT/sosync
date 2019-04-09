@@ -34,6 +34,7 @@ namespace WebSosync.Data
 
         private NpgsqlConnection _con;
         private int _cmdTimeoutSec = 120;
+        private SosyncOptions _config;
         #endregion
 
         #region Class initializers
@@ -69,6 +70,8 @@ namespace WebSosync.Data
         /// <param name="config">The settings for the database connection.</param>
         public DataService(SosyncOptions config)
         {
+            _config = config;
+
             _con = new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
                 config.DB_Host,
                 config.DB_Port,
@@ -115,14 +118,40 @@ namespace WebSosync.Data
 
         public int ArchiveFinishedSyncJobs()
         {
-            return _con.Query<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 15)
-                .SingleOrDefault();
+            try
+            {
+                return _con.Query<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 10)
+                    .SingleOrDefault();
+            }
+            catch (Exception)
+            {
+                var pids = _con.Query<int>(
+                    "select pid from pg_stat_activity where datname = @db and application_name = 'sosync2' and query ilike 'with recursive to_be_moved%'",
+                    new { db = _config.DB_Name })
+                    .ToArray();
+
+                if (pids.Length > 0)
+                {
+                    var endProcessesQuery = string.Join("\n", pids.Select(x => $"select pg_cancel_backend({x});"));
+                    _con.Execute(endProcessesQuery);
+                }
+
+                throw;
+            }
         }
 
         public async Task<int> ArchiveFinishedSyncJobsAsync()
         {
-            return (await _con.QueryAsync<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 15))
-                .SingleOrDefault();
+            try
+            {
+                return (await _con.QueryAsync<int>(Resources.Archive_finished_SyncJobs, commandTimeout: 15))
+                    .SingleOrDefault();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         /// <summary>
