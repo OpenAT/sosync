@@ -71,7 +71,7 @@ namespace WebSosync.Data.Properties {
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;, &apos;error&apos;)
         ///					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
         ///				order by id asc
-        ///				limit 500
+        ///				limit 100
         ///			) first_parent
         ///
         ///			union all
