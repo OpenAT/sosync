@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "ae116c702fd918abd2baa5384459df5ba7fdb377"
+    "signature": "919a1e7b585fab62505de2cb66bdf2ba01d81f43"
   },
   "compilationOptions": {},
   "targets": {
@@ -16,6 +16,7 @@
           "Microsoft.Extensions.Configuration": "2.0.0",
           "Microsoft.Extensions.DependencyInjection": "2.0.0",
           "NETStandard.Library": "2.0.3",
+          "Studio.Utility": "1.0.0",
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
@@ -310,6 +311,11 @@
       "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
+      "Studio.Utility/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/Studio.Utility.dll": {}
+        }
+      },
       "System.Buffers/4.4.0": {
         "runtime": {
           "lib/netstandard2.0/System.Buffers.dll": {}
@@ -1537,6 +1543,13 @@
       "sha512": "sha512-YhEdSQUsTx+C8m8Bw7ar5/VesXvCFMItyZF7G1AUY+OM0VPZUOeAVpJ4Wl6fydBGUYZxojTDR3I6Bj/+BPkJNA==",
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
+    },
+    "Studio.Utility/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fXoG8Z0GZdCeefytYHM9dQjvOH9NSLof0ErFL29jZAitY+GpPthAKFdGclc+QUAB4lSBKNfOwqa9ZUDbtmRFIg==",
+      "path": "studio.utility/1.0.0",
+      "hashPath": "studio.utility.1.0.0.nupkg.sha512"
     },
     "System.Buffers/4.4.0": {
       "type": "package",

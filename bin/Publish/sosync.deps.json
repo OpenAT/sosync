@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "8854a30406173fa0679d4dff899fe8fe2c16631b"
+    "signature": "d5c8f29916bf1f41c98aba4c924d2acfd15d3e62"
   },
   "compilationOptions": {
     "defines": [
@@ -2035,6 +2035,14 @@
           "lib/netstandard1.3/Serilog.Sinks.RollingFile.dll": {}
         }
       },
+      "Studio.Utility/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/Studio.Utility.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/Studio.Utility.dll": {}
+        }
+      },
       "System.AppContext/4.3.0": {
         "dependencies": {
           "System.Runtime": "4.3.0"
@@ -3281,6 +3289,7 @@
           "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
           "Microsoft.Extensions.DependencyInjection": "2.0.0",
+          "Studio.Utility": "1.0.0",
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
@@ -4588,6 +4597,13 @@
       "sha512": "sha512-2lT5X1r3GH4P0bRWJfhA7etGl8Q2Ipw9AACvtAHWRUSpYZ42NGVyHoVs2ALBZ/cAkkS+tA4jl80Zie144eLQPg==",
       "path": "serilog.sinks.rollingfile/3.3.0",
       "hashPath": "serilog.sinks.rollingfile.3.3.0.nupkg.sha512"
+    },
+    "Studio.Utility/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fXoG8Z0GZdCeefytYHM9dQjvOH9NSLof0ErFL29jZAitY+GpPthAKFdGclc+QUAB4lSBKNfOwqa9ZUDbtmRFIg==",
+      "path": "studio.utility/1.0.0",
+      "hashPath": "studio.utility.1.0.0.nupkg.sha512"
     },
     "System.AppContext/4.3.0": {
       "type": "package",
