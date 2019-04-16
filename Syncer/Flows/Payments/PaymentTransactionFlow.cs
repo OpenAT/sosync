@@ -10,12 +10,14 @@ using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.payment_transaction")]
     [OnlineModel(Name = "payment.transaction")]
+    [ModelPriority(ModelPriority.P4)]
     public class PaymentTransactionFlow
         : ReplicateSyncFlow
     {
