@@ -471,6 +471,8 @@ namespace Syncer.Flows
                 using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
                 using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 {
+                    var addressChanged = false;
+
                     // Load online model, save it to studio
                     if (action == TransformType.CreateNew)
                     {
@@ -488,7 +490,7 @@ namespace Syncer.Flows
                             person.address = InitDboPersonAdresse();
                             SetSyncFields(person.address, onlineID, sosync_write_date);
 
-                            CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
+                            addressChanged = CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
 
                             person.addressAM = InitDboPersonAdresseAM();
                         }
@@ -596,14 +598,14 @@ namespace Syncer.Flows
                                 person.address.PersonID = PersonID;
                                 person.addressAM.PersonID = PersonID;
 
-                                CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
+                                addressChanged = CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
 
                                 SetSyncFields(person.address, onlineID, sosync_write_date);
                             }
                         }
                         else
                         {
-                            CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
+                            addressChanged = CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
                             SetSyncFields(person.address, onlineID, sosync_write_date);
                         }
 
@@ -662,7 +664,9 @@ namespace Syncer.Flows
 
                         try
                         {
-                            CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
+                            if (addressChanged)
+                                CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
+
                             CreateOrUpdate(phoneSvc, person.phone, person.phone != null ? person.phone.PersonTelefonID : 0, "(Festnetz)");
                             CreateOrUpdate(phoneSvc, person.mobile, person.mobile != null ? person.mobile.PersonTelefonID : 0, "(Mobil)");
                             CreateOrUpdate(phoneSvc, person.fax, person.fax != null ? person.fax.PersonTelefonID : 0, "(Fax)");
@@ -848,10 +852,10 @@ namespace Syncer.Flows
             return !(streedEqual && streetNrEqual && zipEqual && cityEqual);
         }
 
-        private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest, dboPersonAdresseAM destAM, dboPersonAdresseBlock destBlock)
+        private bool CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest, dboPersonAdresseAM destAM, dboPersonAdresseBlock destBlock)
         {
             if (!AddressChanged(source, destBlock))
-                return;
+                return false;
 
             if (source.CountryID != null && source.CountryID.Length > 0)
             {
@@ -893,6 +897,8 @@ namespace Syncer.Flows
             dest.PLZ = source.Zip;
             dest.Ort = source.City;
             destAM.PAC = 0;
+
+            return true;
         }
 
         private void CopyPartnerToPersonEmail(resPartner source, dboPersonEmail dest)
