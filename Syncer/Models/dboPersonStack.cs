@@ -14,6 +14,7 @@ namespace Syncer.Models
         public dboPerson person { get; set; }
         public dboPersonAdresse address { get; set; }
         public dboPersonAdresseAM addressAM { get; set; }
+        public dboPersonAdresseBlock addressBlock { get; set; }
         public dboPersonTelefon phone { get; set; }
         public dboPersonTelefon mobile { get; set; }
         public dboPersonTelefon fax { get; set; }

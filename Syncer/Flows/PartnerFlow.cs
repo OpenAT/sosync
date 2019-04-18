@@ -83,6 +83,7 @@ namespace Syncer.Flows
             using (var personSvc = MdbService.GetDataService<dboPerson>())
             using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
             using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
+            using (var addressBlockSvc = MdbService.GetDataService<dboPersonAdresseBlock>())
             using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
@@ -99,6 +100,9 @@ namespace Syncer.Flows
               
                 if (result.address != null)
                     result.addressAM = addressAMSvc.Read(new { PersonAdresseID = result.address.PersonAdresseID }).FirstOrDefault();
+
+                if (result.address != null)
+                    result.addressBlock = addressBlockSvc.Read(new { PersonAdresseID = result.address.PersonAdresseID }).FirstOrDefault();
 
                 result.phone = (from iterPhone in phoneSvc.Read(new { PersonID = PersonID })
                                 where iterPhone.GültigVon <= DateTime.Today &&
@@ -290,10 +294,10 @@ namespace Syncer.Flows
 
             if (person.address != null)
             {
-                data.Add("street", person.address.Strasse);
-                data.Add("street_number_web", person.address.Hausnummer);
-                data.Add("zip", person.address.PLZ);
-                data.Add("city", person.address.Ort);
+                data.Add("street", person.addressBlock.Strasse);
+                data.Add("street_number_web", person.addressBlock.Hausnr);
+                data.Add("zip", person.addressBlock.Plz);
+                data.Add("city", person.addressBlock.Ort);
                 data.Add("anrede_individuell", person.address.AnredeformtypID == 324 ? person.address.IndividuelleAnrede : null);
                 data.Add("country_id", GetCountryIdForLandId(person.address.LandID));
             }
@@ -484,7 +488,7 @@ namespace Syncer.Flows
                             person.address = InitDboPersonAdresse();
                             SetSyncFields(person.address, onlineID, sosync_write_date);
 
-                            CopyPartnerToPersonAddress(partner, person.address);
+                            CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
 
                             person.addressAM = InitDboPersonAdresseAM();
                         }
@@ -592,17 +596,15 @@ namespace Syncer.Flows
                                 person.address.PersonID = PersonID;
                                 person.addressAM.PersonID = PersonID;
 
-                                CopyPartnerToPersonAddress(partner, person.address);
+                                CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
 
                                 SetSyncFields(person.address, onlineID, sosync_write_date);
                             }
                         }
                         else
                         {
-                            CopyPartnerToPersonAddress(partner, person.address);
+                            CopyPartnerToPersonAddress(partner, person.address, person.addressAM, person.addressBlock);
                             SetSyncFields(person.address, onlineID, sosync_write_date);
-
-                            person.addressAM.PAC = 0; //personadresseAM record is always created with the personadresse record, so it can be refered here
                         }
 
                         if (person.phone == null)
@@ -831,8 +833,26 @@ namespace Syncer.Flows
 
         }
 
-        private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest)
+        private bool IsAddressFieldEqual(string src, string dst)
         {
+            return (src ?? "").ToLower().Trim() == (dst ?? "").ToLower().Trim();
+        }
+
+        private bool AddressChanged(resPartner source, dboPersonAdresseBlock destBlock)
+        {
+            var streedEqual = IsAddressFieldEqual(source.Street, destBlock.Strasse);
+            var streetNrEqual = IsAddressFieldEqual(source.StreetNumber, destBlock.Hausnr);
+            var zipEqual = IsAddressFieldEqual(source.Zip, destBlock.Plz);
+            var cityEqual = IsAddressFieldEqual(source.City, destBlock.Ort);
+
+            return !(streedEqual && streetNrEqual && zipEqual && cityEqual);
+        }
+
+        private void CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest, dboPersonAdresseAM destAM, dboPersonAdresseBlock destBlock)
+        {
+            if (!AddressChanged(source, destBlock))
+                return;
+
             if (source.CountryID != null && source.CountryID.Length > 0)
             {
                 var country = OdooService.Client.GetModel<resCountry>("res.country", Convert.ToInt32(source.CountryID[0]));
@@ -872,6 +892,7 @@ namespace Syncer.Flows
             dest.Hausnummer = source.StreetNumber;
             dest.PLZ = source.Zip;
             dest.Ort = source.City;
+            destAM.PAC = 0;
         }
 
         private void CopyPartnerToPersonEmail(resPartner source, dboPersonEmail dest)
