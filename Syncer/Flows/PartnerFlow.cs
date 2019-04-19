@@ -844,6 +844,11 @@ namespace Syncer.Flows
 
         private bool AddressChanged(resPartner source, dboPersonAdresseBlock destBlock)
         {
+            // If no address block is present, use a new empty one
+            // for comparison
+            if (destBlock == null)
+                destBlock = new dboPersonAdresseBlock();
+
             var streedEqual = IsAddressFieldEqual(source.Street, destBlock.Strasse);
             var streetNrEqual = IsAddressFieldEqual(source.StreetNumber, destBlock.Hausnr);
             var zipEqual = IsAddressFieldEqual(source.Zip, destBlock.Plz);
