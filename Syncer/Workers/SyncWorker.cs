@@ -208,8 +208,8 @@ namespace Syncer.Workers
             if (inProgressJobCount > 0)
             {
                 var body = $"{Configuration.Instance}: sosync2 found {inProgressJobCount} jobs with status " +
-                    $"\"{SosyncState.InProgress}\" - jobs will be treated like " +
-                    $"status \"{SosyncState.New}\" but with highest priority.\n\n" +
+                    $"\"{SosyncState.InProgress.Value}\" - jobs will be treated like " +
+                    $"status \"{SosyncState.New.Value}\" but with highest priority.\n\n" +
                     $"max_threads: {Configuration.Max_Threads}\n" +
                     $"job_package_size: {Configuration.Job_Package_Size}";
 
