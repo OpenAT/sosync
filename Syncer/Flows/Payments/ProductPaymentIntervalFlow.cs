@@ -31,7 +31,7 @@ namespace Syncer.Flows.Payments
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException($"{StudioModelName} cannot be transformed to {SosyncSystem.FSOnline}");
+            throw new NotSupportedException($"{StudioModelName} cannot be transformed to {SosyncSystem.FSOnline.Value}");
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)

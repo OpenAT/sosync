@@ -23,7 +23,7 @@ namespace Syncer.Flows.gl2k.garden
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException($"Deletion is only supported from {SosyncSystem.FSOnline} to {SosyncSystem.FundraisingStudio}.");
+            throw new NotSupportedException($"Deletion is only supported from {SosyncSystem.FSOnline.Value} to {SosyncSystem.FundraisingStudio.Value}.");
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)

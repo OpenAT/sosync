@@ -31,7 +31,7 @@ namespace Syncer.Flows.Payments
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            throw new NotSupportedException($"{StudioModelName} cannot be synced to {SosyncSystem.FSOnline}");
+            throw new NotSupportedException($"{StudioModelName} cannot be synced to {SosyncSystem.FSOnline.Value}");
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
@@ -48,7 +48,7 @@ namespace Syncer.Flows.Payments
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException($"{StudioModelName} cannot be synced to {SosyncSystem.FSOnline}");
+            throw new NotSupportedException($"{StudioModelName} cannot be synced to {SosyncSystem.FSOnline.Value}");
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)

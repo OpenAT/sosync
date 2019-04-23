@@ -303,7 +303,7 @@ namespace Syncer.Flows
             // Determine the IDs for both systems via matching
             if (IsModelInOnlineOnly(studioInfo, onlineInfo))
             {
-                Log.LogInformation($"Trying to match {OnlineModelName} ({onlineInfo.ID}) in {SosyncSystem.FundraisingStudio}");
+                Log.LogInformation($"Trying to match {OnlineModelName} ({onlineInfo.ID}) in {SosyncSystem.FundraisingStudio.Value}");
                 var studioWatch = Stopwatch.StartNew();
                 matchedID = MatchInStudioViaData(onlineInfo.ID);
                 studioWatch.Stop();
@@ -317,7 +317,7 @@ namespace Syncer.Flows
             }
             else if (IsModelInStudioOnly(studioInfo, onlineInfo))
             {
-                Log.LogInformation($"Trying to match {StudioModelName} ({studioInfo.ID}) in {SosyncSystem.FSOnline}");
+                Log.LogInformation($"Trying to match {StudioModelName} ({studioInfo.ID}) in {SosyncSystem.FSOnline.Value}");
                 var onlineWatch = Stopwatch.StartNew();
                 matchedID = MatchInOnlineViaData(studioInfo.ID);
                 onlineWatch.Stop();
@@ -338,7 +338,7 @@ namespace Syncer.Flows
                 var onlineWatch = Stopwatch.StartNew();
                 OdooService.Client.UpdateModel(OnlineModelName, new { sosync_fs_id = studioID }, onlineID);
                 onlineWatch.Stop();
-                LogMs(0, $"Update matched ID in {SosyncSystem.FSOnline}", Job.ID, (long)onlineWatch.Elapsed.TotalMilliseconds);
+                LogMs(0, $"Update matched ID in {SosyncSystem.FSOnline.Value}", Job.ID, (long)onlineWatch.Elapsed.TotalMilliseconds);
 
                 Log.LogInformation($"Updating {StudioModelName} {studioID} setting sosync_fso_id = {onlineID}");
                 var studioWatch = Stopwatch.StartNew();
@@ -350,7 +350,7 @@ namespace Syncer.Flows
                         new { sosync_fso_id = onlineID, id = studioID });
                 }
                 studioWatch.Stop();
-                LogMs(0, $"Update matched ID in {SosyncSystem.FundraisingStudio}", Job.ID, (long)studioWatch.Elapsed.TotalMilliseconds);
+                LogMs(0, $"Update matched ID in {SosyncSystem.FundraisingStudio.Value}", Job.ID, (long)studioWatch.Elapsed.TotalMilliseconds);
 
                 return true;
             }
@@ -401,10 +401,10 @@ namespace Syncer.Flows
                 && onlineInfo.ForeignID.HasValue
                 && onlineInfo.ForeignID == studioInfo.ID)
             {
-                var warning = $"{StudioModelName} {studioInfo.ID} has no sosync_fso_id but {OnlineModelName} {onlineInfo.ID} has sosync_fs_id {onlineInfo.ForeignID} - updating {SosyncSystem.FundraisingStudio}";
+                var warning = $"{StudioModelName} {studioInfo.ID} has no sosync_fso_id but {OnlineModelName} {onlineInfo.ID} has sosync_fs_id {onlineInfo.ForeignID} - updating {SosyncSystem.FundraisingStudio.Value}";
                 job.Job_Log += warning;
 
-                var desc = $"Fix {SosyncSystem.FundraisingStudio}.sosync_fso_id";
+                var desc = $"Fix {SosyncSystem.FundraisingStudio.Value}.sosync_fso_id";
                 UpdateJob(job, desc);
 
                 Log.LogWarning(warning);
@@ -426,10 +426,10 @@ namespace Syncer.Flows
                 && studioInfo.ForeignID.HasValue
                 && studioInfo.ForeignID == onlineInfo.ID)
             {
-                var warning = $"{OnlineModelName} {onlineInfo.ID} has no sosync_fs_id but {StudioModelName} {studioInfo.ID} has sosync_fso_id {studioInfo.ForeignID} - updating {SosyncSystem.FSOnline}";
+                var warning = $"{OnlineModelName} {onlineInfo.ID} has no sosync_fs_id but {StudioModelName} {studioInfo.ID} has sosync_fso_id {studioInfo.ForeignID} - updating {SosyncSystem.FSOnline.Value}";
                 job.Job_Log += warning;
 
-                var desc = $"Fix {SosyncSystem.FSOnline}.sosync_fs_id";
+                var desc = $"Fix {SosyncSystem.FSOnline.Value}.sosync_fs_id";
                 UpdateJob(job, desc);
 
                 Log.LogWarning(warning);

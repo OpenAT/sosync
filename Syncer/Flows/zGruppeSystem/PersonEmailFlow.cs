@@ -78,7 +78,7 @@ namespace Syncer.Flows.zGruppeSystem
                 }
                 else
                 {
-                    throw new SyncerException($"Model {StudioModelName} ({studioID}) was not found in {SosyncSystem.FundraisingStudio} while matching");
+                    throw new SyncerException($"Model {StudioModelName} ({studioID}) was not found in {SosyncSystem.FundraisingStudio.Value} while matching");
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace Syncer.Flows.zGruppeSystem
             }
             else
             {
-                throw new SyncerException($"Model {OnlineModelName} ({onlineID}) was not found in {SosyncSystem.FSOnline} while matching");
+                throw new SyncerException($"Model {OnlineModelName} ({onlineID}) was not found in {SosyncSystem.FSOnline.Value} while matching");
             }
 
             return studioID;
