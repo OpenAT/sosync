@@ -901,7 +901,9 @@ namespace Syncer.Flows
             dest.Hausnummer = source.StreetNumber;
             dest.PLZ = source.Zip;
             dest.Ort = source.City;
-            destAM.PAC = 0;
+
+            if (destAM != null)
+                destAM.PAC = 0;
 
             return true;
         }
