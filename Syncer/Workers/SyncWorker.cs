@@ -264,7 +264,7 @@ namespace Syncer.Workers
                     // Process job
                     if (threadJob != null)
                     {
-                        _log.LogInformation($"Thread {threadNumber} processing the job");
+                        _log.LogInformation($"Thread {threadNumber} processing the job {threadJob.ID}");
                         threadJob.Job_Log += $"GetNextOpenJob: n/a ms (comes from thread queue)\n";
                         ProcessJob(threadJob, DateTime.UtcNow);
                         _log.LogInformation($"Thread {threadNumber} finished job, {jobs.Count} jobs remaining");
@@ -283,12 +283,19 @@ namespace Syncer.Workers
 
         private void ProcessJob(SyncJob job, DateTime loadTimeUTC)
         {
+            _log.LogDebug($"{nameof(ProcessJob)}: Entry (id  {job.ID})");
+
             using (var dataService = GetDb())
             {
                 try
                 {
+                    _log.LogDebug($"{nameof(ProcessJob)}: Update run count (id  {job.ID})");
                     UpdateJobRunCount(dataService, job);
+
+                    _log.LogDebug($"{nameof(ProcessJob)}: Update job start (id  {job.ID})");
                     UpdateJobStart(dataService, job, loadTimeUTC);
+
+                    _log.LogDebug($"{nameof(ProcessJob)}: Activator.CreateInstance for SyncFlow (id  {job.ID})");
 
                     // Get the flow for the job source model, and start it
                     var constructorParams = new object[] { _log, _odoo, _conf, _flowService, _odooFormatService, _serializationService };
@@ -296,7 +303,12 @@ namespace Syncer.Workers
                     {
                         bool requireRestart = false;
                         string restartReason = "";
+
+                        _log.LogDebug($"{nameof(ProcessJob)}: Starting SyncFlow (id  {job.ID})");
+
                         flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
+
+                        _log.LogDebug($"{nameof(ProcessJob)}: Closing previous jobs (id  {job.ID})");
 
                         if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
                         {
@@ -311,12 +323,16 @@ namespace Syncer.Workers
                             RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
 
                         // Throttling
+                        _log.LogDebug($"{nameof(ProcessJob)}: Check and handle throttling (id  {job.ID})");
                         ThrottleJobProcess(loadTimeUTC);
 
                         // Stop processing the queue if cancellation was requested
+                        _log.LogDebug($"{nameof(ProcessJob)}: Check for cancellation (id  {job.ID})");
                         if (CancellationToken.IsCancellationRequested)
                             RaiseCancelling();
                     }
+
+                    _log.LogDebug($"{nameof(ProcessJob)}: Success SyncFlow (id  {job.ID})");
                 }
                 catch (SqlException ex)
                 {
@@ -329,6 +345,8 @@ namespace Syncer.Workers
                     UpdateJobError(dataService, job, ex.ToString());
                 }
             }
+
+            _log.LogDebug($"{nameof(ProcessJob)}: Done (id  {job.ID})");
         }
 
         private void ThrottleJobProcess(DateTime loadTimeUTC)
