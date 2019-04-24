@@ -300,7 +300,11 @@ namespace Syncer.Flows
         {
             var odooID = 0;
 
+            Log.LogInformation($"Going to SearchByField, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
+
             var results = OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId).ToList();
+
+            Log.LogInformation($"SearchByField returned, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
 
             if (results.Count == 1)
                 odooID = results[0];
