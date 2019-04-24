@@ -483,7 +483,7 @@ namespace Syncer.Flows
                         // If the job is new or marked as "in progress", run it
                         if (entry.Job_State == SosyncState.New.Value || entry.Job_State == SosyncState.InProgress.Value)
                         {
-                            Log.LogDebug($"Executing {childDescription} ({entry.ID})");
+                            Log.LogInformation($"Executing {childDescription} ({entry.ID})");
 
                             UpdateJobStart(entry, DateTime.UtcNow);
 
@@ -749,7 +749,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            Log.LogDebug($"Updating job {Job.ID}: Sync_Target_Data_Before_Update");
+            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Data_Before_Update");
 
             using (var db = GetDb())
             {
@@ -762,7 +762,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncSourceData(string data)
         {
-            Log.LogDebug($"Updating job {Job.ID}: Sync_Source_Data");
+            Log.LogInformation($"Updating job {Job.ID}: Sync_Source_Data");
 
             using (var db = GetDb())
             {
@@ -775,7 +775,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetRequest(string requestData)
         {
-            Log.LogDebug($"Updating job {Job.ID}: Sync_Target_Request");
+            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Request");
 
             using (var db = GetDb())
             {
@@ -788,7 +788,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetAnswer(string answerData, int? createdID)
         {
-            Log.LogDebug($"Updating job {Job.ID}: Sync_Target_Answer");
+            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Answer");
 
             using (var db = GetDb())
             {
@@ -812,7 +812,7 @@ namespace Syncer.Flows
         /// <param name="log">Information to be logged.</param>
         protected void UpdateJobSourceAndTarget(SyncJob job, SosyncSystem srcSystem, string srcModel, int? srcId, SosyncSystem targetSystem, string targetModel, int? targetId, string log)
         {
-            Log.LogDebug($"Updating job {job.ID}: check source");
+            Log.LogInformation($"Updating job {job.ID}: check source");
 
             using (var db = GetDb())
             {
@@ -837,7 +837,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobChildStart(SyncJob job)
         {
-            Log.LogDebug($"Updating job { job.ID}: child start");
+            Log.LogInformation($"Updating job { job.ID}: child start");
 
             using (var db = GetDb())
             {
@@ -850,7 +850,7 @@ namespace Syncer.Flows
 
         protected void UpdateJob(SyncJob job, string description)
         {
-            Log.LogDebug($"Updating job { Job.ID}: {description}");
+            Log.LogInformation($"Updating job { Job.ID}: {description}");
 
             using (var db = GetDb())
             {
@@ -865,7 +865,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobChildEnd()
         {
-            Log.LogDebug($"Updating job {Job.ID}: child end");
+            Log.LogInformation($"Updating job {Job.ID}: child end");
 
             using (var db = GetDb())
             {
@@ -881,7 +881,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncStart()
         {
-            Log.LogDebug($"Updating job {Job.ID}: transformation/sync start");
+            Log.LogInformation($"Updating job {Job.ID}: transformation/sync start");
 
             using (var db = GetDb())
             {
@@ -897,7 +897,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncEnd()
         {
-            Log.LogDebug($"Updating job { Job.ID}: transformation/sync end");
+            Log.LogInformation($"Updating job { Job.ID}: transformation/sync end");
 
             using (var db = GetDb())
             {
@@ -913,7 +913,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
         {
-            Log.LogDebug($"Updating job {job.ID}: job start");
+            Log.LogInformation($"Updating job {job.ID}: job start");
 
             using (var db = GetDb())
             {
@@ -928,7 +928,7 @@ namespace Syncer.Flows
 
         private void UpdateJobInconsistent(SyncJob job, int nr)
         {
-            Log.LogDebug($"Updating job {job.ID}: job_log");
+            Log.LogInformation($"Updating job {job.ID}: job_log");
 
             using (var db = GetDb())
             {
@@ -947,7 +947,7 @@ namespace Syncer.Flows
         /// finished because it was already in sync.</param>
         protected void UpdateJobSuccess(bool wasInSync)
         {
-            Log.LogDebug($"Updating job {Job.ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            Log.LogInformation($"Updating job {Job.ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = GetDb())
             {
@@ -967,7 +967,7 @@ namespace Syncer.Flows
         protected void UpdateJobSuccessOtherThread(int otherJobID)
         {
             var msg = $"Updating job {Job.ID}: Another thread completed same job (ID {otherJobID})";
-            Log.LogDebug(msg);
+            Log.LogInformation(msg);
 
             using (var db = GetDb())
             {
@@ -988,7 +988,7 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         protected void UpdateJobError(SosyncError error, string errorText)
         {
-            Log.LogDebug($"Updating job {Job.ID}: job error");
+            Log.LogInformation($"Updating job {Job.ID}: job error");
 
             using (var db = GetDb())
             {
@@ -1010,7 +1010,7 @@ namespace Syncer.Flows
 
         protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
-            Log.LogDebug($"Job {jobId ?? Job.ID}: {name} elapsed: {ms} ms");
+            Log.LogInformation($"Job {jobId ?? Job.ID}: {name} elapsed: {ms} ms");
             LogMilliseconds(name, ms);
         }
 
