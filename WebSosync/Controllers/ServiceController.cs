@@ -4,6 +4,7 @@ using Syncer.Models;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
+using System.Threading;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -46,6 +47,10 @@ namespace WebSosync.Controllers
 
             result.JobWorker.Status = (int)_syncWorkerJob.Status;
             result.JobWorker.StatusText = _syncWorkerJob.Status.ToString();
+
+            ThreadPool.GetAvailableThreads(out var workerThreads, out var ioThreads);
+            result.ThreadPool.WorkerThreads = workerThreads;
+            result.ThreadPool.IOThreads = ioThreads;
 
             return new OkObjectResult(result);
         }

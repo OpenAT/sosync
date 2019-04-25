@@ -13,12 +13,15 @@ namespace WebSosync.Models
         #region Properties
         [DataMember(Name = "job_worker")]
         public ServiceStatusDto JobWorker { get; set; }
+        [DataMember(Name = "thread_pool")]
+        public ThreadStatusDto ThreadPool { get; set; }
         #endregion
 
         #region Constructors
         public SosyncStatusDto()
         {
             JobWorker = new ServiceStatusDto();
+            ThreadPool = new ThreadStatusDto();
         }
         #endregion
     }
