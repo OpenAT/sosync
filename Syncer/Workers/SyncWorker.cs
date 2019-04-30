@@ -308,16 +308,16 @@ namespace Syncer.Workers
 
                         flow.Start(_flowService, job, loadTimeUTC, ref requireRestart, ref restartReason);
 
-                        _log.LogInformation($"{nameof(ProcessJob)}: Closing previous jobs (id  {job.ID})");
+                        //_log.LogInformation($"{nameof(ProcessJob)}: Closing previous jobs (id  {job.ID})");
 
-                        if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
-                        {
-                            var s = new Stopwatch();
-                            s.Start();
-                            CloseAllPreviousJobs(job);
-                            s.Stop();
-                            _log.LogInformation($"{nameof(CloseAllPreviousJobs)}: {s.Elapsed.TotalMilliseconds} ms");
-                        }
+                        //if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                        //{
+                        //    var s = new Stopwatch();
+                        //    s.Start();
+                        //    CloseAllPreviousJobs(job);
+                        //    s.Stop();
+                        //    _log.LogInformation($"{nameof(CloseAllPreviousJobs)}: {s.Elapsed.TotalMilliseconds} ms");
+                        //}
 
                         if (requireRestart)
                             RaiseRequireRestart($"{flow.GetType().Name}: {restartReason}");
