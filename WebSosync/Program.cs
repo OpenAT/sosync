@@ -268,8 +268,11 @@ namespace WebSosync
             // The job terminated cleanly, graceful exit by requesting the host thread to shut down
             log.LogInformation($"Exiting gracefully.");
 
-            host.StopAsync();
-            svc.RequestShutdown();
+            if (host != null)
+                host.StopAsync();
+
+            if (svc != null)
+                svc.RequestShutdown();
         }
 
         /// <summary>
