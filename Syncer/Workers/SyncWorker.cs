@@ -139,7 +139,7 @@ namespace Syncer.Workers
 
                     ThreadService.JobLocks.Clear();
 
-                    ArchiveJobs();
+                    // ArchiveJobs();
 
                     Dapper.SqlMapper.PurgeQueryCache();
                     GC.Collect();
