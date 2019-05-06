@@ -126,7 +126,31 @@ namespace WebSosync.Data
             catch (Exception)
             {
                 var pids = _con.Query<int>(
-                    "select pid from pg_stat_activity where datname = @db and application_name = 'sosync2' and query ilike 'with recursive to_be_moved%'",
+                    "select pid from pg_stat_activity where datname = @db and application_name = 'sosync2' and query ilike 'with recursive to_be_moved%and job_closed_by_job_id is null%'",
+                    new { db = _config.DB_Name })
+                    .ToArray();
+
+                if (pids.Length > 0)
+                {
+                    var endProcessesQuery = string.Join("\n", pids.Select(x => $"select pg_cancel_backend({x});"));
+                    _con.Execute(endProcessesQuery);
+                }
+
+                throw;
+            }
+        }
+
+        public int ArchiveFinishedSyncJobsClosedByOtherJobs()
+        {
+            try
+            {
+                return _con.Query<int>(Resources.Archive_finished_SyncJobs_Part_2, commandTimeout: 10)
+                    .SingleOrDefault();
+            }
+            catch (Exception)
+            {
+                var pids = _con.Query<int>(
+                    "select pid from pg_stat_activity where datname = @db and application_name = 'sosync2' and query ilike 'with recursive to_be_moved%and job_closed_by_job_id is not null%'",
                     new { db = _config.DB_Name })
                     .ToArray();
 
