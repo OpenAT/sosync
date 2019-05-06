@@ -69,21 +69,50 @@ namespace WebSosync.Data.Properties {
         ///				where
         ///					parent_job_id is null
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;, &apos;error&apos;)
-        ///					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
+        ///					and job_closed_by_job_id is null
         ///				order by id asc
+        ///				-- WARNING: Do not increase limit. Higher limits change
+        ///				--			the postgres execution plan and result in terrible
+        ///				--			query times
         ///				limit 100
         ///			) first_parent
         ///
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, child.parent_job_id
-        ///			from sosync_job child
-        ///			inner jo [rest of string was truncated]&quot;;.
+        ///			select child. [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs {
             get {
                 return ResourceManager.GetString("Archive_finished_SyncJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to with recursive to_be_moved as (
+        ///			-- roots
+        ///			select id, parent_job_id from (
+        ///				select id, parent_job_id
+        ///				from sosync_job
+        ///				where
+        ///					parent_job_id is null
+        ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;, &apos;error&apos;)
+        ///					and job_closed_by_job_id is not null
+        ///				order by id asc
+        ///				-- WARNING: Do not increase limit. Higher limits change
+        ///				--			the postgres execution plan and result in terrible
+        ///				--			query times
+        ///				limit 100
+        ///			) first_parent
+        ///
+        ///			union all
+        ///
+        ///			-- children
+        ///			select ch [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Archive_finished_SyncJobs_Part_2 {
+            get {
+                return ResourceManager.GetString("Archive_finished_SyncJobs_Part_2", resourceCulture);
             }
         }
         

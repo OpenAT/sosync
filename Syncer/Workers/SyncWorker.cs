@@ -171,7 +171,9 @@ namespace Syncer.Workers
             try
             {
                 var archivedCount = 0;
+                var archivedClosedByCount = 0;
 
+                // Part 1: Archive jobs that were not closed due to other jobs
                 using (var db = GetDb())
                 {
                     archivedCount = db.ArchiveFinishedSyncJobs();
@@ -180,7 +182,22 @@ namespace Syncer.Workers
                 archiveWatch.Stop();
                 _log.LogInformation($"Archived {archivedCount} jobs in {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
 
-                if (archivedCount > 0)
+                // Part 2: Archive jobs that were closed by other jobs,
+                //         only if no normal jobs were archived
+                if (archivedCount == 0)
+                {
+                    archiveWatch.Reset();
+                    archiveWatch.Start();
+                    using (var db = GetDb())
+                    {
+                        archivedClosedByCount = db.ArchiveFinishedSyncJobsClosedByOtherJobs();
+                    }
+
+                    archiveWatch.Stop();
+                    _log.LogInformation($"Archived (Part 2) {archivedCount} jobs in {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
+                }
+
+                if (archivedCount > 0 || archivedClosedByCount > 0)
                     RaiseRequireRestart("Archive finished SyncJobs");
             }
             catch (Exception ex)
@@ -276,6 +293,14 @@ namespace Syncer.Workers
             {
                 _log.LogInformation($"Thread {threadNumber} threw an exception {ex.ToString()}");
                 throw;
+            }
+            finally
+            {
+                // Before finishing the thread, clean up OdooService instance
+                _log.LogInformation($"Thread {threadNumber} disposing of OdooService class.");
+                var odooSvc = _svc.GetService<OdooService>();
+                odooSvc.Client.Dispose();
+                odooSvc.Client = null;
             }
 
             _log.LogInformation($"Thread {threadNumber} clean exit");

@@ -32,6 +32,10 @@ namespace Syncer.Services
 
                 return _client;
             }
+            set
+            {
+                _client = value;
+            }
         }
         #endregion
 

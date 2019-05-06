@@ -126,8 +126,146 @@
 				where
 					parent_job_id is null
 					and job_state in ('done', 'skipped', 'error')
-					and (job_closed_by_job_id is null or job_closed_by_job_id in (select id from sosync_job_archive order by id desc))
+					and job_closed_by_job_id is null
 				order by id asc
+				-- WARNING: Do not increase limit. Higher limits change
+				--			the postgres execution plan and result in terrible
+				--			query times
+				limit 100
+			) first_parent
+
+			union all
+
+			-- children
+			select child.id, child.parent_job_id
+			from sosync_job child
+			inner join to_be_moved parent on parent.id = child.parent_job_id
+		),
+moved_rows as (
+	delete from sosync_job src
+	using to_be_moved
+	where src.id = to_be_moved.id
+	returning src.*
+),
+inserted as (
+	insert into sosync_job_archive (
+		id,
+		parent_job_id,
+		job_closed_by_job_id,
+		job_date,
+		job_fetched,
+		job_priority,
+		job_source_system,
+		job_source_model,
+		job_source_record_id,
+		job_source_target_record_id,
+		job_source_sosync_write_date,
+		job_source_fields,
+		job_source_type,
+		job_source_type_info,
+		job_source_merge_into_record_id,
+		job_source_target_merge_into_record_id,
+		job_start,
+		job_end,
+		job_duration,
+		job_run_count,
+		job_log,
+		job_state,
+		job_error_code,
+		job_error_text,
+		parent_path,
+		child_job_start,
+		child_job_end,
+		child_job_duration,
+		sync_source_system,
+		sync_source_model,
+		sync_source_record_id,
+		sync_source_merge_into_record_id,
+		sync_target_system,
+		sync_target_model,
+		sync_target_record_id,
+		sync_target_merge_into_record_id,
+		sync_source_data,
+		sync_target_data_before,
+		sync_target_data_after,
+		sync_target_request,
+		sync_target_answer,
+		sync_start,
+		sync_end,
+		sync_duration,
+		create_uid,
+		create_date,
+		write_uid,
+		write_date
+	)
+	select
+		id,
+		parent_job_id,
+		job_closed_by_job_id,
+		job_date,
+		job_fetched,
+		job_priority,
+		job_source_system,
+		job_source_model,
+		job_source_record_id,
+		job_source_target_record_id,
+		job_source_sosync_write_date,
+		job_source_fields,
+		job_source_type,
+		job_source_type_info,
+		job_source_merge_into_record_id,
+		job_source_target_merge_into_record_id,
+		job_start,
+		job_end,
+		job_duration,
+		job_run_count,
+		job_log,
+		job_state,
+		job_error_code,
+		job_error_text,
+		parent_path,
+		child_job_start,
+		child_job_end,
+		child_job_duration,
+		sync_source_system,
+		sync_source_model,
+		sync_source_record_id,
+		sync_source_merge_into_record_id,
+		sync_target_system,
+		sync_target_model,
+		sync_target_record_id,
+		sync_target_merge_into_record_id,
+		sync_source_data,
+		sync_target_data_before,
+		sync_target_data_after,
+		sync_target_request,
+		sync_target_answer,
+		sync_start,
+		sync_end,
+		sync_duration,
+		create_uid,
+		create_date,
+		write_uid,
+		write_date
+	from moved_rows
+	returning id
+)
+select count(id) from inserted;</value>
+  </data>
+  <data name="Archive_finished_SyncJobs_Part_2" xml:space="preserve">
+    <value>with recursive to_be_moved as (
+			-- roots
+			select id, parent_job_id from (
+				select id, parent_job_id
+				from sosync_job
+				where
+					parent_job_id is null
+					and job_state in ('done', 'skipped', 'error')
+					and job_closed_by_job_id is not null
+				order by id asc
+				-- WARNING: Do not increase limit. Higher limits change
+				--			the postgres execution plan and result in terrible
+				--			query times
 				limit 100
 			) first_parent
 
