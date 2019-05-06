@@ -277,6 +277,14 @@ namespace Syncer.Workers
                 _log.LogInformation($"Thread {threadNumber} threw an exception {ex.ToString()}");
                 throw;
             }
+            finally
+            {
+                // Before finishing the thread, clean up OdooService instance
+                _log.LogInformation($"Thread {threadNumber} disposing of OdooService class.");
+                var odooSvc = _svc.GetService<OdooService>();
+                odooSvc.Client.Dispose();
+                odooSvc.Client = null;
+            }
 
             _log.LogInformation($"Thread {threadNumber} clean exit");
         }
