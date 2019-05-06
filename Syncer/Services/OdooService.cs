@@ -13,7 +13,7 @@ namespace Syncer.Services
     /// Wraps the <see cref="OdooClient"/> class in a service to be
     /// consumed by dependency injection.
     /// </summary>
-    public class OdooService
+    public class OdooService : IDisposable
     {
         #region Members
         [ThreadStatic]
@@ -47,6 +47,12 @@ namespace Syncer.Services
             var client = new OdooClient($"https://{_options.Online_Host}/xmlrpc/2/", _options.Instance);
             client.Authenticate(_options.Online_Sosync_User, _options.Online_Sosync_PW);
             return client;
+        }
+
+        public void Dispose()
+        {
+            if (_client != null)
+                _client.Dispose();
         }
         #endregion
 
