@@ -125,7 +125,7 @@
 				from sosync_job
 				where
 					parent_job_id is null
-					and job_state in ('done', 'skipped', 'error')
+					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is null
 				order by id asc
 				-- WARNING: Do not increase limit. Higher limits change
@@ -260,7 +260,7 @@ select count(id) from inserted;</value>
 				from sosync_job
 				where
 					parent_job_id is null
-					and job_state in ('done', 'skipped', 'error')
+					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is not null
 				order by id asc
 				-- WARNING: Do not increase limit. Higher limits change
@@ -402,7 +402,7 @@ select count(id) from inserted;</value>
 		and job_source_system = @job_source_system
 		and job_source_model = @job_source_model
 		and job_source_record_id = @job_source_record_id
-		and job_state = 'new'
+		and job_state in ('new', 'error', 'error_retry')
 	returning id
 )
 select count(*) affected_rows from updated_rows;</value>

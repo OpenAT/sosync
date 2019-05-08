@@ -68,7 +68,7 @@ namespace WebSosync.Data.Properties {
         ///				from sosync_job
         ///				where
         ///					parent_job_id is null
-        ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;, &apos;error&apos;)
+        ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is null
         ///				order by id asc
         ///				-- WARNING: Do not increase limit. Higher limits change
@@ -80,7 +80,7 @@ namespace WebSosync.Data.Properties {
         ///			union all
         ///
         ///			-- children
-        ///			select child. [rest of string was truncated]&quot;;.
+        ///			select child.id, child [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs {
             get {
@@ -96,7 +96,7 @@ namespace WebSosync.Data.Properties {
         ///				from sosync_job
         ///				where
         ///					parent_job_id is null
-        ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;, &apos;error&apos;)
+        ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is not null
         ///				order by id asc
         ///				-- WARNING: Do not increase limit. Higher limits change
@@ -108,7 +108,7 @@ namespace WebSosync.Data.Properties {
         ///			union all
         ///
         ///			-- children
-        ///			select ch [rest of string was truncated]&quot;;.
+        ///			select child.id, c [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs_Part_2 {
             get {
@@ -131,9 +131,7 @@ namespace WebSosync.Data.Properties {
         ///		and job_source_system = @job_source_system
         ///		and job_source_model = @job_source_model
         ///		and job_source_record_id = @job_source_record_id
-        ///		and job_state = &apos;new&apos;
-        ///	returning id
-        ///)        /// [rest of string was truncated]&quot;;.
+        ///		and job_state in (&apos;new&apos;, &apos;error&apos;, &apos;error [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClosePreviousJobs_Update_SCRIPT {
             get {
