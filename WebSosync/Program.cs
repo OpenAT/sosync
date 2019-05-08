@@ -257,7 +257,7 @@ namespace WebSosync
 
             job.ShutdownPending = true;
 
-            // As logn the job status isn't stopped or error, keep requesting to stop it
+            // As long the job status isn't stopped or error, keep requesting to stop it
             while (job.Status != BackgoundJobState.Idle && job.Status != BackgoundJobState.Error)
             {
                 log.LogInformation("Asking jobs to stop");
