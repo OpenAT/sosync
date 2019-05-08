@@ -364,6 +364,11 @@ namespace Syncer.Workers
                     _log.LogError(ex.ToString());
                     UpdateJobError(dataService, job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
                 }
+                catch (ModelNotFoundException ex)
+                {
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, ex.ToString(), useErrorRetry: false);
+                }
                 catch (Exception ex)
                 {
                     _log.LogError(ex.ToString());
@@ -457,9 +462,9 @@ namespace Syncer.Workers
             db.UpdateJob(job);
         }
 
-        private void UpdateJobError(DataService db, SyncJob job, string message)
+        private void UpdateJobError(DataService db, SyncJob job, string message, bool useErrorRetry = true)
         {
-            JobHelper.SetJobError(job, SosyncError.Unknown, message);
+            JobHelper.SetJobError(job, SosyncError.Unknown, message, useErrorRetry);
             db.UpdateJob(job);
         }
         #endregion
