@@ -113,6 +113,7 @@ namespace WebSosync
 
             // Transient services
             services.AddTransient<DataService>();
+            services.AddTransient<FlowCheckService>();
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);

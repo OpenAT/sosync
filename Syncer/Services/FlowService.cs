@@ -3,6 +3,7 @@ using Syncer.Attributes;
 using Syncer.Exceptions;
 using Syncer.Flows;
 using Syncer.Flows.Temporary;
+using Syncer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -168,6 +169,26 @@ namespace Syncer.Services
             }
 
             throw new NotSupportedException($"No active sync flow found for model '{modelName}' of job_source_type '{jobType}'");
+        }
+
+        public FlowInfo GetFlowInfo(string modelName)
+        {
+            var flowNames = GetFlowTypes<ReplicateSyncFlow>()
+                .Select(
+                    f => new Tuple<string, string>(
+                        f.GetCustomAttribute<OnlineModelAttribute>().Name,
+                        f.GetCustomAttribute<StudioModelAttribute>().Name))
+                .Where(f => f.Item1 == modelName || f.Item2 == modelName)
+                .SingleOrDefault();
+
+            if (flowNames == null)
+                return null;
+
+            return new FlowInfo()
+            {
+                OnlineModelName = flowNames.Item1,
+                StudioModelName = flowNames.Item2
+            };
         }
 
         /// <summary>

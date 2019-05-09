@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
+using Syncer.Flows;
 using Syncer.Models;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Models;
@@ -22,6 +27,7 @@ namespace WebSosync.Controllers
         private ILogger<ServiceController> _log;
         private DataService _db;
         private GitService _git;
+        private FlowCheckService _flowCheckService;
         #endregion
 
         #region Constructors
@@ -29,12 +35,14 @@ namespace WebSosync.Controllers
             IBackgroundJob<SyncWorker> syncWorkerJob,
             ILogger<ServiceController> logger,
             DataService db,
-            GitService git)
+            GitService git,
+            FlowCheckService flowCheckService)
         {
             _syncWorkerJob = syncWorkerJob;
             _log = logger;
             _db = db;
             _git = git;
+            _flowCheckService = flowCheckService;
         }
         #endregion
 
@@ -100,6 +108,24 @@ namespace WebSosync.Controllers
         {
             syncJob.Start();
             return new OkResult();
+        }
+
+        [HttpGet("check/{modelName}/{id}/{foreignId?}")]
+        public async Task<IActionResult> CheckAsync(string modelName, int id, int? foreignId)
+        {
+            try
+            {
+                var result = await _flowCheckService.GetModelState(
+                    modelName,
+                    id,
+                    foreignId);
+
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
         }
         #endregion
     }

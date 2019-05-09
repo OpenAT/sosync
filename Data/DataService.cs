@@ -71,19 +71,23 @@ namespace WebSosync.Data
         public DataService(SosyncOptions config)
         {
             _config = config;
-
-            _con = new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
-                config.DB_Host,
-                config.DB_Port,
-                config.DB_Name,
-                config.DB_User,
-                config.DB_User_PW));
+            _con = CreateConnection();
 
             _con.Open();
         }
         #endregion
 
         #region Methods
+        private NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(ConnectionHelper.GetPostgresConnectionString(
+                _config.DB_Host,
+                _config.DB_Port,
+                _config.DB_Name,
+                _config.DB_User,
+                _config.DB_User_PW));
+        }
+
         public IDbTransaction BeginTransaction()
         {
             return _con.BeginTransaction();
@@ -221,6 +225,19 @@ namespace WebSosync.Data
             CleanModel(result);
 
             return result;
+        }
+
+        public async Task<JobErrorCount> GetModelErrorCountAsync(string model, int id)
+        {
+            using (var con = CreateConnection())
+            {
+                var results = await con
+                    .QueryAsync<JobErrorCount>(
+                        Resources.CheckModelQuery,
+                        new { model, id });
+
+                return results.SingleOrDefault();
+            }
         }
 
         private void CleanModel(SyncJob model)
