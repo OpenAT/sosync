@@ -61,7 +61,12 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to with recursive to_be_moved as (
+        ///   Looks up a localized string similar to -- sosync2: Archiving part 1
+        ///SET enable_seqscan = OFF;
+        ///SET enable_hashagg = OFF;
+        ///SET enable_hashjoin = OFF;
+        ///SET enable_mergejoin = OFF;
+        ///with recursive to_be_moved as (
         ///			-- roots
         ///			select id, parent_job_id from (
         ///				select id, parent_job_id
@@ -71,16 +76,13 @@ namespace WebSosync.Data.Properties {
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is null
         ///				order by id asc
-        ///				-- WARNING: Do not increase limit. Higher limits change
-        ///				--			the postgres execution plan and result in terrible
-        ///				--			query times
-        ///				limit 100
+        ///				limit 1000
         ///			) first_parent
         ///
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, child [rest of string was truncated]&quot;;.
+        ///			select child.id, child.p [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs {
             get {
@@ -89,7 +91,12 @@ namespace WebSosync.Data.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to with recursive to_be_moved as (
+        ///   Looks up a localized string similar to -- sosync2: Archiving part 2
+        ///SET enable_seqscan = OFF;
+        ///SET enable_hashagg = OFF;
+        ///SET enable_hashjoin = OFF;
+        ///SET enable_mergejoin = OFF;
+        ///with recursive to_be_moved as (
         ///			-- roots
         ///			select id, parent_job_id from (
         ///				select id, parent_job_id
@@ -99,20 +106,35 @@ namespace WebSosync.Data.Properties {
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is not null
         ///				order by id asc
-        ///				-- WARNING: Do not increase limit. Higher limits change
-        ///				--			the postgres execution plan and result in terrible
-        ///				--			query times
-        ///				limit 100
+        ///				limit 1000
         ///			) first_parent
         ///
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, c [rest of string was truncated]&quot;;.
+        ///			select child.id, chi [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs_Part_2 {
             get {
                 return ResourceManager.GetString("Archive_finished_SyncJobs_Part_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- sosync2: Check sosync_job error and retry count
+        ///select
+        ///	count(case when job_state = &apos;error&apos; then 1 else null end) Error
+        ///	,count(case when job_state = &apos;error_retry&apos; then 1 else null end) ErrorRetry
+        ///from
+        ///	sosync_job
+        ///where
+        ///	job_source_record_id = @id
+        ///	and job_source_model = @model
+        ///	and job_state in (&apos;new&apos;, &apos;error&apos;, &apos;error_retry&apos;).
+        /// </summary>
+        internal static string CheckModelQuery {
+            get {
+                return ResourceManager.GetString("CheckModelQuery", resourceCulture);
             }
         }
         

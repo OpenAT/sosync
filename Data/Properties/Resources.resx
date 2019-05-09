@@ -118,7 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Archive_finished_SyncJobs" xml:space="preserve">
-    <value>with recursive to_be_moved as (
+    <value>-- sosync2: Archiving part 1
+SET enable_seqscan = OFF;
+SET enable_hashagg = OFF;
+SET enable_hashjoin = OFF;
+SET enable_mergejoin = OFF;
+with recursive to_be_moved as (
 			-- roots
 			select id, parent_job_id from (
 				select id, parent_job_id
@@ -128,10 +133,7 @@
 					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is null
 				order by id asc
-				-- WARNING: Do not increase limit. Higher limits change
-				--			the postgres execution plan and result in terrible
-				--			query times
-				limit 100
+				limit 1000
 			) first_parent
 
 			union all
@@ -253,7 +255,12 @@ inserted as (
 select count(id) from inserted;</value>
   </data>
   <data name="Archive_finished_SyncJobs_Part_2" xml:space="preserve">
-    <value>with recursive to_be_moved as (
+    <value>-- sosync2: Archiving part 2
+SET enable_seqscan = OFF;
+SET enable_hashagg = OFF;
+SET enable_hashjoin = OFF;
+SET enable_mergejoin = OFF;
+with recursive to_be_moved as (
 			-- roots
 			select id, parent_job_id from (
 				select id, parent_job_id
@@ -263,10 +270,7 @@ select count(id) from inserted;</value>
 					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is not null
 				order by id asc
-				-- WARNING: Do not increase limit. Higher limits change
-				--			the postgres execution plan and result in terrible
-				--			query times
-				limit 100
+				limit 1000
 			) first_parent
 
 			union all
@@ -386,6 +390,18 @@ inserted as (
 	returning id
 )
 select count(id) from inserted;</value>
+  </data>
+  <data name="CheckModelQuery" xml:space="preserve">
+    <value>-- sosync2: Check sosync_job error and retry count
+select
+	count(case when job_state = 'error' then 1 else null end) Error
+	,count(case when job_state = 'error_retry' then 1 else null end) ErrorRetry
+from
+	sosync_job
+where
+	job_source_record_id = @id
+	and job_source_model = @model
+	and job_state in ('new', 'error', 'error_retry')</value>
   </data>
   <data name="ClosePreviousJobs_Update_SCRIPT" xml:space="preserve">
     <value>with updated_rows as (
