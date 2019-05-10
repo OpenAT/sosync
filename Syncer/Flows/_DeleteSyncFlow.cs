@@ -131,7 +131,7 @@ namespace Syncer.Flows
                 throw new SyncerException(String.Format("Failed to read data from model {0} {1} before deletion.{2}",
                     OnlineModelName,
                     odooID?.ToString() ?? "<Unknown ID>",
-                    odooID.HasValue ? "" : " job_source_target_record_id was not set and the model could not be found via FS-ID."));
+                    odooID.HasValue ? "" : $" job_source_target_record_id was not set and the model could not be found via FS-ID ({studioID})."));
 
             UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
 
