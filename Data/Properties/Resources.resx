@@ -398,8 +398,8 @@ select
 from
 	sosync_job
 where
-	job_source_record_id = 2000019 -- @id
-	and job_source_model = 'dbo.Person' -- @model
+	job_source_record_id = @id
+	and job_source_model = @model
 	and job_state in ('new', 'error', 'error_retry')
 limit 1</value>
   </data>

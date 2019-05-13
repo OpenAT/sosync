@@ -127,8 +127,8 @@ namespace WebSosync.Data.Properties {
         ///from
         ///	sosync_job
         ///where
-        ///	job_source_record_id = 2000019 -- @id
-        ///	and job_source_model = &apos;dbo.Person&apos; -- @model
+        ///	job_source_record_id = @id
+        ///	and job_source_model = @model
         ///	and job_state in (&apos;new&apos;, &apos;error&apos;, &apos;error_retry&apos;)
         ///limit 1.
         /// </summary>
