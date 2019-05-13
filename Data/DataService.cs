@@ -227,12 +227,12 @@ namespace WebSosync.Data
             return result;
         }
 
-        public async Task<JobErrorCount> GetModelErrorCountAsync(string model, int id)
+        public async Task<bool?> GetModelErrorCountAsync(string model, int id)
         {
             using (var con = CreateConnection())
             {
                 var results = await con
-                    .QueryAsync<JobErrorCount>(
+                    .QueryAsync<bool?>(
                         Resources.CheckModelQuery,
                         new { model, id });
 

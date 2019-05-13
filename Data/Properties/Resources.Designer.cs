@@ -123,14 +123,14 @@ namespace WebSosync.Data.Properties {
         /// <summary>
         ///   Looks up a localized string similar to -- sosync2: Check sosync_job error and retry count
         ///select
-        ///	count(case when job_state = &apos;error&apos; then 1 else null end) Error
-        ///	,count(case when job_state = &apos;error_retry&apos; then 1 else null end) ErrorRetry
+        ///	true
         ///from
         ///	sosync_job
         ///where
-        ///	job_source_record_id = @id
-        ///	and job_source_model = @model
-        ///	and job_state in (&apos;new&apos;, &apos;error&apos;, &apos;error_retry&apos;).
+        ///	job_source_record_id = 2000019 -- @id
+        ///	and job_source_model = &apos;dbo.Person&apos; -- @model
+        ///	and job_state in (&apos;new&apos;, &apos;error&apos;, &apos;error_retry&apos;)
+        ///limit 1.
         /// </summary>
         internal static string CheckModelQuery {
             get {

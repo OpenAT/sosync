@@ -6,6 +6,7 @@ using Syncer.Models;
 using Syncer.Services;
 using Syncer.Workers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -110,15 +111,48 @@ namespace WebSosync.Controllers
             return new OkResult();
         }
 
-        [HttpGet("check/{modelName}/{id}/{foreignId?}")]
-        public async Task<IActionResult> CheckAsync(string modelName, int id, int? foreignId)
+        [HttpGet("check")]
+        public async Task<IActionResult> CheckAsync([FromQuery]string model, [FromQuery]string id, [FromQuery]string fk)
         {
             try
             {
+                // Validate
+                var badRequest = false;
+                var messages = new List<string>();
+
+                if (string.IsNullOrEmpty(model))
+                {
+                    badRequest = true;
+                    messages.Add("Model required.");
+                }
+
+                int idValue = 0;
+                if (string.IsNullOrEmpty(id))
+                {
+                    badRequest = true;
+                    messages.Add("ID required.");
+                }
+                else if (!string.IsNullOrEmpty(id) && !int.TryParse(id, out idValue) || idValue == 0)
+                {
+                    badRequest = true;
+                    messages.Add("ID must be an integer value greater than zero.");
+                }
+
+                int fkValue = 0;
+                if (!string.IsNullOrEmpty(fk) && !int.TryParse(fk, out fkValue))
+                {
+                    badRequest = true;
+                    messages.Add("FK (foreign key) must be an integer value.");
+                }
+
+                if (badRequest)
+                    return new BadRequestObjectResult(string.Join(" ", messages));
+
+                // Process
                 var result = await _flowCheckService.GetModelState(
-                    modelName,
-                    id,
-                    foreignId);
+                    model,
+                    idValue,
+                    fkValue == 0 ? null : (int?)fkValue);
 
                 return new OkObjectResult(result);
             }

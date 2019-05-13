@@ -394,14 +394,14 @@ select count(id) from inserted;</value>
   <data name="CheckModelQuery" xml:space="preserve">
     <value>-- sosync2: Check sosync_job error and retry count
 select
-	count(case when job_state = 'error' then 1 else null end) Error
-	,count(case when job_state = 'error_retry' then 1 else null end) ErrorRetry
+	true
 from
 	sosync_job
 where
-	job_source_record_id = @id
-	and job_source_model = @model
-	and job_state in ('new', 'error', 'error_retry')</value>
+	job_source_record_id = 2000019 -- @id
+	and job_source_model = 'dbo.Person' -- @model
+	and job_state in ('new', 'error', 'error_retry')
+limit 1</value>
   </data>
   <data name="ClosePreviousJobs_Update_SCRIPT" xml:space="preserve">
     <value>with updated_rows as (

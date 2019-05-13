@@ -1,4 +1,6 @@
-﻿using dadi_data.Models;
+﻿using DaDi.Odoo;
+using DaDi.Odoo.Models;
+using dadi_data.Models;
 using Syncer.Models;
 using Syncer.Services;
 using System;
@@ -45,20 +47,20 @@ namespace WebSosync.Services
             if (flowInfo.OnlineModelName == modelName)
             {
                 alternateModelName = flowInfo.StudioModelName;
-                studioID = id;
-                onlineID = foreignId;
+                onlineID = id;
+                studioID = foreignId;
             }
             else
             {
-                alternateModelName = flowInfo.StudioModelName;
-                onlineID = id;
-                studioID = foreignId;
+                alternateModelName = flowInfo.OnlineModelName;
+                onlineID = foreignId;
+                studioID = id;
             }
 
             if (string.IsNullOrEmpty(alternateModelName))
                 throw new Exception("Model not found");
 
-            var jobErrors = await GetJobErrorsAsync(
+            var hasOpenJobs = await GetOpenJobAsync(
                 modelName, 
                 alternateModelName, 
                 id, 
@@ -67,7 +69,7 @@ namespace WebSosync.Services
             var inSync = false;
             var info = "";
 
-            if (jobErrors.Error + jobErrors.ErrorRetry == 0)
+            if (hasOpenJobs ?? false == false)
             {
                 inSync = await IsModelSynchronized(flowInfo,
                     onlineID,
@@ -83,13 +85,12 @@ namespace WebSosync.Services
             return new SyncModelState()
             {
                 InSync = inSync,
-                JobErrors = jobErrors.Error,
-                JobErrorsRetry = jobErrors.ErrorRetry,
+                HasOpenJobs = hasOpenJobs ?? false,
                 Information = info
             };
         }
 
-        public async Task<JobErrorCount> GetJobErrorsAsync(
+        public async Task<bool?> GetOpenJobAsync(
             string modelName,
             string alternateModelName,
             int id,
@@ -97,22 +98,18 @@ namespace WebSosync.Services
         {
 
             var query1 = _db.GetModelErrorCountAsync(modelName, id);
-            Task<JobErrorCount> query2 = null;
+            Task<bool?> query2 = null;
 
             if (foreignId != null)
                 query2 = _db.GetModelErrorCountAsync(alternateModelName, foreignId.Value);
 
-            var result = new JobErrorCount();
+            bool? result = null;
 
             var result1 = await query1;
-            result.Error += result1.Error;
-            result.ErrorRetry += result1.ErrorRetry;
 
             if (foreignId != null)
             {
                 var result2 = await query2;
-                result.Error += result2.Error;
-                result.ErrorRetry += result2.ErrorRetry;
             }
 
             return result;
@@ -123,12 +120,110 @@ namespace WebSosync.Services
             int? onlineID,
             int? studioID)
         {
+            DateTime? studioSosyncWriteDate = null;
+            DateTime? onlineSosyncWriteDate = null;
+            
+            // Studio
+            if (studioID != null)
+                studioSosyncWriteDate = await GetStudioSosyncWriteDateViaStudioID(
+                    flowInfo.StudioModelName,
+                    studioID.Value);
+            else
+                studioSosyncWriteDate = await GetStudioSosyncWriteDateViaOnlineID(
+                    flowInfo.StudioModelName,
+                    onlineID.Value);
+
+            // Online
+            if (onlineID != null)
+                onlineSosyncWriteDate = GetOnlineSosyncWriteDateViaOnlineID(
+                    flowInfo.OnlineModelName,
+                    onlineID.Value);
+            else
+                onlineSosyncWriteDate = GetOnlineSosyncWriteDateViaStudioID(
+                    flowInfo.OnlineModelName,
+                    studioID.Value);
+
+            // Compare
+            var hasBothDates = studioSosyncWriteDate != null
+                && onlineSosyncWriteDate != null;
+
+            return hasBothDates && studioSosyncWriteDate == onlineSosyncWriteDate;
+        }
+
+        private async Task<DateTime?> GetStudioSosyncWriteDateViaStudioID(
+            string studioModelName,
+            int studioID)
+        {
             using (var db = _mdb.GetDataService<dboTypen>())
             {
-                var studioTime = await db.ExecuteQueryAsync<DateTime>("");
-            }
+                var query = $"SELECT sosync_write_date FROM {_mdb.GetStudioModelReadView(studioModelName)} " +
+                    $"WHERE {_mdb.GetStudioModelIdentity(studioModelName)} = @studioID;";
 
-            return true;
+                return (await db.ExecuteQueryAsync<DateTime?>(
+                    query,
+                    new { studioID }))
+                    .SingleOrDefault();
+            }
+        }
+
+        private async Task<DateTime?> GetStudioSosyncWriteDateViaOnlineID(
+            string studioModelName,
+            int onlineID)
+        {
+            using (var db = _mdb.GetDataService<dboTypen>())
+            {
+                var query = $"SELECT sosync_write_date FROM {_mdb.GetStudioModelReadView(studioModelName)} " +
+                    $"WHERE sosync_fso_id = @onlineID;";
+
+                return (await db.ExecuteQueryAsync<DateTime?>(
+                    query,
+                    new { onlineID }))
+                    .SingleOrDefault();
+            }
+        }
+
+        private DateTime? GetOnlineSosyncWriteDateViaOnlineID(
+            string onlineModelName,
+            int onlineID)
+        {
+            var onlineData = _odoo.Client.GetDictionary(
+                onlineModelName,
+                onlineID,
+                new[] { "sosync_write_date" });
+
+            return OdooConvert.ToDateTime(
+                (string)onlineData["sosync_write_date"],
+                true);
+        }
+
+        private DateTime? GetOnlineSosyncWriteDateViaStudioID(
+            string onlineModelName,
+            int studioID)
+        {
+            var arg = new OdooSearchArgument()
+            {
+                Field = "sosync_fs_id",
+                Operator = "=",
+                Value = studioID
+            };
+
+            try
+            {
+                var onlineID = _odoo.Client.SearchBy(onlineModelName, new[] { arg })[0];
+
+                var onlineData = _odoo.Client.GetDictionary(
+                    onlineModelName,
+                    onlineID,
+                    new[] { "sosync_write_date" });
+
+                return OdooConvert.ToDateTime(
+                    (string)onlineData["sosync_write_date"],
+                    true);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
         }
     }
 }
