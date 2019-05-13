@@ -111,42 +111,21 @@ namespace WebSosync.Controllers
             return new OkResult();
         }
 
-        [HttpGet("check")]
+        [HttpGet("quick-check")]
         public async Task<IActionResult> CheckAsync([FromQuery]string model, [FromQuery]string id, [FromQuery]string fk)
         {
             try
             {
                 // Validate
-                var badRequest = false;
-                var messages = new List<string>();
+                var messages = RequestValidator
+                    .ValidateQuickCheck(model, id, fk);
 
-                if (string.IsNullOrEmpty(model))
-                {
-                    badRequest = true;
-                    messages.Add("Model required.");
-                }
-
-                int idValue = 0;
-                if (string.IsNullOrEmpty(id))
-                {
-                    badRequest = true;
-                    messages.Add("ID required.");
-                }
-                else if (!string.IsNullOrEmpty(id) && !int.TryParse(id, out idValue) || idValue == 0)
-                {
-                    badRequest = true;
-                    messages.Add("ID must be an integer value greater than zero.");
-                }
-
-                int fkValue = 0;
-                if (!string.IsNullOrEmpty(fk) && !int.TryParse(fk, out fkValue))
-                {
-                    badRequest = true;
-                    messages.Add("FK (foreign key) must be an integer value.");
-                }
-
-                if (badRequest)
+                if (messages.Count > 0)
                     return new BadRequestObjectResult(string.Join(" ", messages));
+
+                int idValue = int.Parse(id);
+                int fkValue = 0;
+                int.TryParse(fk, out fkValue);
 
                 // Process
                 var result = await _flowCheckService.GetModelState(

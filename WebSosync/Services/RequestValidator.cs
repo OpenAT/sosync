@@ -176,5 +176,27 @@ namespace WebSosync.Services
             if (!possibleValues.Contains(data[fieldName]))
                 errorList.Add(fieldName, $"Field {fieldName} must be one of the values [{string.Join(", ", possibleValues)}]");
         }
+
+        public static List<string> ValidateQuickCheck(string model, string id, string fk)
+        {
+            var messages = new List<string>();
+
+            if (string.IsNullOrEmpty(model))
+                messages.Add("Model required.");
+
+            int idValue = 0;
+
+            if (string.IsNullOrEmpty(id))
+                messages.Add("ID required.");
+            else if (!string.IsNullOrEmpty(id) && !int.TryParse(id, out idValue) || idValue == 0)
+                messages.Add("ID must be an integer value greater than zero.");
+
+            int fkValue = 0;
+
+            if (!string.IsNullOrEmpty(fk) && !int.TryParse(fk, out fkValue))
+                messages.Add("FK (foreign key) must be an integer value.");
+
+            return messages;
+        }
     }
 }
