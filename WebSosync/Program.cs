@@ -59,7 +59,6 @@ namespace WebSosync
             Args = args;
 
             var osNameAndVersion = RuntimeInformation.OSDescription;
-            bool forceQuit = false;
 
             var parameters = new ConfigurationBuilder()
                 .AddCommandLine(Program.Args, Program.SwitchMappings)
@@ -152,34 +151,31 @@ namespace WebSosync
 
             try
             {
-                if (!forceQuit && !string.IsNullOrEmpty(sosyncConfig.Instance))
+                if (!string.IsNullOrEmpty(sosyncConfig.Instance))
                     TestDatabaseConnection(sosyncConfig, log);
             }
             catch (PostgresException ex)
             {
                 // Log the exception and exit the program
                 log.LogError(ex.Message);
-                forceQuit = true;
+                throw;
             }
             catch (SocketException)
             {
                 // Log the exception and exit the program
                 log.LogError("Could not connect to pgSQL server.");
-                forceQuit = true;
+                throw;
             }
 
             try
             {
-                if(!forceQuit)
-                {
-                    var flowSvc = (FlowService)host.Services.GetService(typeof(FlowService));
-                    flowSvc.ThrowOnMissingFlowAttributes();
-                }
+                var flowSvc = (FlowService)host.Services.GetService(typeof(FlowService));
+                flowSvc.ThrowOnMissingFlowAttributes();
             }
             catch (Exception ex)
             {
                 log.LogError(ex.Message);
-                forceQuit = true;
+                throw;
             }
 
             TimeService timeSvc = null;
@@ -202,19 +198,14 @@ namespace WebSosync
 
             try
             {
-                // Start the webserver if there is no forced quit
-                if (!forceQuit)
-                {
-                    var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
-                    jobWorker.Start();
-
-                    host.Run();
-                    //host.Run(svc.Token);
-                }
+                var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
+                jobWorker.Start();
+                host.Run();
             }
             catch (IOException ex)
             {
                 log.LogCritical(ex.Message);
+                throw;
             }
 
             log.LogInformation("Sosync service ended");
