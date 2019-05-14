@@ -260,13 +260,13 @@ namespace WebSosync
             // As long the job status isn't stopped or error, keep requesting to stop it
             while (job.Status != BackgoundJobState.Idle && job.Status != BackgoundJobState.Error)
             {
-                log.LogInformation("Asking jobs to stop");
+                log.LogWarning("Asking jobs to stop");
                 job.Stop();
                 System.Threading.Thread.Sleep(1000);
             }
 
             // The job terminated cleanly, graceful exit by requesting the host thread to shut down
-            log.LogInformation($"Exiting gracefully.");
+            log.LogWarning($"Exiting gracefully.");
 
             if (host != null)
                 host.StopAsync();
