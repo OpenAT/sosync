@@ -100,7 +100,7 @@ namespace WebSosync
 
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                //.UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseUrls(defaultUrls.ToArray())
                 .Build();
