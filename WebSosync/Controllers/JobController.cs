@@ -80,6 +80,7 @@ namespace WebSosync.Controllers
         }
 
         [HttpPost("bulk-create")]
+        [RequestSizeLimit(1073741824000)]
         public IActionResult Post([FromServices]IServiceProvider services, [FromBody]Dictionary<string, object>[] dictionaryList)
         {
             if (dictionaryList == null || dictionaryList.Length == 0)
