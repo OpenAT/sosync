@@ -31,7 +31,15 @@ namespace Syncer.Flows.gl2k.garden
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException($"Model {StudioModelName} can only be synchronized from {SosyncSystem.FSOnline.Value} to {SosyncSystem.FundraisingStudio.Value}.");
+            SimpleTransformToOnline<fsongarden, gl2kGarden>(
+                studioID,
+                action,
+                x => x.gardenID,
+                (studio, online) =>
+                {
+                    // FRST can only alter these fields
+                    online.Add("state", studio.state);
+                });
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
