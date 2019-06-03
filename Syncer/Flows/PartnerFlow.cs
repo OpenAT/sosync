@@ -691,6 +691,15 @@ namespace Syncer.Flows
                             throw;
                         }
                     }
+
+                    // Start PAC procedure, for new or changed addresses
+                    if (addressChanged)
+                    {
+                        var xmlString = $"<IDS><PersonAdresse PersonAdresseID=\"{person.address.PersonAdresseID}\" Arbeit=\"PACSuche\" /></IDS>";
+                        personSvc.ExecuteNonQueryProcedure("stp_800_AsyncSend_0020_PersonPAC", new { Person = xmlString });
+                    }
+                    // --
+
                     personSvc.CommitTransaction();
                     LogMilliseconds($"{nameof(TransformToStudio)} commit transaction dbo.Person", personSvc.LastQueryExecutionTimeMS);
 
