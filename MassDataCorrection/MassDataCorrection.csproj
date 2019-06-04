@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dadi-data" Version="1.6.7" />
-    <PackageReference Include="DaDi.Odoo" Version="1.4.2" />
+    <PackageReference Include="dadi-data" Version="1.6.8" />
+    <PackageReference Include="DaDi.Odoo" Version="1.4.3" />
     <PackageReference Include="Dapper" Version="1.60.6" />
     <PackageReference Include="Npgsql" Version="4.0.5" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
