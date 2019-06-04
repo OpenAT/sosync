@@ -71,6 +71,7 @@ namespace Syncer.Flows.gl2k.garden
                     studio.lastname = online.lastname;
                     studio.zip = online.zip;
                     studio.street = online.street;
+                    studio.street_number_web = online.street_number_web;
                     studio.city = online.city;
                     studio.LandID = landID;
                     studio.garden_size = online.garden_size;
