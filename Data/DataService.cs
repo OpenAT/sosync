@@ -117,7 +117,7 @@ namespace WebSosync.Data
         public void ReopenErrorJobs()
         {
             _con.Execute("update sosync_job set job_state = 'new' where job_state = 'error_retry';",
-                commandTimeout: 60 * 2);
+                commandTimeout: 60 * 10);
         }
 
         public int ArchiveFinishedSyncJobs()
