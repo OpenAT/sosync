@@ -558,7 +558,7 @@ namespace Syncer.Flows
 
             var isSimilar = false;
 
-            if (diff.TotalMilliseconds > -999 && diff.TotalMilliseconds <= toleranceMS)
+            if (diff.TotalMilliseconds > -1999 && diff.TotalMilliseconds <= toleranceMS)
                 isSimilar = true;
 
             var format = "yyyy-MM-dd HH:mm:ss.fffffff";
