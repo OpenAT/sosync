@@ -76,13 +76,13 @@ namespace WebSosync.Data.Properties {
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is null
         ///				order by id asc
-        ///				limit 1000
+        ///				limit 100
         ///			) first_parent
         ///
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, child.p [rest of string was truncated]&quot;;.
+        ///			select child.id, child.pa [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs {
             get {
@@ -106,13 +106,13 @@ namespace WebSosync.Data.Properties {
         ///					and job_state in (&apos;done&apos;, &apos;skipped&apos;)
         ///					and job_closed_by_job_id is not null
         ///				order by id asc
-        ///				limit 1000
+        ///				limit 100
         ///			) first_parent
         ///
         ///			union all
         ///
         ///			-- children
-        ///			select child.id, chi [rest of string was truncated]&quot;;.
+        ///			select child.id, chil [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Archive_finished_SyncJobs_Part_2 {
             get {

@@ -133,7 +133,7 @@ with recursive to_be_moved as (
 					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is null
 				order by id asc
-				limit 1000
+				limit 100
 			) first_parent
 
 			union all
@@ -270,7 +270,7 @@ with recursive to_be_moved as (
 					and job_state in ('done', 'skipped')
 					and job_closed_by_job_id is not null
 				order by id asc
-				limit 1000
+				limit 100
 			) first_parent
 
 			union all
