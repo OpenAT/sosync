@@ -38,13 +38,17 @@ namespace MassDataCorrection
                 //processor.Process(CheckDonationReports, new[] { "bsvw" });
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
-                //processor.Process(CheckEmails, new[] { "kino" });
+
+                processor.Process((inst, report) => CheckModel(inst, report, "fson.garden", "gl2k.garden", "state", "state"), new[] { "gl2k" });
+                SaveStat(_missingModels, "models_missing");
+                SaveStat(_modelNotSync, "models_mismatch");
+
                 //processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(UpdateErrorJobs, new[] { "demo" });
                 //processor.Process(UpdateErrorJobs, null);
                 //processor.Process(GetArchiveProgress, new[] { "demo" });
-                processor.Process(GetArchiveProgress, null);
-                PrintDictionary(_archiveProgress);
+                //processor.Process(GetArchiveProgress, null);
+                //PrintDictionary(_archiveProgress);
 
                 //SaveStat(_missingEmails, "emails_missing");
                 //SaveStat(_emailsNotSync, "emails_mismatch");
@@ -795,6 +799,98 @@ namespace MassDataCorrection
 
             if (notFoundCount > 0)
                 _checkEmail.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
+        }
+
+        private static Dictionary<string, List<int>> _modelNotSync = new Dictionary<string, List<int>>();
+        private static Dictionary<string, List<int>> _missingModels = new Dictionary<string, List<int>>();
+        private static Dictionary<string, Tuple<int, int>> _checkModel = new Dictionary<string, Tuple<int, int>>();
+        private static void CheckModel(InstanceInfo info, Action<float> reportProgress, string studioModel, string onlineModel, string dataMSSQL, string dataPostgresSQL)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            Dictionary<int, CheckModel> fsoListe = null;
+            Dictionary<int, CheckModel> fsListe = null;
+
+            using (var onlineCon = info.CreateOpenNpgsqlConnection())
+            {
+                fsoListe = onlineCon
+                    .Query<CheckModel>($@"
+select 
+    id as ID
+    , sosync_fs_id as ForeignID
+    , sosync_write_date as SosyncWriteDate
+    , {dataPostgresSQL} as Data
+from
+    {onlineModel.Replace(".", "_")}
+                        ")
+                    .ToDictionary(x => x.ID);
+            }
+
+            using (var fsCon = info.CreateOpenMssqlConnection())
+            {
+                fsListe = fsCon
+                    .Query<CheckModel>($@"
+select
+    {studioModel.Split(".")[1]}ID ID
+    ,sosync_fso_id ForeignID
+    ,sosync_write_date SosyncWriteDate
+    ,{dataMSSQL} Data
+from
+    {studioModel}
+                        ")
+                    .ToDictionary(x => x.ID);
+            }
+
+            // Compare data
+
+            var errCount = 0;
+            var notFoundCount = 0;
+
+            foreach (var fsModelKvp in fsListe)
+            {
+                var fsModel = fsModelKvp.Value;
+
+                if (fsModel.ForeignID.HasValue && !fsoListe.ContainsKey(fsModel.ForeignID.Value))
+                {
+                    Console.WriteLine($"{studioModel} {fsModel.ID} has sosync_fso_id {fsModel.ForeignID} but it was not found in {onlineModel}");
+                }
+            }
+
+            foreach (var fsoModelKvp in fsoListe)
+            {
+                var fsoModel = fsoModelKvp.Value;
+
+                if (fsoModel.ForeignID.HasValue && fsListe.ContainsKey(fsoModel.ForeignID.Value))
+                {
+                    var fsModel = fsListe[fsoModel.ForeignID.Value];
+
+                    if ((fsoModel.Data ?? "").ToLower().Trim() != (fsModel.Data ?? "").ToLower().Trim())
+                    {
+                        if (!_modelNotSync.ContainsKey(info.Instance))
+                            _modelNotSync.Add(info.Instance, new List<int>());
+
+                        _modelNotSync[info.Instance].Add(fsModel.ID);
+
+                        errCount++;
+                        Console.WriteLine($"Data mismatch: id={fsoModel.ID} {studioModel}ID={fsModel.ID} ({fsoModel.Data} != {fsModel.Data})");
+                        Console.WriteLine($"               online={fsoModel.SosyncWriteDate} studio={fsModel.SosyncWriteDate}");
+                    }
+                }
+                else
+                {
+                    if (!_missingModels.ContainsKey(info.Instance))
+                        _missingModels.Add(info.Instance, new List<int>());
+
+                    _missingModels[info.Instance].Add(fsoModel.ID);
+
+                    // Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
+                    notFoundCount++;
+                }
+            }
+
+            if (notFoundCount > 0)
+                _checkModel.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
         }
 
         private static Dictionary<string, List<int>> _missingPartnerIDs = new Dictionary<string, List<int>>();
