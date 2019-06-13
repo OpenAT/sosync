@@ -104,12 +104,15 @@ namespace Syncer.Flows
             var timeoutMS = Config.Model_Lock_Timeout;
             var lockWatch = Stopwatch.StartNew();
             LogMs(0, $"\nThread lock start", Job.ID, 0);
+            var wasLocked = false;
             while (locked)
             {
                 lock (ThreadService.JobLocks)
                 {
                     if (ThreadService.JobLocks.ContainsKey(hash))
                     {
+                        wasLocked = true;
+
                         if (ThreadService.JobLocks[hash] > 0)
                         {
                             locked = false;
@@ -142,6 +145,22 @@ namespace Syncer.Flows
             }
             lockWatch.Stop();
             LogMs(0, $"Thread lock end", Job.ID, (long)lockWatch.Elapsed.TotalMilliseconds);
+
+            if (wasLocked)
+            {
+                // If this thread had to wait due to a model lock,
+                // re-read the infos, fix keys if necessary and
+                // re-determine the sync direction
+                GetInfos(Job, out studioInfo, out onlineInfo);
+
+                fixKeysWatch.Restart();
+                LogMs(0, $"\nFixForeignKeys (after thread lock) start ", Job.ID, 0);
+                FixForeignKeys(Job, studioInfo, onlineInfo);
+                fixKeysWatch.Stop();
+                LogMs(0, $"FixForeignKeys (after thread lock) end ", Job.ID, (long)fixKeysWatch.Elapsed.TotalMilliseconds);
+
+                SetSyncSource(Job, out initialWriteDate, consistencyWatch, studioInfo, onlineInfo);
+            }
 
             try
             {
