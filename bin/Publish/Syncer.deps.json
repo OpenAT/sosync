@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "514702110a8b6af767448f31f32b7612402184f3"
+    "signature": "4f84d10c60bd386056c96ffb0438e38bd2be3396"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.4.3",
+          "DaDi.Odoo": "1.4.4",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
@@ -59,23 +59,23 @@
           }
         }
       },
-      "DaDi.Odoo/1.4.3": {
+      "DaDi.Odoo/1.4.4": {
         "dependencies": {
-          "DaDi.XmlRpc": "1.0.5",
+          "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.4.3.0",
-            "fileVersion": "1.4.3.0"
+            "assemblyVersion": "1.4.4.0",
+            "fileVersion": "1.4.4.0"
           }
         }
       },
-      "DaDi.XmlRpc/1.0.5": {
+      "DaDi.XmlRpc/1.0.6": {
         "runtime": {
           "lib/netstandard2.0/DaDi.XmlRpc.dll": {
-            "assemblyVersion": "1.0.5.0",
-            "fileVersion": "1.0.5.0"
+            "assemblyVersion": "1.0.6.0",
+            "fileVersion": "1.0.6.0"
           }
         }
       },
@@ -1462,19 +1462,19 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.4.3": {
+    "DaDi.Odoo/1.4.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sL+syXxuMGSqYqQIjjhgJS/XmDpZD8+OfozujBH2V5FTg8Djv5dxu37jEjep3f2Rx9O+yvQfZ3k1i17U2KUBrw==",
-      "path": "dadi.odoo/1.4.3",
-      "hashPath": "dadi.odoo.1.4.3.nupkg.sha512"
+      "sha512": "sha512-qrf4CuIpKxMUeJIF4U07jT5Gdd8YFkezpl32mWe35tLewDQEDj10+4JyJV4RwKCIxv+lBa0Qv77y7cLf1Dg6uA==",
+      "path": "dadi.odoo/1.4.4",
+      "hashPath": "dadi.odoo.1.4.4.nupkg.sha512"
     },
-    "DaDi.XmlRpc/1.0.5": {
+    "DaDi.XmlRpc/1.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-60nO2GUX8o1jLYjeQzV7PKD3+gFKraCHKW2mlf/TvWxUhXLHo1in5NK6LelMU4lVNgOqjXeKg4M6nl5urTaJ8A==",
-      "path": "dadi.xmlrpc/1.0.5",
-      "hashPath": "dadi.xmlrpc.1.0.5.nupkg.sha512"
+      "sha512": "sha512-6w0gjvgPJPGH2e6bThbHXaC4GSq5O+eVY+RSn42uwvNTdfp/6sZZmHbilxasrLnbjvKxA2eNEHXrCQTxnJAxXA==",
+      "path": "dadi.xmlrpc/1.0.6",
+      "hashPath": "dadi.xmlrpc.1.0.6.nupkg.sha512"
     },
     "Daemaged.NTP/0.6.6": {
       "type": "package",
