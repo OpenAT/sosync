@@ -335,7 +335,7 @@ namespace Syncer.Workers
 
                         _log.LogInformation($"{nameof(ProcessJob)}: Closing previous jobs (id  {job.ID})");
 
-                        if (new string[] { "done", "error" }.Contains((job.Job_State ?? "").ToLower()))
+                        if (new string[] { "done", "error", "skipped" }.Contains((job.Job_State ?? "").ToLower()))
                         {
                             var s = new Stopwatch();
                             s.Start();

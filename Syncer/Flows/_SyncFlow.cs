@@ -590,6 +590,13 @@ namespace Syncer.Flows
                 UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}\nProcedure: {ex.Procedure}\n");
                 throw;
             }
+            catch (SyncerDeletionFailedException ex)
+            {
+                Log.LogWarning(ex.Message + " Assuming model already deleted. Skipping job.");
+                Job.Job_Error_Code = SosyncError.Transformation.Value;
+                Job.Job_Error_Text += ex.ToString();
+                UpdateJobSkipped();
+            }
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
@@ -962,6 +969,21 @@ namespace Syncer.Flows
                 UpdateJob(nameof(UpdateJobSuccess), db, Job);
             }
         }
+
+        protected void UpdateJobSkipped()
+        {
+            Log.LogInformation($"Updating job {Job.ID}: job skipped");
+
+            using (var db = GetDb())
+            {
+                Job.Job_State = SosyncState.Skipped.Value;
+                Job.Job_End = DateTime.UtcNow;
+                Job.Write_Date = DateTime.UtcNow;
+
+                UpdateJob(nameof(UpdateJobSkipped), db, Job);
+            }
+        }
+
 
         /// <summary>
         /// Updates the job, indicating the processing was
