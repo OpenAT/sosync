@@ -839,7 +839,7 @@ namespace Syncer.Flows
 
             if (new string[] { "male", "female" }.Contains(source.Gender))
                 dest.GeschlechttypID = source.Gender == "male" ? 290 : 291;
-            else if (source.Gender == "other" && !new int[] { 292, 293, 294, 295 }.Contains(dest.GeschlechttypID))
+            else if (source.Gender == "other" && !new int[] { 292, 293, 294, 295, 0 }.Contains(dest.GeschlechttypID))
                 dest.GeschlechttypID = 2005821;
             else if (string.IsNullOrEmpty(source.Gender))
                 dest.GeschlechttypID = 0;
