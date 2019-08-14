@@ -67,7 +67,7 @@ namespace Syncer.Flows
             SimpleTransformToOnline<dboxBPKMeldespanne, accountFiscalYear>(
                 studioID,
                 action,
-                studioModel => studioModel.xBPKAccountID,
+                studioModel => studioModel.xBPKMeldespanneID,
                 (studio, online) =>
                     {
                         online.Add("company_id", companyID);
