@@ -171,6 +171,12 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gueltig_bis", studio.GültigBis.Date);
                         // state -- is only set by FSOnline
                         // main_address -- is only set by FSOnline
+
+                        online.Add("bestaetigt_typ", (object)MdbService
+                            .GetTypeValue(studio.BestaetigungsTypID) ?? false);
+
+                        online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
+                        online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
                     });
         }
 
@@ -207,6 +213,12 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.GültigBis = online.gueltig_bis.Date;
                         studio.HauptAdresse = online.main_address;
                         studio.State = online.state;
+
+                        studio.BestaetigungsTypID = MdbService
+                            .GetTypeID("PersonEmail_BestaetigungsTypID", online.bestaetigt_typ);
+
+                        studio.BestaetigtAmUm = DateTimeHelper.ToLocal(online.bestaetigt_am_um);
+                        studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
                     });
         }
     }

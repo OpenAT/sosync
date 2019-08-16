@@ -75,6 +75,7 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gui_anzeigen", studio.GUIAnzeigen);
                         online.Add("gueltig_von", studio.GültigVon);
                         online.Add("gueltig_bis", studio.GültigBis);
+                        online.Add("bestaetigung_erforderlich", studio.BestaetigungErforderlich);
                     });
         }
 

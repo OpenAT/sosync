@@ -93,6 +93,13 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("steuerung_bit", studio.Steuerung);
                         online.Add("gueltig_von", studio.GültigVon.Date);
                         online.Add("gueltig_bis", studio.GültigBis.Date);
+
+                        online.Add("bestaetigt_typ", (object)MdbService
+                            .GetTypeValue(studio.BestaetigungsTypID) ?? false);
+
+                        online.Add("state", studio.Status);
+                        online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
+                        online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
                     });
         }
 
@@ -135,6 +142,14 @@ namespace Syncer.Flows.zGruppeSystem
                     studio.Steuerung = online.steuerung_bit;
                     studio.GültigVon = online.gueltig_von.Date;
                     studio.GültigBis = online.gueltig_bis.Date;
+
+
+                    studio.BestaetigungsTypID = MdbService
+                        .GetTypeID("PersonEmailGruppe_BestaetigungsTypID", online.bestaetigt_typ);
+
+                    studio.BestaetigtAmUm = DateTimeHelper.ToLocal(online.bestaetigt_am_um);
+                    studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
+                    studio.Status = online.state;
                 });
         }
     }
