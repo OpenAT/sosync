@@ -81,7 +81,14 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            throw new SyncerException($"{StudioModelName} can only be created/updated from FS, not from FS-Online.");
+            SimpleTransformToStudio<frstzGruppedetail, dbozGruppeDetail>(
+                onlineID,
+                action,
+                studioModel => studioModel.zGruppeDetailID,
+                (online, studio) => {
+                    // Only BestaetigungErforderlich can be synchronized to studio
+                    studio.BestaetigungErforderlich = online.bestaetigung_erforderlich ?? false;
+                });
         }
     }
 }
