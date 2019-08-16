@@ -1,5 +1,6 @@
 ﻿using dadi_data;
 using dadi_data.Models;
+using Syncer.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -17,16 +18,53 @@ namespace Syncer.Services
 
         #region Properties
         public string Instance { get { return _config.Instance; } }
+        public List<dboTypen> MdbTypes { get; private set; }
         #endregion
 
         #region Constructors
         public MdbService(SosyncOptions options)
         {
             _config = options;
+            LoadMdbTypes();
         }
         #endregion
 
         #region Methods
+        private void LoadMdbTypes()
+        {
+            using (var db = GetDataService<dboTypen>())
+            {
+                MdbTypes = db
+                    .Read("SELECT * FROM dbo.Typen", null)
+                    .ToList();
+            }
+        }
+
+        public string GetTypeValue(int? typeID)
+        {
+            if (typeID.HasValue)
+            {
+                return MdbTypes
+                        .Where(x => x.TypenID == typeID.Value)
+                        .SingleOrDefault()
+                        .Wert;
+            }
+
+            return null;
+        }
+
+        public int? GetTypeID(string typeDescription, string value)
+        {
+            var mdbType = MdbTypes
+                .Where(x => x.TypenBezeichnung == typeDescription && x.Wert == value)
+                .SingleOrDefault();
+
+            if (mdbType == null)
+                throw new SyncerException($"Type not found for TypenBezeichnung = \"{typeDescription ?? "<NULL>"}\", Wert = \"{value ?? "<NULL>"}\"");
+
+            return mdbType.TypenID;
+        }
+
         /// <summary>
         /// Creates a new instance of the <see cref="DataService{TModel}"/> class, using the
         /// <see cref="SosyncOptions"/> to configure the connection string.
