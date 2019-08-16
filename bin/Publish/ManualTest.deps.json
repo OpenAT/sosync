@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "89195fa733cfb3017d4f420d9634b44a25379c22"
+    "signature": "6236d44a747d2a220c129ac440094d83bb152526"
   },
   "compilationOptions": {},
   "targets": {
@@ -11,13 +11,13 @@
           "Syncer": "1.0.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.6.8"
+          "dadi-data": "1.6.9"
         },
         "runtime": {
           "ManualTest.dll": {}
         }
       },
-      "dadi-data/1.6.8": {
+      "dadi-data/1.6.9": {
         "dependencies": {
           "Dapper": "1.60.6",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -49,15 +49,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.4.4": {
+      "DaDi.Odoo/1.4.8": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.4.4.0",
-            "fileVersion": "1.4.4.0"
+            "assemblyVersion": "1.4.8.0",
+            "fileVersion": "1.4.8.0"
           }
         }
       },
@@ -442,11 +442,11 @@
           }
         }
       },
-      "Studio.Utility/1.0.2": {
+      "Studio.Utility/1.1.5": {
         "runtime": {
           "lib/netstandard2.0/Studio.Utility.dll": {
-            "assemblyVersion": "1.0.2.0",
-            "fileVersion": "1.0.2.0"
+            "assemblyVersion": "1.1.5.0",
+            "fileVersion": "1.1.5.0"
           }
         }
       },
@@ -1338,16 +1338,16 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.4.4",
+          "DaDi.Odoo": "1.4.8",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
           "Microsoft.Extensions.DependencyInjection": "2.0.0",
-          "Studio.Utility": "1.0.2",
+          "Studio.Utility": "1.1.5",
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.6.8"
+          "dadi-data": "1.6.9"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -1369,7 +1369,7 @@
           "PostgreSQLCopyHelper": "2.4.1",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.6.8"
+          "dadi-data": "1.6.9"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -1383,12 +1383,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.6.8": {
+    "dadi-data/1.6.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XaJ0OGUC1SH8I+3ORh1YaMtIYyekPn1YVnCYd8wN+qbyBh4df0UAi9pIQvpzA54RoMO9P/4Y1rQ9GWswovXamg==",
-      "path": "dadi-data/1.6.8",
-      "hashPath": "dadi-data.1.6.8.nupkg.sha512"
+      "sha512": "sha512-flDfmOgrcKqAnQx6GILFYkHQmqINAU0GwI4GwXx5w3lkBUnjaPu3YOVGum3vlw5Uva/A4ZsUbCBMBo3RvmPASQ==",
+      "path": "dadi-data/1.6.9",
+      "hashPath": "dadi-data.1.6.9.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
@@ -1397,12 +1397,12 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.4.4": {
+    "DaDi.Odoo/1.4.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-qrf4CuIpKxMUeJIF4U07jT5Gdd8YFkezpl32mWe35tLewDQEDj10+4JyJV4RwKCIxv+lBa0Qv77y7cLf1Dg6uA==",
-      "path": "dadi.odoo/1.4.4",
-      "hashPath": "dadi.odoo.1.4.4.nupkg.sha512"
+      "sha512": "sha512-rCm37b/4e42EoDJu3eYLzRJEMfq/A3oYQFUHVYIvCmNpVixWcP9iaJRQuqnqgMNHmUSq9+Mpx1UooIIM7dtjZw==",
+      "path": "dadi.odoo/1.4.8",
+      "hashPath": "dadi.odoo.1.4.8.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.6": {
       "type": "package",
@@ -1677,12 +1677,12 @@
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
     },
-    "Studio.Utility/1.0.2": {
+    "Studio.Utility/1.1.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-8TbGVxQYQu2+FTOwLwccVOJNcja5i30mhDzpeKvLGTl15BVjfwCjMy9ey+3Jhp5L1lZlRdWXlRFSZOlYPK7dHw==",
-      "path": "studio.utility/1.0.2",
-      "hashPath": "studio.utility.1.0.2.nupkg.sha512"
+      "sha512": "sha512-TKHMP61AHHF0k4a8sX3lrXOpe3j28ctDxq7YbQdMGzQysy6iCuVyMbhCkv0rXJaSpbig6JKmzAFpvInYpXG/OA==",
+      "path": "studio.utility/1.1.5",
+      "hashPath": "studio.utility.1.1.5.nupkg.sha512"
     },
     "System.Collections/4.3.0": {
       "type": "package",
