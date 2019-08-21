@@ -20,7 +20,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.xTemplate")]
     [OnlineModel(Name = "email.template")]
-    [ModelPriority(ModelPriority.P5)]
+    [ModelPriority(5000)]
     public class EmailTemplateFlow
         : ReplicateSyncFlow
     {

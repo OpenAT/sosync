@@ -234,7 +234,7 @@ namespace WebSosync.Controllers
             else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
                 return flowService.ModelPriorities[job.Job_Source_Model];
             else
-                return ModelPriority.Default;
+                return 1000;
         }
 
         private void StoreJob(IServiceProvider services, SyncJob job)

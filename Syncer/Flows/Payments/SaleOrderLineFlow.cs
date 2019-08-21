@@ -21,7 +21,7 @@ namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.sale_order_line")]
     [OnlineModel(Name = "sale.order.line")]
-    [ModelPriority(ModelPriority.P4)]
+    [ModelPriority(4000)]
     public class SaleOrderLineFlow
         : ReplicateSyncFlow
     {

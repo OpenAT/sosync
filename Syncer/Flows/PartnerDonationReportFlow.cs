@@ -19,7 +19,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.AktionSpendenmeldungBPK")]
     [OnlineModel(Name = "res.partner.donation_report")]
-    [ModelPriority(ModelPriority.P3)]
+    [ModelPriority(3000)]
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
         #region Constructors
