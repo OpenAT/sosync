@@ -55,6 +55,9 @@ namespace Syncer.Services
 
         public int? GetTypeID(string typeDescription, string value)
         {
+            if (value == null)
+                return null;
+
             var mdbType = MdbTypes
                 .Where(x => x.TypenBezeichnung == typeDescription && x.Wert == value)
                 .SingleOrDefault();
