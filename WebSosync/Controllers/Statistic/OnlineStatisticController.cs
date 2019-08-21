@@ -56,13 +56,17 @@ namespace WebSosync.Controllers.Statistic
                 var searchArgs = new List<OdooSearchArgument>();
                 searchArgs.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
 
+                var searchArgs2 = new List<OdooSearchArgument>();
+                searchArgs2.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+
                 foreach (var flowName in flowNames)
                 {
                     try
                     {
                         stat.UnsynchronizedModelsCount.Add(
                             flowName,
-                            _odoo.Client.SearchCount(flowName, searchArgs));
+                            _odoo.Client.SearchCount(flowName, searchArgs)
+                            + _odoo.Client.SearchCount(flowName, searchArgs2));
                     }
                     catch (Exception ex)
                     {
