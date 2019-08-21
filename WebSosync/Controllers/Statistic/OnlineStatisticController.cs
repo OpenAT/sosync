@@ -58,9 +58,21 @@ namespace WebSosync.Controllers.Statistic
 
                 foreach (var flowName in flowNames)
                 {
-                    stat.UnsynchronizedModelsCount.Add(
-                        flowName,
-                        _odoo.Client.SearchCount(flowName, searchArgs));
+                    try
+                    {
+                        stat.UnsynchronizedModelsCount.Add(
+                            flowName,
+                            _odoo.Client.SearchCount(flowName, searchArgs));
+                    }
+                    catch (Exception ex)
+                    {
+                        var isXmlRpcError = ex.Source == "DaDi.XmlRpc";
+                        var isDoesNotExistError = _odoo.Client.LastResponseRaw.Contains($"Object {flowName} doesn't exist");
+
+                        // If it's anything but an XML-RPC error with object doesn't exist, rethrow
+                        if (!isXmlRpcError || !isDoesNotExistError)
+                            throw;
+                    }
                 }
 
                 return stat;
