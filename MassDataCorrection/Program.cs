@@ -39,7 +39,7 @@ namespace MassDataCorrection
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
 
-                processor.Process((inst, report) => CheckModel(inst, report, "fson.garden", "gl2k.garden", "state", "state"), new[] { "gl2k" });
+                processor.Process((inst, report) => CheckModel(inst, report, "dbo.PersonEmail", "frst.personemail", "state", "state"), new[] { "care" });
                 SaveStat(_missingModels, "models_missing");
                 SaveStat(_modelNotSync, "models_mismatch");
 
