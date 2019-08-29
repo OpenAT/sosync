@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "3b62048808c14051785b9ebf1004d65b2463e742"
+    "signature": "281f7c26d5426a302655b8a43c5936f1d55c3fe5"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.4.8",
+          "DaDi.Odoo": "1.5.0",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
@@ -20,13 +20,13 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.6.9"
+          "dadi-data": "1.7.0"
         },
         "runtime": {
           "Syncer.dll": {}
         }
       },
-      "dadi-data/1.6.9": {
+      "dadi-data/1.7.0": {
         "dependencies": {
           "Dapper": "1.60.6",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -59,15 +59,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.4.8": {
+      "DaDi.Odoo/1.5.0": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.4.8.0",
-            "fileVersion": "1.4.8.0"
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
           }
         }
       },
@@ -1434,7 +1434,7 @@
           "PostgreSQLCopyHelper": "2.4.1",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.6.9"
+          "dadi-data": "1.7.0"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -1448,12 +1448,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.6.9": {
+    "dadi-data/1.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-flDfmOgrcKqAnQx6GILFYkHQmqINAU0GwI4GwXx5w3lkBUnjaPu3YOVGum3vlw5Uva/A4ZsUbCBMBo3RvmPASQ==",
-      "path": "dadi-data/1.6.9",
-      "hashPath": "dadi-data.1.6.9.nupkg.sha512"
+      "sha512": "sha512-wVwijekMDN3LpDcCTzSj/quoQKXihHbxDybL8ltB79H78e1zbj2OlmHPgUudipaxU6guBlSC+S8nq8lp+i4E7w==",
+      "path": "dadi-data/1.7.0",
+      "hashPath": "dadi-data.1.7.0.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
@@ -1462,12 +1462,12 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.4.8": {
+    "DaDi.Odoo/1.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rCm37b/4e42EoDJu3eYLzRJEMfq/A3oYQFUHVYIvCmNpVixWcP9iaJRQuqnqgMNHmUSq9+Mpx1UooIIM7dtjZw==",
-      "path": "dadi.odoo/1.4.8",
-      "hashPath": "dadi.odoo.1.4.8.nupkg.sha512"
+      "sha512": "sha512-QrKFv+zmz6Qtkjri+th3j45y/1PUjEC8JAcGCD2A/wN3Y43Ya1+UYPZq/3YB8jMVjHi+kNtG+98d9+sxmMe3eA==",
+      "path": "dadi.odoo/1.5.0",
+      "hashPath": "dadi.odoo.1.5.0.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.6": {
       "type": "package",
