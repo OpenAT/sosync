@@ -97,7 +97,6 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("bestaetigt_typ", (object)MdbService
                             .GetTypeValue(studio.BestaetigungsTypID) ?? false);
 
-                        online.Add("state", studio.Status);
                         online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
                         online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
                     });
