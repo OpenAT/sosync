@@ -103,7 +103,10 @@ namespace Syncer.Flows
 
                     // Sync submission date only for imported donation reports
                     if (studio.Imported == true)
+                    {
                         online.Add("submission_id_datetime", studio.SubmissionIdDate);
+                        online.Add("submission_type", studio.SubmissionType);
+                    }
 
                     if (!string.IsNullOrEmpty(studio.donor_instruction))
                     {
