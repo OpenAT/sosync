@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Studio.Utility.Extensions;
 using Syncer.Exceptions;
 using Syncer.Flows;
@@ -204,7 +205,7 @@ namespace Syncer.Workers
             {
                 archiveWatch.Stop();
 
-                if (ex.HResult == -2147467259)
+                if (ex.GetType().Equals(typeof(NpgsqlException)) && (ex as NpgsqlException).ErrorCode == -2147467259)
                 {
                     _log.LogWarning($"Timeout while archiving. Elapsed time: {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}.");
                     //RaiseRequireRestart($"Archiving timed out after {SpecialFormat.FromMilliseconds((int)archiveWatch.Elapsed.TotalMilliseconds)}. Requesting restart to try again.");
