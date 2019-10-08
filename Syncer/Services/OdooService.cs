@@ -70,6 +70,21 @@ namespace Syncer.Services
             return null;
         }
 
+        public string GetIsoCodeForCountryID(int? countryID)
+        {
+            string isoCode = null;
+
+            if (countryID.HasValue && countryID > 0)
+            {
+                isoCode = _client.GetModel<resCountry>(
+                    "res.country",
+                    countryID.Value)
+                    .Code;
+            }
+
+            return isoCode;
+        }
+
         public void Dispose()
         {
             if (_client != null)

@@ -181,10 +181,16 @@ namespace Syncer.Flows
             return result;
         }
 
-        protected int? GetCountryIdForLandId(int landID)
+        protected int? GetCountryIdForLandId(int? landID)
         {
             string isoCode = MdbService.GetIsoCodeForLandID(landID);
             return OdooService.GetCountryIDForIsoCode(isoCode);
+        }
+
+        protected int? GetLandIdForCountryId(int? countryID)
+        {
+            string isoCode = OdooService.GetIsoCodeForCountryID(countryID);
+            return MdbService.GetLandIDForIsoCode(isoCode);
         }
 
         /// <summary>

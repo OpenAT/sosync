@@ -843,23 +843,9 @@ namespace Syncer.Flows
             if (!AddressChanged(source, destBlock))
                 return false;
 
-            if (source.CountryID != null && source.CountryID.Length > 0)
-            {
-                var country = OdooService.Client.GetModel<resCountry>("res.country", Convert.ToInt32(source.CountryID[0]));
-                LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} read res.country", OdooService.Client.LastRpcTime);
-
-                if (country != null)
-                {
-                    using (var dbSvc = MdbService.GetDataService<dboTypen>())
-                    {
-                        var foundLandID = dbSvc.ExecuteQuery<int?>("select sosync.IsoCountryCode2_to_LandID(@Code)", new { Code = country.Code }).FirstOrDefault();
-                        LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} get LandID for ISO Code", dbSvc.LastQueryExecutionTimeMS);
-
-                        if (foundLandID.HasValue && foundLandID.Value != 0)
-                            dest.LandID = foundLandID.Value;
-                    }
-                }
-            }
+            dest.LandID = GetLandIdForCountryId(
+                OdooConvert.ToInt32ForeignKey(source.CountryID, true))
+                ?? 0;
 
             if (!string.IsNullOrEmpty(source.AnredeIndividuell))
             {
