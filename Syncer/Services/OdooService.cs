@@ -1,4 +1,5 @@
 ﻿using DaDi.Odoo;
+using DaDi.Odoo.Models;
 using dadi_data;
 using Microsoft.Extensions.Logging;
 using System;
@@ -51,6 +52,22 @@ namespace Syncer.Services
             var client = new OdooClient($"https://{_options.Online_Host}/xmlrpc/2/", _options.Instance);
             client.Authenticate(_options.Online_Sosync_User, _options.Online_Sosync_PW);
             return client;
+        }
+
+        public int? GetCountryIDForIsoCode(string isoCode)
+        {
+            if (!string.IsNullOrEmpty(isoCode))
+            {
+                var foundCountryID = (int?)_client.SearchModelByField<resCountry, string>(
+                    "res.country",
+                    x => x.Code,
+                    isoCode)
+                    .FirstOrDefault();
+
+                return foundCountryID != 0 ? foundCountryID : null;
+            }
+
+            return null;
         }
 
         public void Dispose()

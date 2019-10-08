@@ -181,6 +181,12 @@ namespace Syncer.Flows
             return result;
         }
 
+        protected int? GetCountryIdForLandId(int landID)
+        {
+            string isoCode = MdbService.GetIsoCodeForLandID(landID);
+            return OdooService.GetCountryIDForIsoCode(isoCode);
+        }
+
         /// <summary>
         /// Get IDs and write date for the model in studio.
         /// </summary>

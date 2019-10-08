@@ -68,6 +68,24 @@ namespace Syncer.Services
             return mdbType.TypenID;
         }
 
+        public string GetIsoCodeForLandID(int? landID)
+        {
+            string countryCode = null;
+
+            using (var dbSvc = GetDataService<dboTypen>())
+            {
+                countryCode = dbSvc.ExecuteQuery<string>(
+                    "select sosync.LandID_to_IsoCountryCode2(@LandID)",
+                    new { LandID = landID })
+                    .FirstOrDefault();
+            }
+
+            if (string.IsNullOrEmpty(countryCode))
+                return null;
+
+            return countryCode;
+        }
+
         /// <summary>
         /// Creates a new instance of the <see cref="DataService{TModel}"/> class, using the
         /// <see cref="SosyncOptions"/> to configure the connection string.

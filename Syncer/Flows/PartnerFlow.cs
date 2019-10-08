@@ -382,34 +382,6 @@ namespace Syncer.Flows
             
         }
 
-        private int? GetCountryIdForLandId(int landID)
-        {
-            string countryCode = null;
-
-            using (var dbSvc = MdbService.GetDataService<dboTypen>())
-            {
-                countryCode = dbSvc.ExecuteQuery<string>(
-                    "select sosync.LandID_to_IsoCountryCode2(@LandID)",
-                    new { LandID = landID })
-                    .FirstOrDefault();
-            }
-
-            if (!string.IsNullOrEmpty(countryCode))
-            {
-                var foundCountryID = (int?)OdooService.Client.SearchModelByField<resCountry, string>(
-                    "res.country",
-                    x => x.Code,
-                    countryCode)
-                    .FirstOrDefault();
-
-                return foundCountryID != 0 ? foundCountryID : null;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         private void SetDictionaryEntryForObject<T>(Dictionary<string, object> dict, object item, string key, Func<T> getTrueValue, Func<T> getFalseValue)
         {
             if (item != null)
