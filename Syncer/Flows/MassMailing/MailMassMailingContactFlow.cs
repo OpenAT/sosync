@@ -42,6 +42,10 @@ namespace Syncer.Flows.MassMailing
                 // Optional child person
                 if (studioModel.PersonID.HasValue && studioModel.PersonID > 0)
                     RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID.Value);
+
+                // Optional child personemail
+                if (studioModel.PersonEmailID.HasValue && studioModel.PersonEmailID > 0)
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID.Value);
             }
         }
 
@@ -50,6 +54,7 @@ namespace Syncer.Flows.MassMailing
             var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id" });
             var partnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: true);
             var listID = OdooConvert.ToInt32ForeignKey(odooModel["list_id"], allowNull: false);
+            var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
 
             // Mandatory child list
             RequestChildJob(SosyncSystem.FSOnline, "mail.mass_mailing.list", listID.Value);
@@ -57,6 +62,11 @@ namespace Syncer.Flows.MassMailing
             // Optional child partner
             if (partnerID.HasValue && partnerID.Value > 0)
                 RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+
+            // Optional child email
+            if (personemailID.HasValue && personemailID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", personemailID.Value);
+
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -77,6 +87,16 @@ namespace Syncer.Flows.MassMailing
                             studio.PersonID.Value);
                     }
 
+                    int? personemailID = null;
+
+                    if (studio.PersonEmailID.HasValue)
+                    {
+                        personemailID = GetOnlineID<dboPersonEmail>(
+                            "dbo.PersonEmail",
+                            "frst.personemail",
+                            studio.PersonEmailID.Value);
+                    }
+
                     var listID = GetOnlineID<fsonmail_mass_mailing_list>(
                         "fson.mail_mass_mailing_list",
                         "mail.mass_mailing.list",
@@ -86,12 +106,22 @@ namespace Syncer.Flows.MassMailing
 
                     online.Add("partner_id", partnerID);
                     online.Add("list_id", listID);
+                    online.Add("personemail_id", personemailID);
+
                     online.Add("firstname", studio.firstname);
                     online.Add("lastname", studio.lastname);
+                    online.Add("gender", studio.gender);
+                    online.Add("anrede_individuell", studio.anrede_individuell);
+                    online.Add("title_web", studio.title_web);
+                    online.Add("birthdate_web", studio.birthdate_web);
+                    online.Add("newsletter_web", studio.newsletter_web);
                     online.Add("phone", studio.phone);
+                    online.Add("email", studio.email);
                     online.Add("mobile", studio.mobile);
+
                     online.Add("street", studio.street);
                     online.Add("street2", studio.street2);
+                    online.Add("street_number_web", studio.street_number_web);
                     online.Add("zip", studio.zip);
                     online.Add("city", studio.city);
                     online.Add("state_id", studio.state_id);
@@ -100,6 +130,11 @@ namespace Syncer.Flows.MassMailing
                     online.Add("bestaetigt_am_um", studio.BestaetigtAmUm);
                     online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
                     online.Add("bestaetigt_typ", MdbService.GetTypeValue(studio.BestaetigungsTypID));
+                    online.Add("opt_out", studio.opt_out);
+                    online.Add("renewed_subscription_date", studio.renewed_subscription_date);
+                    online.Add("renewed_subscription_log", studio.renewed_subscription_log);
+                    online.Add("state", studio.state);
+                    online.Add("origin", studio.origin);
 
                     online.Add("pf_mandatsid", studio.pf_mandatsid);
                     online.Add("pf_zahlungsreferenz", studio.pf_zahlungsreferenz);
@@ -154,23 +189,39 @@ namespace Syncer.Flows.MassMailing
                         x => x.partner_id,
                         false);
 
+                    var personemailID = GetStudioIDFromOnlineReference(
+                        "dbo.PersonEmail",
+                        online,
+                        x => x.personemail_id,
+                        false);
+
                     var listID = GetStudioIDFromOnlineReference(
                         "fson.mail_mass_mailing_list",
                         online,
                         x => x.list_id,
                         false);
+#warning muss listID nicht eigentlich required = true haben bei GetStudioIDFromOnlineReference?
 
                     var landID = GetLandIdForCountryId(
                         OdooConvert.ToInt32ForeignKey(online.country_id));
 
                     studio.PersonID = personID;
                     studio.mail_mass_mailing_listID = listID.Value;
+                    studio.PersonEmailID = personemailID;
+
                     studio.firstname = online.firstname;
                     studio.lastname = online.lastname;
+                    studio.gender = online.gender;
+                    studio.anrede_individuell = online.anrede_individuell;
+                    studio.title_web = online.title_web;
+                    studio.birthdate_web = online.birthdate_web;
+                    studio.newsletter_web = online.newsletter_web;
+                    studio.email = online.email;
                     studio.phone = online.phone;
                     studio.mobile = online.mobile;
                     studio.street = online.street;
                     studio.street2 = online.street2;
+                    studio.street_number_web = online.street_number_web;
                     studio.zip = online.zip;
                     studio.city = online.city;
                     studio.state_id = OdooConvert.ToInt32ForeignKey(online.state_id, true);
@@ -179,6 +230,11 @@ namespace Syncer.Flows.MassMailing
                     studio.BestaetigtAmUm = online.bestaetigt_am_um;
                     studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
                     studio.BestaetigungsTypID = MdbService.GetTypeID("fsonmail_mass_mailing_contact_BestaetigungsTypID", online.bestaetigt_typ);
+                    studio.renewed_subscription_date = online.renewed_subscription_date;
+                    studio.renewed_subscription_log = online.renewed_subscription_log;
+                    studio.opt_out = online.opt_out;
+                    studio.state = online.state;
+                    studio.origin = online.origin;
 
                     studio.pf_mandatsid = online.pf_mandatsid;
                     studio.pf_zahlungsreferenz = online.pf_zahlungsreferenz;

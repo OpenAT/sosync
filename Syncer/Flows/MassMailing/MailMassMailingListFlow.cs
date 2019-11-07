@@ -40,6 +40,9 @@ namespace Syncer.Flows.MassMailing
                     online.Add("bestaetigung_typ", MdbService.GetTypeValue(studio.BestaetigungtypID));
                     online.Add("bestaetigung_erforderlich", studio.BestaetigungErforderlich);
                     online.Add("goal", studio.goal);
+                    online.Add("website_published", studio.website_published);
+                    online.Add("goal_dynamic", studio.goal_dynamic);
+                    online.Add("system_list", studio.system_list);
                 });
         }
 
@@ -58,6 +61,9 @@ namespace Syncer.Flows.MassMailing
                     studio.goal = online.goal;
                     studio.fso_create_date = online.create_date;
                     studio.fso_write_date = online.write_date;
+                    studio.website_published = online.website_published;
+                    studio.goal_dynamic = online.goal_dynamic;
+                    studio.system_list = online.system_list;
                 });
         }
     }
