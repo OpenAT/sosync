@@ -203,7 +203,7 @@ namespace Syncer.Flows.MassMailing
 #warning muss listID nicht eigentlich required = true haben bei GetStudioIDFromOnlineReference?
 
                     var landID = GetLandIdForCountryId(
-                        OdooConvert.ToInt32ForeignKey(online.country_id));
+                        OdooConvert.ToInt32ForeignKey(online.country_id, allowNull: true));
 
                     studio.PersonID = personID;
                     studio.mail_mass_mailing_listID = listID.Value;
