@@ -51,7 +51,7 @@ namespace Syncer.Flows.MassMailing
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id" });
+            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id" });
             var partnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: true);
             var listID = OdooConvert.ToInt32ForeignKey(odooModel["list_id"], allowNull: false);
             var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
