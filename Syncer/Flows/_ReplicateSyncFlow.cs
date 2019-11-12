@@ -174,6 +174,9 @@ namespace Syncer.Flows
                     ref requireRestart,
                     ref restartReason);
 
+                if (requireRestart)
+                    return;
+
                 // Matching ------------------
                 LogMs(0, $"\nMatch start", Job.ID, 0);
                 var matchWatch = Stopwatch.StartNew();
