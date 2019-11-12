@@ -169,10 +169,15 @@ namespace Syncer.Flows
 
             if (value != null && value.Length > 1)
             {
+                var odooID = Convert.ToInt32(value[0]);
+
                 result = GetStudioIDFromMssqlViaOnlineID(
                     studioModelName,
                     MdbService.GetStudioModelIdentity(studioModelName),
-                    Convert.ToInt32(value[0]));
+                    odooID);
+
+                if (odooID > 0 && !result.HasValue)
+                    throw new SyncerException($"{nameof(GetStudioIDFromOnlineReference)}: {studioModelName} not found via sosync_fso_id = {odooID}.");
             }
 
             if (required && result == null)
