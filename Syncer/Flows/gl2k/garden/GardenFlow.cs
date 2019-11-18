@@ -64,6 +64,8 @@ namespace Syncer.Flows.gl2k.garden
 
                     studio.PersonID = personID.Value;
                     studio.state = online.state;
+                    studio.TypID = MdbService.GetTypeID("fsongarden_TypID", online.type);
+                    studio.organisation_name = online.organisation_name;
                     studio.email = online.email;
                     studio.newsletter = online.newsletter;
                     studio.salutation = online.salutation;
