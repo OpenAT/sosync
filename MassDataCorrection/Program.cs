@@ -39,9 +39,11 @@ namespace MassDataCorrection
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
 
-                processor.Process((inst, report) => CheckModel(inst, report, "dbo.PersonEmail", "frst.personemail", "state", "state"), new[] { "care" });
-                SaveStat(_missingModels, "models_missing");
-                SaveStat(_modelNotSync, "models_mismatch");
+                processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
+                PrintDictionary(_jobCounts);
+
+                //SaveStat(_missingModels, "models_missing");
+                //SaveStat(_modelNotSync, "models_mismatch");
 
                 //processor.Process(CheckOpenSyncJobs, null);
                 //processor.Process(UpdateErrorJobs, new[] { "demo" });
@@ -1260,6 +1262,22 @@ from
         {
             public double Jobs;
             public double Archive;
+        }
+
+        private static Dictionary<string, int> _jobCounts = new Dictionary<string, int>();
+
+        private static void GetSyncJobCount(InstanceInfo info, Action<float> reportProgress)
+        {
+            if (info.host_sosync != "sosync2")
+                return;
+
+            using (var db = info.CreateOpenSyncerNpgsqlConnection())
+            {
+                var countJob = db.QuerySingle<Int32>("select count(*) from sosync_job;");
+                var countJobArchive = db.QuerySingle<Int32>("select count(*) from sosync_job_archive;");
+
+                _jobCounts.Add(info.Instance, countJob + countJobArchive);
+            }
         }
 
         private static Dictionary<string, int> _archiveProgress = new Dictionary<string, int>();
