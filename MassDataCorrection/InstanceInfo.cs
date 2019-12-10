@@ -20,6 +20,7 @@ namespace MassDataCorrection
         public string sosync_pgsql_pw { get; set; }
         public string mssql_branch { get; set; }
         public string sosync_branch { get; set; }
+        public string sosync_enabled { get; set; }
 
         public InstanceInfo()
         {
