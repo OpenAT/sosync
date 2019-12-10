@@ -99,11 +99,11 @@ namespace MassDataCorrection
 
         private string GetPillarSetting(string settingName, string contents)
         {
-            var exp = new Regex($"(?<={settingName}: ).*?(?=(\\s|\\n))", RegexOptions.IgnoreCase);
+            var exp = new Regex($"(?<={settingName}:)\\s*.*?(?=(\\s|\\n))", RegexOptions.IgnoreCase);
 
             var match = exp.Match(contents);
             if (match != null && match.Index > -1)
-                return match.Value;
+                return match.Value.Trim();
 
             return null;
         }
