@@ -39,8 +39,10 @@ namespace MassDataCorrection
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
 
-                processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
-                PrintDictionary(_jobCounts);
+                processor.Process(FixLostSyncJobs, null);
+
+                //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
+                //PrintDictionary(_jobCounts);
 
                 //SaveStat(_missingModels, "models_missing");
                 //SaveStat(_modelNotSync, "models_mismatch");
@@ -1315,5 +1317,155 @@ from
             }
         }
 
+        private static void FixLostSyncJobs(InstanceInfo info, Action<float> reportProgress)
+        {
+            // Skip non-sosync2 and disabled instances
+            if (info.Instance != "demo" && (info.host_sosync != "sosync2" || info.sosync_enabled.ToLower() == "false"))
+                return;
+
+            // Skip these named instances, but notify
+            var skip = new string[] {
+                "dev1"
+                ,"dev2"
+                ,"deve"
+                ,"demo"
+                ,"dadi"
+                ,"aiat" // Initial sync noch nicht durch?
+            };
+
+            if (skip.Contains(info.Instance))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            var models = new[] {
+                "res.company",
+                "email.template",
+                "account.fiscalyear",
+                "res.partner.bpk",
+                "res.partner.donation_report",
+                "res.partner",
+                "res.partner.fstoken",
+                "frst.personemail",
+                "frst.personemailgruppe",
+                "frst.persongruppe",
+                "frst.zgruppedetail",
+                "frst.zgruppe",
+                "payment.acquirer",
+                "payment.transaction",
+                "product.payment_interval",
+                "product.product",
+                "product.template",
+                "sale.order",
+                "sale.order.line",
+                "mail.mass_mailing.contact",
+                "mail.mass_mailing.list"
+             };
+
+            if (info.Instance == "gl2k")
+                models = models.Append("gl2k.garden").ToArray();
+
+            using (var fso = info.CreateAuthenticatedOdooClient())
+            {
+                foreach (var model in models)
+                {
+                    HandleUnsynchronized(model, fso);
+                    //HandleUpdated(model, fso);
+                }
+            }
+        }
+
+        private static void HandleUpdated(string model, OdooClient fso)
+        {
+            var args = new[]
+            {
+                new OdooSearchArgument("write_date", ">=", new DateTime(2019, 12, 10))
+            };
+
+            var foundIDs = fso.SearchBy(model, args);
+
+            if (foundIDs.Length > 0)
+            {
+                var cnt = 0;
+                foreach (var id in foundIDs)
+                {
+                    var data = fso.GetDictionary(model, id, new[] { "write_date", "sosync_write_date" });
+
+                    var wd = OdooConvert.ToDateTime((string)data["write_date"], true);
+                    var swd = OdooConvert.ToDateTime((string)data["sosync_write_date"], true);
+
+                    var diff = wd - swd;
+
+                    if (diff.HasValue && diff.Value.TotalSeconds > 60 * 5)
+                    {
+                        cnt++;
+                        Console.WriteLine($"{id}: wd= {wd.Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}\n{new string(' ', id.ToString().Length)}  swd={swd.Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}");
+
+                        fso.UpdateModel(model, new { sosync_write_date = wd }, id);
+
+                        var jobID = fso.CreateModel("sosync.job.queue", new
+                        {
+                            job_date = OdooConvert.ToDateTime((string)data["write_date"], true) ?? DateTime.UtcNow,
+                            job_source_system = "fso",
+                            job_source_model = model,
+                            job_source_record_id = id,
+                            job_source_target_record_id = (int?)null,
+                            job_source_sosync_write_date = OdooConvert.ToDateTime((string)data["write_date"], true)
+                        });
+                    }
+                }
+
+                Console.WriteLine($"{model}: {cnt}");
+            }
+        }
+
+        private static void HandleUnsynchronized(string model, OdooClient fso)
+        {
+            // Search for sosync_fs_id = null
+            var args = new[]
+            {
+                new OdooSearchArgument("sosync_fs_id", "=", false)
+            };
+
+            var foundIDs = fso.SearchBy(model, args)
+                .ToList();
+
+            // Search for sosync_fs_id = 0
+            args = new[]
+            {
+                new OdooSearchArgument("sosync_fs_id", "=", 0)
+            };
+
+            foundIDs.AddRange(fso.SearchBy(model, args));
+
+            if (foundIDs.Count > 0)
+            {
+                Console.Write($"{model}: {foundIDs.Count} missing ");
+
+                var i = 0;
+                foreach (var id in foundIDs)
+                {
+                    i++;
+
+                    if (((int)(i / (float)foundIDs.Count * 100f)) % 10 == 0)
+                        Console.Write(".");
+
+                    var data = fso.GetDictionary(model, id, new[] { "sosync_write_date", });
+
+                    var jobID = fso.CreateModel("sosync.job.queue", new
+                    {
+                        job_date = OdooConvert.ToDateTime((string)data["sosync_write_date"]) ?? DateTime.UtcNow,
+                        job_source_system = "fso",
+                        job_source_model = model,
+                        job_source_record_id = id,
+                        job_source_target_record_id = (int?)null,
+                        job_source_sosync_write_date = OdooConvert.ToDateTime((string)data["sosync_write_date"])
+                    });
+                }
+
+                Console.WriteLine(" done.");
+            }
+        }
     }
 }
