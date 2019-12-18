@@ -830,12 +830,12 @@ namespace Syncer.Flows
             if (destBlock == null)
                 destBlock = new dboPersonAdresseBlock();
 
-            var streedEqual = IsAddressFieldEqual(source.Street, destBlock.Strasse);
+            var streetEqual = IsAddressFieldEqual(source.Street, destBlock.Strasse);
             var streetNrEqual = IsAddressFieldEqual(source.StreetNumber, destBlock.Hausnr);
             var zipEqual = IsAddressFieldEqual(source.Zip, destBlock.Plz);
             var cityEqual = IsAddressFieldEqual(source.City, destBlock.Ort);
 
-            return !(streedEqual && streetNrEqual && zipEqual && cityEqual);
+            return !(streetEqual && streetNrEqual && zipEqual && cityEqual);
         }
 
         private bool CopyPartnerToPersonAddress(resPartner source, dboPersonAdresse dest, dboPersonAdresseAM destAM, dboPersonAdresseBlock destBlock)
