@@ -614,6 +614,13 @@ namespace Syncer.Flows
                 Job.Job_Error_Text += ex.ToString();
                 UpdateJobSkipped();
             }
+            catch (AddressBlockNotUpToDateException ex)
+            {
+                Log.LogWarning(ex.Message);
+                UpdateJobInconsistentBlock(Job);
+                requireRestart = true;
+                restartReason = "AddresseBlock not up to date, requesting restart.";
+            }
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.Transformation, $"4) Transformation/sync:\n{ex.ToString()}");
@@ -951,6 +958,19 @@ namespace Syncer.Flows
                 job.Write_Date = DateTime.UtcNow;
 
                 UpdateJob(nameof(UpdateJobStart), db, job);
+            }
+        }
+
+        private void UpdateJobInconsistentBlock(SyncJob job)
+        {
+            Log.LogInformation($"Updating job {job.ID}: job_log");
+
+            using (var db = GetDb())
+            {
+                job.Job_Log += $"AddresseBlock check failed, exiting job, leaving it in progress.\n";
+                job.Write_Date = DateTime.UtcNow;
+
+                UpdateJob(nameof(UpdateJobInconsistent), db, job);
             }
         }
 
