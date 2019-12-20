@@ -294,11 +294,11 @@ namespace Syncer.Flows
 
             if (person.address != null)
             {
-                if (person.addressBlock is null)
-                    throw new AddressBlockMissingException();
+                //if (person.addressBlock is null)
+                //    throw new AddressBlockMissingException();
 
-                if (person.addressBlock.write_date < person.address.write_date)
-                    throw new AddressBlockNotUpToDateException();
+                //if (person.addressBlock.write_date < person.address.write_date)
+                //    throw new AddressBlockNotUpToDateException();
 
                 data.Add("street", person.addressBlock.Strasse);
                 data.Add("street_number_web", person.addressBlock.Hausnr);
