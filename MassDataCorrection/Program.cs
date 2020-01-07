@@ -40,7 +40,7 @@ namespace MassDataCorrection
                 //processor.Process(CheckPersonBPKs, null);
 
                 //processor.Process(FixLostSyncJobs, null);
-                processor.Process((inst, prog) => CheckModel(inst, prog, "fson.sale_order", "sale.order", "state", "state"), new[] { "gl2k" });
+                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "status", "state"), new[] { "gl2k" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
@@ -807,6 +807,7 @@ namespace MassDataCorrection
         }
 
         private static Dictionary<string, List<int>> _modelNotSync = new Dictionary<string, List<int>>();
+        private static Dictionary<string, List<int>> _modelNotSyncFSO = new Dictionary<string, List<int>>();
         private static Dictionary<string, List<int>> _missingModels = new Dictionary<string, List<int>>();
         private static Dictionary<string, Tuple<int, int>> _checkModel = new Dictionary<string, Tuple<int, int>>();
         private static void CheckModel(InstanceInfo info, Action<float> reportProgress, string studioModel, string onlineModel, string dataMSSQL, string dataPostgresSQL)
@@ -837,8 +838,8 @@ from
                 fsListe = fsCon
                     .Query<CheckModel>($@"
 select
-    {studioModel.Split(".")[1]}ID ID
-    ,sosync_fso_id ForeignID
+    {(studioModel.StartsWith("dbo.Aktion") ? "AktionsID" : studioModel.Split(".")[1] + "ID")} ID
+    , sosync_fso_id ForeignID
     ,sosync_write_date SosyncWriteDate
     ,{dataMSSQL} Data
 from
@@ -877,6 +878,12 @@ from
 
                         _modelNotSync[info.Instance].Add(fsModel.ID);
 
+                        if (!_modelNotSyncFSO.ContainsKey(info.Instance))
+                            _modelNotSyncFSO.Add(info.Instance, new List<int>());
+
+                        if (fsoModel != null && fsoModel.ID > 0)
+                            _modelNotSyncFSO[info.Instance].Add(fsoModel.ID);
+
                         errCount++;
                         Console.WriteLine($"Data mismatch: id={fsoModel.ID} {studioModel}ID={fsModel.ID} ({fsoModel.Data} != {fsModel.Data})");
                         Console.WriteLine($"               online={fsoModel.SosyncWriteDate} studio={fsModel.SosyncWriteDate}");
@@ -893,6 +900,13 @@ from
                     notFoundCount++;
                 }
             }
+
+
+            // Test for first row
+            //ForceFsoSyncModels("res.partner.donation_report", info.CreateAuthenticatedOdooClient(), info.CreateOpenNpgsqlConnection(), new[] { _modelNotSyncFSO[info.Instance].First() });
+
+            // Process all
+            //ForceFsoSyncModels("res.partner.donation_report", info.CreateAuthenticatedOdooClient(), info.CreateOpenNpgsqlConnection(), _modelNotSyncFSO[info.Instance].ToArray());
 
             if (notFoundCount > 0)
                 _checkModel.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
@@ -1177,6 +1191,59 @@ from
                     job_source_sosync_write_date = model.sosync_write_date,
                     //submission_url = submissionUrl
                 });
+            }
+        }
+
+        private static void ForceFsoSyncModels (string modelName, OdooClient rpc, NpgsqlConnection onlineCon, int[] ids)
+        {
+            var tableName = modelName.Replace(".", "_");
+
+            var updateQuery = $@"
+                update {tableName} set sosync_write_date = concat(
+	                to_char(now() at time zone 'utc', 'YYYY-MM-DD')
+	                ,'T'
+	                ,to_char(now() at time zone 'utc', 'HH24:MI:SS.US')
+	                ,'Z'
+	                )
+                where id in ({string.Join(", ", ids)})
+                ";
+
+            onlineCon.Execute(updateQuery);
+
+            var query = $@"
+                select id, sosync_fs_id, sosync_write_date from {tableName}
+                where id in ({string.Join(", ", ids)})
+                ";
+
+            var models = onlineCon.Query(query);
+
+            var debug = "";
+            foreach (var model in models)
+            {
+                string dummy = $"{model.id}";
+                try
+                {
+                    var id = rpc.CreateModel("sosync.job.queue", new
+                    {
+                        job_date = model.sosync_write_date ?? DateTime.UtcNow,
+                        job_source_system = "fso",
+                        job_source_model = modelName,
+                        job_source_record_id = (int)model.id,
+                        job_source_target_record_id = (int?)model.sosync_fs_id,
+                        job_source_sosync_write_date = model.sosync_write_date,
+                        job_source_fields = $"{{\"sosync_write_date\": \"{model.sosync_write_date}\"}}",
+                        //submission_url = submissionUrl
+                    });
+                }
+                catch (Exception ex)
+                {
+                    debug += "," + dummy + Environment.NewLine;
+                }
+            }
+
+            if (debug != "")
+            {
+                var dummy2 = debug;
             }
         }
 
