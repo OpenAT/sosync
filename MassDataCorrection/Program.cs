@@ -39,7 +39,8 @@ namespace MassDataCorrection
                 //processor.Process(CheckEmails, new[] { "dev1" });
                 //processor.Process(CheckPersonBPKs, null);
 
-                processor.Process(FixLostSyncJobs, null);
+                //processor.Process(FixLostSyncJobs, null);
+                processor.Process((inst, prog) => CheckModel(inst, prog, "fson.sale_order", "sale.order", "state", "state"), new[] { "gl2k" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
