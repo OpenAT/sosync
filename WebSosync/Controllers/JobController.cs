@@ -229,7 +229,7 @@ namespace WebSosync.Controllers
         {
             var flowService = (FlowService)services.GetService(typeof(FlowService));
 
-            if (data.ContainsKey("job_priority"))
+            if (data.ContainsKey("job_priority") && data["job_priority"] != null)
                 return Convert.ToInt32(data["job_priority"]);
             else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
                 return flowService.ModelPriorities[job.Job_Source_Model];
