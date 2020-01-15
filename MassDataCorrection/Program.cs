@@ -40,7 +40,8 @@ namespace MassDataCorrection
                 //processor.Process(CheckPersonBPKs, null);
 
                 //processor.Process(FixLostSyncJobs, null);
-                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "status", "state"), new[] { "gl2k" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "status", "state"), new[] { "gl2k" });
+                processor.Process((inst, prog) => CheckModel(inst, prog, "fson.payment_transaction", "payment.transaction", "state", "state"), new[] { "gl2k" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
