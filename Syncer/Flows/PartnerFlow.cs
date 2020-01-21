@@ -17,6 +17,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using WebSosync.Common;
+using WebSosync.Data;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -89,7 +90,7 @@ namespace Syncer.Flows
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
                 if (result.person == null)
-                    throw new SyncerException($"{StudioModelName} {PersonID} did not exist");
+                    throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, StudioModelName, PersonID);
 
                 result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
                                   where iterAddress.GültigVon <= DateTime.Today &&
