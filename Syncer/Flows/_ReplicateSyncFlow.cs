@@ -515,7 +515,7 @@ namespace Syncer.Flows
             if (!job.Parent_Job_ID.HasValue && !isJobDateSimilar && !IsStudioMultiModel)
             {
                 // For normal main jobs (not child jobs!) this is an invalid state
-                throw new SyncerException(
+                throw new JobDateMismatchException(
                     $"Job {job.ID}: job_date ({job.Job_Date.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}) differs from " + 
                     $"sosync_write_date ({(usedModelInfo.SosyncWriteDate ?? usedModelInfo.WriteDate).Value.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}" + 
                     $", taken from {job.Job_Source_System}), aborting synchronization.");

@@ -367,6 +367,13 @@ namespace Syncer.Workers
                 }
                 catch (ModelNotFoundException ex)
                 {
+                    // Do not retry model not found errors
+                    _log.LogError(ex.ToString());
+                    UpdateJobError(dataService, job, ex.ToString(), useErrorRetry: false);
+                }
+                catch (JobDateMismatchException ex)
+                {
+                    // Do not retry job date errors
                     _log.LogError(ex.ToString());
                     UpdateJobError(dataService, job, ex.ToString(), useErrorRetry: false);
                 }
