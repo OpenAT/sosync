@@ -819,7 +819,7 @@
     "Dapper/1.60.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZqK3znlm8dapfO8M0vCgV5+wJrl5Uv00WYmj27wQ6zufSLcklVNJ2fdVMUj59o89p+lmRD6QivTRe0Gdfm6UAQ==",
+      "sha512": "sha512-mmnJNhKMeF2KhvVXDoVQlFxre8aJAo71YBJrKqFlvuqzYC2QiXUq94/GCDBJzU7paq4GqpkV2glw3308TcGibw==",
       "path": "dapper/1.60.6",
       "hashPath": "dapper.1.60.6.nupkg.sha512"
     },
@@ -917,14 +917,14 @@
     "Npgsql/4.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gKEhp3ICU2TY3yLnxda9QJf3g6aDHZ/PkRFoPXbjFjuCX18jbY58EYP7VGpXSzfzsQAGSOEB9vjdgEfnnvnRyQ==",
+      "sha512": "sha512-84PtCcrSTqx3j013bP9zGFSSjsf0UdoOfkTapM4es9kgGvtjZy49MCzOZfNDayNSRMNzGK0i5BsC5xv+beZtIA==",
       "path": "npgsql/4.0.5",
       "hashPath": "npgsql.4.0.5.nupkg.sha512"
     },
     "PostgreSQLCopyHelper/2.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1d1BYqvfmp3r09EBFQMi+35uxvE4XdSp/8IuUa0itY7rcdg8HKtkD3vHbtJ+oCtCmuDK7OadDSMT4X8W/IHZOw==",
+      "sha512": "sha512-4YQ7SfL0VngNUJoXIPSkUgJQAuIk604mBl4SKs/5pPOtZCT1seQm3spICk5eng4HY4BGpHI62R7e+qWaXBJZRg==",
       "path": "postgresqlcopyhelper/2.4.1",
       "hashPath": "postgresqlcopyhelper.2.4.1.nupkg.sha512"
     },
@@ -1113,7 +1113,7 @@
     "System.Memory/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Ohf9h6em5CjPaAzupGtW/TWMzX6aVfIGPh7bq5KQmfvYJr+DqvOa0cRS9ggFKGIuvKTModCQEacGC/CwE8j7cg==",
+      "sha512": "sha512-fvq1GNmUFwbKv+aLVYYdgu/+gc8Nu9oFujOxIjPrsf+meis9JBzTPDL6aP/eeGOz9yPj6rRLUbOjKMpsMEWpNg==",
       "path": "system.memory/4.5.2",
       "hashPath": "system.memory.4.5.2.nupkg.sha512"
     },
@@ -1197,7 +1197,7 @@
     "System.Runtime.CompilerServices.Unsafe/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hMkdWxksypQlFXB7JamQegDscxEAQO4FHd/lw/zlSZU9dZgAij65xjCrXer183wvoNAzJic5zzjj2oc9/dloWg==",
+      "sha512": "sha512-wprSFgext8cwqymChhrBLu62LMg/1u92bU+VOwyfBimSPVFXtsNqEWC92Pf9ofzJFlk4IHmJA75EDJn1b2goAQ==",
       "path": "system.runtime.compilerservices.unsafe/4.5.2",
       "hashPath": "system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
     },
@@ -1281,14 +1281,14 @@
     "System.Threading.Tasks.Extensions/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-5HCu8V3QB+gouMZmGrA666weZ0UQRt+OTD16rSE3Hyhu4Qhlvxkf4nTPI0GLy52s0rxgi7C8t2ayFAzw7UK1og==",
+      "sha512": "sha512-BG/TNxDFv0svAzx8OiMXDlsHfGw623BZ8tCXw4YLhDFDvDhNUEV58jKYMGRnkbJNm7c3JNNJDiN7JBMzxRBR2w==",
       "path": "system.threading.tasks.extensions/4.5.2",
       "hashPath": "system.threading.tasks.extensions.4.5.2.nupkg.sha512"
     },
     "System.ValueTuple/4.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-fa3P1cPe2SlrjCjJ/yc3mcXkDj4GQORmileNFYBtBZh2qddzwRubagAkj8yz/yF9oLvJVqaZYar9l2SCqNKDJg==",
+      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
       "path": "system.valuetuple/4.5.0",
       "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
     }
