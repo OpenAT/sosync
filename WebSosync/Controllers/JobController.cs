@@ -195,7 +195,7 @@ namespace WebSosync.Controllers
                     throw new Exception($"Unrecognized format ({val}) in field job_source_sosync_write_date.");
             }
 
-            job.Job_Source_Fields = ParseJobSourceFields(services, job, data);
+            job.Job_Source_Fields = ParseJobSourceFields(data);
 
             job.Job_State = SosyncState.New.Value;
             job.Job_Fetched = DateTime.UtcNow;
@@ -205,7 +205,7 @@ namespace WebSosync.Controllers
             return job;
         }
 
-        private string ParseJobSourceFields(IServiceProvider services, SyncJob job, Dictionary<string, object> data)
+        private string ParseJobSourceFields(Dictionary<string, object> data)
         {
             if (data.ContainsKey("job_source_fields"))
             {
