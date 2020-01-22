@@ -41,7 +41,11 @@ namespace MassDataCorrection
 
                 //processor.Process(FixLostSyncJobs, null);
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "status", "state"), new[] { "gl2k" });
-                processor.Process((inst, prog) => CheckModel(inst, prog, "fson.payment_transaction", "payment.transaction", "state", "state"), new[] { "gl2k" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "fson.payment_transaction", "payment.transaction", "state", "state"), new[] { "gl2k" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
+
+                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "aiat" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
@@ -854,6 +858,8 @@ from
             var errCount = 0;
             var notFoundCount = 0;
 
+            var mssqlIDs = new List<int>();
+
             foreach (var fsModelKvp in fsListe)
             {
                 var fsModel = fsModelKvp.Value;
@@ -885,6 +891,8 @@ from
                         if (fsoModel != null && fsoModel.ID > 0)
                             _modelNotSyncFSO[info.Instance].Add(fsoModel.ID);
 
+                        mssqlIDs.Add(fsModel.ID);
+
                         errCount++;
                         Console.WriteLine($"Data mismatch: id={fsoModel.ID} {studioModel}ID={fsModel.ID} ({fsoModel.Data} != {fsModel.Data})");
                         Console.WriteLine($"               online={fsoModel.SosyncWriteDate} studio={fsModel.SosyncWriteDate}");
@@ -909,8 +917,26 @@ from
             // Process all
             //ForceFsoSyncModels("res.partner.donation_report", info.CreateAuthenticatedOdooClient(), info.CreateOpenNpgsqlConnection(), _modelNotSyncFSO[info.Instance].ToArray());
 
+            //FsSyncModels(info, studioModel, (studioModel.StartsWith("Aktion") ? "AktionsID" : studioModel.Replace("dbo.", "") + "ID"), mssqlIDs, "Update wegen DSGVO-Loeschung");
+
             if (notFoundCount > 0)
                 _checkModel.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
+        }
+
+
+        private static void FsSyncModels(InstanceInfo info, string model, string modelID, IEnumerable<int> ids, string infoText)
+        {
+            var query = Properties.Resources.InsertSyncJobMSSQLBatch;
+            query = query
+                .Replace("%MODEL%", model)
+                .Replace("%MODELID%", modelID)
+                .Replace("%ID-LIST%", string.Join(", ", ids))
+                .Replace("%INFO%", infoText);
+            
+            using (var con = info.CreateOpenMssqlConnection())
+            {
+                con.Query(query);
+            }
         }
 
         private static Dictionary<string, List<int>> _missingPartnerIDs = new Dictionary<string, List<int>>();

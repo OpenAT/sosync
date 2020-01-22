@@ -178,6 +178,33 @@ VALUES
     NULL            -- JobSourceType - nvarchar(128)
 )</value>
   </data>
+  <data name="InsertSyncJobMSSQLBatch" xml:space="preserve">
+    <value>INSERT INTO sosync.JobQueue
+(
+    JobDate,
+    JobSourceSystem,
+    JobSourceModel,
+    JobSourceRecordID,
+    JobState,
+    JobSourceSosyncWriteDate,
+    JobSourceFields
+)
+SELECT
+    p.sosync_write_date JobDate,
+    'fs' JobSourceSystem,
+    '%MODEL%' JobSourceModel,
+    p.%MODELID% JobSourceRecordID,
+    'new' JobState,
+    p.sosync_write_date JobSourceSosyncWriteDate,
+    N'{"info":"%INFO%"}' JobSourceFields
+
+FROM
+	%MODEL% p
+WHERE
+	p.%MODELID% IN (
+	%ID-LIST%
+	)</value>
+  </data>
   <data name="UpdateSosyncWriteDate" xml:space="preserve">
     <value>UPDATE pg SET GültigBis = '20991231'
 FROM

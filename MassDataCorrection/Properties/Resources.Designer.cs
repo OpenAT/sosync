@@ -19,7 +19,7 @@ namespace MassDataCorrection.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -105,6 +105,39 @@ namespace MassDataCorrection.Properties {
         internal static string InsertSyncJobMSSQL {
             get {
                 return ResourceManager.GetString("InsertSyncJobMSSQL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO sosync.JobQueue
+        ///(
+        ///    JobDate,
+        ///    JobSourceSystem,
+        ///    JobSourceModel,
+        ///    JobSourceRecordID,
+        ///    JobState,
+        ///    JobSourceSosyncWriteDate,
+        ///    JobSourceFields
+        ///)
+        ///SELECT
+        ///    p.sosync_write_date JobDate,
+        ///    &apos;fs&apos; JobSourceSystem,
+        ///    &apos;%MODEL%&apos; JobSourceModel,
+        ///    p.%MODELID% JobSourceRecordID,
+        ///    &apos;new&apos; JobState,
+        ///    p.sosync_write_date JobSourceSosyncWriteDate,
+        ///    N&apos;{&quot;info&quot;:&quot;%INFO%&quot;}&apos; JobSourceFields
+        ///
+        ///FROM
+        ///	%MODEL% p
+        ///WHERE
+        ///	p.%MODELID% IN (
+        ///	%ID-LIST%
+        ///	).
+        /// </summary>
+        internal static string InsertSyncJobMSSQLBatch {
+            get {
+                return ResourceManager.GetString("InsertSyncJobMSSQLBatch", resourceCulture);
             }
         }
         
