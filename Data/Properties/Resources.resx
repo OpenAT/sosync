@@ -429,7 +429,7 @@ select count(*) affected_rows from updated_rows;</value>
 	select * from (
 		select *
 		from sosync_job
-		where parent_job_id is null and job_state in ('new', 'inprogress')
+		where parent_job_id is null and job_state in ('new', 'inprogress') and create_date + interval '5 seconds' &lt; current_timestamp
         order by job_state, job_priority desc, job_date desc
         limit %LIMIT%
 	) first_parent

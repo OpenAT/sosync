@@ -19,7 +19,7 @@ namespace WebSosync.Data.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -167,7 +167,7 @@ namespace WebSosync.Data.Properties {
         ///	select * from (
         ///		select *
         ///		from sosync_job
-        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;)
+        ///		where parent_job_id is null and job_state in (&apos;new&apos;, &apos;inprogress&apos;) and create_date + interval &apos;5 seconds&apos; &lt; current_timestamp
         ///        order by job_state, job_priority desc, job_date desc
         ///        limit %LIMIT%
         ///	) first_parent

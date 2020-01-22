@@ -37,6 +37,9 @@ namespace Syncer.Workers
         private OdooFormatService _odooFormatService;
         private SerializationService _serializationService;
         private IMailService _mail;
+
+        private const int _sleepTime = 5500;
+        private static int _sleepCycle;
         #endregion
 
         #region Constructors
@@ -75,6 +78,8 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
+            var lastJobCount = 0;
+
             var jobLimit = _conf.Job_Package_Size.Value;
 
             using (var db = GetDb())
@@ -88,6 +93,8 @@ namespace Syncer.Workers
                 var jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
                 s.Stop();
                 _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
+                lastJobCount = jobs.Count;
 
                 CheckInProgress(jobs);
 
@@ -163,6 +170,32 @@ namespace Syncer.Workers
                 // unless a cancellation is pending
                 if (!CancellationToken.IsCancellationRequested)
                     ArchiveJobs();
+
+                // If there were jobs, always reset cycle
+                if (lastJobCount > 0)
+                    _sleepCycle = 1;
+                else
+                    _sleepCycle++;
+
+                if (_sleepCycle == 1)
+                {
+                    // First time -> always restart without delay
+                    _log.LogInformation($"Requesting restart without delay, cycle {_sleepCycle}");
+                    RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
+                }
+                else if (lastJobCount == 0 && _sleepCycle == 2)
+                {
+                    // No jobs, second time -> delay, restart
+                    _log.LogInformation($"Sleeping {_sleepTime}ms and requesting restart, cycle {_sleepCycle}");
+                    RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
+                    Thread.Sleep(_sleepTime);
+                }
+                else if (lastJobCount == 0)
+                {
+                    // No jobs, 3+ time, go idle
+                    _log.LogInformation($"Sleep cycle done resetting cycle.");
+                    _sleepCycle = 0;
+                }
             }
         }
 
