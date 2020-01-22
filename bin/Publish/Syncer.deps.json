@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "c47abbd66b1864e2d81015b20900993db063a646"
+    "signature": "926549f0a3c03af59748566c8d4d7fe38524e1a3"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.5.7",
+          "DaDi.Odoo": "1.5.9",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.8.2",
           "Microsoft.Extensions.Configuration": "2.0.0",
@@ -59,15 +59,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.5.7": {
+      "DaDi.Odoo/1.5.9": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.5.7.0",
-            "fileVersion": "1.5.7.0"
+            "assemblyVersion": "1.5.9.0",
+            "fileVersion": "1.5.9.0"
           }
         }
       },
@@ -1462,12 +1462,12 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.5.7": {
+    "DaDi.Odoo/1.5.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-z5qmNaUuZEnt5JksrVXtqJtD2ezYp799RiEkI3GDo7tgRIAbKRc1UeWMb5DNuNSz87/t8T+c5fTJbUvI0OSyew==",
-      "path": "dadi.odoo/1.5.7",
-      "hashPath": "dadi.odoo.1.5.7.nupkg.sha512"
+      "sha512": "sha512-Mvkz1iUzarIK6t+2RtxD6ce9mhZ1heEtv9g6HhZne0qfM0SvdhfdOdC8Ezv2S7jkyJaUnWrAWsKF3wUr8n2btw==",
+      "path": "dadi.odoo/1.5.9",
+      "hashPath": "dadi.odoo.1.5.9.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.6": {
       "type": "package",
