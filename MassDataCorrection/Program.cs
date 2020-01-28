@@ -1415,7 +1415,7 @@ from
         private static void FixLostSyncJobs(InstanceInfo info, Action<float> reportProgress)
         {
             // Skip non-sosync2 and disabled instances
-            if (info.Instance != "demo" && (info.Pillar.HostSosync != "sosync2" || info.Pillar.SosyncEnabled.ToLower() == "false"))
+            if (info.Instance != "demo" && (info.Pillar.HostSosync != "sosync2" || info.Pillar.SosyncEnabled))
                 return;
 
             // Skip these named instances, but notify
