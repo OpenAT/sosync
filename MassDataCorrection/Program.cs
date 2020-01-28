@@ -182,7 +182,7 @@ namespace MassDataCorrection
 
         private static void CheckOpenSyncJobs(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -204,7 +204,7 @@ namespace MassDataCorrection
 
         private static void FillNewDonationReportFields(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -279,7 +279,7 @@ namespace MassDataCorrection
 
         private static void FillMissingPartnerBPKFields(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -395,7 +395,7 @@ namespace MassDataCorrection
         {
             var enabled = false;
 
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -438,7 +438,7 @@ namespace MassDataCorrection
         private static Dictionary<string, int> _unsyncedPartners = new Dictionary<string, int>();
         private static void CheckUnsyncedPartners(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -471,7 +471,7 @@ namespace MassDataCorrection
         private static Dictionary<string, int> groupsStats = new Dictionary<string, int>();
         private static void CheckGroups(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -505,7 +505,7 @@ namespace MassDataCorrection
         private static Dictionary<string, int> _restartBpkCounts = new Dictionary<string, int>();
         private static void RestartBpkJobs(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -553,7 +553,7 @@ namespace MassDataCorrection
         private static Dictionary<string, int> _restartDonationReportsCounts = new Dictionary<string, int>();
         private static void RestartDonationReportJobs(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
             {
                 Console.WriteLine($"Skipping {info.Instance}, host_sosync is not sosync2.");
                 return;
@@ -641,7 +641,7 @@ namespace MassDataCorrection
         private static Dictionary<string, Tuple<int, int>> _checkBpk = new Dictionary<string, Tuple<int, int>>();
         private static void CheckPersonBPKs(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             var skip = new[] {
@@ -726,7 +726,7 @@ namespace MassDataCorrection
         private static Dictionary<string, Tuple<int, int>> _checkEmail = new Dictionary<string, Tuple<int, int>>();
         private static void CheckEmails(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             Dictionary<int, PersonEmail> fsoListe = null;
@@ -817,7 +817,7 @@ namespace MassDataCorrection
         private static Dictionary<string, Tuple<int, int>> _checkModel = new Dictionary<string, Tuple<int, int>>();
         private static void CheckModel(InstanceInfo info, Action<float> reportProgress, string studioModel, string onlineModel, string dataMSSQL, string dataPostgresSQL)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             Dictionary<int, CheckModel> fsoListe = null;
@@ -944,7 +944,7 @@ from
         private static Dictionary<string, Tuple<int, int>> _checkPartner = new Dictionary<string, Tuple<int, int>>();
         private static void CheckPartners(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             Dictionary<int, Partner> fsoListe = null;
@@ -1044,7 +1044,7 @@ from
         private static Dictionary<string, string> _checkDonationReport = new Dictionary<string, string>();
         private static void CheckDonationReports(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             var skip = new[] {
@@ -1075,9 +1075,9 @@ from
             Dictionary<int, DonationReport> fsoDonations = null;
             Dictionary<int, DonationReport> fsDonations = null;
 
-            if (info.host_sosync == "sosync2")
+            if (info.Pillar.HostSosync == "sosync2")
                 CheckSosync2Donations(info, reportProgress, out fsoDonations, out fsDonations);
-            else if (info.host_sosync == "sosync1")
+            else if (info.Pillar.HostSosync == "sosync1")
                 CheckSosync1Donations(info, reportProgress, out fsoDonations, out fsDonations);
 
             var rpc = info.CreateAuthenticatedOdooClient();
@@ -1134,10 +1134,10 @@ from
                     }
                 }
 
-                Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+                Console.WriteLine($"Differences: {diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.Pillar.HostSosync})");
 
                 if (diffCount > 0 || missingCount > 0)
-                    _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.host_sosync})");
+                    _checkDonationReport.Add(info.Instance, $"{diffCount} {(missingCount > 0 ? $"Missing: {missingCount}" : "")} ({info.Pillar.HostSosync})");
             }
         }
 
@@ -1278,14 +1278,14 @@ from
         {
             var desiredBranch = "v2";
 
-            if (info.sosync_branch != desiredBranch)
+            if (info.Pillar.SosyncBranch != desiredBranch)
                 throw new Exception($"{info.Instance} is not on branch {desiredBranch}");
         }
 
 
         private static void InitialSyncPayments(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             var skip = new string[] {
@@ -1327,7 +1327,7 @@ from
         private static Dictionary<string, int> _errorJobs = new Dictionary<string, int>();
         private static void UpdateErrorJobs(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             var skip = new string[] {
@@ -1365,7 +1365,7 @@ from
 
         private static void GetSyncJobCount(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             using (var db = info.CreateOpenSyncerNpgsqlConnection())
@@ -1380,7 +1380,7 @@ from
         private static Dictionary<string, int> _archiveProgress = new Dictionary<string, int>();
         private static void GetArchiveProgress(InstanceInfo info, Action<float> reportProgress)
         {
-            if (info.host_sosync != "sosync2")
+            if (info.Pillar.HostSosync != "sosync2")
                 return;
 
             var skip = new string[] {
@@ -1415,7 +1415,7 @@ from
         private static void FixLostSyncJobs(InstanceInfo info, Action<float> reportProgress)
         {
             // Skip non-sosync2 and disabled instances
-            if (info.Instance != "demo" && (info.host_sosync != "sosync2" || info.sosync_enabled.ToLower() == "false"))
+            if (info.Instance != "demo" && (info.Pillar.HostSosync != "sosync2" || info.Pillar.SosyncEnabled.ToLower() == "false"))
                 return;
 
             // Skip these named instances, but notify

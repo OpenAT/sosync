@@ -44,18 +44,9 @@ namespace MassDataCorrection
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"Processing {current}/{total}: {Path.GetFileName(file)}");
-                var content = File.ReadAllText(file, Encoding.UTF8);
                 Console.ForegroundColor = ConsoleColor.Gray;
 
-                var parts = Path.GetFileNameWithoutExtension(file).Split('_');
-                var port = int.Parse(parts[0]);
-                var instance = parts[1];
-
-                var sosyncHost = GetPillarSetting("host_sosync", content);
-
-                instInfo = ParseInstanceInfo(content);
-                instInfo.Instance = instance;
-                instInfo.Port = port;
+                instInfo = new InstanceInfo(file);
 
                 var s = new Stopwatch();
                 s.Start();
@@ -75,16 +66,6 @@ namespace MassDataCorrection
                 Console.WriteLine(new string('-', 50));
                 Console.ReadKey();
             }
-        }
-
-        private InstanceInfo ParseInstanceInfo(string contents)
-        {
-            var result = new InstanceInfo();
-
-            foreach (var prop in typeof(InstanceInfo).GetProperties())
-                prop.SetValue(result, GetPillarSetting(prop.Name, contents));
-
-            return result;
         }
 
         private void ReportProgress(float percent)
