@@ -424,7 +424,16 @@ namespace Syncer.Flows
             if (area.StartsWith("0"))
                 area = area.Substring(1);
 
-            return $"{country} {area} {phone.Rufnummer}".Trim();
+            var combinedPhone = $"{country} {area} {phone.Rufnummer}".Trim();
+            var combinedPhoneWithoutCountry = $"{area} {phone.Rufnummer}".Trim();
+
+            // If area code and phone number are empty,
+            // use RufnummerGesamt, if it's not empty too
+            if (string.IsNullOrEmpty(combinedPhoneWithoutCountry)
+                && !string.IsNullOrEmpty(phone.RufnummerGesamt))
+                combinedPhone = phone.RufnummerGesamt;
+
+            return combinedPhone;
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
