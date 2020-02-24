@@ -44,8 +44,8 @@ namespace MassDataCorrection
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "fson.payment_transaction", "payment.transaction", "state", "state"), new[] { "gl2k" });
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
 
-                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
-                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "aiat" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
+                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "gl2k" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
@@ -905,7 +905,7 @@ from
 
                     _missingModels[info.Instance].Add(fsoModel.ID);
 
-                    // Console.WriteLine($"ID={fsoModel.ID} PersonID={fsoModel.ForeignID} ({fsoModel.Vorname} {fsoModel.Nachname}) not found.");
+                    Console.WriteLine($"ID={fsoModel.ID} {studioModel}ID={fsoModel.ForeignID} ({fsoModel.Data}) not found.");
                     notFoundCount++;
                 }
             }
