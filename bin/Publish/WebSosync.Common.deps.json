@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "91668a15574bef4f8ea22392cfff19c8ad3d0dde"
+    "signature": "82258cc8a8e93ccb1cc88c7ec0d85d179c6f2fc5"
   },
   "compilationOptions": {},
   "targets": {
@@ -17,7 +17,7 @@
           "WebSosync.Common.dll": {}
         }
       },
-      "dadi-data/1.7.5": {
+      "dadi-data/1.7.7": {
         "dependencies": {
           "Dapper": "1.60.6",
           "Microsoft.EntityFrameworkCore": "1.1.2",
@@ -907,7 +907,7 @@
           "PostgreSQLCopyHelper": "2.4.1",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.7.5"
+          "dadi-data": "1.7.7"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -921,12 +921,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.7.5": {
+    "dadi-data/1.7.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mzPRWx9nv1Ph5UlD7ik1i2jW6abV/FUa98JXTpYDpUQlaEOGuOwGkjGl4R/3sj0Jb/c+ix5xvv/yfb8k5ES2YA==",
-      "path": "dadi-data/1.7.5",
-      "hashPath": "dadi-data.1.7.5.nupkg.sha512"
+      "sha512": "sha512-hyzVC7TCHm7mPXRK8H3AeJaJylPM7YsYaoNwuThGH8wLCL7cmNleRr4hFfho6Wxf8IOH0YsHuNdbHHJvHcK08w==",
+      "path": "dadi-data/1.7.7",
+      "hashPath": "dadi-data.1.7.7.nupkg.sha512"
     },
     "Dapper/1.60.6": {
       "type": "package",
