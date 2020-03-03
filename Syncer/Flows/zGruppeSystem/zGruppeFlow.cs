@@ -42,6 +42,11 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gruppe_kurz", studio.GruppeKurz);
                         online.Add("gruppe_lang", studio.GruppeLang);
                         online.Add("gui_anzeigen", studio.GUIAnzeigen);
+
+                        /* New:
+                         * ----------------------
+                         * 
+                         */
                     });
         }
 

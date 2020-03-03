@@ -95,6 +95,7 @@ namespace Syncer.Flows.zGruppeSystem
 
                         online.Add("bestaetigung_text", studio.BestaetigungText);
                         online.Add("bestaetigung_thanks", studio.BestaetigungDanke);
+                        online.Add("gui_anzeige_profil", studio.GUIAnzeigeProfil);
                     });
         }
 
@@ -106,6 +107,21 @@ namespace Syncer.Flows.zGruppeSystem
                 studioModel => studioModel.zGruppeDetailID,
                 (online, studio) =>
                 {
+                    var zGruppeID = GetStudioID<dbozGruppe>(
+                        "frst.zgruppe",
+                        "dbo.zGruppe",
+                        Convert.ToInt32(online.zgruppe_id[0]))
+                        .Value;
+
+                    studio.zGruppeID = zGruppeID;
+
+                    studio.GruppeKurz = online.gruppe_kurz;
+                    studio.GruppeLang = online.gruppe_lang;
+                    studio.GUIAnzeigen = online.gui_anzeigen;
+                    studio.GUIAnzeigeProfil = online.gui_anzeige_profil;
+                    studio.GültigVon = online.gueltig_von;
+                    studio.GültigBis = online.gueltig_bis;
+
                     studio.BestaetigungErforderlich = online.bestaetigung_erforderlich ?? false;
 
                     studio.BestaetigungtypID = MdbService
