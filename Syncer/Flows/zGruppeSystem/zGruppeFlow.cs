@@ -37,22 +37,31 @@ namespace Syncer.Flows.zGruppeSystem
                 action,
                 studioModel => studioModel.zGruppeID,
                 (studio, online) =>
-                    {
-                        online.Add("tabellentyp_id", Convert.ToString(studio.TabellentypID));
-                        online.Add("gruppe_kurz", studio.GruppeKurz);
-                        online.Add("gruppe_lang", studio.GruppeLang);
-                        online.Add("gui_anzeigen", studio.GUIAnzeigen);
-
-                        /* New:
-                         * ----------------------
-                         * 
-                         */
-                    });
+                {
+                    online.Add("tabellentyp_id", Convert.ToString(studio.TabellentypID));
+                    online.Add("gruppe_kurz", studio.GruppeKurz);
+                    online.Add("gruppe_lang", studio.GruppeLang);
+                    online.Add("gui_anzeigen", studio.GUIAnzeigen);
+                    online.Add("ja_gui_anzeige", studio.JaGuianzeige);
+                    online.Add("nein_gui_anzeige", studio.NeinGuianzeige);
+                });
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            throw new SyncerException($"{StudioModelName} can only be created/updated from FS, not from FS-Online.");
+            SimpleTransformToStudio<frstzGruppe, dbozGruppe>(
+                onlineID,
+                action,
+                studioModel => studioModel.zGruppeID,
+                (online, studio) =>
+                {
+                    studio.TabellentypID = online.tabellentyp_id;
+                    studio.GruppeKurz = online.gruppe_kurz;
+                    studio.GruppeLang = online.gruppe_lang;
+                    studio.GUIAnzeigen = online.gui_anzeigen;
+                    studio.JaGuianzeige = online.ja_gui_anzeige;
+                    studio.NeinGuianzeige = online.nein_gui_anzeige;
+                });
         }
     }
 }
