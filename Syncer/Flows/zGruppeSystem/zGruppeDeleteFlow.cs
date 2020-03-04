@@ -16,10 +16,10 @@ namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.zGruppe")]
     [OnlineModel(Name = "frst.zgruppe")]
-    public class zGruppeDeteleFlow
+    public class zGruppeDeleteFlow
         : DeleteSyncFlow
     {
-        public zGruppeDeteleFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+        public zGruppeDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
             : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
