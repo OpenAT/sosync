@@ -31,7 +31,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            throw new SyncerException($"Model {StudioModelName} can only be deleted from FS, not from FS-Online.");
+            SimpleDeleteInStudio<dbozGruppe>(onlineID);
         }
     }
 }
