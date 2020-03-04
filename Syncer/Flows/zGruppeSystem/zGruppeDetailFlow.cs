@@ -84,6 +84,7 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gruppe_kurz", studio.GruppeKurz);
                         online.Add("gruppe_lang", studio.GruppeLang);
                         online.Add("gui_anzeigen", studio.GUIAnzeigen);
+                        online.Add("gui_anzeige_profil", studio.GUIAnzeigeProfil);
                         online.Add("gueltig_von", studio.GültigVon);
                         online.Add("gueltig_bis", studio.GültigBis);
                         online.Add("bestaetigung_erforderlich", studio.BestaetigungErforderlich);
@@ -95,7 +96,6 @@ namespace Syncer.Flows.zGruppeSystem
 
                         online.Add("bestaetigung_text", studio.BestaetigungText);
                         online.Add("bestaetigung_thanks", studio.BestaetigungDanke);
-                        online.Add("gui_anzeige_profil", studio.GUIAnzeigeProfil);
                     });
         }
 
