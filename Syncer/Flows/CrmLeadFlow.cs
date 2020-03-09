@@ -122,8 +122,8 @@ namespace Syncer.Flows
                     studio.mobile = online.mobile;
                     studio.fax = online.fax;
 
-# warning TODO: Implement LandID in sync and set it appropriately
-                    studio.LandID = null;
+                    var countryID = OdooConvert.ToInt32ForeignKey(online.country_id, true);
+                    studio.LandID = GetLandIdForCountryId(countryID);
 
                     studio.state_id = OdooConvert.ToInt32ForeignKey(online.state_id, true);
                     studio.zip = online.zip;
