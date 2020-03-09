@@ -38,12 +38,30 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var lead = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "company_id", "partner_id" });
-            var companyID = OdooConvert.ToInt32((string)((List<object>)lead["company_id"])[0]);
-            var partnerID = OdooConvert.ToInt32((string)((List<object>)lead["partner_id"])[0]);
+            var lead = OdooService.Client.GetDictionary(
+                OnlineModelName,
+                onlineID,
+                new string[]
+                { 
+                    "company_id",
+                    "partner_id",
+                    "frst_zgruppedetail_id",
+                    "frst_zverzeichnis_id"
+                });
+            
+            var companyID = OdooConvert.ToInt32ForeignKey(lead["company_id"], allowNull: false);
+            var partnerID = OdooConvert.ToInt32ForeignKey(lead["partner_id"], allowNull: true);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+
+            var groupID = OdooConvert.ToInt32ForeignKey(lead["frst_zgruppedetail_id"], allowNull: true);
+            if (groupID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "frst_zgruppedetail", groupID.Value);
+
+            var verzeichnisID = OdooConvert.ToInt32ForeignKey(lead["frst_zverzeichnis_id"], allowNull: true);
+            if (verzeichnisID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "frst_zverzeichnis", verzeichnisID.Value);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -63,15 +81,28 @@ namespace Syncer.Flows
                         online,
                         x => x.company_id,
                         true);
+                    studio.xBPKAccountID = xBPKAccountID;
 
                     var personID = GetStudioIDFromOnlineReference(
                         "dbo.Person",
                         online,
                         x => x.partner_id,
                         true);
-
-                    studio.xBPKAccountID = xBPKAccountID;
                     studio.PersonID = personID;
+
+                    var zGruppeDetailID = GetStudioIDFromOnlineReference(
+                        "dbo.zGruppeDetail",
+                        online,
+                        x => x.frst_zgruppedetail_id,
+                        false);
+                    studio.zGruppeDetailID = zGruppeDetailID;
+
+                    var zVerzeichnisID = GetStudioIDFromOnlineReference(
+                        "dbo.zVerzeichnis",
+                        online,
+                        x => x.frst_zgruppedetail_id,
+                        false);
+                    studio.zVerzeichnisID = zVerzeichnisID;
 
                     studio.partner_name = online.partner_name;
 
