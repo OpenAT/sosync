@@ -53,7 +53,7 @@ namespace WebSosync.Services
             CheckDataEmpty("job_source_record_id", data, dataErrors);
 
             if (!dataErrors.ContainsKey("job_source_record_id"))
-                CheckInteger("job_source_record_id", data, dataErrors, 1, null);
+                CheckInteger("job_source_record_id", data, dataErrors, 0, null);
 
             if (data.ContainsKey("job_source_type"))
             {
