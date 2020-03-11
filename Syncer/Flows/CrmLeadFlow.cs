@@ -45,7 +45,7 @@ namespace Syncer.Flows
                 { 
                     "company_id",
                     "partner_id",
-                    "frst_zgruppedetail_id",
+                    "personemailgruppe_id",
                     "frst_zverzeichnis_id"
                 });
             
@@ -104,8 +104,9 @@ namespace Syncer.Flows
                         false);
                     studio.zVerzeichnisID = zVerzeichnisID;
 
-                    studio.partner_name = online.partner_name;
+                    studio.fb_lead_id = online.fb_lead_id;
 
+                    studio.partner_name = online.partner_name;
                     studio.name = online.name;
                     studio.contact_name = online.contact_name;
                     studio.contact_lastname = online.contact_lastname;
