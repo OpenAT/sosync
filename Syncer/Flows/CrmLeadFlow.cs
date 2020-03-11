@@ -55,9 +55,9 @@ namespace Syncer.Flows
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
 
-            var groupID = OdooConvert.ToInt32ForeignKey(lead["frst_zgruppedetail_id"], allowNull: true);
-            if (groupID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "frst_zgruppedetail", groupID.Value);
+            var emailGroupID = OdooConvert.ToInt32ForeignKey(lead["personemailgruppe_id"], allowNull: true);
+            if (emailGroupID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "personemailgruppe_id", emailGroupID.Value);
 
             var verzeichnisID = OdooConvert.ToInt32ForeignKey(lead["frst_zverzeichnis_id"], allowNull: true);
             if (verzeichnisID.HasValue)
@@ -90,17 +90,17 @@ namespace Syncer.Flows
                         true);
                     studio.PersonID = personID;
 
-                    var zGruppeDetailID = GetStudioIDFromOnlineReference(
+                    var personEmailGruppeID = GetStudioIDFromOnlineReference(
                         "dbo.zGruppeDetail",
                         online,
-                        x => x.frst_zgruppedetail_id,
+                        x => x.personemailgruppe_id,
                         false);
-                    studio.zGruppeDetailID = zGruppeDetailID;
+                    studio.PersonEmailGruppeID = personEmailGruppeID;
 
                     var zVerzeichnisID = GetStudioIDFromOnlineReference(
                         "dbo.zVerzeichnis",
                         online,
-                        x => x.frst_zgruppedetail_id,
+                        x => x.frst_zverzeichnis_id,
                         false);
                     studio.zVerzeichnisID = zVerzeichnisID;
 
