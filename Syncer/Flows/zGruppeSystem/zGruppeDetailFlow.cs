@@ -86,6 +86,9 @@ namespace Syncer.Flows.zGruppeSystem
                                 "dbo.xTemplate",
                                 "email.template",
                                 studio.BestaetigungxTemplateID.Value);
+                            
+                            if (emailID == null)
+                                throw new SyncerException($"email.template not found for dbo.xTemplate ({studio.BestaetigungxTemplateID})");
                         }
                         online.Add("bestaetigung_email", (object)emailID ?? false);
 
@@ -96,8 +99,12 @@ namespace Syncer.Flows.zGruppeSystem
                                 "dbo.zVerzeichnis",
                                 "frst.zverzeichnis",
                                 studio.zVerzeichnisID.Value);
+
+                            if (verzeichnisID == null)
+                                throw new SyncerException($"frst.zverzeichnis not found for dbo.zVerzeichnis ({studio.zVerzeichnisID})");
                         }
-                        online.Add("frst_zverzeichnis_id", (object)odoozgruppeID ?? false);
+                        online.Add("frst_zverzeichnis_id", (object)verzeichnisID ?? false);
+                        online.Add("geltungsbereich", studio.GeltungsBereich == 0 ? "system" : "local");
 
                         online.Add("gruppe_kurz", studio.GruppeKurz);
                         online.Add("gruppe_lang", studio.GruppeLang);
@@ -138,6 +145,9 @@ namespace Syncer.Flows.zGruppeSystem
                             "dbo.xTemplate",
                             Convert.ToInt32(online.bestaetigung_email[0]))
                             .Value;
+
+                        if (xTemplateID == null)
+                            throw new SyncerException($"dbo.xTemplate not found for email.template ({online.bestaetigung_email[0]})");
                     }
                     studio.BestaetigungxTemplateID = xTemplateID;
 
@@ -149,6 +159,9 @@ namespace Syncer.Flows.zGruppeSystem
                             "dbo.zVerzeichnis",
                             Convert.ToInt32(online.frst_zverzeichnis_id[0]))
                             .Value;
+
+                        if (zVerzeichnisID == null)
+                            throw new SyncerException($"dbo.zVerzeichnis not found for frst.zverzeichnis ({online.frst_zverzeichnis_id[0]})");
                     }
                     studio.zVerzeichnisID = zVerzeichnisID;
 
@@ -158,6 +171,7 @@ namespace Syncer.Flows.zGruppeSystem
                     studio.GUIAnzeigeProfil = online.gui_anzeige_profil;
                     studio.GültigVon = online.gueltig_von;
                     studio.GültigBis = online.gueltig_bis;
+                    studio.GeltungsBereich = (byte)(online.geltungsbereich == "system" ? 0 : 1);
 
                     studio.BestaetigungErforderlich = online.bestaetigung_erforderlich ?? false;
 
