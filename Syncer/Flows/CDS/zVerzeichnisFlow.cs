@@ -107,8 +107,8 @@ namespace Syncer.Flows.CDS
                 (online, studio) =>
                 {
                     studio.VerzeichnisName = online.verzeichnisname;
-                    studio.VerzeichnisLang = online.verzeichnislang;
-                    studio.Verzeichniskürzel = online.verzeichniskuerzel;
+                    studio.VerzeichnisLang = online.verzeichnislang ?? "";
+                    studio.Verzeichniskürzel = online.verzeichniskuerzel ?? "";
                     studio.Bemerkung = online.bemerkung;
 
                     int? parentVerzeichnisID = null;
