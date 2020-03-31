@@ -282,8 +282,19 @@ namespace Syncer.Flows
             var person = GetCurrentdboPersonStack(studioID);
             var sosync_write_date = (person.sosync_write_date ?? person.write_date);
 
+            int? frst_zverzeichnis_id = null;
+            if (person.person.zMarketingID > 0)
+            {
+                frst_zverzeichnis_id = GetOnlineID<dbozVerzeichnis>(
+                    "dbo.zVerzeichnis",
+                    "frst.zverzeichnis",
+                    person.person.zMarketingID)
+                    .Value;
+            }
+
             var data = new Dictionary<string, object>()
                 {
+                    { "frst_zverzeichnis_id", (object)frst_zverzeichnis_id ?? false },
                     { "firstname", person.person.Vorname },
                     { "lastname", person.person.Name },
                     { "name_zwei", person.person.Name2 },
