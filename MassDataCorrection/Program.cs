@@ -13,6 +13,8 @@ using WebSosync.Data.Models;
 using WebSosync.Data;
 using dadi_data.Models;
 using dadi_data;
+using PostgreSQLCopyHelper;
+using System.Diagnostics;
 
 namespace MassDataCorrection
 {
@@ -45,7 +47,8 @@ namespace MassDataCorrection
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
 
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
-                processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "gl2k" });
+                //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "gl2k" });
+                processor.Process((inst, prog) => UpdatePersonzMarketing(inst, prog, "dbo.Person", "res.partner"), new[] { "demo" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
@@ -809,6 +812,91 @@ namespace MassDataCorrection
 
             if (notFoundCount > 0)
                 _checkEmail.Add(info.Instance, new Tuple<int, int>(notFoundCount, errCount));
+        }
+
+        private static void UpdatePersonzMarketing(InstanceInfo info, Action<float> reportProgress, string studioModel, string onlineModel)
+        {
+            if (info.Pillar.HostSosync != "sosync2")
+                return;
+
+            var sw = Stopwatch.StartNew();
+
+            var sqlSelect = @"
+                SELECT
+	                p.sosync_fso_id partner_id, v.sosync_fso_id frst_zverzeichnis_id
+                FROM
+	                dbo.Person p WITH (NOLOCK)
+	                INNER JOIN dbo.zVerzeichnis v WITH (NOLOCK)
+		                ON p.zMarketingID = v.zVerzeichnisID
+                WHERE
+	                p.sosync_fso_id IS NOT NULL
+	                AND p.zMarketingID > 0
+	                AND v.sosync_fso_id IS NOT NULL	
+                ";
+
+            Console.WriteLine($"START {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
+            Console.WriteLine("Reading from MSSQL...");
+            var data = new List<Tuple<int, int>>();
+            using (var db = info.CreateOpenMssqlIntegratedConnection())
+            {
+                var rdr = db.ExecuteReader(sqlSelect);
+                while(rdr.Read())
+                {
+                    data.Add(new Tuple<int, int>((int)rdr["partner_id"], (int)rdr["frst_zverzeichnis_id"]));
+                }
+            }
+
+            var bulk = new PostgreSQLCopyHelper<Tuple<int, int>>("tmp_import_fs_data")
+                .MapInteger("partner_id", x => x.Item1)
+                .MapInteger("frst_zverzeichnis_id", x => x.Item2);
+
+            using (var db = info.CreateOpenNpgsqlConnection())
+            {
+                // Console.WriteLine("Beginning pgSQL transaction...");
+                // var trans = db.BeginTransaction();
+
+                // Create temp table for new FS data
+                Console.WriteLine("Creating pgSQL temp table...");
+                var sqlTmpTable = "CREATE TEMP TABLE tmp_import_fs_data (partner_id INT, frst_zverzeichnis_id INT);";
+                db.Execute(sqlTmpTable, commandTimeout: 0);
+
+                // Create indexes on temp table for fast update
+                Console.WriteLine("Creating pgSQL index temp table...");
+                db.Execute("CREATE INDEX tmp_import_fs_data_partner_id_idx ON tmp_import_fs_data (partner_id);", commandTimeout: 0);
+                db.Execute("CREATE INDEX tmp_import_fs_data_frst_zverzeichnis_id_idx ON tmp_import_fs_data (frst_zverzeichnis_id);", commandTimeout: 0);
+
+                // Save studio data to temp table
+                Console.WriteLine("Bulk-Inserting MSSQL data into pgSQL...");
+                bulk.SaveAll(db, data);
+
+                Console.WriteLine(db.ExecuteScalar("SELECT CONCAT(partner_id, ' - ', frst_zverzeichnis_id) FROM tmp_import_fs_data LIMIT 1;"));
+
+                Console.WriteLine("Deleting missing foreign keys from temp table in pgSQL...");
+                db.Execute("DELETE FROM tmp_import_fs_data WHERE NOT frst_zverzeichnis_id IN (SELECT id FROM frst_zverzeichnis);", commandTimeout: 0);
+                var rowCount = db.ExecuteScalar<int>("SELECT COUNT(*) FROM tmp_import_fs_data;", commandTimeout: 0);
+                Console.WriteLine($"{rowCount} rows left in temp table in pgSQL...");
+
+                // Update fso data with data from temp table
+                Console.WriteLine($"Update FSO using temp table ({rowCount} rows)...");
+                var sqlUpdate = @"
+					UPDATE res_partner SET frst_zverzeichnis_id = tmp_import_fs_data.frst_zverzeichnis_id
+                    FROM
+	                    tmp_import_fs_data
+		            WHERE res_partner.id = tmp_import_fs_data.partner_id;
+                    ";
+                db.Execute(sqlUpdate, commandTimeout: 0);
+
+                // Drop temp table
+                Console.WriteLine("Dropping pgSQL temp table...");
+                db.Execute("DROP TABLE tmp_import_fs_data;", commandTimeout: 0);
+
+                // Console.WriteLine("Comitting pgSQL...");
+                // trans.Commit();
+
+                sw.Stop();
+                Console.WriteLine($"DONE {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
+                Console.WriteLine($"Elapsed: {Math.Ceiling(sw.Elapsed.TotalMinutes)} minutes");
+            }
         }
 
         private static Dictionary<string, List<int>> _modelNotSync = new Dictionary<string, List<int>>();
