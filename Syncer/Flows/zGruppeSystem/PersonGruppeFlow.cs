@@ -53,16 +53,12 @@ namespace Syncer.Flows.zGruppeSystem
                 onlineID,
                 new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
 
-            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0]);
-            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0]);
+            var odooGruppeDetailID = OdooConvert.ToInt32ForeignKey(odooModel["zgruppedetail_id"], allowNull: false).Value;
+            var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
+            var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
 
-            int? odoozVerzeichnisID = null;
-
-            if (odooModel["frst_zverzeichnis_id"] != null)
-                odoozVerzeichnisID = OdooConvert.ToInt32((string)((List<object>)odooModel["frst_zverzeichnis_id"])[0]);
-
-            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID);
 
             if (odoozVerzeichnisID.HasValue && odoozVerzeichnisID.Value > 0)
                 RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value);
@@ -132,15 +128,9 @@ namespace Syncer.Flows.zGruppeSystem
                 onlineID,
                 new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
 
-            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0])
-                .Value;
-
-            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0])
-                .Value;
-
-            int? odoozVerzeichnisID = null;
-            if (odooModel["frst_zverzeichnis_id"] != null)
-                odoozVerzeichnisID = OdooConvert.ToInt32((string)((List<object>)odooModel["frst_zverzeichnis_id"])[0]).Value;
+            var odooGruppeDetailID = OdooConvert.ToInt32ForeignKey(odooModel["zgruppedetail_id"], allowNull: false).Value;
+            var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
+            var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
 
             // Get the corresponding Studio-IDs
             var zGruppeDetailID = GetStudioID<dbozGruppeDetail>(
