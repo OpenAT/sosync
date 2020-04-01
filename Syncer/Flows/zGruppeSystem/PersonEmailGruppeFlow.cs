@@ -54,7 +54,11 @@ namespace Syncer.Flows.zGruppeSystem
 
             var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0]);
             var odooPersonEmailID = OdooConvert.ToInt32((string)((List<object>)odooModel["frst_personemail_id"])[0]);
-            var odoozVerzeichnisID = OdooConvert.ToInt32((string)((List<object>)odooModel["frst_zverzeichnis_id"])[0]);
+
+            int? odoozVerzeichnisID = null;
+
+            if (odooModel["frst_zverzeichnis_id"] != null)
+                odoozVerzeichnisID = OdooConvert.ToInt32((string)((List<object>)odooModel["frst_zverzeichnis_id"])[0]);
 
             RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value);
             RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", odooPersonEmailID.Value);
