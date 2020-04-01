@@ -57,11 +57,11 @@ namespace Syncer.Flows
 
             var emailGroupID = OdooConvert.ToInt32ForeignKey(lead["personemailgruppe_id"], allowNull: true);
             if (emailGroupID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "personemailgruppe_id", emailGroupID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.personemailgruppe", emailGroupID.Value);
 
             var verzeichnisID = OdooConvert.ToInt32ForeignKey(lead["frst_zverzeichnis_id"], allowNull: true);
             if (verzeichnisID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "frst_zverzeichnis", verzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", verzeichnisID.Value);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
