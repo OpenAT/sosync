@@ -91,7 +91,7 @@ namespace Syncer.Flows
                     studio.PersonID = personID;
 
                     var personEmailGruppeID = GetStudioIDFromOnlineReference(
-                        "dbo.zGruppeDetail",
+                        "dbo.PersonEmailGruppe",
                         online,
                         x => x.personemailgruppe_id,
                         false);
