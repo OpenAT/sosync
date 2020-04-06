@@ -50,15 +50,37 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "zgruppe_id", "bestaetigung_email", "frst_zverzeichnis_id" });
+            var odooModel = OdooService.Client.GetDictionary(
+                OnlineModelName,
+                onlineID,
+                new string[]
+                {
+                    "zgruppe_id",
+                    "bestaetigung_email",
+                    "bestaetigung_success_email",
+                    "subscription_email",
+                    "frst_zverzeichnis_id"
+                });
+
+
             var odooGruppeID = OdooConvert.ToInt32ForeignKey(odooModel["zgruppe_id"], allowNull: false);
-            var odooEmailID = OdooConvert.ToInt32ForeignKey(odooModel["bestaetigung_email"], allowNull: true);
+
+            var bestaetigungEmailID = OdooConvert.ToInt32ForeignKey(odooModel["bestaetigung_email"], allowNull: true);
+            var bestaetigungSuccessEmailID = OdooConvert.ToInt32ForeignKey(odooModel["bestaetigung_success_email"], allowNull: true);
+            var subscriptionEmailID = OdooConvert.ToInt32ForeignKey(odooModel["subscription_email"], allowNull: true);
+
             var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
             RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppe", odooGruppeID.Value);
 
-            if (odooEmailID.HasValue && odooEmailID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "email.template", odooEmailID.Value);
+            if (bestaetigungEmailID.HasValue && bestaetigungEmailID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungEmailID.Value);
+
+            if (bestaetigungSuccessEmailID.HasValue && bestaetigungSuccessEmailID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungSuccessEmailID.Value);
+
+            if (subscriptionEmailID.HasValue && subscriptionEmailID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", subscriptionEmailID.Value);
 
             if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
                 RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value);
@@ -79,18 +101,44 @@ namespace Syncer.Flows.zGruppeSystem
 
                         online.Add("zgruppe_id", odoozgruppeID.Value);
 
-                        int? emailID = null;
+                        int? bestaetigungEmailID = null;
                         if (studio.BestaetigungxTemplateID.HasValue && studio.BestaetigungxTemplateID > 0)
                         {
-                            emailID = GetOnlineID<dboxTemplate>(
+                            bestaetigungEmailID = GetOnlineID<dboxTemplate>(
                                 "dbo.xTemplate",
                                 "email.template",
                                 studio.BestaetigungxTemplateID.Value);
                             
-                            if (emailID == null)
-                                throw new SyncerException($"email.template not found for dbo.xTemplate ({studio.BestaetigungxTemplateID})");
+                            if (bestaetigungEmailID == null)
+                                throw new SyncerException($"email.template (bestaetigung_email) not found for dbo.xTemplate ({studio.BestaetigungxTemplateID})");
                         }
-                        online.Add("bestaetigung_email", (object)emailID ?? false);
+                        online.Add("bestaetigung_email", (object)bestaetigungEmailID ?? false);
+
+                        int? bestaetigungSuccessEmailID = null;
+                        if (studio.BestaetigungErfolgxTemplateID.HasValue && studio.BestaetigungErfolgxTemplateID > 0)
+                        {
+                            bestaetigungSuccessEmailID = GetOnlineID<dboxTemplate>(
+                                "dbo.xTemplate",
+                                "email.template",
+                                studio.BestaetigungErfolgxTemplateID.Value);
+
+                            if (bestaetigungSuccessEmailID == null)
+                                throw new SyncerException($"email.template (bestaetigung_success_email) not found for dbo.xTemplate ({studio.BestaetigungErfolgxTemplateID})");
+                        }
+                        online.Add("bestaetigung_success_email", (object)bestaetigungSuccessEmailID ?? false);
+
+                        int? subscribedEmailID = null;
+                        if (studio.AnmeldungxTemplateID.HasValue && studio.AnmeldungxTemplateID > 0)
+                        {
+                            subscribedEmailID = GetOnlineID<dboxTemplate>(
+                                "dbo.xTemplate",
+                                "email.template",
+                                studio.AnmeldungxTemplateID.Value);
+
+                            if (subscribedEmailID == null)
+                                throw new SyncerException($"email.template (subscription_email) not found for dbo.xTemplate ({studio.AnmeldungxTemplateID})");
+                        }
+                        online.Add("subscription_email", (object)subscribedEmailID ?? false);
 
                         int? verzeichnisID = null;
                         if (studio.zVerzeichnisID.HasValue && studio.zVerzeichnisID > 0)
@@ -137,19 +185,26 @@ namespace Syncer.Flows.zGruppeSystem
                         .Value;
                     studio.zGruppeID = zGruppeID;
 
-                    int? xTemplateID = null;
-                    if (online.bestaetigung_email != null)
-                    {
-                        xTemplateID = GetStudioID<dboxTemplate>(
-                            "email.template",
-                            "dbo.xTemplate",
-                            Convert.ToInt32(online.bestaetigung_email[0]))
-                            .Value;
+                    var bestaetigungxTemplateID = GetStudioIDFromOnlineReference(
+                        "dbo.xTemplate",
+                        online,
+                        x => x.bestaetigung_email,
+                        false);
+                    studio.BestaetigungxTemplateID = bestaetigungxTemplateID;
 
-                        if (xTemplateID == null)
-                            throw new SyncerException($"dbo.xTemplate not found for email.template ({online.bestaetigung_email[0]})");
-                    }
-                    studio.BestaetigungxTemplateID = xTemplateID;
+                    var bestaetigungSuccessxTemplateID = GetStudioIDFromOnlineReference(
+                        "dbo.xTemplate",
+                        online,
+                        x => x.bestaetigung_success_email,
+                        false);
+                    studio.BestaetigungErfolgxTemplateID = bestaetigungSuccessxTemplateID;
+
+                    var anmeldungxTemplateID = GetStudioIDFromOnlineReference(
+                        "dbo.xTemplate",
+                        online,
+                        x => x.subscription_email,
+                        false);
+                    studio.AnmeldungxTemplateID = anmeldungxTemplateID;
 
                     int? zVerzeichnisID = null;
                     if (online.frst_zverzeichnis_id != null)
