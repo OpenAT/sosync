@@ -259,7 +259,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "zgruppe_id", "bestaetigung_email", "frst_zverzeichnis_id" });
+            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
             var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
             if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
