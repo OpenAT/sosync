@@ -40,6 +40,9 @@ namespace Syncer.Flows.zGruppeSystem
 
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID);
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID);
+
+                if (studioModel.zVerzeichnisID.HasValue && studioModel.zVerzeichnisID > 0)
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value);
             }
         }
 
@@ -48,19 +51,24 @@ namespace Syncer.Flows.zGruppeSystem
             var odooModel = OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
-                new string[] { "zgruppedetail_id", "partner_id" });
+                new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
 
-            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0]);
-            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0]);
+            var odooGruppeDetailID = OdooConvert.ToInt32ForeignKey(odooModel["zgruppedetail_id"], allowNull: false).Value;
+            var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
+            var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
 
-            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID);
+
+            if (odoozVerzeichnisID.HasValue && odoozVerzeichnisID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             var zgruppedetail_id = 0;
             var partner_id = 0;
+            int? frst_zverzeichnis_id = null;
 
             using (var db = MdbService.GetDataService<dboPersonGruppe>())
             {
@@ -79,6 +87,15 @@ namespace Syncer.Flows.zGruppeSystem
                     "res.partner",
                     personGruppe.PersonID)
                     .Value;
+
+                if (personGruppe.zVerzeichnisID.HasValue && personGruppe.zVerzeichnisID.Value > 0)
+                {
+                    frst_zverzeichnis_id = GetOnlineID<dboPerson>(
+                        "dbo.zVerzeichnis",
+                        "frst.zverzeichnis",
+                        personGruppe.zVerzeichnisID.Value)
+                        .Value;
+                }
             }
 
             // Do the transformation
@@ -90,6 +107,7 @@ namespace Syncer.Flows.zGruppeSystem
                 {
                     online.Add("zgruppedetail_id", zgruppedetail_id);
                     online.Add("partner_id", partner_id);
+                    online.Add("frst_zverzeichnis_id", (object)frst_zverzeichnis_id ?? false);
                     online.Add("steuerung_bit", studio.Steuerung);
                     online.Add("gueltig_von", studio.GültigVon.Date);
                     online.Add("gueltig_bis", studio.GültigBis.Date);
@@ -108,13 +126,11 @@ namespace Syncer.Flows.zGruppeSystem
             var odooModel = OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
-                new string[] { "zgruppedetail_id", "partner_id" });
+                new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
 
-            var odooGruppeDetailID = OdooConvert.ToInt32((string)((List<object>)odooModel["zgruppedetail_id"])[0])
-                .Value;
-
-            var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0])
-                .Value;
+            var odooGruppeDetailID = OdooConvert.ToInt32ForeignKey(odooModel["zgruppedetail_id"], allowNull: false).Value;
+            var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
+            var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
 
             // Get the corresponding Studio-IDs
             var zGruppeDetailID = GetStudioID<dbozGruppeDetail>(
@@ -129,6 +145,16 @@ namespace Syncer.Flows.zGruppeSystem
                 odooPartnerID)
                 .Value;
 
+            int? zVerzeichnisID = null;
+            if (odoozVerzeichnisID.HasValue && odoozVerzeichnisID.Value > 0)
+            {
+                zVerzeichnisID = GetStudioID<dboPerson>(
+                    "frst.zverzeichnis",
+                    "dbo.zVerzeichnis",
+                    odoozVerzeichnisID.Value)
+                    .Value;
+            }
+
             // Do the transformation
             SimpleTransformToStudio<frstPersongruppe, dboPersonGruppe>(
                 onlineID,
@@ -138,6 +164,7 @@ namespace Syncer.Flows.zGruppeSystem
                     {
                         studio.zGruppeDetailID = zGruppeDetailID;
                         studio.PersonID = PersonID;
+                        studio.zVerzeichnisID = zVerzeichnisID;
                         studio.Steuerung = online.steuerung_bit;
                         studio.GültigVon = online.gueltig_von.Date;
                         studio.GültigBis = online.gueltig_bis.Date;

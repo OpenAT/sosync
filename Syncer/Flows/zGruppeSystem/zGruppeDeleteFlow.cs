@@ -16,10 +16,10 @@ namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.zGruppe")]
     [OnlineModel(Name = "frst.zgruppe")]
-    public class zGruppeDeteleFlow
+    public class zGruppeDeleteFlow
         : DeleteSyncFlow
     {
-        public zGruppeDeteleFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+        public zGruppeDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
             : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
         {
         }
@@ -31,7 +31,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            throw new SyncerException($"Model {StudioModelName} can only be deleted from FS, not from FS-Online.");
+            SimpleDeleteInStudio<dbozGruppe>(onlineID);
         }
     }
 }
