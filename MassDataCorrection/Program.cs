@@ -869,7 +869,7 @@ namespace MassDataCorrection
                 Console.WriteLine("Bulk-Inserting MSSQL data into pgSQL...");
                 bulk.SaveAll(db, data);
 
-                Console.WriteLine(db.ExecuteScalar("SELECT CONCAT(partner_id, ' - ', frst_zverzeichnis_id) FROM tmp_import_fs_data LIMIT 1;"));
+                Console.WriteLine($"Partners requiring update: {db.ExecuteScalar("SELECT COUNT(*) FROM res_partner WHERE frst_zverzeichnis_id IS NULL;")}");
 
                 Console.WriteLine("Deleting missing foreign keys from temp table in pgSQL...");
                 db.Execute("DELETE FROM tmp_import_fs_data WHERE NOT frst_zverzeichnis_id IN (SELECT id FROM frst_zverzeichnis);", commandTimeout: 0);
@@ -882,7 +882,7 @@ namespace MassDataCorrection
 					UPDATE res_partner SET frst_zverzeichnis_id = tmp_import_fs_data.frst_zverzeichnis_id
                     FROM
 	                    tmp_import_fs_data
-		            WHERE res_partner.id = tmp_import_fs_data.partner_id;
+		            WHERE res_partner.frst_zverzeichnis_id IS NULL AND res_partner.id = tmp_import_fs_data.partner_id;
                     ";
                 db.Execute(sqlUpdate, commandTimeout: 0);
 
