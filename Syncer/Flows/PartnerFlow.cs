@@ -259,11 +259,11 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            //var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
-            //var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
+            var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
-            //if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
-            //    RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value);
+            if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
@@ -846,19 +846,19 @@ namespace Syncer.Flows
             dest.BPKErzwungenStrasse = source.BPKForcedStreet;
             dest.fso_bpk_state = source.BPKState;
 
-            //int? zVerzeichnisID = null;
-            //if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
-            //{
-            //    zVerzeichnisID = GetStudioID<dbozVerzeichnis>(
-            //        "frst.zverzeichnis",
-            //        "dbo.zVerzeichnis",
-            //        Convert.ToInt32(source.FrstzVerzeichnisId[0]))
-            //        .Value;
+            int? zVerzeichnisID = null;
+            if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
+            {
+                zVerzeichnisID = GetStudioID<dbozVerzeichnis>(
+                    "frst.zverzeichnis",
+                    "dbo.zVerzeichnis",
+                    Convert.ToInt32(source.FrstzVerzeichnisId[0]))
+                    .Value;
 
-            //    if (zVerzeichnisID == null)
-            //        throw new SyncerException($"dbo.zVerzeichnis not found for frst.zverzeichnis ({source.FrstzVerzeichnisId[0]})");
-            //}
-            //dest.zMarketingID = zVerzeichnisID ?? 0;
+                if (zVerzeichnisID == null)
+                    throw new SyncerException($"dbo.zVerzeichnis not found for frst.zverzeichnis ({source.FrstzVerzeichnisId[0]})");
+            }
+            dest.zMarketingID = zVerzeichnisID ?? 0;
 
             if (new string[] { "male", "female" }.Contains(source.Gender))
                 dest.GeschlechttypID = source.Gender == "male" ? 290 : 291;
