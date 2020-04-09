@@ -35,7 +35,7 @@ namespace Syncer.Services
             using (var db = GetDataService<dboTypen>())
             {
                 MdbTypes = db
-                    .Read("SELECT * FROM dbo.Typen", null)
+                    .Read("SELECT * FROM dbo.Typen WITH (NOLOCK)", null)
                     .ToList();
             }
         }
