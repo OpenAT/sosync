@@ -72,9 +72,12 @@ namespace WebSosync.Controllers.Statistic
                     {
                         var isXmlRpcError = ex.Source == "DaDi.XmlRpc";
                         var isDoesNotExistError = _odoo.Client.LastResponseRaw.Contains($"Object {flowName} doesn't exist");
+                        var isInvalidFieldSosyncError =
+                            _odoo.Client.LastResponseRaw.Contains($"crm_lead")
+                            && _odoo.Client.LastResponseRaw.Contains($"Invalid field 'sosync_fs_id'");
 
-                        // If it's anything but an XML-RPC error with object doesn't exist, rethrow
-                        if (!isXmlRpcError || !isDoesNotExistError)
+                        // If it's anything but one of those errors, rethrow
+                        if (!(isXmlRpcError || isDoesNotExistError || isInvalidFieldSosyncError))
                             throw;
                     }
                 }
