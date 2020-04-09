@@ -17,7 +17,8 @@ namespace Syncer.Flows.gl2k.garden
     public class GardenDeleteFlow
         : DeleteSyncFlow
     {
-        public GardenDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService) : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public GardenDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

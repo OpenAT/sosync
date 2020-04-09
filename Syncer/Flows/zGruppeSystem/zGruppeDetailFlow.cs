@@ -22,8 +22,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailFlow
         : ReplicateSyncFlow
     {
-        public zGruppeDetailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public zGruppeDetailFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -34,7 +34,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dbozGruppeDetail>())
+            using (var db = Svc.MdbService.GetDataService<dbozGruppeDetail>())
             {
                 var studioModel = db.Read(new { zGruppeDetailID = studioID }).SingleOrDefault();
 
@@ -50,7 +50,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[]
@@ -162,7 +162,7 @@ namespace Syncer.Flows.zGruppeSystem
                         online.Add("gueltig_bis", studio.GültigBis);
                         online.Add("bestaetigung_erforderlich", studio.BestaetigungErforderlich);
 
-                        online.Add("bestaetigung_typ", (object)MdbService
+                        online.Add("bestaetigung_typ", (object)Svc.TypeService
                             .GetTypeValue(studio.BestaetigungtypID) ?? false);
 
                         online.Add("bestaetigung_text", studio.BestaetigungText);
@@ -230,7 +230,7 @@ namespace Syncer.Flows.zGruppeSystem
 
                     studio.BestaetigungErforderlich = online.bestaetigung_erforderlich ?? false;
 
-                    studio.BestaetigungtypID = MdbService
+                    studio.BestaetigungtypID = Svc.TypeService
                         .GetTypeID("zGruppeDetail_BestaetigungtypID", online.bestaetigung_typ);
 
                     studio.BestaetigungText = online.bestaetigung_text;

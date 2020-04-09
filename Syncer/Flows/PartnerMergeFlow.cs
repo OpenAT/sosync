@@ -13,8 +13,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner")]
     public class PartnerMergeFlow : MergeSyncFlow
     {
-        public PartnerMergeFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PartnerMergeFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -30,7 +30,7 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            OdooService.Client.MergeModel(
+            Svc.OdooService.Client.MergeModel(
                 OnlineModelName,
                 Job.Sync_Target_Record_ID.Value,
                 Job.Sync_Target_Merge_Into_Record_ID.Value);

@@ -21,8 +21,8 @@ namespace Syncer.Flows.Payments
     public class ProductTemplateFlow
         : ReplicateSyncFlow
     {
-        public ProductTemplateFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public ProductTemplateFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -68,7 +68,7 @@ namespace Syncer.Flows.Payments
                     if (online.payment_interval_default != null)
                         product_payment_intervalID = GetStudioIDFromMssqlViaOnlineID(
                             studioModel, 
-                            MdbService.GetStudioModelIdentity(studioModel),
+                            Svc.MdbService.GetStudioModelIdentity(studioModel),
                             Convert.ToInt32(online.payment_interval_default[0]));
                    
                     studio.name = online.name;

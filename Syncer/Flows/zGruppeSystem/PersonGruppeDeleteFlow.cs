@@ -17,8 +17,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonGruppeDeleteFlow
         : DeleteSyncFlow
     {
-        public PersonGruppeDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PersonGruppeDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

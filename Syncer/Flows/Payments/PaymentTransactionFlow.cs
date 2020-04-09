@@ -21,8 +21,8 @@ namespace Syncer.Flows.Payments
     public class PaymentTransactionFlow
         : ReplicateSyncFlow
     {
-        public PaymentTransactionFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PaymentTransactionFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

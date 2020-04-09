@@ -24,8 +24,8 @@ namespace Syncer.Flows
     public class EmailTemplateFlow
         : ReplicateSyncFlow
     {
-        public EmailTemplateFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public EmailTemplateFlow(SyncServiceCollection svc)
+            : base(svc)
         { }
 
         protected override ModelInfo GetOnlineInfo(int onlineID)
@@ -35,14 +35,14 @@ namespace Syncer.Flows
             // If there was no foreign ID in fso, try to check the mssql side
             // for the referenced ID too
             if (!info.ForeignID.HasValue)
-                info.ForeignID = GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+                info.ForeignID = GetStudioIDFromMssqlViaOnlineID(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
             return info;
         }
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboxTemplate>())
+            using (var db = Svc.MdbService.GetDataService<dboxTemplate>())
             {
                 var emailTemplate = db.Read(new { xTemplateID = studioID }).SingleOrDefault();
                 if (emailTemplate != null)
@@ -75,17 +75,17 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            var onlineTemplate = OdooService.Client.GetModel<emailTemplate>(OnlineModelName, onlineID);
+            var onlineTemplate = Svc.OdooService.Client.GetModel<emailTemplate>(OnlineModelName, onlineID);
 
             if (!IsValidFsID(onlineTemplate.Sosync_FS_ID))
                 onlineTemplate.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
-                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
 
-            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
-            using (var db = MdbService.GetDataService<dboxTemplate>())
+            using (var db = Svc.MdbService.GetDataService<dboxTemplate>())
             {
                 var orgId = db.ExecuteQuery<int>("select dbo.FS_100_Organisation_01_ID()")
                     .SingleOrDefault();
@@ -117,7 +117,7 @@ namespace Syncer.Flows
                         noSyncJobSwitch = true
                     };
 
-                    UpdateSyncTargetRequest(Serializer.ToXML(entry));
+                    UpdateSyncTargetRequest(Svc.Serializer.ToXML(entry));
 
                     var xTemplateID = 0;
                     try
@@ -132,7 +132,7 @@ namespace Syncer.Flows
                         throw;
                     }
 
-                    OdooService.Client.UpdateModel(
+                    Svc.OdooService.Client.UpdateModel(
                         OnlineModelName,
                         new { sosync_fs_id = entry.xTemplateID },
                         onlineID,
@@ -143,7 +143,7 @@ namespace Syncer.Flows
                     var sosync_fs_id = onlineTemplate.Sosync_FS_ID;
                     var studioTemplate = db.Read(new { xTemplateID = sosync_fs_id }).SingleOrDefault();
 
-                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioTemplate));
+                    UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(studioTemplate));
 
                     var referenceId = studioTemplate.ReferenzID;
                     PublishToMultiMail(orgId, onlineTemplate, referenceId);
@@ -157,7 +157,7 @@ namespace Syncer.Flows
                     studioTemplate.sosync_write_date = (onlineTemplate.Sosync_Write_Date ?? onlineTemplate.Write_Date).Value;
                     studioTemplate.noSyncJobSwitch = true;
 
-                    UpdateSyncTargetRequest(Serializer.ToXML(studioTemplate));
+                    UpdateSyncTargetRequest(Svc.Serializer.ToXML(studioTemplate));
 
                     try
                     {

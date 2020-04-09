@@ -19,8 +19,8 @@ namespace Syncer.Flows.Temporary
     /// </summary>
     public abstract class TempSyncFlow : SyncFlow
     {
-        public TempSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public TempSyncFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -81,7 +81,7 @@ namespace Syncer.Flows.Temporary
                     job.Sync_Target_Model = StudioModelName;
 
                     var sourceOnlineID = job.Job_Source_Record_ID;
-                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, MdbService.GetStudioModelIdentity(modelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
+                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, Svc.MdbService.GetStudioModelIdentity(modelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceOnlineID;
                     job.Sync_Target_Record_ID = targetStudioID;

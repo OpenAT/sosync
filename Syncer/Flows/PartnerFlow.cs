@@ -32,8 +32,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public PartnerFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PartnerFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion
@@ -81,11 +81,11 @@ namespace Syncer.Flows
 
             dboPersonStack result = new dboPersonStack();
 
-            using (var personSvc = MdbService.GetDataService<dboPerson>())
-            using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-            using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>())
-            using (var addressBlockSvc = MdbService.GetDataService<dboPersonAdresseBlock>())
-            using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+            using (var personSvc = Svc.MdbService.GetDataService<dboPerson>())
+            using (var addressSvc = Svc.MdbService.GetDataService<dboPersonAdresse>())
+            using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>())
+            using (var addressBlockSvc = Svc.MdbService.GetDataService<dboPersonAdresseBlock>())
+            using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
@@ -259,7 +259,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            //var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
+            //var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
             //var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
             //if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
@@ -268,7 +268,7 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            //using (var db = MdbService.GetDataService<dboPerson>())
+            //using (var db = Svc.MdbService.GetDataService<dboPerson>())
             //{
             //    var studioModel = db.Read(new { PersonID = studioID }).SingleOrDefault();
 
@@ -342,7 +342,7 @@ namespace Syncer.Flows
             SetDictionaryEntryForObject(data, person.mobile, "mobile", () => CombinePhone(person.mobile), () => null);
             SetDictionaryEntryForObject(data, person.fax, "fax", () => CombinePhone(person.fax), () => null);
 
-            UpdateSyncSourceData(Serializer.ToXML(person));
+            UpdateSyncSourceData(Svc.Serializer.ToXML(person));
             
             if (action == TransformType.CreateNew)
             {
@@ -351,18 +351,18 @@ namespace Syncer.Flows
                 int odooPartnerId = 0;
                 try
                 {
-                    odooPartnerId = OdooService.Client.CreateModel("res.partner", data);
+                    odooPartnerId = Svc.OdooService.Client.CreateModel("res.partner", data);
                 }
                 finally
                 {
-                    UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooPartnerId);
+                    UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+                    UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, odooPartnerId);
                 }
 
                 // Update the remote id in studio
-                using (var personSvc = MdbService.GetDataService<dboPerson>())
-                using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-                using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+                using (var personSvc = Svc.MdbService.GetDataService<dboPerson>())
+                using (var addressSvc = Svc.MdbService.GetDataService<dboPersonAdresse>())
+                using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
                 {
                     SetdboPersonStack_fso_ids(
                         person, 
@@ -376,20 +376,20 @@ namespace Syncer.Flows
             }
             else
             {
-                OdooService.Client.GetModel<resPartner>("res.partner", person.person.sosync_fso_id.Value);
-                LogMilliseconds($"{nameof(TransformToOnline)} read full res.partner", OdooService.Client.LastRpcTime);
+                Svc.OdooService.Client.GetModel<resPartner>("res.partner", person.person.sosync_fso_id.Value);
+                LogMilliseconds($"{nameof(TransformToOnline)} read full res.partner", Svc.OdooService.Client.LastRpcTime);
 
-                UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+                UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
                 try
                 {
                     var onlineID = person.person.sosync_fso_id.Value;
 
-                    OdooService.Client.UpdateModel("res.partner", data, onlineID, false);
+                    Svc.OdooService.Client.UpdateModel("res.partner", data, onlineID, false);
 
                     // Update the remote id in studio
-                    using (var personSvc = MdbService.GetDataService<dboPerson>())
-                    using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>())
-                    using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>())
+                    using (var personSvc = Svc.MdbService.GetDataService<dboPerson>())
+                    using (var addressSvc = Svc.MdbService.GetDataService<dboPersonAdresse>())
+                    using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
                     {
                         SetdboPersonStack_fso_ids(
                             person,
@@ -403,8 +403,8 @@ namespace Syncer.Flows
                 }
                 finally
                 {
-                    UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                    UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+                    UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+                    UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, null);
                 }
             }
             
@@ -459,26 +459,26 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            var partner = OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
-            LogMilliseconds($"{nameof(TransformToStudio)} read res.partner", OdooService.Client.LastRpcTime);           
+            var partner = Svc.OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
+            LogMilliseconds($"{nameof(TransformToStudio)} read res.partner", Svc.OdooService.Client.LastRpcTime);           
 
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
 
             if (!IsValidFsID(partner.Sosync_FS_ID))
                 partner.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID("dbo.Person", "PersonID", onlineID);
 
-            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
             dboPersonStack person = null;
 
-            using (var personSvc = MdbService.GetDataService<dboPerson>())
+            using (var personSvc = Svc.MdbService.GetDataService<dboPerson>())
             {
                 var transaction = personSvc.BeginTransaction();
                 var con = personSvc.Connection;
 
-                using (var addressSvc = MdbService.GetDataService<dboPersonAdresse>(con, transaction))
-                using (var addressAMSvc = MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
-                using (var phoneSvc = MdbService.GetDataService<dboPersonTelefon>(con, transaction))
+                using (var addressSvc = Svc.MdbService.GetDataService<dboPersonAdresse>(con, transaction))
+                using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
+                using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 {
                     var addressChanged = false;
 
@@ -531,7 +531,7 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                         }
 
-                        UpdateSyncTargetRequest(Serializer.ToXML(person));
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 
                         var PersonID = 0;
                         try
@@ -579,19 +579,19 @@ namespace Syncer.Flows
                             throw;
                         }
 
-                        OdooService.Client.UpdateModel(
+                        Svc.OdooService.Client.UpdateModel(
                             "res.partner",
                             new { sosync_fs_id = person.person.PersonID },
                             onlineID,
                             false);
-                        LogMilliseconds($"{nameof(TransformToStudio)} update res.partner", OdooService.Client.LastRpcTime);
+                        LogMilliseconds($"{nameof(TransformToStudio)} update res.partner", Svc.OdooService.Client.LastRpcTime);
                     }
                     else
                     {
                         var PersonID = partner.Sosync_FS_ID.Value;
                         person = GetCurrentdboPersonStack(PersonID);
 
-                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(person));
+                        UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(person));
 
                         CopyPartnerToPerson(partner, person.person);
 
@@ -669,7 +669,7 @@ namespace Syncer.Flows
                             SetSyncFields(person.fax, onlineID, sosync_write_date);
                         }
 
-                        UpdateSyncTargetRequest(Serializer.ToXML(person));
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 
                         try
                         {
@@ -906,7 +906,7 @@ namespace Syncer.Flows
             else if (dest.AnredeformtypID == 324)
             {
                 int system_default_AnredeformtypID = 0;
-                using (var typenSVC = MdbService.GetDataService<dboTypen>())
+                using (var typenSVC = Svc.MdbService.GetDataService<dboTypen>())
                 {
                     system_default_AnredeformtypID = (int)typenSVC.Read(new { TypenID = 200120 }).FirstOrDefault().Formularwert;
                     LogMilliseconds($"{nameof(CopyPartnerToPersonAddress)} get Type<200120>", typenSVC.LastQueryExecutionTimeMS);
@@ -988,7 +988,7 @@ namespace Syncer.Flows
         {
             dboPerson result = null;
 
-            using (var typenSvc = MdbService.GetDataService<dboTypen>())
+            using (var typenSvc = Svc.MdbService.GetDataService<dboTypen>())
             {  
                 var defaultLandID = (int)typenSvc.Read(new { TypenID = 200525 }).FirstOrDefault().Formularwert;
                 LogMilliseconds($"{nameof(InitDboPerson)} get Type<200525>", typenSvc.LastQueryExecutionTimeMS);
@@ -1011,7 +1011,7 @@ namespace Syncer.Flows
         {
             dboPersonAdresse result = null;
 
-            using (var typenSvc = MdbService.GetDataService<dboTypen>())
+            using (var typenSvc = Svc.MdbService.GetDataService<dboTypen>())
             {
                 var defaultAnredefromtypID = (int)typenSvc.Read(new { TypenID = 200120 }).FirstOrDefault().Formularwert;
                 LogMilliseconds($"{nameof(InitDboPersonAdresse)} get Type<200120>", typenSvc.LastQueryExecutionTimeMS);
@@ -1051,7 +1051,7 @@ namespace Syncer.Flows
         {
             dboPersonEmail result = null;
 
-            using (var typenSvc = MdbService.GetDataService<dboTypen>())
+            using (var typenSvc = Svc.MdbService.GetDataService<dboTypen>())
             {
                 var defaultEmailAnredefromtypID = (int)typenSvc.Read(new { TypenID = 200122 }).FirstOrDefault().Formularwert;
                 LogMilliseconds($"{nameof(InitDboPersonEmail)} get Type<200122>", typenSvc.LastQueryExecutionTimeMS);

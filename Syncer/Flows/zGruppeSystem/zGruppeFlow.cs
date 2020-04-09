@@ -20,8 +20,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeFlow
         : ReplicateSyncFlow
     {
-        public zGruppeFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public zGruppeFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

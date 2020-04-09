@@ -20,14 +20,8 @@ namespace Syncer.Flows
     public class CrmLeadFlow
         : ReplicateSyncFlow
     {
-        public CrmLeadFlow(
-            ILogger logger,
-            OdooService odooService,
-            SosyncOptions conf,
-            FlowService flowService,
-            OdooFormatService odooFormatService,
-            SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public CrmLeadFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -38,7 +32,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var lead = OdooService.Client.GetDictionary(
+            var lead = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[]

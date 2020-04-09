@@ -21,8 +21,8 @@ namespace Syncer.Flows
     public class FiscalYearFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public FiscalYearFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public FiscalYearFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion
@@ -35,7 +35,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var fiscal = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "company_id" });
+            var fiscal = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "company_id" });
             var companyID = OdooConvert.ToInt32((string)((List<object>)fiscal["company_id"])[0]);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
@@ -43,7 +43,7 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboxBPKMeldespanne>())
+            using (var db = Svc.MdbService.GetDataService<dboxBPKMeldespanne>())
             {
                 var fiscal = db.Read(new { xBPKMeldespanneID = studioID }).SingleOrDefault();
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", fiscal.xBPKAccountID);
@@ -54,7 +54,7 @@ namespace Syncer.Flows
         {
             var companyID = 0;
             dboxBPKMeldespanne spanne = null;
-            using (var db = MdbService.GetDataService<dboxBPKMeldespanne>())
+            using (var db = Svc.MdbService.GetDataService<dboxBPKMeldespanne>())
             {
                 spanne = db.Read(new { xBPKMeldespanneID = studioID }).SingleOrDefault();
 
@@ -89,10 +89,10 @@ namespace Syncer.Flows
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            var fiscal = OdooService.Client.GetModel<accountFiscalYear>(OnlineModelName, onlineID);
+            var fiscal = Svc.OdooService.Client.GetModel<accountFiscalYear>(OnlineModelName, onlineID);
 
             if (!IsValidFsID(fiscal.Sosync_FS_ID))
-                fiscal.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+                fiscal.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
             var xBPKAccountID = GetStudioIDFromMssqlViaOnlineID("dbo.xBPKAccount", "xBPKAccountID", Convert.ToInt32(fiscal.CompanyID[0]));
 

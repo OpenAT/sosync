@@ -31,8 +31,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public ReplicateSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public ReplicateSyncFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion
@@ -101,7 +101,7 @@ namespace Syncer.Flows
 
             var locked = true;
             var lockT1 = DateTime.Now;
-            var timeoutMS = Config.Model_Lock_Timeout;
+            var timeoutMS = Svc.Config.Model_Lock_Timeout;
             var lockWatch = Stopwatch.StartNew();
             LogMs(0, $"\nThread lock start", Job.ID, 0);
             var wasLocked = false;
@@ -136,7 +136,7 @@ namespace Syncer.Flows
 
                 if (locked)
                 {
-                    Log.LogInformation($"Job {Job.ID} locked by hash {hash}");
+                    Svc.Log.LogInformation($"Job {Job.ID} locked by hash {hash}");
                     System.Threading.Thread.Sleep(100);
 
                     if ((DateTime.Now - lockT1).TotalMilliseconds > timeoutMS)
@@ -325,7 +325,7 @@ namespace Syncer.Flows
             // Determine the IDs for both systems via matching
             if (IsModelInOnlineOnly(studioInfo, onlineInfo))
             {
-                Log.LogInformation($"Trying to match {OnlineModelName} ({onlineInfo.ID}) in {SosyncSystem.FundraisingStudio.Value}");
+                Svc.Log.LogInformation($"Trying to match {OnlineModelName} ({onlineInfo.ID}) in {SosyncSystem.FundraisingStudio.Value}");
                 var studioWatch = Stopwatch.StartNew();
                 matchedID = MatchInStudioViaData(onlineInfo.ID);
                 studioWatch.Stop();
@@ -339,7 +339,7 @@ namespace Syncer.Flows
             }
             else if (IsModelInStudioOnly(studioInfo, onlineInfo))
             {
-                Log.LogInformation($"Trying to match {StudioModelName} ({studioInfo.ID}) in {SosyncSystem.FSOnline.Value}");
+                Svc.Log.LogInformation($"Trying to match {StudioModelName} ({studioInfo.ID}) in {SosyncSystem.FSOnline.Value}");
                 var onlineWatch = Stopwatch.StartNew();
                 matchedID = MatchInOnlineViaData(studioInfo.ID);
                 onlineWatch.Stop();
@@ -356,19 +356,19 @@ namespace Syncer.Flows
             // systems accordingly
             if (studioID > 0 && onlineID > 0)
             {
-                Log.LogInformation($"Updating {OnlineModelName} {onlineID} setting sosync_fs_id = {studioID}");
+                Svc.Log.LogInformation($"Updating {OnlineModelName} {onlineID} setting sosync_fs_id = {studioID}");
                 var onlineWatch = Stopwatch.StartNew();
-                OdooService.Client.UpdateModel(OnlineModelName, new { sosync_fs_id = studioID }, onlineID);
+                Svc.OdooService.Client.UpdateModel(OnlineModelName, new { sosync_fs_id = studioID }, onlineID);
                 onlineWatch.Stop();
                 LogMs(0, $"Update matched ID in {SosyncSystem.FSOnline.Value}", Job.ID, (long)onlineWatch.Elapsed.TotalMilliseconds);
 
-                Log.LogInformation($"Updating {StudioModelName} {studioID} setting sosync_fso_id = {onlineID}");
+                Svc.Log.LogInformation($"Updating {StudioModelName} {studioID} setting sosync_fso_id = {onlineID}");
                 var studioWatch = Stopwatch.StartNew();
-                using (var db = MdbService.GetDataService<dboTypen>())
+                using (var db = Svc.MdbService.GetDataService<dboTypen>())
                 {
                     db.ExecuteNonQuery(
                         $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id, noSyncJobSwitch = 1 " + 
-                        $"WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @id",
+                        $"WHERE {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id",
                         new { sosync_fso_id = onlineID, id = studioID });
                 }
                 studioWatch.Stop();
@@ -429,12 +429,12 @@ namespace Syncer.Flows
                 var desc = $"Fix {SosyncSystem.FundraisingStudio.Value}.sosync_fso_id";
                 UpdateJob(job, desc);
 
-                Log.LogWarning(warning);
+                Svc.Log.LogWarning(warning);
 
                 var s = Stopwatch.StartNew();
-                using (var db = MdbService.GetDataService<dboTypen>())
+                using (var db = Svc.MdbService.GetDataService<dboTypen>())
                 {
-                    var query = $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id WHERE {MdbService.GetStudioModelIdentity(StudioModelName)} = @studioID";
+                    var query = $"UPDATE {StudioModelName} SET sosync_fso_id = @sosync_fso_id WHERE {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @studioID";
                     db.ExecuteNonQuery(
                         query,
                         new { studioID = studioInfo.ID, sosync_fso_id = onlineInfo.ID });
@@ -454,11 +454,11 @@ namespace Syncer.Flows
                 var desc = $"Fix {SosyncSystem.FSOnline.Value}.sosync_fs_id";
                 UpdateJob(job, desc);
 
-                Log.LogWarning(warning);
+                Svc.Log.LogWarning(warning);
 
                 var s = Stopwatch.StartNew();
 
-                OdooService.Client.UpdateModel(
+                Svc.OdooService.Client.UpdateModel(
                     OnlineModelName,
                     new { sosync_fs_id = studioInfo.ID },
                     onlineInfo.ID);
@@ -530,7 +530,7 @@ namespace Syncer.Flows
                 // Both models are within tolerance, and considered up to date.
                 writeDate = null;
 
-                // Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+                // Svc.Log.LogInformation($"{nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
                 UpdateJobSourceAndTarget(
                     job, null, "", null, null, "", null,
                     $"Model up to date (diff: {SpecialFormat.FromMilliseconds((int)diff.TotalMilliseconds)}, tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)})");
@@ -595,9 +595,9 @@ namespace Syncer.Flows
                 sosyncDate.ToString(format));
 
             if (isSimilar)
-                Log.LogInformation(logMsg);
+                Svc.Log.LogInformation(logMsg);
             //else
-            //    Log.LogWarning(logMsg);
+            //    Svc.Log.LogWarning(logMsg);
 
             return isSimilar;
         }
@@ -621,7 +621,7 @@ namespace Syncer.Flows
 
             var result = onlineWriteDate - studioWriteDate;
 
-            Log.LogInformation($"job ({Job.ID}): {nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
+            Svc.Log.LogInformation($"job ({Job.ID}): {nameof(GetWriteDateDifference)}() - {anyModelName} write diff: {SpecialFormat.FromMilliseconds((int)Math.Abs(result.TotalMilliseconds))} Tolerance: {SpecialFormat.FromMilliseconds(toleranceMS)}");
 
             // If the difference is within the tolerance,
             // return zero
@@ -636,7 +636,7 @@ namespace Syncer.Flows
             studioInfo = null;
 
             onlineInfo = GetOnlineInfo(job.Job_Source_Record_ID);
-            LogMs(1, nameof(GetModelInfosViaOnline) + "-FSO", job.ID, OdooService.Client.LastRpcTime);
+            LogMs(1, nameof(GetModelInfosViaOnline) + "-FSO", job.ID, Svc.OdooService.Client.LastRpcTime);
 
             if (onlineInfo == null)
                 throw new ModelNotFoundException(
@@ -656,7 +656,7 @@ namespace Syncer.Flows
             {
                 var lookupStudioID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
-                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineInfo.ID);
 
                 if (lookupStudioID.HasValue)
@@ -683,7 +683,7 @@ namespace Syncer.Flows
             if (studioInfo.ForeignID != null)
             {
                 onlineInfo = GetOnlineInfo(studioInfo.ForeignID.Value);
-               LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.ID, OdooService.Client.LastRpcTime);
+               LogMs(1, nameof(GetModelInfosViaStudio) + "-FSO", job.ID, Svc.OdooService.Client.LastRpcTime);
             }
             else
             {
@@ -703,18 +703,18 @@ namespace Syncer.Flows
             where TOdoo : SosyncModelBase
         {
             TStudio studioModel = null;
-            using (var db = MdbService.GetDataService<TStudio>())
+            using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
                 // studioModel = db.Read(new { zGruppeID = studioID }).SingleOrDefault();
                 studioModel = db.Read(
-                    $"select * from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select * from {Svc.MdbService.GetStudioModelReadView(StudioModelName)} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
                 if (!studioModel.sosync_fso_id.HasValue)
                     studioModel.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, getStudioIdentity(studioModel));
 
-                UpdateSyncSourceData(Serializer.ToXML(studioModel));
+                UpdateSyncSourceData(Svc.Serializer.ToXML(studioModel));
 
                 // Perpare data that is the same for create or update
                 var data = new Dictionary<string, object>();
@@ -728,29 +728,29 @@ namespace Syncer.Flows
                     int odooModelID = 0;
                     try
                     {
-                        odooModelID = OdooService.Client.CreateModel(OnlineModelName, data, false);
+                        odooModelID = Svc.OdooService.Client.CreateModel(OnlineModelName, data, false);
                         studioModel.sosync_fso_id = odooModelID;
                         db.Update(studioModel);
                     }
                     finally
                     {
-                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooModelID);
+                        UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, odooModelID);
                     }
                 }
                 else
                 {
-                    var odooModel = OdooService.Client.GetModel<TOdoo>(OnlineModelName, studioModel.sosync_fso_id.Value);
-                    UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+                    var odooModel = Svc.OdooService.Client.GetModel<TOdoo>(OnlineModelName, studioModel.sosync_fso_id.Value);
+                    UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
 
                     try
                     {
-                        OdooService.Client.UpdateModel(OnlineModelName, data, studioModel.sosync_fso_id.Value, false);
+                        Svc.OdooService.Client.UpdateModel(OnlineModelName, data, studioModel.sosync_fso_id.Value, false);
                     }
                     finally
                     {
-                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+                        UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+                        UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, null);
                     }
                 }
             }
@@ -767,15 +767,15 @@ namespace Syncer.Flows
             where TOdoo : SosyncModelBase
             where TStudio : MdbModelBase, ISosyncable, new()
         {
-            var onlineModel = OdooService.Client.GetModel<TOdoo>(OnlineModelName, onlineID);
+            var onlineModel = Svc.OdooService.Client.GetModel<TOdoo>(OnlineModelName, onlineID);
 
             if (!IsValidFsID(onlineModel.Sosync_FS_ID))
                 onlineModel.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
-                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
 
-            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
             // List all dboAktion... Types, needed for log serialization
             var actionTypes = Assembly
@@ -784,7 +784,7 @@ namespace Syncer.Flows
                 .Where(x => x.Name.StartsWith("dboAktion"))
                 .ToArray();
 
-            using (var db = MdbService.GetDataService<TStudio>())
+            using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
                 if (action == TransformType.CreateNew)
                 {
@@ -800,11 +800,11 @@ namespace Syncer.Flows
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetRequest(Serializer.ToXML(
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(
                             new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
                             actionTypes));
                     else
-                        UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(studioModel));
                     // ---
 
                     var studioModelID = 0;
@@ -815,7 +815,7 @@ namespace Syncer.Flows
                         // (studio model is an Aktion* Model in that case)
                         if (parentAction != null)
                         {
-                            using (var dbAk = MdbService.GetDataService<dboAktion>())
+                            using (var dbAk = Svc.MdbService.GetDataService<dboAktion>())
                             {
                                 dbAk.Create(parentAction);
                                 applyIdentity(onlineModel, parentAction.AktionsID, studioModel);
@@ -833,7 +833,7 @@ namespace Syncer.Flows
                         throw;
                     }
 
-                    OdooService.Client.UpdateModel(
+                    Svc.OdooService.Client.UpdateModel(
                         OnlineModelName,
                         new { sosync_fs_id = getStudioIdentity(studioModel) },
                         onlineID,
@@ -843,18 +843,18 @@ namespace Syncer.Flows
                 {
                     var sosync_fs_id = onlineModel.Sosync_FS_ID;
                     var studioModel = db.Read(
-                        $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                        $"select * from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                         new { ID = sosync_fs_id })
                         .SingleOrDefault();
 
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(
+                        UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(
                             new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
                             actionTypes));
                     else
-                        UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioModel));
+                        UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(studioModel));
                     // ---
 
                     copyOdooToStudio(onlineModel, studioModel);
@@ -865,11 +865,11 @@ namespace Syncer.Flows
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
                     if (parentAction != null)
-                        UpdateSyncTargetRequest(Serializer.ToXML(
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(
                             new StudioAktion { Aktion = parentAction, AktionDetail = studioModel },
                             actionTypes));
                     else
-                        UpdateSyncTargetRequest(Serializer.ToXML(studioModel));
+                        UpdateSyncTargetRequest(Svc.Serializer.ToXML(studioModel));
                     // ---
 
                     try
@@ -877,7 +877,7 @@ namespace Syncer.Flows
                         // If an action was specified, save that action first
                         if (parentAction != null)
                         {
-                            using (var dbAk = MdbService.GetDataService<dboAktion>())
+                            using (var dbAk = Svc.MdbService.GetDataService<dboAktion>())
                             {
                                 dbAk.Update(parentAction);
                             }

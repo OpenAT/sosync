@@ -19,8 +19,8 @@ namespace Syncer.Flows
     public class EmailTemplateDeleteFlow
         : DeleteSyncFlow
     {
-        public EmailTemplateDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public EmailTemplateDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -43,7 +43,7 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Only do a soft delete on xTemplate 
-            using (var db = MdbService.GetDataService<dboxTemplate>())
+            using (var db = Svc.MdbService.GetDataService<dboxTemplate>())
             {
                 var template = db.Read(new { sosync_fso_id = onlineID })
                     .SingleOrDefault();
@@ -51,9 +51,9 @@ namespace Syncer.Flows
                 if (template == null)
                     throw new SyncerException($"Failed to read data from model {StudioModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
 
-                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(template));
+                UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(template));
 
-                var query = $"update {StudioModelName} set GültigBis = cast(dateadd(day, -1, getdate()) as date) where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                var query = $"update {StudioModelName} set GültigBis = cast(dateadd(day, -1, getdate()) as date) where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
                 UpdateSyncTargetRequest($"-- @id = {Job.Sync_Target_Record_ID.Value}\n" + query);
 
                 template.GültigBis = DateTime.Today.AddDays(-1);

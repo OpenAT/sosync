@@ -21,8 +21,8 @@ namespace Syncer.Flows.CDS
     public class zVerzeichnisFlow
         : ReplicateSyncFlow
     {
-        public zVerzeichnisFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public zVerzeichnisFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Syncer.Flows.CDS
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dbozVerzeichnis>())
+            using (var db = Svc.MdbService.GetDataService<dbozVerzeichnis>())
             {
                 var studioModel = db.Read(new { zVerzeichnisID = studioID }).SingleOrDefault();
 
@@ -44,7 +44,7 @@ namespace Syncer.Flows.CDS
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "parent_id" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "parent_id" });
             var parentID = OdooConvert.ToInt32ForeignKey(odooModel["parent_id"], allowNull: true);
 
             if (parentID.HasValue)
@@ -73,7 +73,7 @@ namespace Syncer.Flows.CDS
 
                     var isFolder = studio.VerzeichnistypID == 110200;
                     online.Add("verzeichnistyp_id", isFolder);
-                    online.Add("bezeichnungstyp_id", MdbService.GetTypeValue(studio.BezeichnungstypID));
+                    online.Add("bezeichnungstyp_id", Svc.TypeService.GetTypeValue(studio.BezeichnungstypID));
 
                     online.Add("anlagedatum", studio.Anlagedatum);
                     online.Add("startdatum", studio.Startdatum);
@@ -125,7 +125,7 @@ namespace Syncer.Flows.CDS
                     var isFolder = online.verzeichnistyp_id;
                     studio.VerzeichnistypID = isFolder ? 110200 : 110202; // 110200=Folder, 110202=List
 
-                    studio.BezeichnungstypID = MdbService.GetTypeID(
+                    studio.BezeichnungstypID = Svc.TypeService.GetTypeID(
                         "zVerzeichnis_BezeichnungstypID",
                         online.bezeichnungstyp_id)
                         .Value;

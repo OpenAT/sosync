@@ -19,8 +19,8 @@ namespace Syncer.Flows.Payments
     public class ProductProductFlow
         : ReplicateSyncFlow
     {
-        public ProductProductFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public ProductProductFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

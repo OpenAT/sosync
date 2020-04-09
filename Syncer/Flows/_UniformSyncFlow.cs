@@ -24,8 +24,8 @@ namespace Syncer.Flows
     public abstract class UniformSyncFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public UniformSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public UniformSyncFlow(SyncServiceCollection svc)
+            : base(svc)
         {
             var t = GetType();
             var attStudio = t.GetCustomAttribute<StudioModelAttribute>();
@@ -46,7 +46,7 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboTypen>())
+            using (var db = Svc.MdbService.GetDataService<dboTypen>())
             {
                 var result = db.ExecuteQuery<ModelInfo>(
                     $"select {StudioModelID} ID, sosync_fso_id ForeignID, write_date WriteDate, sosync_write_date SosyncWriteDate " +
@@ -62,12 +62,12 @@ namespace Syncer.Flows
         {
             ThrowIfFieldsMissing();
 
-            // UpdateSyncSourceData(Serializer.ToXML(acc));
-            // UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-            // UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooCompanyId);
-            // UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
-            // UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-            // UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+            // UpdateSyncSourceData(Svc.Serializer.ToXML(acc));
+            // UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+            // UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, odooCompanyId);
+            // UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
+            // UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+            // UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, null);
 
             throw new NotImplementedException();
         }

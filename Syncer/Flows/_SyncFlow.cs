@@ -39,14 +39,7 @@ namespace Syncer.Flows
         #endregion
 
         #region Properties
-        protected ILogger Log { get; private set; }
-        //protected IServiceProvider Service { get; private set; }
-        protected OdooService OdooService { get; private set; }
-        protected MdbService MdbService { get; private set; }
-        protected OdooFormatService OdooFormat { get; private set; }
-        protected SerializationService Serializer { get; private set; }
-        protected SosyncOptions Config { get; private set; }
-        protected FlowService FlowService { get; private set; }
+        protected SyncServiceCollection Svc { get; }
 
         protected IReadOnlyList<ChildJobRequest> RequiredChildJobs { get { return _requiredChildJobs.AsReadOnly(); } }
         protected IReadOnlyList<ChildJobRequest> RequiredPostTransformChildJobs { get { return _requiredPostChildJobs.AsReadOnly(); } }
@@ -65,15 +58,10 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public SyncFlow(ILogger logger, OdooService odooSvc, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
+        public SyncFlow(SyncServiceCollection svc)
         {
-            Config = conf;
-            Log = logger;
-            FlowService = flowService;
-            OdooService = odooSvc;
-            MdbService = new MdbService(conf);
-            OdooFormat = odooFormatService;
-            Serializer = serializationService;
+            Svc = svc;
+
             SkipAutoSyncSource = false;
             _timeLog = new StringBuilder();
 
@@ -97,7 +85,7 @@ namespace Syncer.Flows
 
         protected DataService GetDb()
         {
-            return new DataService(Config);
+            return new DataService(Svc.Config);
         }
 
         private void SetModelPropertiesFromAttributes()
@@ -135,7 +123,7 @@ namespace Syncer.Flows
         /// <returns></returns>
         protected int? GetOnlineReferenceID(string onlineModelName, int id, string onlineReferenceField)
         {
-            var odooDict = OdooService.Client.GetDictionary(
+            var odooDict = Svc.OdooService.Client.GetDictionary(
                 onlineModelName,
                 id,
                 new[] { onlineReferenceField });
@@ -173,7 +161,7 @@ namespace Syncer.Flows
 
                 result = GetStudioIDFromMssqlViaOnlineID(
                     studioModelName,
-                    MdbService.GetStudioModelIdentity(studioModelName),
+                    Svc.MdbService.GetStudioModelIdentity(studioModelName),
                     odooID);
 
                 if (odooID > 0 && !result.HasValue)
@@ -188,14 +176,14 @@ namespace Syncer.Flows
 
         protected int? GetCountryIdForLandId(int? landID)
         {
-            string isoCode = MdbService.GetIsoCodeForLandID(landID);
-            return OdooService.GetCountryIDForIsoCode(isoCode);
+            string isoCode = Svc.MdbService.GetIsoCodeForLandID(landID);
+            return Svc.OdooService.GetCountryIDForIsoCode(isoCode);
         }
 
         protected int? GetLandIdForCountryId(int? countryID)
         {
-            string isoCode = OdooService.GetIsoCodeForCountryID(countryID);
-            return MdbService.GetLandIDForIsoCode(isoCode);
+            string isoCode = Svc.OdooService.GetIsoCodeForCountryID(countryID);
+            return Svc.MdbService.GetLandIDForIsoCode(isoCode);
         }
 
         /// <summary>
@@ -251,7 +239,7 @@ namespace Syncer.Flows
             var s = new Stopwatch();
             s.Start();
 
-            var dicModel = OdooService.Client.GetDictionary(
+            var dicModel = Svc.OdooService.Client.GetDictionary(
                 model,
                 id,
                 new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
@@ -266,7 +254,7 @@ namespace Syncer.Flows
                 _DebugOnlineStat[model] = new Tuple<double, int>(t.Item1 + s.Elapsed.TotalMilliseconds, t.Item2 + 1);
             }
 
-            if (!OdooService.Client.IsValidResult(dicModel))
+            if (!Svc.OdooService.Client.IsValidResult(dicModel))
                 throw new ModelNotFoundException(SosyncSystem.FSOnline, model, id);
 
             var fsID = OdooConvert.ToInt32((string)dicModel["sosync_fs_id"]);
@@ -284,13 +272,13 @@ namespace Syncer.Flows
         protected ModelInfo GetDefaultStudioModelInfo<TStudio>(int studioID)
             where TStudio: MdbModelBase, ISosyncable, new()
         {
-            using (var db = MdbService.GetDataService<TStudio>())
+            using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
                 var s = new Stopwatch();
                 s.Start();
 
                 var studioModel = db.Read(
-                    $"select write_date, sosync_write_date, sosync_fso_id from {MdbService.GetStudioModelReadView(StudioModelName)} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select write_date, sosync_write_date, sosync_fso_id from {Svc.MdbService.GetStudioModelReadView(StudioModelName)} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
@@ -317,11 +305,11 @@ namespace Syncer.Flows
         {
             var odooID = 0;
 
-            Log.LogInformation($"Going to SearchByField, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
+            Svc.Log.LogInformation($"Going to SearchByField, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
 
-            var results = OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId).ToList();
+            var results = Svc.OdooService.Client.SearchByField(onlineModelName, "sosync_fs_id", "=", fsId).ToList();
 
-            Log.LogInformation($"SearchByField returned, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
+            Svc.Log.LogInformation($"SearchByField returned, inside {nameof(GetOnlineIDFromOdooViaStudioID)} ({nameof(onlineModelName)}={onlineModelName}, {nameof(fsId)}={fsId})");
 
             if (results.Count == 1)
                 odooID = results[0];
@@ -339,7 +327,7 @@ namespace Syncer.Flows
             // Since we're only running a simple query, the DataService type doesn't matter
             try
             {
-                using (var db = MdbService.GetDataService<dboPerson>())
+                using (var db = Svc.MdbService.GetDataService<dboPerson>())
                 {
                     var foundStudioID = db.ExecuteQuery<int?>(
                         $"select {idName} from {studioModelName} where sosync_fso_id = @fso_id",
@@ -476,7 +464,7 @@ namespace Syncer.Flows
                             childJob.Sync_Target_Record_ID =
                                 Job.Job_Source_System == SosyncSystem.FundraisingStudio.Value
                                 ? GetOnlineIDFromOdooViaStudioID(OnlineModelName, request.JobSourceRecordID)
-                                : GetStudioIDFromMssqlViaOnlineID(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
+                                : GetStudioIDFromMssqlViaOnlineID(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), request.JobSourceRecordID);
 
                             childJob.Job_Log += $"Forcing direction: {request.JobSourceModel} ({request.JobSourceRecordID}) --> {childJob.Sync_Target_Model} ({childJob.Sync_Target_Record_ID})\n";
                         }
@@ -490,7 +478,7 @@ namespace Syncer.Flows
                             // If the child job wasn't created yet, create it
                             if (entry == null)
                             {
-                                Log.LogInformation($"Creating {childDescription} for job ({Job.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
+                                Svc.Log.LogInformation($"Creating {childDescription} for job ({Job.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}).");
                                 db.CreateJob(childJob);
                                 Job.Children.Add(childJob);
 
@@ -504,15 +492,15 @@ namespace Syncer.Flows
                         // If the job is new or marked as "in progress", run it
                         if (entry.Job_State == SosyncState.New.Value || entry.Job_State == SosyncState.InProgress.Value)
                         {
-                            Log.LogInformation($"Executing {childDescription} ({entry.ID})");
+                            Svc.Log.LogInformation($"Executing {childDescription} ({entry.ID})");
 
                             UpdateJobStart(entry, DateTime.UtcNow);
 
                             // SyncFlow flow = (SyncFlow)Service.GetService(flowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model));
 
                             // Get the flow for the job source model, and start it
-                            var constructorParams = new object[] { Log, OdooService, Config, FlowService, OdooFormat, Serializer};
-                            using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(FlowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model), constructorParams))
+                            var constructorParams = new object[] { Svc };
+                            using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(Svc.FlowService.GetFlow(entry.Job_Source_Type, entry.Job_Source_Model), constructorParams))
                             {
                                 if (request.ForceDirection)
                                     flow.SkipAutoSyncSource = true;
@@ -586,7 +574,7 @@ namespace Syncer.Flows
 
                     var action = Job.Sync_Target_Record_ID > 0 ? TransformType.Update : TransformType.CreateNew;
 
-                    Log.LogInformation(description);
+                    Svc.Log.LogInformation(description);
 
                     if (Job.Sync_Source_System == SosyncSystem.FSOnline.Value)
                         TransformToStudio(Job.Sync_Source_Record_ID.Value, action);
@@ -609,14 +597,14 @@ namespace Syncer.Flows
             }
             catch (SyncerDeletionFailedException ex)
             {
-                Log.LogWarning(ex.Message + " Assuming model already deleted. Skipping job.");
+                Svc.Log.LogWarning(ex.Message + " Assuming model already deleted. Skipping job.");
                 Job.Job_Error_Code = SosyncError.Transformation.Value;
                 Job.Job_Error_Text += ex.ToString();
                 UpdateJobSkipped();
             }
             catch (AddressBlockNotUpToDateException ex)
             {
-                Log.LogWarning(ex.Message);
+                Svc.Log.LogWarning(ex.Message);
                 UpdateJobInconsistentBlock(Job);
                 requireRestart = true;
                 restartReason = "AddresseBlock not up to date, requesting restart.";
@@ -668,10 +656,10 @@ namespace Syncer.Flows
             where TStudio : MdbModelBase, ISosyncable, new()
         {
             TStudio studioModel = null;
-            using (var db = MdbService.GetDataService<TStudio>())
+            using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
                 studioModel = db.Read(
-                    $"select sosync_fso_id from {studioModelName} where {MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
+                    $"select sosync_fso_id from {studioModelName} where {Svc.MdbService.GetStudioModelIdentity(studioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 
@@ -696,17 +684,17 @@ namespace Syncer.Flows
         {
             int? studioID = null;
 
-            var odooModel = OdooService.Client.GetDictionary(onlineModelName, onlineID, new[] { "sosync_fs_id" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(onlineModelName, onlineID, new[] { "sosync_fs_id" });
 
             if (odooModel.ContainsKey("sosync_fs_id"))
                 studioID = OdooConvert.ToInt32((string)odooModel["sosync_fs_id"]);
 
             if (!studioID.HasValue || studioID == 0)
             {
-                using (var db = MdbService.GetDataService<TStudio>())
+                using (var db = Svc.MdbService.GetDataService<TStudio>())
                 {
                     studioID = db.ExecuteQuery<int?>(
-                        $"select {MdbService.GetStudioModelIdentity(studioModelName)} from {studioModelName} where sosync_fso_id = @sosync_fso_id",
+                        $"select {Svc.MdbService.GetStudioModelIdentity(studioModelName)} from {studioModelName} where sosync_fso_id = @sosync_fso_id",
                         new { sosync_fso_id = onlineID })
                         .SingleOrDefault();
                 }
@@ -749,7 +737,7 @@ namespace Syncer.Flows
         {
             if (sosyncWriteDate == null)
             {
-                Log.LogInformation($"Job ({job.ID}) Skipping consistency check, no {nameof(sosyncWriteDate)} present.");
+                Svc.Log.LogInformation($"Job ({job.ID}) Skipping consistency check, no {nameof(sosyncWriteDate)} present.");
                 return true;
             }
 
@@ -757,11 +745,11 @@ namespace Syncer.Flows
 
             if (consistencyWatch.ElapsedMilliseconds < maxMS)
             {
-                Log.LogInformation($"Job ({job.ID}) Skipping consistency check, last check under {maxMS}ms.");
+                Svc.Log.LogInformation($"Job ({job.ID}) Skipping consistency check, last check under {maxMS}ms.");
                 return true;
             }
 
-            Log.LogInformation($"Job ({job.ID}) Checking model consistency");
+            Svc.Log.LogInformation($"Job ({job.ID}) Checking model consistency");
 
             ModelInfo currentInfo = null;
 
@@ -784,7 +772,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetDataBeforeUpdate(string data)
         {
-            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Data_Before_Update");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Data_Before_Update");
 
             using (var db = GetDb())
             {
@@ -797,7 +785,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncSourceData(string data)
         {
-            Log.LogInformation($"Updating job {Job.ID}: Sync_Source_Data");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: Sync_Source_Data");
 
             using (var db = GetDb())
             {
@@ -810,7 +798,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetRequest(string requestData)
         {
-            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Request");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Request");
 
             using (var db = GetDb())
             {
@@ -823,7 +811,7 @@ namespace Syncer.Flows
 
         protected void UpdateSyncTargetAnswer(string answerData, int? createdID)
         {
-            Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Answer");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: Sync_Target_Answer");
 
             using (var db = GetDb())
             {
@@ -847,7 +835,7 @@ namespace Syncer.Flows
         /// <param name="log">Information to be logged.</param>
         protected void UpdateJobSourceAndTarget(SyncJob job, SosyncSystem srcSystem, string srcModel, int? srcId, SosyncSystem targetSystem, string targetModel, int? targetId, string log)
         {
-            Log.LogInformation($"Updating job {job.ID}: check source");
+            Svc.Log.LogInformation($"Updating job {job.ID}: check source");
 
             using (var db = GetDb())
             {
@@ -872,7 +860,7 @@ namespace Syncer.Flows
         /// <param name="job">The job to be updated.</param>
         private void UpdateJobChildStart(SyncJob job)
         {
-            Log.LogInformation($"Updating job { job.ID}: child start");
+            Svc.Log.LogInformation($"Updating job { job.ID}: child start");
 
             using (var db = GetDb())
             {
@@ -885,7 +873,7 @@ namespace Syncer.Flows
 
         protected void UpdateJob(SyncJob job, string description)
         {
-            Log.LogInformation($"Updating job { Job.ID}: {description}");
+            Svc.Log.LogInformation($"Updating job { Job.ID}: {description}");
 
             using (var db = GetDb())
             {
@@ -900,7 +888,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobChildEnd()
         {
-            Log.LogInformation($"Updating job {Job.ID}: child end");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: child end");
 
             using (var db = GetDb())
             {
@@ -916,7 +904,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncStart()
         {
-            Log.LogInformation($"Updating job {Job.ID}: transformation/sync start");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: transformation/sync start");
 
             using (var db = GetDb())
             {
@@ -932,7 +920,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobSyncEnd()
         {
-            Log.LogInformation($"Updating job { Job.ID}: transformation/sync end");
+            Svc.Log.LogInformation($"Updating job { Job.ID}: transformation/sync end");
 
             using (var db = GetDb())
             {
@@ -948,7 +936,7 @@ namespace Syncer.Flows
         /// </summary>
         private void UpdateJobStart(SyncJob job, DateTime loadTimeUTC)
         {
-            Log.LogInformation($"Updating job {job.ID}: job start");
+            Svc.Log.LogInformation($"Updating job {job.ID}: job start");
 
             using (var db = GetDb())
             {
@@ -963,7 +951,7 @@ namespace Syncer.Flows
 
         private void UpdateJobInconsistentBlock(SyncJob job)
         {
-            Log.LogInformation($"Updating job {job.ID}: job_log");
+            Svc.Log.LogInformation($"Updating job {job.ID}: job_log");
 
             using (var db = GetDb())
             {
@@ -976,7 +964,7 @@ namespace Syncer.Flows
 
         private void UpdateJobInconsistent(SyncJob job, int nr)
         {
-            Log.LogInformation($"Updating job {job.ID}: job_log");
+            Svc.Log.LogInformation($"Updating job {job.ID}: job_log");
 
             using (var db = GetDb())
             {
@@ -995,7 +983,7 @@ namespace Syncer.Flows
         /// finished because it was already in sync.</param>
         protected void UpdateJobSuccess(bool wasInSync)
         {
-            Log.LogInformation($"Updating job {Job.ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: job done {(wasInSync ? " (model already in sync)" : "")}");
 
             using (var db = GetDb())
             {
@@ -1009,7 +997,7 @@ namespace Syncer.Flows
 
         protected void UpdateJobSkipped()
         {
-            Log.LogInformation($"Updating job {Job.ID}: job skipped");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: job skipped");
 
             using (var db = GetDb())
             {
@@ -1030,7 +1018,7 @@ namespace Syncer.Flows
         protected void UpdateJobSuccessOtherThread(int otherJobID)
         {
             var msg = $"Updating job {Job.ID}: Another thread completed same job (ID {otherJobID})";
-            Log.LogInformation(msg);
+            Svc.Log.LogInformation(msg);
 
             using (var db = GetDb())
             {
@@ -1051,7 +1039,7 @@ namespace Syncer.Flows
         /// <param name="errorText">The custom error text.</param>
         protected void UpdateJobError(SosyncError error, string errorText)
         {
-            Log.LogInformation($"Updating job {Job.ID}: job error");
+            Svc.Log.LogInformation($"Updating job {Job.ID}: job error");
 
             using (var db = GetDb())
             {
@@ -1073,7 +1061,7 @@ namespace Syncer.Flows
 
         protected void LogMs(int lvl, string name, int? jobId, long ms)
         {
-            Log.LogInformation($"Job {jobId ?? Job.ID}: {name} elapsed: {ms} ms");
+            Svc.Log.LogInformation($"Job {jobId ?? Job.ID}: {name} elapsed: {ms} ms");
             LogMilliseconds(name, ms);
         }
 

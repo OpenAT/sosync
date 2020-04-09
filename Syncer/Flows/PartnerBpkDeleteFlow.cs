@@ -18,8 +18,8 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.bpk")]
     public class PartnerBpkDeleteFlow : DeleteSyncFlow
     {
-        public PartnerBpkDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PartnerBpkDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

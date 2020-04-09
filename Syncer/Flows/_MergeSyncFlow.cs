@@ -19,8 +19,8 @@ namespace Syncer.Flows
     /// </summary>
     public abstract class MergeSyncFlow : SyncFlow
     {
-        public MergeSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public MergeSyncFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

@@ -23,8 +23,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonEmailFlow
         : ReplicateSyncFlow
     {
-        public PersonEmailFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PersonEmailFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -49,7 +49,7 @@ namespace Syncer.Flows.zGruppeSystem
                 new OdooSearchArgument("email", "=ilike", mail)
             };
 
-            onlineID = OdooService.Client.SearchBy(OnlineModelName, searchArgs)
+            onlineID = Svc.OdooService.Client.SearchBy(OnlineModelName, searchArgs)
                 .SingleOrDefault();
 
             return onlineID;
@@ -60,7 +60,7 @@ namespace Syncer.Flows.zGruppeSystem
             mail = null;
             partnerID = null;
 
-            using (var db = MdbService.GetDataService<dboPersonEmail>())
+            using (var db = Svc.MdbService.GetDataService<dboPersonEmail>())
             {
                 var personEmail = db.Read(new { PersonEmailID = studioID })
                     .SingleOrDefault();
@@ -88,14 +88,14 @@ namespace Syncer.Flows.zGruppeSystem
         {
             int? studioID = null;
 
-            var frstPersonemail = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new[] { "partner_id", "email" });
+            var frstPersonemail = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new[] { "partner_id", "email" });
 
             if (frstPersonemail.ContainsKey("email"))
             {
                 var mail = (string)frstPersonemail["email"];
                 int partnerID = Convert.ToInt32(((List<object>)frstPersonemail["partner_id"])[0]);
 
-                var resPartner = OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
+                var resPartner = Svc.OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
                 int? personID = null;
 
                 if (resPartner.ContainsKey("sosync_fs_id"))
@@ -104,10 +104,10 @@ namespace Syncer.Flows.zGruppeSystem
                 if (string.IsNullOrEmpty(mail) || !personID.HasValue)
                     throw new SyncerException($"Cannot {nameof(MatchInStudioViaData)}: E-Mail = '{mail}', PersonID = {partnerID}");
 
-                using (var db = MdbService.GetDataService<dboTypen>())
+                using (var db = Svc.MdbService.GetDataService<dboTypen>())
                 {
                     studioID = db.ExecuteQuery<int?>(
-                        $"SELECT {MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
+                        $"SELECT {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
                         "WHERE PersonID = @personID AND ISNULL(EmailVor, '') + '@' + ISNULL(EmailNach, '') = @mail",
                         new { personID, mail })
                         .SingleOrDefault();
@@ -123,7 +123,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboPersonEmail>())
+            using (var db = Svc.MdbService.GetDataService<dboPersonEmail>())
             {
                 var studioModel = db.Read(new { PersonEmailID = studioID }).SingleOrDefault();
 
@@ -133,7 +133,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "partner_id" });
@@ -147,7 +147,7 @@ namespace Syncer.Flows.zGruppeSystem
         {
             var partner_id = 0;
 
-            using (var db = MdbService.GetDataService<dboPersonEmail>())
+            using (var db = Svc.MdbService.GetDataService<dboPersonEmail>())
             {
                 // Get the referenced Studio-IDs
                 var personEmail = db.Read(new { PersonEmailID = studioID }).SingleOrDefault();
@@ -173,7 +173,7 @@ namespace Syncer.Flows.zGruppeSystem
                         // state -- is only set by FSOnline
                         // main_address -- is only set by FSOnline
 
-                        online.Add("bestaetigt_typ", (object)MdbService
+                        online.Add("bestaetigt_typ", (object)Svc.TypeService
                             .GetTypeValue(studio.BestaetigungsTypID) ?? false);
 
                         online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
@@ -184,7 +184,7 @@ namespace Syncer.Flows.zGruppeSystem
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Get the referenced Odoo-IDs
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "partner_id" });
@@ -215,7 +215,7 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.HauptAdresse = online.main_address;
                         studio.State = online.state;
 
-                        studio.BestaetigungsTypID = MdbService
+                        studio.BestaetigungsTypID = Svc.TypeService
                             .GetTypeID("PersonEmail_BestaetigungsTypID", online.bestaetigt_typ);
 
                         studio.BestaetigtAmUm = DateTimeHelper.ToLocal(online.bestaetigt_am_um);

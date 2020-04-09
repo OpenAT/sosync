@@ -21,7 +21,8 @@ namespace Syncer.Flows.MassMailing
     public class MailMassMailingContactFlow
         : ReplicateSyncFlow
     {
-        public MailMassMailingContactFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService) : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public MailMassMailingContactFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -32,7 +33,7 @@ namespace Syncer.Flows.MassMailing
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<fsonmail_mass_mailing_contact>())
+            using (var db = Svc.MdbService.GetDataService<fsonmail_mass_mailing_contact>())
             {
                 var studioModel = db.Read(new { mail_mass_mailing_contactID = studioID }).SingleOrDefault();
 
@@ -51,7 +52,7 @@ namespace Syncer.Flows.MassMailing
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id" });
             var partnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: true);
             var listID = OdooConvert.ToInt32ForeignKey(odooModel["list_id"], allowNull: false);
             var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
@@ -129,7 +130,7 @@ namespace Syncer.Flows.MassMailing
 
                     online.Add("bestaetigt_am_um", studio.BestaetigtAmUm);
                     online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
-                    online.Add("bestaetigt_typ", MdbService.GetTypeValue(studio.BestaetigungsTypID));
+                    online.Add("bestaetigt_typ", Svc.TypeService.GetTypeValue(studio.BestaetigungsTypID));
                     online.Add("opt_out", studio.opt_out);
                     online.Add("renewed_subscription_date", studio.renewed_subscription_date);
                     online.Add("renewed_subscription_log", studio.renewed_subscription_log);
@@ -229,7 +230,7 @@ namespace Syncer.Flows.MassMailing
 
                     studio.BestaetigtAmUm = online.bestaetigt_am_um;
                     studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
-                    studio.BestaetigungsTypID = MdbService.GetTypeID("fsonmail_mass_mailing_contact_BestaetigungsTypID", online.bestaetigt_typ);
+                    studio.BestaetigungsTypID = Svc.TypeService.GetTypeID("fsonmail_mass_mailing_contact_BestaetigungsTypID", online.bestaetigt_typ);
                     studio.renewed_subscription_date = online.renewed_subscription_date;
                     studio.renewed_subscription_log = online.renewed_subscription_log;
                     studio.opt_out = online.opt_out;

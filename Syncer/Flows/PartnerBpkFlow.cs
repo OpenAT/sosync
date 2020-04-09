@@ -23,8 +23,8 @@ namespace Syncer.Flows
     public class PartnerBpkFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public PartnerBpkFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PartnerBpkFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion
@@ -37,7 +37,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var bpk = OdooService.Client.GetDictionary("res.partner.bpk", onlineID, new string[] { "bpk_request_partner_id", "bpk_request_company_id" });
+            var bpk = Svc.OdooService.Client.GetDictionary("res.partner.bpk", onlineID, new string[] { "bpk_request_partner_id", "bpk_request_company_id" });
             var partnerID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_partner_id"])[0]);
             var companyID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_company_id"])[0]);
 

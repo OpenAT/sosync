@@ -26,14 +26,14 @@
 //            // If there was no foreign ID in fso, try to check the mssql side
 //            // for the referenced ID too
 //            if (!info.ForeignID.HasValue)
-//                info.ForeignID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+//                info.ForeignID = GetFsIdByFsoId(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
 //            return info;
 //        }
 
 //        protected override ModelInfo GetStudioInfo(int studioID)
 //        {
-//            using (var db = MdbService.GetDataService<fsonres_groups>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_groups>())
 //            {
 //                var studioGroup = db.Read(new { res_groupsID = studioID }).SingleOrDefault();
 //                if (studioGroup != null)
@@ -61,14 +61,14 @@
 //        protected override void TransformToOnline(int studioID, TransformType action)
 //        {
 //            fsonres_groups studioGroup = null;
-//            using (var db = MdbService.GetDataService<fsonres_groups>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_groups>())
 //            {
 //                studioGroup = db.Read(new { res_groupsID = studioID }).SingleOrDefault();
 
 //                if (!studioGroup.sosync_fso_id.HasValue)
 //                    studioGroup.sosync_fso_id = GetFsoIdByFsId(OnlineModelName, studioGroup.res_groupsID);
 
-//                UpdateSyncSourceData(Serializer.ToXML(studioGroup));
+//                UpdateSyncSourceData(Svc.Serializer.ToXML(studioGroup));
 
 //                // Perpare data that is the same for create or update
 //                var data = new Dictionary<string, object>()
@@ -84,29 +84,29 @@
 //                    int odooGroupsId = 0;
 //                    try
 //                    {
-//                        odooGroupsId = OdooService.Client.CreateModel(OnlineModelName, data, false);
+//                        odooGroupsId = Svc.OdooService.Client.CreateModel(OnlineModelName, data, false);
 //                        studioGroup.sosync_fso_id = odooGroupsId;
 //                        db.Update(studioGroup);
 //                    }
 //                    finally
 //                    {
-//                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-//                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, odooGroupsId);
+//                        UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+//                        UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, odooGroupsId);
 //                    }
 //                }
 //                else
 //                {
-//                    var onlineGroup = OdooService.Client.GetModel<resGroups>(OnlineModelName, studioGroup.sosync_fso_id.Value);
+//                    var onlineGroup = Svc.OdooService.Client.GetModel<resGroups>(OnlineModelName, studioGroup.sosync_fso_id.Value);
 
-//                    UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+//                    UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
 //                    try
 //                    {
-//                        OdooService.Client.UpdateModel(OnlineModelName, data, studioGroup.sosync_fso_id.Value, false);
+//                        Svc.OdooService.Client.UpdateModel(OnlineModelName, data, studioGroup.sosync_fso_id.Value, false);
 //                    }
 //                    finally
 //                    {
-//                        UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-//                        UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+//                        UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+//                        UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, null);
 //                    }
 //                }
 //            }
@@ -114,14 +114,14 @@
 
 //        protected override void TransformToStudio(int onlineID, TransformType action)
 //        {
-//            resGroups onlineGroup = OdooService.Client.GetModel<resGroups>(OnlineModelName, onlineID);
+//            resGroups onlineGroup = Svc.OdooService.Client.GetModel<resGroups>(OnlineModelName, onlineID);
 
 //            if (!IsValidFsID(onlineGroup.Sosync_FS_ID))
-//                onlineGroup.Sosync_FS_ID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+//                onlineGroup.Sosync_FS_ID = GetFsIdByFsoId(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
-//            UpdateSyncSourceData(OdooService.Client.LastResponseRaw);
+//            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
-//            using (var db = MdbService.GetDataService<fsonres_groups>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_groups>())
 //            {
 //                if (action == TransformType.CreateNew)
 //                {
@@ -134,7 +134,7 @@
 //                        noSyncJobSwitch = true
 //                    };
 
-//                    UpdateSyncTargetRequest(Serializer.ToXML(entry));
+//                    UpdateSyncTargetRequest(Svc.Serializer.ToXML(entry));
 
 //                    var groupsID = 0;
 //                    try
@@ -149,7 +149,7 @@
 //                        throw;
 //                    }
 
-//                    OdooService.Client.UpdateModel(
+//                    Svc.OdooService.Client.UpdateModel(
 //                        OnlineModelName,
 //                        new { sosync_fs_id = entry.res_groupsID },
 //                        onlineID,
@@ -160,14 +160,14 @@
 //                    var sosync_fs_id = onlineGroup.Sosync_FS_ID;
 //                    var studioGroup = db.Read(new { res_groupsID = sosync_fs_id }).SingleOrDefault();
 
-//                    UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(studioGroup));
+//                    UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(studioGroup));
 
 //                    studioGroup.name = onlineGroup.Name;
 //                    studioGroup.full_name = onlineGroup.Full_Name;
 //                    studioGroup.sosync_write_date = onlineGroup.Sosync_Write_Date ?? onlineGroup.Write_Date;
 //                    studioGroup.noSyncJobSwitch = true;
 
-//                    UpdateSyncTargetRequest(Serializer.ToXML(studioGroup));
+//                    UpdateSyncTargetRequest(Svc.Serializer.ToXML(studioGroup));
 
 //                    try
 //                    {

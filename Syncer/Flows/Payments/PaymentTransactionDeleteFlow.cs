@@ -17,8 +17,8 @@ namespace Syncer.Flows.Payments
     public class PaymentTransactionDeleteFlow
         : DeleteSyncFlow
     {
-        public PaymentTransactionDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PaymentTransactionDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

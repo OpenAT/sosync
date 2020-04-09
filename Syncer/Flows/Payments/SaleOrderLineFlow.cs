@@ -25,8 +25,8 @@ namespace Syncer.Flows.Payments
     public class SaleOrderLineFlow
         : ReplicateSyncFlow
     {
-        public SaleOrderLineFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public SaleOrderLineFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -42,7 +42,7 @@ namespace Syncer.Flows.Payments
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var model = OdooService.Client.GetModel<saleOrderLine>(OnlineModelName, onlineID);
+            var model = Svc.OdooService.Client.GetModel<saleOrderLine>(OnlineModelName, onlineID);
 
             RequestChildJob(SosyncSystem.FSOnline, "sale.order", Convert.ToInt32(model.order_id[0]));
             RequestChildJob(SosyncSystem.FSOnline, "product.product", Convert.ToInt32(model.product_id[0]));
@@ -113,7 +113,7 @@ namespace Syncer.Flows.Payments
 
         private void SaveDetails(int studioID, int[] onlineDetailIDs)
         {
-            using (var db = MdbService.GetDataService<fsonsale_order_line>())
+            using (var db = Svc.MdbService.GetDataService<fsonsale_order_line>())
             {
                 db.MergeSaleOrderGroups(studioID, onlineDetailIDs);
             }

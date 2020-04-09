@@ -23,8 +23,8 @@ namespace Syncer.Flows
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
         #region Constructors
-        public PartnerDonationReportFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PartnerDonationReportFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion
@@ -37,7 +37,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var meldung = OdooService.Client.GetDictionary("res.partner.donation_report", onlineID, new string[] { "bpk_company_id", "partner_id" });
+            var meldung = Svc.OdooService.Client.GetDictionary("res.partner.donation_report", onlineID, new string[] { "bpk_company_id", "partner_id" });
 
             var bpk_company_id = OdooConvert.ToInt32((string)((List<object>)meldung["bpk_company_id"])[0]);
             var partner_id = OdooConvert.ToInt32((string)((List<object>)meldung["partner_id"])[0]);
@@ -48,8 +48,8 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
-            using (var db2 = MdbService.GetDataService<dboAktion>())
+            using (var db = Svc.MdbService.GetDataService<dboAktionSpendenmeldungBPK>())
+            using (var db2 = Svc.MdbService.GetDataService<dboAktion>())
             {
                 var meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
                 var aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
@@ -62,7 +62,7 @@ namespace Syncer.Flows
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             dboAktion aktion = null;
-            using (var db = MdbService.GetDataService<dboAktion>())
+            using (var db = Svc.MdbService.GetDataService<dboAktion>())
             {
                 aktion = db.Read(new { AktionsID = studioID })
                     .SingleOrDefault();
@@ -119,7 +119,7 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Get the referenced Odoo-IDs
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "partner_id" });
@@ -212,7 +212,7 @@ namespace Syncer.Flows
             }
             else
             {
-                using (var db = MdbService.GetDataService<dboAktion>())
+                using (var db = Svc.MdbService.GetDataService<dboAktion>())
                 {
                     return db.ExecuteQuery<dboAktion>(
                         "SELECT a.* FROM dbo.AktionSpendenmeldungBPK at " +

@@ -19,8 +19,8 @@ namespace Syncer.Flows
 {
     public abstract class DeleteSyncFlow : SyncFlow
     {
-        public DeleteSyncFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public DeleteSyncFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -71,7 +71,7 @@ namespace Syncer.Flows
                     job.Sync_Target_Model = StudioModelName;
 
                     var sourceOnlineID = job.Job_Source_Record_ID; 
-                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, MdbService.GetStudioModelIdentity(StudioModelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
+                    var targetStudioID = GetStudioIDFromMssqlViaOnlineID(modelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), sourceOnlineID) ?? job.Job_Source_Target_Record_ID;
 
                     job.Sync_Source_Record_ID = sourceOnlineID;
                     job.Sync_Target_Record_ID = targetStudioID;
@@ -125,7 +125,7 @@ namespace Syncer.Flows
             TOdoo data = null;
 
             if (odooID.HasValue)
-                data = OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
+                data = Svc.OdooService.Client.GetModel<TOdoo>(OnlineModelName, odooID.Value);
 
             if (data == null)
             {
@@ -135,9 +135,9 @@ namespace Syncer.Flows
                     odooID.HasValue ? "" : $" job_source_target_record_id was not set and the model could not be found via FS-ID ({studioID})."));
             }
 
-            UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+            UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
 
-            OdooService.Client.UnlinkModel(OnlineModelName, odooID.Value);
+            Svc.OdooService.Client.UnlinkModel(OnlineModelName, odooID.Value);
         }
 
         protected void SimpleDeleteInStudio<TStudio>(
@@ -152,23 +152,23 @@ namespace Syncer.Flows
             else
                 studioID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
-                    MdbService.GetStudioModelIdentity(StudioModelName),
+                    Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
 
-            using (var db = MdbService.GetDataService<TStudio>())
+            using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
                 var data = db.Read(
-                    $"select * from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id;",
+                    $"select * from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id;",
                     new { id = studioID })
                     .SingleOrDefault();
 
                 if (data == null)
                     throw new SyncerException($"Failed to read data from model {StudioModelName} {studioID} before deletion.");
 
-                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(data));
+                UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(data));
 
-                var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; "
-                    + $"delete from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; "
+                    + $"delete from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
 
                 UpdateSyncTargetRequest($"-- @id = {studioID}\n" + query);
 

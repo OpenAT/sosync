@@ -20,7 +20,8 @@ namespace Syncer.Flows.gl2k.garden
     public class GardenFlow
         : ReplicateSyncFlow
     {
-        public GardenFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService) : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public GardenFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -56,15 +57,15 @@ namespace Syncer.Flows.gl2k.garden
                         x => x.partner_id,
                         true);
 
-                    var country = OdooService.Client.GetModel<resCountry>(
+                    var country = Svc.OdooService.Client.GetModel<resCountry>(
                         "res.country",
                         Convert.ToInt32(online.country_id[0]));
 
-                    var landID = MdbService.GetLandIDFromIsoCode(country.Code).Value;
+                    var landID = Svc.MdbService.GetLandIDFromIsoCode(country.Code).Value;
 
                     studio.PersonID = personID.Value;
                     studio.state = online.state;
-                    studio.TypID = MdbService.GetTypeID("fsongarden_TypID", online.type);
+                    studio.TypID = Svc.TypeService.GetTypeID("fsongarden_TypID", online.type);
                     studio.organisation_name = online.organisation_name;
                     studio.email = online.email;
                     studio.newsletter = online.newsletter;

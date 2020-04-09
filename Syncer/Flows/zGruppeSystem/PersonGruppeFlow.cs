@@ -22,8 +22,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class PersonGruppeFlow
         : ReplicateSyncFlow
     {
-        public PersonGruppeFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public PersonGruppeFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -34,7 +34,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboPersonGruppe>())
+            using (var db = Svc.MdbService.GetDataService<dboPersonGruppe>())
             {
                 var studioModel = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
 
@@ -48,7 +48,7 @@ namespace Syncer.Flows.zGruppeSystem
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
@@ -70,7 +70,7 @@ namespace Syncer.Flows.zGruppeSystem
             var partner_id = 0;
             int? frst_zverzeichnis_id = null;
 
-            using (var db = MdbService.GetDataService<dboPersonGruppe>())
+            using (var db = Svc.MdbService.GetDataService<dboPersonGruppe>())
             {
                 // Get the referenced Studio-IDs
                 var personGruppe = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
@@ -112,7 +112,7 @@ namespace Syncer.Flows.zGruppeSystem
                     online.Add("gueltig_von", studio.GültigVon.Date);
                     online.Add("gueltig_bis", studio.GültigBis.Date);
 
-                    online.Add("bestaetigt_typ", (object)MdbService
+                    online.Add("bestaetigt_typ", (object)Svc.TypeService
                         .GetTypeValue(studio.BestaetigungsTypID) ?? false);
 
                     online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
@@ -123,7 +123,7 @@ namespace Syncer.Flows.zGruppeSystem
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Get the referenced Odoo-IDs
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "zgruppedetail_id", "partner_id", "frst_zverzeichnis_id" });
@@ -169,7 +169,7 @@ namespace Syncer.Flows.zGruppeSystem
                         studio.GültigVon = online.gueltig_von.Date;
                         studio.GültigBis = online.gueltig_bis.Date;
 
-                        studio.BestaetigungsTypID = MdbService
+                        studio.BestaetigungsTypID = Svc.TypeService
                             .GetTypeID("PersonGruppe_BestaetigungsTypID", online.bestaetigt_typ);
 
                         studio.BestaetigtAmUm = DateTimeHelper.ToLocal(online.bestaetigt_am_um);

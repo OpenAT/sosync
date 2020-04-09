@@ -25,8 +25,8 @@ namespace Syncer.Flows
         #endregion
 
         #region Constructors
-        public CompanyFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public CompanyFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
         #endregion

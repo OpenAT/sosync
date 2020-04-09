@@ -21,8 +21,8 @@ namespace Syncer.Flows.Payments
     public class SaleOrderFlow
         : ReplicateSyncFlow
     {
-        public SaleOrderFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public SaleOrderFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Syncer.Flows.Payments
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var online = OdooService.Client.GetModel<saleOrder>(OnlineModelName, onlineID);
+            var online = Svc.OdooService.Client.GetModel<saleOrder>(OnlineModelName, onlineID);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.partner_id[0]));
 

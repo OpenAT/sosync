@@ -31,36 +31,36 @@
 
 //        protected override void TransformToOnline(int studioID, TransformType action)
 //        {
-//            var onlineGroup = OdooService.Client.GetModel<resGroups>(OnlineModelName, Job.Sync_Target_Record_ID.Value);
+//            var onlineGroup = Svc.OdooService.Client.GetModel<resGroups>(OnlineModelName, Job.Sync_Target_Record_ID.Value);
 
 //            if (onlineGroup == null)
 //                throw new SyncerException($"Failed to read data from model {OnlineModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
 
-//            UpdateSyncTargetDataBeforeUpdate(OdooService.Client.LastResponseRaw);
+//            UpdateSyncTargetDataBeforeUpdate(Svc.OdooService.Client.LastResponseRaw);
 
 //            try
 //            {
-//                OdooService.Client.UnlinkModel(OnlineModelName, Job.Sync_Target_Record_ID.Value);
+//                Svc.OdooService.Client.UnlinkModel(OnlineModelName, Job.Sync_Target_Record_ID.Value);
 //            }
 //            finally
 //            {
-//                UpdateSyncTargetRequest(OdooService.Client.LastRequestRaw);
-//                UpdateSyncTargetAnswer(OdooService.Client.LastResponseRaw, null);
+//                UpdateSyncTargetRequest(Svc.OdooService.Client.LastRequestRaw);
+//                UpdateSyncTargetAnswer(Svc.OdooService.Client.LastResponseRaw, null);
 //            }
 //        }
 
 //        protected override void TransformToStudio(int onlineID, TransformType action)
 //        {
-//            using (var db = MdbService.GetDataService<fsonres_groups>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_groups>())
 //            {
 //                var data = db.Read(new { res_groupsID = Job.Sync_Target_Record_ID.Value }).SingleOrDefault();
 
 //                if (data == null)
 //                    throw new SyncerException($"Failed to read data from model {StudioModelName} {Job.Sync_Target_Record_ID.Value} before deletion.");
 
-//                UpdateSyncTargetDataBeforeUpdate(Serializer.ToXML(data));
+//                UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(data));
 
-//                var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; delete from {StudioModelName} where {MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+//                var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; delete from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
 //                UpdateSyncTargetRequest($"-- @id = {Job.Sync_Target_Record_ID.Value}\n" + query);
 
 //                var affectedRows = db.ExecuteQuery<int>(query, new { id = Job.Sync_Target_Record_ID.Value }).SingleOrDefault();

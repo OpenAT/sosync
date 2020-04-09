@@ -21,8 +21,8 @@ namespace Syncer.Flows
     public class TokenFlow
         : ReplicateSyncFlow
     {
-        public TokenFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public TokenFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            using (var db = MdbService.GetDataService<dboAktion>())
+            using (var db = Svc.MdbService.GetDataService<dboAktion>())
             {
                 var studioModel = db.Read(new { AktionsID = studioID }).SingleOrDefault();
 
@@ -43,7 +43,7 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "partner_id" });
@@ -57,7 +57,7 @@ namespace Syncer.Flows
         {
             var partner_id = 0;
 
-            using (var dbAkt = MdbService.GetDataService<dboAktion>())
+            using (var dbAkt = Svc.MdbService.GetDataService<dboAktion>())
             {
                 // Get the referenced Studio-IDs
                 var studioAktion = dbAkt.Read(new { AktionsID = studioID }).SingleOrDefault();
@@ -88,7 +88,7 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             // Get the referenced Odoo-IDs
-            var odooModel = OdooService.Client.GetDictionary(
+            var odooModel = Svc.OdooService.Client.GetDictionary(
                 OnlineModelName,
                 onlineID,
                 new string[] { "partner_id" });
@@ -139,7 +139,7 @@ namespace Syncer.Flows
             }
             else
             {
-                using (var db = MdbService.GetDataService<dboAktion>())
+                using (var db = Svc.MdbService.GetDataService<dboAktion>())
                 {
                     return db.ExecuteQuery<dboAktion>(
                         "SELECT a.* FROM dbo.AktionOnlineToken at " +

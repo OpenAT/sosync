@@ -27,15 +27,15 @@
 //            // If there was no foreign ID in fso, try to check the mssql side
 //            // for the referenced ID too
 //            if (!info.ForeignID.HasValue)
-//                info.ForeignID = GetFsIdByFsoId(StudioModelName, MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
+//                info.ForeignID = GetFsIdByFsoId(StudioModelName, Svc.MdbService.GetStudioModelIdentity(StudioModelName), onlineID);
 
 //            return info;
 //        }
 
 //        protected override ModelInfo GetStudioInfo(int studioID)
 //        {
-//            using (var db = MdbService.GetDataService<fsonres_users>())
-//            using (var db2 = MdbService.GetDataService<fsonres_groups_users_rel>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_users>())
+//            using (var db2 = Svc.MdbService.GetDataService<fsonres_groups_users_rel>())
 //            {
 //                var studioUser = db.Read(new { res_usersID = studioID }).SingleOrDefault();
 //                var studioRel = db2.Read(new { res_usersID = studioID }).SingleOrDefault();
@@ -56,7 +56,7 @@
 
 //        protected override void SetupOnlineToStudioChildJobs(int onlineID)
 //        {
-//            var user = OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id" });
+//            var user = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id" });
 //            var partnerID = OdooConvert.ToInt32((string)((List<object>)user["partner_id"])[0]);
 
 //            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
@@ -64,7 +64,7 @@
 
 //        protected override void SetupStudioToOnlineChildJobs(int studioID)
 //        {
-//            using (var db = MdbService.GetDataService<fsonres_users>())
+//            using (var db = Svc.MdbService.GetDataService<fsonres_users>())
 //            {
 //                var studioUser = db.Read(new { res_usersID = studioID })
 //                    .SingleOrDefault();

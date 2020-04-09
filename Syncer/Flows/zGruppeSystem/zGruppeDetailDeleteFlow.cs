@@ -19,8 +19,8 @@ namespace Syncer.Flows.zGruppeSystem
     public class zGruppeDetailDeleteFlow
         : DeleteSyncFlow
     {
-        public zGruppeDetailDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public zGruppeDetailDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 

@@ -18,8 +18,8 @@ namespace Syncer.Flows.Payments
     public class ProductPaymentIntervalDeleteFlow
         : DeleteSyncFlow
     {
-        public ProductPaymentIntervalDeleteFlow(ILogger logger, OdooService odooService, SosyncOptions conf, FlowService flowService, OdooFormatService odooFormatService, SerializationService serializationService)
-            : base(logger, odooService, conf, flowService, odooFormatService, serializationService)
+        public ProductPaymentIntervalDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         {
         }
 
