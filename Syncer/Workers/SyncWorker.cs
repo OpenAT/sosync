@@ -267,7 +267,7 @@ namespace Syncer.Workers
                 _log.LogWarning(body);
 
                 _mail.Send(
-                    "michael.karrer@datadiaSvc.Log.net,martin.kaip@datadiaSvc.Log.net",
+                    "michael.karrer@datadialog.net,martin.kaip@datadialog.net",
                     $"{Configuration.Instance} sosync2 - Jobs \"inprogress\" found",
                     body);
             }
