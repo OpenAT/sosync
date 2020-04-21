@@ -47,7 +47,9 @@ namespace Syncer.Flows
             var partnerID = OdooConvert.ToInt32ForeignKey(lead["partner_id"], allowNull: true);
 
             RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+
+            if (partnerID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
 
             var emailGroupID = OdooConvert.ToInt32ForeignKey(lead["personemailgruppe_id"], allowNull: true);
             if (emailGroupID.HasValue)
