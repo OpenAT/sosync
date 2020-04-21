@@ -100,6 +100,12 @@ namespace Syncer.Flows
 
                     studio.fb_lead_id = online.fb_lead_id;
 
+                    studio.crm_form_id = OdooConvert.ToInt32ForeignKey(online.crm_form_id, true);
+                    studio.crm_form_name = OdooConvert.ToForeignKeyName(online.crm_form_id, true);
+
+                    studio.crm_page_id = OdooConvert.ToInt32ForeignKey(online.crm_page_id, true);
+                    studio.crm_page_name = OdooConvert.ToForeignKeyName(online.crm_page_id, true);
+
                     studio.partner_name = online.partner_name;
                     studio.name = online.name;
                     studio.contact_name = online.contact_name;
