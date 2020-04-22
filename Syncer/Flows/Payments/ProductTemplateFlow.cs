@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Extensions;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.Payments
@@ -38,13 +39,22 @@ namespace Syncer.Flows.Payments
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooPaymentIntervalID = GetOnlineReferenceID(
-                OnlineModelName, 
-                onlineID,
-                nameof(productTemplate.payment_interval_default));
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "payment_interval_default", "zgruppedetail_ids" });
+            var paymentIntervalDefaultID = OdooConvert.ToInt32ForeignKey(odooModel["payment_interval_default"], allowNull: true);
 
-            if (odooPaymentIntervalID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", odooPaymentIntervalID.Value);
+            if (paymentIntervalDefaultID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", paymentIntervalDefaultID.Value);
+
+            if (odooModel["zgruppedetail_ids"] != null)
+            {
+                foreach (var zgdIdObj in (List<object>)odooModel["zgruppedetail_ids"])
+                {
+                    var zgdId = Convert.ToInt32(zgdIdObj);
+
+                    if (zgdId > 0)
+                        RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", zgdId);
+                }
+            }
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }
@@ -86,7 +96,17 @@ namespace Syncer.Flows.Payments
                     studio.website_published_start = online.website_published_start;
                     studio.website_published_end = online.website_published_end;
                     studio.website_visible = online.website_visible;
+
+                    SaveDetails(studio.product_templateID, online.zgruppedetail_ids);
                 });
+        }
+
+        private void SaveDetails(int studioID, int[] onlineDetailIDs)
+        {
+            using (var db = Svc.MdbService.GetDataService<dbozGruppeDetail>())
+            {
+                db.MergeProductTemplateGroups(studioID, onlineDetailIDs);
+            }
         }
     }
 }

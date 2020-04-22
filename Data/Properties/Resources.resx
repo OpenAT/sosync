@@ -443,6 +443,27 @@ select count(*) affected_rows from updated_rows;</value>
 )
 select * from job order by job_priority desc, job_date asc;</value>
   </data>
+  <data name="MSSQL_Merge_ProductTemplateGroups" xml:space="preserve">
+    <value>WITH target AS (
+	SELECT * FROM fson.product_template_zGruppeDetail
+	WHERE product_templateID = @product_templateID
+)
+MERGE target
+USING (
+	SELECT zGruppeDetailID
+	FROM #temp_table_name
+) AS source
+ON
+	(source.zGruppeDetailID = target.zGruppeDetailID)
+
+WHEN NOT MATCHED THEN
+	INSERT (product_templateID, zGruppeDetailID)
+	VALUES (@product_templateID, source.zGruppeDetailID)
+
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+;</value>
+  </data>
   <data name="MSSQL_Merge_SaleOrderGroups" xml:space="preserve">
     <value>WITH target AS (
 	SELECT * FROM fson.sale_order_line_zGruppeDetail

@@ -45,5 +45,17 @@ namespace WebSosync.Data.Extensions
                 Properties.Resources.MSSQL_Merge_SaleOrderGroups.Replace("#temp_table_name", tempTableName),
                 new { sale_order_lineID = studioID });
         }
+
+        public static void MergeProductTemplateGroups<TStudio>(this DataService<TStudio> db, int studioID, int[] onlineIDs)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            var tempTableName = $"[#sosync_pt_zgd_merge_{Guid.NewGuid().ToString()}]";
+
+            PrepareMssqlzGruppeDetailIDs(db, onlineIDs, tempTableName);
+
+            db.ExecuteNonQuery(
+                Properties.Resources.MSSQL_Merge_ProductTemplateGroups.Replace("#temp_table_name", tempTableName),
+                new { product_templateID = studioID });
+        }
     }
 }

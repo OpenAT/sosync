@@ -189,6 +189,33 @@ namespace WebSosync.Data.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to WITH target AS (
+        ///	SELECT * FROM fson.product_template_zGruppeDetail
+        ///	WHERE product_templateID = @product_templateID
+        ///)
+        ///MERGE target
+        ///USING (
+        ///	SELECT zGruppeDetailID
+        ///	FROM #temp_table_name
+        ///) AS source
+        ///ON
+        ///	(source.zGruppeDetailID = target.zGruppeDetailID)
+        ///
+        ///WHEN NOT MATCHED THEN
+        ///	INSERT (product_templateID, zGruppeDetailID)
+        ///	VALUES (@product_templateID, source.zGruppeDetailID)
+        ///
+        ///WHEN NOT MATCHED BY SOURCE THEN
+        ///	DELETE
+        ///;.
+        /// </summary>
+        internal static string MSSQL_Merge_ProductTemplateGroups {
+            get {
+                return ResourceManager.GetString("MSSQL_Merge_ProductTemplateGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WITH target AS (
         ///	SELECT * FROM fson.sale_order_line_zGruppeDetail
         ///	WHERE sale_order_lineID = @sale_order_lineID
         ///)
