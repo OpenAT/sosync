@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
@@ -126,6 +127,23 @@ namespace WebSosync.Controllers
             }
 
             return new BadRequestObjectResult("error\n" + errorLog.ToString());
+        }
+
+        [HttpPost("tree-create")]
+        [RequestSizeLimit(1073741824000)]
+        public IActionResult Post([FromBody]JobDto[] jobs)
+        {
+            if (ModelState.IsValid)
+            {
+
+
+                return new OkResult();
+            }
+            else
+            {
+                var s = ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage)));
+                return new BadRequestObjectResult(s);
+            }
         }
 
         private JobResultDto ValidateDictionary(Dictionary<string, object> data)
