@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.Payments
@@ -41,7 +42,7 @@ namespace Syncer.Flows.Payments
                 onlineID,
                 nameof(productProduct.product_tmpl_id));
 
-            RequestChildJob(SosyncSystem.FSOnline, "product.template", templateId.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "product.template", templateId.Value, SosyncJobSourceType.Default);
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }

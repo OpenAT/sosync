@@ -12,6 +12,7 @@ using WebSosync.Data.Models;
 using WebSosync.Common;
 using DaDi.Odoo;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 
 namespace Syncer.Flows
 {
@@ -46,18 +47,18 @@ namespace Syncer.Flows
             var companyID = OdooConvert.ToInt32ForeignKey(lead["company_id"], allowNull: false);
             var partnerID = OdooConvert.ToInt32ForeignKey(lead["partner_id"], allowNull: true);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value, SosyncJobSourceType.Default);
 
             if (partnerID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value, SosyncJobSourceType.Default);
 
             var emailGroupID = OdooConvert.ToInt32ForeignKey(lead["personemailgruppe_id"], allowNull: true);
             if (emailGroupID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.personemailgruppe", emailGroupID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.personemailgruppe", emailGroupID.Value, SosyncJobSourceType.Default);
 
             var verzeichnisID = OdooConvert.ToInt32ForeignKey(lead["frst_zverzeichnis_id"], allowNull: true);
             if (verzeichnisID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", verzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", verzeichnisID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)

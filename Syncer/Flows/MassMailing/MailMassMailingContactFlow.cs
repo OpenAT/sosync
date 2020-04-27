@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.MassMailing
@@ -38,15 +39,15 @@ namespace Syncer.Flows.MassMailing
                 var studioModel = db.Read(new { mail_mass_mailing_contactID = studioID }).SingleOrDefault();
 
                 // Mandatory child list
-                RequestChildJob(SosyncSystem.FundraisingStudio, "fson.mail_mass_mailing_list", studioModel.mail_mass_mailing_listID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "fson.mail_mass_mailing_list", studioModel.mail_mass_mailing_listID, SosyncJobSourceType.Default);
 
                 // Optional child person
                 if (studioModel.PersonID.HasValue && studioModel.PersonID > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID.Value, SosyncJobSourceType.Default);
 
                 // Optional child personemail
                 if (studioModel.PersonEmailID.HasValue && studioModel.PersonEmailID > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -58,15 +59,15 @@ namespace Syncer.Flows.MassMailing
             var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
 
             // Mandatory child list
-            RequestChildJob(SosyncSystem.FSOnline, "mail.mass_mailing.list", listID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "mail.mass_mailing.list", listID.Value, SosyncJobSourceType.Default);
 
             // Optional child partner
             if (partnerID.HasValue && partnerID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value, SosyncJobSourceType.Default);
 
             // Optional child email
             if (personemailID.HasValue && personemailID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", personemailID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", personemailID.Value, SosyncJobSourceType.Default);
 
         }
 

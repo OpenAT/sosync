@@ -42,8 +42,8 @@ namespace Syncer.Flows
             var bpk_company_id = OdooConvert.ToInt32((string)((List<object>)meldung["bpk_company_id"])[0]);
             var partner_id = OdooConvert.ToInt32((string)((List<object>)meldung["partner_id"])[0]);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.company", bpk_company_id.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partner_id.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", bpk_company_id.Value, SosyncJobSourceType.Default);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partner_id.Value, SosyncJobSourceType.Default);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
@@ -54,8 +54,8 @@ namespace Syncer.Flows
                 var meldung = db.Read(new { AktionsID = studioID }).FirstOrDefault();
                 var aktion = db2.Read(new { AktionsID = studioID }).FirstOrDefault();
 
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", meldung.xBPKAccountID);
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", aktion.PersonID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", meldung.xBPKAccountID, SosyncJobSourceType.Default);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", aktion.PersonID, SosyncJobSourceType.Default);
             }
         }
 

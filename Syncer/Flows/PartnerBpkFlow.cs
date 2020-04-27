@@ -41,8 +41,8 @@ namespace Syncer.Flows
             var partnerID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_partner_id"])[0]);
             var companyID = OdooConvert.ToInt32((string)((List<object>)bpk["bpk_request_company_id"])[0]);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value, SosyncJobSourceType.Default);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)

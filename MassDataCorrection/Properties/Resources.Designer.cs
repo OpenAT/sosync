@@ -142,6 +142,34 @@ namespace MassDataCorrection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO sosync.JobQueue
+        ///(
+        ///    JobDate,
+        ///    JobSourceSystem,
+        ///    JobSourceModel,
+        ///    JobSourceRecordID,
+        ///    JobState,
+        ///    JobSourceSosyncWriteDate,
+        ///    JobSourceFields,
+        ///    JobSourceTargetRecordID
+        ///)
+        ///SELECT
+        ///    m.sosync_write_date JobDate,
+        ///    &apos;fs&apos; JobSourceSystem,
+        ///    &apos;STUDIOMODEL&apos; JobSourceModel,
+        ///    m.STUDIOMODELID JobSourceRecordID,
+        ///    &apos;new&apos; JobState,
+        ///    m.sosync_write_date JobSourceSosyncWriteDate,
+        ///    &apos;{&quot;info&quot;:&quot;MassDataCorrection-App&quot;}&apos; JobSourceFields,
+        ///    m.sosync_fso_id JobSo [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string InsertSyncJobMSSQLTempTable {
+            get {
+                return ResourceManager.GetString("InsertSyncJobMSSQLTempTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to UPDATE pg SET GültigBis = &apos;20991231&apos;
         ///FROM
         ///(

@@ -5,6 +5,7 @@ using Syncer.Services;
 using System;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -25,7 +26,7 @@ namespace Syncer.Flows
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
-            RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, Job.Job_Source_Merge_Into_Record_ID.Value);
+            RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, Job.Job_Source_Merge_Into_Record_ID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -39,7 +40,8 @@ namespace Syncer.Flows
                 SosyncSystem.FundraisingStudio,
                 StudioModelName, 
                 Job.Job_Source_Merge_Into_Record_ID.Value,
-                true);
+                true,
+                SosyncJobSourceType.Default);
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)

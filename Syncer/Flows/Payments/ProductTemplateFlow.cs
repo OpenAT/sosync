@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Extensions;
 using WebSosync.Data.Models;
 
@@ -43,7 +44,7 @@ namespace Syncer.Flows.Payments
             var paymentIntervalDefaultID = OdooConvert.ToInt32ForeignKey(odooModel["payment_interval_default"], allowNull: true);
 
             if (paymentIntervalDefaultID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", paymentIntervalDefaultID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", paymentIntervalDefaultID.Value, SosyncJobSourceType.Default);
 
             if (odooModel["zgruppedetail_ids"] != null)
             {
@@ -52,7 +53,7 @@ namespace Syncer.Flows.Payments
                     var zgdId = Convert.ToInt32(zgdIdObj);
 
                     if (zgdId > 0)
-                        RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", zgdId);
+                        RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", zgdId, SosyncJobSourceType.Default);
                 }
             }
 

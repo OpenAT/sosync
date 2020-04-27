@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.CDS
@@ -38,7 +39,7 @@ namespace Syncer.Flows.CDS
                 var studioModel = db.Read(new { zVerzeichnisID = studioID }).SingleOrDefault();
 
                 if (studioModel.zVerzeichnisIDParent.HasValue)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, studioModel.zVerzeichnisIDParent.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, StudioModelName, studioModel.zVerzeichnisIDParent.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -48,7 +49,7 @@ namespace Syncer.Flows.CDS
             var parentID = OdooConvert.ToInt32ForeignKey(odooModel["parent_id"], allowNull: true);
 
             if (parentID.HasValue)
-                RequestChildJob(SosyncSystem.FSOnline, OnlineModelName, parentID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, OnlineModelName, parentID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)

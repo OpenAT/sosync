@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -442,7 +443,8 @@ namespace Syncer.Flows
                             Job_Source_System = request.JobSourceSystem,
                             Job_Source_Model = request.JobSourceModel,
                             Job_Source_Record_ID = request.JobSourceRecordID,
-                            Write_Date = DateTime.UtcNow
+                            Write_Date = DateTime.UtcNow,
+                            Job_Source_Type = request.JobSourceType.Value
                         };
 
                         if (request.ForceDirection)
@@ -626,9 +628,10 @@ namespace Syncer.Flows
         /// <param name="system">The job source system, use <see cref="SosyncSystem"/> constants.</param>
         /// <param name="model">The requested source model.</param>
         /// <param name="id">The requested source ID for the model.</param>
-        protected void RequestChildJob(SosyncSystem system, string model, int id)
+        /// <param name="jobSourceType">The requested job source type.</param>
+        protected void RequestChildJob(SosyncSystem system, string model, int id, SosyncJobSourceType jobSourceType)
         {
-            _requiredChildJobs.Add(new ChildJobRequest(system, model, id, false));
+            _requiredChildJobs.Add(new ChildJobRequest(system, model, id, jobSourceType, false));
         }
 
         /// <summary>
@@ -638,9 +641,10 @@ namespace Syncer.Flows
         /// <param name="system">The job source system, use <see cref="SosyncSystem"/> constants.</param>
         /// <param name="model">The requested source model.</param>
         /// <param name="id">The requested source ID for the model.</param>
-        protected void RequestPostTransformChildJob(SosyncSystem system, string model, int id, bool forceDirection)
+        /// <param name="jobSourceType">The requested job source type.</param>
+        protected void RequestPostTransformChildJob(SosyncSystem system, string model, int id, bool forceDirection, SosyncJobSourceType jobSourceType)
         {
-            _requiredPostChildJobs.Add(new ChildJobRequest(system, model, id, forceDirection));
+            _requiredPostChildJobs.Add(new ChildJobRequest(system, model, id, jobSourceType, forceDirection));
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -263,7 +264,7 @@ namespace Syncer.Flows
             var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
             if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
@@ -273,7 +274,7 @@ namespace Syncer.Flows
                 var studioModel = db.Read(new { PersonID = studioID }).SingleOrDefault();
 
                 if (studioModel.zMarketingID > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zMarketingID);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zMarketingID, SosyncJobSourceType.Default);
             }
         }
 

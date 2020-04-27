@@ -13,6 +13,7 @@ using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -38,13 +39,13 @@ namespace Syncer.Flows.zGruppeSystem
             {
                 var studioModel = db.Read(new { zGruppeDetailID = studioID }).SingleOrDefault();
 
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppe", studioModel.zGruppeID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppe", studioModel.zGruppeID, SosyncJobSourceType.Default);
 
                 if (studioModel.BestaetigungxTemplateID.HasValue)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xTemplate", studioModel.BestaetigungxTemplateID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xTemplate", studioModel.BestaetigungxTemplateID.Value, SosyncJobSourceType.Default);
 
                 if (studioModel.zVerzeichnisID.HasValue)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -71,19 +72,19 @@ namespace Syncer.Flows.zGruppeSystem
 
             var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
-            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppe", odooGruppeID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppe", odooGruppeID.Value, SosyncJobSourceType.Default);
 
             if (bestaetigungEmailID.HasValue && bestaetigungEmailID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungEmailID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungEmailID.Value, SosyncJobSourceType.Default);
 
             if (bestaetigungSuccessEmailID.HasValue && bestaetigungSuccessEmailID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungSuccessEmailID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", bestaetigungSuccessEmailID.Value, SosyncJobSourceType.Default);
 
             if (subscriptionEmailID.HasValue && subscriptionEmailID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "email.template", subscriptionEmailID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "email.template", subscriptionEmailID.Value, SosyncJobSourceType.Default);
 
             if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)

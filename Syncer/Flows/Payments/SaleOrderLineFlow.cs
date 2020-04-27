@@ -44,16 +44,16 @@ namespace Syncer.Flows.Payments
         {
             var model = Svc.OdooService.Client.GetModel<saleOrderLine>(OnlineModelName, onlineID);
 
-            RequestChildJob(SosyncSystem.FSOnline, "sale.order", Convert.ToInt32(model.order_id[0]));
-            RequestChildJob(SosyncSystem.FSOnline, "product.product", Convert.ToInt32(model.product_id[0]));
+            RequestChildJob(SosyncSystem.FSOnline, "sale.order", Convert.ToInt32(model.order_id[0]), SosyncJobSourceType.Default);
+            RequestChildJob(SosyncSystem.FSOnline, "product.product", Convert.ToInt32(model.product_id[0]), SosyncJobSourceType.Default);
 
             if (model.payment_interval_id != null && model.payment_interval_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", Convert.ToInt32(model.payment_interval_id[0]));
+                RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", Convert.ToInt32(model.payment_interval_id[0]), SosyncJobSourceType.Default);
 
             if (model.zgruppedetail_ids != null)
             {
                 foreach (var detailID in model.zgruppedetail_ids)
-                    RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", detailID);
+                    RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", detailID, SosyncJobSourceType.Default);
             }
 
             base.SetupOnlineToStudioChildJobs(onlineID);

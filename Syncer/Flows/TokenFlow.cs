@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -37,7 +38,7 @@ namespace Syncer.Flows
             {
                 var studioModel = db.Read(new { AktionsID = studioID }).SingleOrDefault();
 
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID, SosyncJobSourceType.Default);
             }
         }
 
@@ -50,7 +51,7 @@ namespace Syncer.Flows
 
             var odooPartnerID = OdooConvert.ToInt32((string)((List<object>)odooModel["partner_id"])[0]);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)

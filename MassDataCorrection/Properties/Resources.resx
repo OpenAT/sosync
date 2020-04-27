@@ -205,6 +205,35 @@ WHERE
 	%ID-LIST%
 	)</value>
   </data>
+  <data name="InsertSyncJobMSSQLTempTable" xml:space="preserve">
+    <value>INSERT INTO sosync.JobQueue
+(
+    JobDate,
+    JobSourceSystem,
+    JobSourceModel,
+    JobSourceRecordID,
+    JobState,
+    JobSourceSosyncWriteDate,
+    JobSourceFields,
+    JobSourceTargetRecordID
+)
+SELECT
+    m.sosync_write_date JobDate,
+    'fs' JobSourceSystem,
+    'STUDIOMODEL' JobSourceModel,
+    m.STUDIOMODELID JobSourceRecordID,
+    'new' JobState,
+    m.sosync_write_date JobSourceSosyncWriteDate,
+    '{"info":"MassDataCorrection-App"}' JobSourceFields,
+    m.sosync_fso_id JobSourceTargetRecordID
+FROM
+	STUDIOMODEL m
+	INNER JOIN [##temp_table] tmp
+		ON M.STUDIOMODELID = tmp.ID
+WHERE
+	m.sosync_fso_id IS NULL;
+</value>
+  </data>
   <data name="UpdateSosyncWriteDate" xml:space="preserve">
     <value>UPDATE pg SET GültigBis = '20991231'
 FROM

@@ -46,9 +46,11 @@ namespace MassDataCorrection
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "fson.payment_transaction", "payment.transaction", "state", "state"), new[] { "gl2k" });
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
 
+                processor.Process((inst, prog) => FindMissingModels(inst, prog, "dbo.PersonEmailGruppe", "frst.personemailgruppe"), new[] { "aiat" });
+
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.AktionSpendenmeldungBPK", "res.partner.donation_report", "Status", "state"), new[] { "aiat" });
                 //processor.Process((inst, prog) => CheckModel(inst, prog, "dbo.Person", "res.partner", "Name", "lastname"), new[] { "gl2k" });
-                processor.Process((inst, prog) => UpdatePersonzMarketing(inst, prog, "dbo.Person", "res.partner"), new[] { "demo" });
+                //processor.Process((inst, prog) => UpdatePersonzMarketing(inst, prog, "dbo.Person", "res.partner"), new[] { "demo" });
 
                 //processor.Process((inst, report) => GetSyncJobCount(inst, report), new[] { "proj", "diak" });
                 //PrintDictionary(_jobCounts);
@@ -1556,6 +1558,73 @@ from
                     HandleUnsynchronized(model, fso);
                     //HandleUpdated(model, fso);
                 }
+            }
+        }
+
+        private static void FindMissingModels(InstanceInfo info, Action<float> reportProgress, string studioModel, string onlineModel)
+        {
+            if (info.Instance != "demo" && (info.Pillar.HostSosync != "sosync2" || !info.Pillar.SosyncEnabled))
+            {
+                Console.WriteLine($"Skipping {info.Instance}");
+                return;
+            }
+
+            Console.WriteLine($"Fetching all {studioModel}");
+            List<CheckModel> studioModels = null;
+            var studioID = studioModel.Split(".")[1] + "ID";
+            using (var db = info.CreateOpenMssqlIntegratedConnection())
+            {
+                var studioQuery = $"SELECT {studioID} ID, sosync_fso_id ForeignID FROM {studioModel} WHERE sosync_fso_id IS NOT NULL";
+                studioModels = db.Query<CheckModel>(
+                    studioQuery)
+                    .ToList();
+            }
+
+            Console.WriteLine($"Fetching all {onlineModel}");
+            List<CheckModel> onlineModels = null;
+            using (var db = info.CreateOpenNpgsqlConnection())
+            {
+                var onlineQuery = $"SELECT ID, sosync_fs_id ForeignID FROM {onlineModel.Replace(".", "_")} WHERE sosync_fs_id IS NOT NULL";
+                onlineModels = db.Query<CheckModel>(
+                    onlineQuery)
+                    .ToList();
+            }
+
+            Console.Write($"Finding missing models... ");
+            var missingOnlineIds = studioModels.Select(x => x.ForeignID.Value)
+                .Except(onlineModels.Select(x => x.ID)).ToList();
+
+            Console.WriteLine($"{missingOnlineIds.Count} found");
+
+            var tmpTable = $"[##missing_" + Guid.NewGuid().ToString() + "]";
+            using (var db = info.CreateOpenMssqlIntegratedConnection())
+            {
+                var query = $"SELECT {studioID} ID, sosync_fso_id ForeignID INTO {tmpTable} FROM {studioModel} WHERE sosync_fso_id in ({string.Join(",", missingOnlineIds)})";
+                db.Query(query);
+
+                var idMap = db.Query<CheckModel>($"SELECT ID, ForeignID FROM {tmpTable};");
+
+                var backupFile = @"\\datadialog.net\dfs\Users\mka\Desktop\" + tmpTable.Replace("[", "").Replace("]", "").Replace("#", "") + ".txt";
+
+                File.WriteAllText(
+                    backupFile,
+                    string.Join(
+                        Environment.NewLine,
+                        idMap.Select(x => x.ID.ToString("0") + ";" + x.ForeignID.Value.ToString("0"))));
+
+                var trans = db.BeginTransaction();
+
+                query = $"UPDATE m SET sosync_fso_id = NULL FROM {studioModel} m INNER JOIN {tmpTable} tmp ON m.{studioID} = tmp.ID;";
+                db.Query(query, transaction: trans);
+
+                query = Properties.Resources.InsertSyncJobMSSQLTempTable
+                    .Replace("STUDIOMODELID", studioID)
+                    .Replace("STUDIOMODEL", studioModel)
+                    .Replace("[##temp_table]", tmpTable);
+
+                db.Query(query, transaction: trans);
+
+                trans.Commit();
             }
         }
 

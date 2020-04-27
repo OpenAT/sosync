@@ -40,13 +40,13 @@ namespace Syncer.Flows.Payments
         {
             var online = Svc.OdooService.Client.GetModel<saleOrder>(OnlineModelName, onlineID);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.partner_id[0]));
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.partner_id[0]), SosyncJobSourceType.Default);
 
             if (online.payment_tx_id != null && online.payment_tx_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "payment.transaction", Convert.ToInt32(online.payment_tx_id[0]));
+                RequestChildJob(SosyncSystem.FSOnline, "payment.transaction", Convert.ToInt32(online.payment_tx_id[0]), SosyncJobSourceType.Default);
 
             if (online.payment_acquirer_id != null && online.payment_acquirer_id.Length > 1)
-                RequestChildJob(SosyncSystem.FSOnline, "payment.acquirer", Convert.ToInt32(online.payment_acquirer_id[0]));
+                RequestChildJob(SosyncSystem.FSOnline, "payment.acquirer", Convert.ToInt32(online.payment_acquirer_id[0]), SosyncJobSourceType.Default);
 
             base.SetupOnlineToStudioChildJobs(onlineID);
         }

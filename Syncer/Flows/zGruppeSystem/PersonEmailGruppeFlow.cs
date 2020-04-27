@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -37,11 +38,11 @@ namespace Syncer.Flows.zGruppeSystem
             {
                 var studioModel = db.Read(new { PersonEmailGruppeID = studioID }).SingleOrDefault();
 
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID);
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID, SosyncJobSourceType.Default);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID, SosyncJobSourceType.Default);
 
                 if (studioModel.zVerzeichnisID.HasValue && studioModel.zVerzeichnisID.Value > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -56,11 +57,11 @@ namespace Syncer.Flows.zGruppeSystem
             var odooPersonEmailID = OdooConvert.ToInt32ForeignKey(odooModel["frst_personemail_id"], allowNull: false);
             var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
             
-            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value);
-            RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", odooPersonEmailID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID.Value, SosyncJobSourceType.Default);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", odooPersonEmailID.Value, SosyncJobSourceType.Default);
 
             if (odoozVerzeichnisID.HasValue && odoozVerzeichnisID > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value, SosyncJobSourceType.Default);
         }
 
 

@@ -13,6 +13,7 @@ using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.zGruppeSystem
@@ -38,11 +39,11 @@ namespace Syncer.Flows.zGruppeSystem
             {
                 var studioModel = db.Read(new { PersonGruppeID = studioID }).SingleOrDefault();
 
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID);
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID, SosyncJobSourceType.Default);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID, SosyncJobSourceType.Default);
 
                 if (studioModel.zVerzeichnisID.HasValue && studioModel.zVerzeichnisID > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value);
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -57,11 +58,11 @@ namespace Syncer.Flows.zGruppeSystem
             var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
             var odoozVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], allowNull: true);
 
-            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID);
-            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID);
+            RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", odooGruppeDetailID, SosyncJobSourceType.Default);
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID, SosyncJobSourceType.Default);
 
             if (odoozVerzeichnisID.HasValue && odoozVerzeichnisID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value);
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odoozVerzeichnisID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)

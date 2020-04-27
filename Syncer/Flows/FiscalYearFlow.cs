@@ -13,6 +13,7 @@ using DaDi.Odoo;
 using DaDi.Odoo.Models;
 using Microsoft.Extensions.Logging;
 using Syncer.Services;
+using WebSosync.Data.Constants;
 
 namespace Syncer.Flows
 {
@@ -38,7 +39,7 @@ namespace Syncer.Flows
             var fiscal = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "company_id" });
             var companyID = OdooConvert.ToInt32((string)((List<object>)fiscal["company_id"])[0]);
 
-            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value);
+            RequestChildJob(SosyncSystem.FSOnline, "res.company", companyID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
@@ -46,7 +47,7 @@ namespace Syncer.Flows
             using (var db = Svc.MdbService.GetDataService<dboxBPKMeldespanne>())
             {
                 var fiscal = db.Read(new { xBPKMeldespanneID = studioID }).SingleOrDefault();
-                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", fiscal.xBPKAccountID);
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.xBPKAccount", fiscal.xBPKAccountID, SosyncJobSourceType.Default);
             }
         }
 
