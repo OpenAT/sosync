@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ using System.IO;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
+using WebSosync.Data.Helpers;
 using WebSosync.Data.Models;
 using WebSosync.Extensions;
 using WebSosync.Helpers;
@@ -55,13 +57,6 @@ namespace WebSosync
             Configuration["Logging:LogLevel:Default"] = Configuration["sosync:log_level"];
             Configuration["Logging:LogLevel:System"] = Configuration["sosync:log_level"];
             Configuration["Logging:LogLevel:Microsoft"] = Configuration["sosync:log_level"];
-
-            ConfigureMappings();
-        }
-
-        private void ConfigureMappings()
-        {
-
         }
 
         /// <summary>
@@ -113,6 +108,20 @@ namespace WebSosync
             services.AddTransient<FlowCheckService>();
             services.AddTransient<MdbService>();
             services.AddTransient<SyncServiceCollection>();
+
+            // Db contexts
+            services.AddDbContext<SosyncGuiContext>(options =>
+            {
+                var conf = Configuration.GetSection("sosync");
+                var host = conf.GetValue<string>("db_host");
+                var port = conf.GetValue<int>("db_port");
+                var dbname = conf.GetValue<string>("db_name");
+                var user = conf.GetValue<string>("db_user");
+                var pass = conf.GetValue<string>("db_user_pw");
+
+                var conStr = ConnectionHelper.GetPostgresConnectionString(host, port, dbname, user, pass);
+                options.UseNpgsql(conStr);
+            });
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);
