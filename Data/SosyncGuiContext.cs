@@ -61,7 +61,7 @@ namespace WebSosync.Data
             {
                 entity.ToTable("sosync_job");
 
-                entity.ForNpgsqlHasComment("sosync.job");
+                entity.HasComment("sosync.job");
 
                 entity.HasIndex(e => e.JobClosedByJobId)
                     .HasName("sosync_job_job_closed_by_job_id_index");
@@ -99,202 +99,202 @@ namespace WebSosync.Data
 
                 entity.Property(e => e.ChildJobDuration)
                     .HasColumnName("child_job_duration")
-                    .ForNpgsqlHasComment("CJ Duration (ms)");
+                    .HasComment("CJ Duration (ms)");
 
                 entity.Property(e => e.ChildJobEnd)
                     .HasColumnName("child_job_end")
-                    .ForNpgsqlHasComment("CJ Finished at");
+                    .HasComment("CJ Finished at");
 
                 entity.Property(e => e.ChildJobStart)
                     .HasColumnName("child_job_start")
-                    .ForNpgsqlHasComment("CJ Started at");
+                    .HasComment("CJ Started at");
 
                 entity.Property(e => e.CreateDate)
                     .HasColumnName("create_date")
-                    .ForNpgsqlHasComment("Created on");
+                    .HasComment("Created on");
 
                 entity.Property(e => e.CreateUid)
                     .HasColumnName("create_uid")
-                    .ForNpgsqlHasComment("Created by");
+                    .HasComment("Created by");
 
                 entity.Property(e => e.JobClosedByJobId)
                     .HasColumnName("job_closed_by_job_id")
-                    .ForNpgsqlHasComment("Closed by Job");
+                    .HasComment("Closed by Job");
 
                 entity.Property(e => e.JobDate)
                     .HasColumnName("job_date")
-                    .ForNpgsqlHasComment("Job Create Date");
+                    .HasComment("Job Create Date");
 
                 entity.Property(e => e.JobDuration)
                     .HasColumnName("job_duration")
-                    .ForNpgsqlHasComment("Duration (ms)");
+                    .HasComment("Duration (ms)");
 
                 entity.Property(e => e.JobEnd)
                     .HasColumnName("job_end")
-                    .ForNpgsqlHasComment("Finished at");
+                    .HasComment("Finished at");
 
                 entity.Property(e => e.JobErrorCode)
                     .HasColumnName("job_error_code")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Error Code");
+                    .HasComment("Error Code");
 
                 entity.Property(e => e.JobErrorText)
                     .HasColumnName("job_error_text")
-                    .ForNpgsqlHasComment("Error Info");
+                    .HasComment("Error Info");
 
                 entity.Property(e => e.JobFetched)
                     .HasColumnName("job_fetched")
-                    .ForNpgsqlHasComment("Fetched at");
+                    .HasComment("Fetched at");
 
                 entity.Property(e => e.JobLog)
                     .HasColumnName("job_log")
-                    .ForNpgsqlHasComment("Log");
+                    .HasComment("Log");
 
                 entity.Property(e => e.JobPriority)
                     .HasColumnName("job_priority")
-                    .ForNpgsqlHasComment("Priority");
+                    .HasComment("Priority");
 
                 entity.Property(e => e.JobRunCount)
                     .HasColumnName("job_run_count")
-                    .ForNpgsqlHasComment("Run Count");
+                    .HasComment("Run Count");
 
                 entity.Property(e => e.JobSourceFields)
                     .HasColumnName("job_source_fields")
-                    .ForNpgsqlHasComment("Fields");
+                    .HasComment("Fields");
 
                 entity.Property(e => e.JobSourceMergeIntoRecordId)
                     .HasColumnName("job_source_merge_into_record_id")
-                    .ForNpgsqlHasComment("MergeInto ID");
+                    .HasComment("MergeInto ID");
 
                 entity.Property(e => e.JobSourceModel)
                     .HasColumnName("job_source_model")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Model");
+                    .HasComment("Model");
 
                 entity.Property(e => e.JobSourceRecordId)
                     .HasColumnName("job_source_record_id")
-                    .ForNpgsqlHasComment("Record ID");
+                    .HasComment("Record ID");
 
                 entity.Property(e => e.JobSourceSosyncWriteDate)
                     .HasColumnName("job_source_sosync_write_date")
-                    .ForNpgsqlHasComment("sosync_write_date");
+                    .HasComment("sosync_write_date");
 
                 entity.Property(e => e.JobSourceSystem)
                     .HasColumnName("job_source_system")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("System");
+                    .HasComment("System");
 
                 entity.Property(e => e.JobSourceTargetMergeIntoRecordId)
                     .HasColumnName("job_source_target_merge_into_record_id")
-                    .ForNpgsqlHasComment("MergeInto Trg. ID");
+                    .HasComment("MergeInto Trg. ID");
 
                 entity.Property(e => e.JobSourceTargetRecordId)
                     .HasColumnName("job_source_target_record_id")
-                    .ForNpgsqlHasComment("Target Rec. ID");
+                    .HasComment("Target Rec. ID");
 
                 entity.Property(e => e.JobSourceType)
                     .HasColumnName("job_source_type")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Type");
+                    .HasComment("Type");
 
                 entity.Property(e => e.JobSourceTypeInfo)
                     .HasColumnName("job_source_type_info")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Syncflow Indi.");
+                    .HasComment("Syncflow Indi.");
 
                 entity.Property(e => e.JobStart)
                     .HasColumnName("job_start")
-                    .ForNpgsqlHasComment("Started at");
+                    .HasComment("Started at");
 
                 entity.Property(e => e.JobState)
                     .HasColumnName("job_state")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("State");
+                    .HasComment("State");
 
                 entity.Property(e => e.ParentJobId)
                     .HasColumnName("parent_job_id")
-                    .ForNpgsqlHasComment("Parent Job");
+                    .HasComment("Parent Job");
 
                 entity.Property(e => e.ParentPath)
                     .HasColumnName("parent_path")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Path");
+                    .HasComment("Path");
 
                 entity.Property(e => e.SyncDuration)
                     .HasColumnName("sync_duration")
-                    .ForNpgsqlHasComment("Sync Duration (ms)");
+                    .HasComment("Sync Duration (ms)");
 
                 entity.Property(e => e.SyncEnd)
                     .HasColumnName("sync_end")
-                    .ForNpgsqlHasComment("Sync End");
+                    .HasComment("Sync End");
 
                 entity.Property(e => e.SyncSourceData)
                     .HasColumnName("sync_source_data")
-                    .ForNpgsqlHasComment("Sync Source Data");
+                    .HasComment("Sync Source Data");
 
                 entity.Property(e => e.SyncSourceMergeIntoRecordId)
                     .HasColumnName("sync_source_merge_into_record_id")
-                    .ForNpgsqlHasComment("Source Merge-Into Record ID");
+                    .HasComment("Source Merge-Into Record ID");
 
                 entity.Property(e => e.SyncSourceModel)
                     .HasColumnName("sync_source_model")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Source Model");
+                    .HasComment("Source Model");
 
                 entity.Property(e => e.SyncSourceRecordId)
                     .HasColumnName("sync_source_record_id")
-                    .ForNpgsqlHasComment("Source Record ID");
+                    .HasComment("Source Record ID");
 
                 entity.Property(e => e.SyncSourceSystem)
                     .HasColumnName("sync_source_system")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Source System");
+                    .HasComment("Source System");
 
                 entity.Property(e => e.SyncStart)
                     .HasColumnName("sync_start")
-                    .ForNpgsqlHasComment("Sync Start");
+                    .HasComment("Sync Start");
 
                 entity.Property(e => e.SyncTargetAnswer)
                     .HasColumnName("sync_target_answer")
-                    .ForNpgsqlHasComment("Sync Target Answer(s)");
+                    .HasComment("Sync Target Answer(s)");
 
                 entity.Property(e => e.SyncTargetDataAfter)
                     .HasColumnName("sync_target_data_after")
-                    .ForNpgsqlHasComment("Sync Target Data after");
+                    .HasComment("Sync Target Data after");
 
                 entity.Property(e => e.SyncTargetDataBefore)
                     .HasColumnName("sync_target_data_before")
-                    .ForNpgsqlHasComment("Sync Target Data before");
+                    .HasComment("Sync Target Data before");
 
                 entity.Property(e => e.SyncTargetMergeIntoRecordId)
                     .HasColumnName("sync_target_merge_into_record_id")
-                    .ForNpgsqlHasComment("Target Merge-Into Record ID");
+                    .HasComment("Target Merge-Into Record ID");
 
                 entity.Property(e => e.SyncTargetModel)
                     .HasColumnName("sync_target_model")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Target Model");
+                    .HasComment("Target Model");
 
                 entity.Property(e => e.SyncTargetRecordId)
                     .HasColumnName("sync_target_record_id")
-                    .ForNpgsqlHasComment("Target Record ID");
+                    .HasComment("Target Record ID");
 
                 entity.Property(e => e.SyncTargetRequest)
                     .HasColumnName("sync_target_request")
-                    .ForNpgsqlHasComment("Sync Target Request(s)");
+                    .HasComment("Sync Target Request(s)");
 
                 entity.Property(e => e.SyncTargetSystem)
                     .HasColumnName("sync_target_system")
                     .HasColumnType("character varying")
-                    .ForNpgsqlHasComment("Target System");
+                    .HasComment("Target System");
 
                 entity.Property(e => e.WriteDate)
                     .HasColumnName("write_date")
-                    .ForNpgsqlHasComment("Last Updated on");
+                    .HasComment("Last Updated on");
 
                 entity.Property(e => e.WriteUid)
                     .HasColumnName("write_uid")
-                    .ForNpgsqlHasComment("Last Updated by");
+                    .HasComment("Last Updated by");
 
                 entity.HasOne(d => d.JobClosedByJob)
                     .WithMany(p => p.InverseJobClosedByJob)
