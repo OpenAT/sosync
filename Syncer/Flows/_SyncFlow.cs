@@ -395,7 +395,7 @@ namespace Syncer.Flows
             var s = new Stopwatch();
             s.Start();
 
-            if (requestedChildJobs.Count() == 0)
+            if (requestedChildJobs.Count() == 0 && Job.Children.Count == 0)
             {
                 s.Stop();
                 LogMs(0, "ChildJobs", Job.ID, s.ElapsedMilliseconds);
@@ -417,6 +417,31 @@ namespace Syncer.Flows
 
                     var allChildJobsFinished = true;
 
+                    // Child jobs pre-existing from database
+                    if (Job.Children != null)
+                    {
+                        foreach (var childJob in Job.Children)
+                        {
+                            if (childJob.Job_State == SosyncState.Error.Value)
+                                throw new SyncerException($"{childDescription} ({childJob.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}) failed.");
+
+                            UpdateJobStart(childJob, DateTime.UtcNow);
+
+                            var constructorParams = new object[] { Svc };
+                            using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(Svc.FlowService.GetFlow(childJob.Job_Source_Type, childJob.Job_Source_Model), constructorParams))
+                            {
+                                flow.Start(flowService, childJob, DateTime.UtcNow, ref requireRestart, ref restartReason);
+
+                                // Be sure to use logic & operator
+                                if (childJob.Job_State == SosyncState.Done.Value)
+                                    allChildJobsFinished &= true;
+                                else
+                                    allChildJobsFinished &= false;
+                            }
+                        }
+                    }
+
+                    // Child jobs from model requests
                     foreach (ChildJobRequest request in requestedChildJobs)
                     {
                         if (initialWriteDate.HasValue && !IsConsistent(Job, initialWriteDate, consistencyWatch))
