@@ -1,4 +1,5 @@
-﻿using Syncer.Attributes;
+﻿using Microsoft.Extensions.Logging;
+using Syncer.Attributes;
 using Syncer.Enumerations;
 using Syncer.Services;
 using System;
