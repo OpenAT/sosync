@@ -61,10 +61,7 @@ namespace WebSosync
 
         private void ConfigureMappings()
         {
-            Mapper.Initialize(cfg =>
-            {
-                // cfg.CreateMap<SyncJobDto, SyncJob>();
-            });
+
         }
 
         /// <summary>
@@ -138,8 +135,7 @@ namespace WebSosync
             var sosyncConfig = svc.GetService<SosyncOptions>();
 
             loggerFactory
-                .AddConsole(Configuration.GetSection("Logging"))
-                .AddDebug();
+                .AddConsole(Configuration.GetSection("Logging"));
 
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
             var logFile = Path.GetFullPath(sosyncConfig.Log_File);
