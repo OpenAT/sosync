@@ -36,17 +36,20 @@ namespace WebSosync.Controllers
         private ILogger<JobController> _log;
         private IBackgroundJob<SyncWorker> _jobWorker;
         private SosyncGuiContext _ctx;
+        private FlowService _flowService;
         #endregion
 
         #region Constructors
         public JobController(
             IBackgroundJob<SyncWorker> worker,
             ILogger<JobController> logger,
-            SosyncGuiContext context)
+            SosyncGuiContext context,
+            FlowService flowService)
         {
             _jobWorker = worker;
             _log = logger;
             _ctx = context;
+            _flowService = flowService;
         }
         #endregion
 
@@ -138,6 +141,23 @@ namespace WebSosync.Controllers
             return new BadRequestObjectResult("error\n" + errorLog.ToString());
         }
 
+        private void SetJobEntityDefaults(IEnumerable<SosyncJobEntity> jobs)
+        {
+            foreach (var job in jobs)
+            {
+                job.JobState = SosyncState.New.Value;
+                job.JobFetched = DateTime.UtcNow;
+
+                if (job.JobPriority == null)
+                {
+                    if (_flowService.ModelPriorities.ContainsKey(job.JobSourceModel))
+                        job.JobPriority = _flowService.ModelPriorities[job.JobSourceModel];
+                    else
+                        job.JobPriority = 1000;
+                }
+            }
+        }
+
         [HttpPost("tree-create")]
         [RequestSizeLimit(1073741824000)]
         public async Task<IActionResult> Post([FromBody]JobDto[] jobs)
@@ -148,8 +168,12 @@ namespace WebSosync.Controllers
                     .SelectMany(j => j.ToEntities())
                     .ToList();
 
+                SetJobEntityDefaults(jobEntities);
+
                 _ctx.AddRange(jobEntities);
                 await _ctx.SaveChangesAsync();
+
+                _jobWorker.Start();
 
                 return new OkResult();
             }
