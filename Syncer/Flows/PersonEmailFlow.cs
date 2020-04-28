@@ -16,7 +16,7 @@ using WebSosync.Data;
 using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
-namespace Syncer.Flows.zGruppeSystem
+namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.PersonEmail")]
     [OnlineModel(Name = "frst.personemail")]
