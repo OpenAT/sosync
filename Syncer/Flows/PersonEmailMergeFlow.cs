@@ -21,14 +21,10 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-#warning TODO: Use frst.personemail equivalent instead of MergeModel
-
-            //Svc.OdooService.Client.MergeModel(
-            //    OnlineModelName,
-            //    Job.Sync_Target_Record_ID.Value,
-            //    Job.Sync_Target_Merge_Into_Record_ID.Value);
-
-            throw new NotImplementedException();
+            Svc.OdooService.Client.MergeModel(
+                OnlineModelName,
+                Job.Sync_Target_Record_ID.Value,
+                Job.Sync_Target_Merge_Into_Record_ID.Value);
 
             RequestPostTransformChildJob(
                 SosyncSystem.FundraisingStudio,
