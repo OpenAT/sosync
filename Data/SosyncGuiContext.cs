@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using WebSosync.Data.Interfaces;
 using WebSosync.Data.Models;
 
 namespace WebSosync.Data
@@ -18,6 +21,37 @@ namespace WebSosync.Data
         public SosyncGuiContext(DbContextOptions<SosyncGuiContext> options)
             : base(options)
         { }
+
+        private void AuditEntities()
+        {
+            var models = ChangeTracker.Entries<IAuditable>();
+
+            foreach (var model in models)
+            {
+                switch (model.State)
+                {
+                    case EntityState.Added:
+                        model.Entity.CreateDate = DateTime.UtcNow;
+                        break;
+
+                    case EntityState.Modified:
+                        model.Entity.WriteDate = DateTime.UtcNow;
+                        break;
+                }
+            }
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            AuditEntities();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            AuditEntities();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

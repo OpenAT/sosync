@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WebSosync.Data.Interfaces;
 
 namespace WebSosync.Data.Models
 {
     public class SosyncJobEntity
+        : IAuditable
     {
         public SosyncJobEntity()
         {
