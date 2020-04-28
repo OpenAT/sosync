@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,6 +18,7 @@ using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
 using WebSosync.Data.Constants;
+using WebSosync.Data.Helpers;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
 using WebSosync.Models;
@@ -144,6 +146,20 @@ namespace WebSosync.Controllers
                 var s = ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage)));
                 return new BadRequestObjectResult(s);
             }
+        }
+
+        [HttpGet("test")]
+        public IActionResult Get([FromServices]SosyncOptions config)
+        {
+            var conStr = ConnectionHelper.GetPostgresConnectionString(config.DB_Host, config.DB_Port, config.DB_Name, config.DB_User, config.DB_User_PW);
+            var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<SosyncGuiContext>()
+                .UseNpgsql(conStr)
+                .Options;
+
+            var context = new SosyncGuiContext(options);
+            var result = context.SosyncJobs.Count();
+
+            return new OkObjectResult(result);
         }
 
         private JobResultDto ValidateDictionary(Dictionary<string, object> data)
