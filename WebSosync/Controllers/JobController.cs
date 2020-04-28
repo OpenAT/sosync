@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
@@ -21,6 +22,7 @@ using WebSosync.Data.Constants;
 using WebSosync.Data.Helpers;
 using WebSosync.Data.Models;
 using WebSosync.Enumerations;
+using WebSosync.Extensions;
 using WebSosync.Models;
 using WebSosync.Services;
 
@@ -33,13 +35,18 @@ namespace WebSosync.Controllers
         #region Members
         private ILogger<JobController> _log;
         private IBackgroundJob<SyncWorker> _jobWorker;
+        private SosyncGuiContext _ctx;
         #endregion
 
         #region Constructors
-        public JobController([FromServices]IBackgroundJob<SyncWorker> worker, [FromServices]ILogger<JobController> logger)
+        public JobController(
+            IBackgroundJob<SyncWorker> worker,
+            ILogger<JobController> logger,
+            SosyncGuiContext context)
         {
             _jobWorker = worker;
             _log = logger;
+            _ctx = context;
         }
         #endregion
 
@@ -133,11 +140,16 @@ namespace WebSosync.Controllers
 
         [HttpPost("tree-create")]
         [RequestSizeLimit(1073741824000)]
-        public IActionResult Post([FromBody]JobDto[] jobs)
+        public async Task<IActionResult> Post([FromBody]JobDto[] jobs)
         {
             if (ModelState.IsValid)
             {
+                var jobEntities = jobs
+                    .SelectMany(j => j.ToEntities())
+                    .ToList();
 
+                _ctx.AddRange(jobEntities);
+                await _ctx.SaveChangesAsync();
 
                 return new OkResult();
             }
@@ -146,20 +158,6 @@ namespace WebSosync.Controllers
                 var s = ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage)));
                 return new BadRequestObjectResult(s);
             }
-        }
-
-        [HttpGet("test")]
-        public IActionResult Get([FromServices]SosyncOptions config)
-        {
-            var conStr = ConnectionHelper.GetPostgresConnectionString(config.DB_Host, config.DB_Port, config.DB_Name, config.DB_User, config.DB_User_PW);
-            var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<SosyncGuiContext>()
-                .UseNpgsql(conStr)
-                .Options;
-
-            var context = new SosyncGuiContext(options);
-            var result = context.SosyncJobs.Count();
-
-            return new OkObjectResult(result);
         }
 
         private JobResultDto ValidateDictionary(Dictionary<string, object> data)
