@@ -168,6 +168,7 @@ namespace Syncer.Flows
                 HandleChildJobs(
                     "Child Job",
                     RequiredChildJobs,
+                    Job.Children,
                     flowService,
                     initialWriteDate,
                     consistencyWatch,
@@ -199,6 +200,7 @@ namespace Syncer.Flows
                 HandleChildJobs(
                     "Post Transformation Child Job",
                     RequiredPostTransformChildJobs,
+                    null,
                     flowService,
                     initialWriteDate,
                     consistencyWatch,

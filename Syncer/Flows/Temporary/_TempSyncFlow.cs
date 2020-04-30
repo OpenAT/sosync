@@ -49,6 +49,7 @@ namespace Syncer.Flows.Temporary
             HandleChildJobs(
                 "Child Job",
                 RequiredChildJobs, 
+                Job.Children,
                 flowService, 
                 null, 
                 consistencyWatch, 
@@ -61,6 +62,7 @@ namespace Syncer.Flows.Temporary
             HandleChildJobs(
                 "Post Transformation Child Job",
                 RequiredChildJobs,
+                null,
                 flowService,
                 null,
                 consistencyWatch,
