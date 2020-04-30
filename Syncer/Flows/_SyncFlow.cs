@@ -381,6 +381,7 @@ namespace Syncer.Flows
         protected void HandleChildJobs(
             string childDescription,
             IEnumerable<ChildJobRequest> requestedChildJobs,
+            IEnumerable<SyncJob> existingChildren,
             FlowService flowService,
             DateTime? initialWriteDate,
             Stopwatch consistencyWatch,
@@ -418,9 +419,9 @@ namespace Syncer.Flows
                     var allChildJobsFinished = true;
 
                     // Child jobs pre-existing from database
-                    if (Job.Children != null)
+                    if (existingChildren != null)
                     {
-                        foreach (var childJob in Job.Children)
+                        foreach (var childJob in existingChildren)
                         {
                             if (childJob.Job_State == SosyncState.Error.Value)
                                 throw new SyncerException($"{childDescription} ({childJob.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}) failed.");
