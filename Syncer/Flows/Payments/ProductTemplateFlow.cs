@@ -97,6 +97,7 @@ namespace Syncer.Flows.Payments
                     studio.website_published_start = online.website_published_start;
                     studio.website_published_end = online.website_published_end;
                     studio.website_visible = online.website_visible;
+                    studio.default_code = online.default_code;
 
                     SaveDetails(studio.product_templateID, online.zgruppedetail_ids);
                 });
