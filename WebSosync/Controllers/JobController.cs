@@ -83,6 +83,8 @@ namespace WebSosync.Controllers
                 return new BadRequestObjectResult(result);
 
             var job = ParseJob(services, data);
+            // create_date wurde bisher bei dieser route nicht gesetz, jobs konnten nicht mehr verarbeitet werden, weil nciht mehr in dem new jobs select:
+            job.Create_Date = DateTime.UtcNow;
             StoreJob(services, job);
             result.ID = job.ID;
 
