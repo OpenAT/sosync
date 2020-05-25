@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using DaDi.Odoo;
 using DaDi.Odoo.Models;
 using DaDi.Odoo.Models.GL2K.Garden;
 using dadi_data.Models;
@@ -11,6 +13,7 @@ using Syncer.Models;
 using Syncer.Services;
 using WebSosync.Common;
 using WebSosync.Data;
+using WebSosync.Data.Constants;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows.gl2k.garden
@@ -28,6 +31,27 @@ namespace Syncer.Flows.gl2k.garden
         protected override ModelInfo GetStudioInfo(int studioID)
         {
             return GetDefaultStudioModelInfo<fsongarden>(studioID);
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            using (var db = Svc.MdbService.GetDataService<fsongarden>())
+            {
+                var studioModel = db.Read(new { PersonID = studioID }).SingleOrDefault();
+                RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID, SosyncJobSourceType.Default);
+            }
+        }
+
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            var odooModel = Svc.OdooService.Client.GetDictionary(
+                OnlineModelName,
+                onlineID,
+                new string[] { "partner_id" });
+
+            var odooPartnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: false).Value;
+
+            RequestChildJob(SosyncSystem.FSOnline, "res.partner", odooPartnerID, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
