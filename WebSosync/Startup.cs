@@ -101,8 +101,6 @@ namespace WebSosync
             var flowService = new FlowService();
             services.AddSingleton(flowService);
 
-            RegisterBackgroundJob<SyncWorker>(services);
-
             // Transient services
             services.AddTransient<DataService>();
             services.AddTransient<FlowCheckService>();
@@ -125,6 +123,8 @@ namespace WebSosync
 
             // Automatic registering of all data flows in the syncer project
             flowService.RegisterFlows(services);
+
+            RegisterBackgroundJob<SyncWorker>(services);
         }
 
         /// <summary>
