@@ -22,3 +22,11 @@ Each sync flow, has the involved table names or model names as attribute on the 
 For example:
 - Searching for "**dbo.Person**" or "**res.partner**" will bring up the file **PartnerFlow.cs**
   that's where all the Transformation etc. is happening
+
+# Flows not using Simple-Transform
+The following flows do not yet use the generalized **SimpleTransformTo...** Methods yet.
+These flows should be converted at some point!
+
+- EmailTemplateFlow
+- GroupsFlow (currently commented out)
+- UsersFlow (currently commented out)
