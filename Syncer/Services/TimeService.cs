@@ -36,16 +36,23 @@ namespace Syncer.Services
         /// <returns>Time offset in milliseconds.</returns>
         private double GetOffset(string server)
         {
-            var client = new Ntp(server)
+            try
             {
-                VersionNumber = 3,
-                Timeout = 500 // ms
-            };
+                var client = new Ntp(server)
+                {
+                    VersionNumber = 3,
+                    Timeout = 500 // ms
+                };
 
-            return client.GetTime()
-                .TimeOffset
-                .ToTimeSpan()
-                .TotalMilliseconds;
+                return client.GetTime()
+                    .TimeOffset
+                    .ToTimeSpan()
+                    .TotalMilliseconds;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Could not fetch NTP time from: {server}", ex);
+            }
         }
 
         /// <summary>
@@ -82,9 +89,7 @@ namespace Syncer.Services
 
             var ntpOffset = (int)Math.Abs(GetOffset());
             var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
-#warning Read FS Offset once it hosts an NTP server
-            //var fsOffset = (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
-            var fsOffset = 0;
+            var fsOffset = 0; // (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
 
             return new TimeDrift(ntpOffset, fsoOffset, fsOffset);
         }
