@@ -100,7 +100,6 @@ namespace WebSosync.Controllers
         public IActionResult ForceDriftCheck([FromServices]TimeService timeSvc)
         {
             timeSvc.LastDriftCheck = null;
-            timeSvc.DriftLockUntil = null;
             return new OkResult();
         }
 

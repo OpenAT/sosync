@@ -40,6 +40,8 @@ namespace Syncer.Workers
 
         private const int _sleepTime = 5500;
         private static int _sleepCycle;
+
+        private static bool _serviceDead = false;
         #endregion
 
         #region Constructors
@@ -78,41 +80,48 @@ namespace Syncer.Workers
         /// </summary>
         public override void Start()
         {
-            var lastJobCount = 0;
+            if (_serviceDead)
+                return;
 
-            var jobLimit = _conf.Job_Package_Size.Value;
+            var reCheckTimeMin = 30;
 
-            using (var db = GetDb())
+            try
             {
-                // Get only the first open job and its hierarchy,
-                // and build the tree in memory
-                var loadTimeUTC = DateTime.UtcNow;
+                // Check server times
+                ThrowOnMismatchedServerTimes(reCheckTimeMin);
 
-                var s = new Stopwatch();
-                s.Start();
-                var jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
-                s.Stop();
-                _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+                var lastJobCount = 0;
 
-                lastJobCount = jobs.Count;
+                var jobLimit = _conf.Job_Package_Size.Value;
 
-                CheckInProgress(jobs);
-
-                var initialJobCount = jobs.Count;
-                var reCheckTimeMin = 30;
-
-                var threadWatch = new Stopwatch();
-                while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
+                using (var db = GetDb())
                 {
-                    var tasks = new List<Task>();
-                    var threadCount = _conf.Max_Threads;
+                    // Get only the first open job and its hierarchy,
+                    // and build the tree in memory
+                    var loadTimeUTC = DateTime.UtcNow;
 
-                    threadWatch.Start();
-                    try
+                    var s = new Stopwatch();
+                    s.Start();
+                    var jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                    s.Stop();
+                    _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
+                    lastJobCount = jobs.Count;
+
+                    CheckInProgress(jobs);
+
+                    var initialJobCount = jobs.Count;
+
+                    var threadWatch = new Stopwatch();
+                    while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
                     {
+                        var tasks = new List<Task>();
+                        var threadCount = _conf.Max_Threads;
+
+                        threadWatch.Start();
+
                         // Check server times
-                        if (IsServerTimeMismatch(reCheckTimeMin))
-                            return;
+                        ThrowOnMismatchedServerTimes(reCheckTimeMin);
 
                         // Spin up job threads
                         var threadStartWatch = Stopwatch.StartNew();
@@ -128,74 +137,71 @@ namespace Syncer.Workers
                         }
                         threadStartWatch.Stop();
                         _log.LogInformation($"Threading: Needed {SpecialFormat.FromMilliseconds((int)threadStartWatch.Elapsed.TotalMilliseconds)} for {threadCount} threads");
+
+                        Task.WaitAll(tasks.ToArray());
+                        threadWatch.Stop();
+                        _log.LogInformation($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
+                        threadWatch.Reset();
+
+                        ThreadService.JobLocks.Clear();
+
+                        ArchiveJobs();
+
+                        Dapper.SqlMapper.PurgeQueryCache();
+                        GC.Collect();
+
+                        _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
+
+                        // Get the next open job
+                        loadTimeUTC = DateTime.UtcNow;
+                        s.Reset();
+                        s.Start();
+                        jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
+                        s.Stop();
+                        _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
+
+                        CheckInProgress(jobs);
+                        initialJobCount = jobs.Count;
                     }
-                    catch (TimeDriftException ex)
+
+                    // Before ending the worker, always do another archive run,
+                    // unless a cancellation is pending
+                    if (!CancellationToken.IsCancellationRequested)
+                        ArchiveJobs();
+
+                    // If there were jobs, always reset cycle
+                    if (lastJobCount > 0)
+                        _sleepCycle = 1;
+                    else
+                        _sleepCycle++;
+
+                    if (_sleepCycle == 1)
                     {
-                        // Set the drift lock to re-check time + 5 seconds
-                        // to make sure another drift check is done before
-                        // the lock expires
-                        _timeSvc.DriftLockUntil = DateTime.UtcNow.AddMinutes(reCheckTimeMin).AddSeconds(5);
-
-                        var waitTimeMs = 1000 * 60 * reCheckTimeMin + 5000;
-                        _log.LogError($"{ex.Message} Locking sync for {SpecialFormat.FromMilliseconds(waitTimeMs)}.");
+                        // First time -> always restart without delay
+                        _log.LogInformation($"Requesting restart without delay, cycle {_sleepCycle}");
+                        RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
                     }
-
-                    Task.WaitAll(tasks.ToArray());
-                    threadWatch.Stop();
-                    _log.LogInformation($"All threads finished in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}.");
-                    threadWatch.Reset();
-
-                    ThreadService.JobLocks.Clear();
-
-                    ArchiveJobs();
-
-                    Dapper.SqlMapper.PurgeQueryCache();
-                    GC.Collect();
-
-                    _log.LogInformation($"Threading: All threads finished {initialJobCount} jobs in {SpecialFormat.FromMilliseconds((int)threadWatch.Elapsed.TotalMilliseconds)}");
-
-                    // Get the next open job
-                    loadTimeUTC = DateTime.UtcNow;
-                    s.Reset();
-                    s.Start();
-                    jobs = new ConcurrentQueue<SyncJob>(GetNextOpenJob(db, jobLimit));
-                    s.Stop();
-                    _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
-
-                    CheckInProgress(jobs);
-                    initialJobCount = jobs.Count;
+                    else if (lastJobCount == 0 && _sleepCycle == 2)
+                    {
+                        // No jobs, second time -> delay, restart
+                        _log.LogInformation($"Sleeping {_sleepTime}ms and requesting restart, cycle {_sleepCycle}");
+                        RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
+                        Thread.Sleep(_sleepTime);
+                    }
+                    else if (lastJobCount == 0)
+                    {
+                        // No jobs, 3+ time, go idle
+                        _log.LogInformation($"Sleep cycle done resetting cycle.");
+                        _sleepCycle = 0;
+                    }
                 }
+            }
+            catch (TimeDriftException ex)
+            {
+                _serviceDead = true;
+                _log.LogError($"Time drift detected, shutting down!\n{ex.Message}");
 
-                // Before ending the worker, always do another archive run,
-                // unless a cancellation is pending
-                if (!CancellationToken.IsCancellationRequested)
-                    ArchiveJobs();
-
-                // If there were jobs, always reset cycle
-                if (lastJobCount > 0)
-                    _sleepCycle = 1;
-                else
-                    _sleepCycle++;
-
-                if (_sleepCycle == 1)
-                {
-                    // First time -> always restart without delay
-                    _log.LogInformation($"Requesting restart without delay, cycle {_sleepCycle}");
-                    RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
-                }
-                else if (lastJobCount == 0 && _sleepCycle == 2)
-                {
-                    // No jobs, second time -> delay, restart
-                    _log.LogInformation($"Sleeping {_sleepTime}ms and requesting restart, cycle {_sleepCycle}");
-                    RaiseRequireRestart($"Sleep-Time-Restart {_sleepCycle}");
-                    Thread.Sleep(_sleepTime);
-                }
-                else if (lastJobCount == 0)
-                {
-                    // No jobs, 3+ time, go idle
-                    _log.LogInformation($"Sleep cycle done resetting cycle.");
-                    _sleepCycle = 0;
-                }
+                Task.Run(() => Environment.Exit(-1));
             }
         }
 
@@ -272,23 +278,18 @@ namespace Syncer.Workers
                     body);
             }
         }
-        private bool IsServerTimeMismatch(int reCheckTimeMin)
+        private void ThrowOnMismatchedServerTimes(int reCheckTimeMin)
         {
+            // No previous check, or last check older than reCheckTimeMin
             if (_timeSvc.LastDriftCheck == null || (DateTime.UtcNow - _timeSvc.LastDriftCheck.Value).Minutes >= reCheckTimeMin)
-                _timeSvc.ThrowOnTimeDrift();
-
-            if (_timeSvc.DriftLockUntil.HasValue && _timeSvc.DriftLockUntil > DateTime.UtcNow)
             {
-                var expiresInMs = (int)(_timeSvc.DriftLockUntil.Value - DateTime.UtcNow).TotalMilliseconds;
-
-                if (expiresInMs < 0)
-                    expiresInMs = 0;
-
-                _log.LogError($"Synchronization locked due to time drift. Lock expires in {SpecialFormat.FromMilliseconds(expiresInMs)} ({_timeSvc.DriftLockUntil.Value.ToString("o")})");
-                return true;
+                _log.LogInformation($"Checking time drift...");
+                _timeSvc.ThrowOnTimeDrift();
             }
-
-            return false;
+            else
+            {
+                _log.LogInformation($"Time drift was checked with last {reCheckTimeMin} minutes. Skipping check.");
+            }
         }
 
         private void JobThread(ref ConcurrentQueue<SyncJob> jobs, DateTime loadTimeUTC, Guid threadNumber)

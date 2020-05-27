@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Syncer.Exceptions;
 using Syncer.Models;
 using System;
+using System.Collections.Generic;
 using WebSosync.Data.Models;
 
 namespace Syncer.Services
@@ -82,6 +83,7 @@ namespace Syncer.Services
             var ntpOffset = (int)Math.Abs(GetOffset());
             var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
 #warning Read FS Offset once it hosts an NTP server
+            //var fsOffset = (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
             var fsOffset = 0;
 
             return new TimeDrift(ntpOffset, fsoOffset, fsOffset);
@@ -92,14 +94,19 @@ namespace Syncer.Services
             var drift = GetTimeDrift();
             _log.LogInformation($"Time drifts: NTP={drift.NTP}ms, FSO={drift.FSOnline}ms, FS={drift.FS}ms, tolerance={_config.Max_Time_Drift_ms}ms");
 
+            var messages = new List<string>();
+
             if (drift.NTP > _config.Max_Time_Drift_ms)
-                throw new TimeDriftException($"Time drift tolerance to NTP server exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.NTP}ms).");
+                messages.Add($"Tolerance to NTP server exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.NTP}ms).");
 
             if (drift.FSOnline > _config.Max_Time_Drift_ms)
-                throw new TimeDriftException($"Time drift tolerance to FS-Online exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.FSOnline}ms).");
+                messages.Add($"Tolerance to FS-Online exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.FSOnline}ms).");
 
             if (drift.FS > _config.Max_Time_Drift_ms)
-                throw new TimeDriftException($"Time drift tolerance to FS exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.FS}ms).");
+                messages.Add($"Tolerance to FS exceeded (max: {_config.Max_Time_Drift_ms}ms, actual: {drift.FS}ms).");
+
+            if (messages.Count > 0)
+                throw new TimeDriftException(string.Join(Environment.NewLine, messages));
         }
         #endregion
 
@@ -108,11 +115,6 @@ namespace Syncer.Services
         /// Time stamp of when GetTimeDrict() was last called, in UTC.
         /// </summary>
         public DateTime? LastDriftCheck { get; set; }
-
-        /// <summary>
-        /// The time stamp that indidcates a run-lock due to time drift.
-        /// </summary>
-        public DateTime? DriftLockUntil { get; set; }
         #endregion
 
         #region Members
