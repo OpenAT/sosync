@@ -9,6 +9,8 @@ namespace Syncer.Exceptions
         #region Constructors
         public SyncerException() { }
         public SyncerException(string message) : base(message) { }
+
+        public SyncerException(string message, Exception innerException) : base(message, innerException) { }
         #endregion
     }
 }

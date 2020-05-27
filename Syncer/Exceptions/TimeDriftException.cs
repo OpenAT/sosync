@@ -13,5 +13,10 @@ namespace Syncer.Exceptions
         public TimeDriftException(string message) : base(message)
         {
         }
+
+        public TimeDriftException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }
