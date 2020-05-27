@@ -37,7 +37,7 @@ namespace Syncer.Flows.gl2k.garden
         {
             using (var db = Svc.MdbService.GetDataService<fsongarden>())
             {
-                var studioModel = db.Read(new { PersonID = studioID }).SingleOrDefault();
+                var studioModel = db.Read(new { gardenID = studioID }).SingleOrDefault();
                 RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID, SosyncJobSourceType.Default);
             }
         }
