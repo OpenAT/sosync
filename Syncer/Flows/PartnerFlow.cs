@@ -40,6 +40,23 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        private DateTime? GetPersonCreateDate(dboPersonStack person)
+        {
+            var query = new DateTime?[]
+            {
+                person.person != null ? person.person.create_date : (DateTime?)null,
+                person.address != null ? person.address.create_date : (DateTime?)null,
+                person.phone != null ? person.phone.create_date : (DateTime?)null,
+                person.mobile != null ? person.mobile.create_date : (DateTime?)null,
+                person.fax != null ? person.fax.create_date : (DateTime?)null,
+            }.Where(x => x.HasValue);
+
+            if (query.Any())
+                return query.Max();
+
+            return null;
+        }
+
         private DateTime? GetPersonWriteDate(dboPersonStack person)
         {
             var query = new DateTime?[]
@@ -131,6 +148,7 @@ namespace Syncer.Flows
                               select iterfax).FirstOrDefault();
             }
 
+            result.create_date = GetPersonCreateDate(result);
             result.write_date = GetPersonWriteDate(result);
             result.sosync_write_date = GetPersonSosyncWriteDate(result);
 
@@ -306,7 +324,8 @@ namespace Syncer.Flows
                     { "bpk_forced_birthdate", person.person.BPKErzwungenGeburtsdatum },
                     { "bpk_forced_zip", person.person.BPKErzwungenPLZ },
                     { "bpk_forced_street", person.person.BPKErzwungenStrasse },
-                    { "sosync_write_date", sosync_write_date }
+                    { "sosync_write_date", sosync_write_date },
+                    { "frst_write_date", Treat2000DateAsNull(person.write_date) },
                     // Do NOT sync bpk_state back!
                 };
 
@@ -347,6 +366,7 @@ namespace Syncer.Flows
             
             if (action == TransformType.CreateNew)
             {
+                data.Add("frst_create_date", Treat2000DateAsNull(person.create_date));
                 data.Add("sosync_fs_id", person.person.PersonID);
 
                 int odooPartnerId = 0;

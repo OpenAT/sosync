@@ -24,7 +24,8 @@ namespace Syncer.Flows
     /// <summary>
     /// Base class for sync flows that replicated models.
     /// </summary>
-    public abstract class ReplicateSyncFlow : SyncFlow
+    public abstract class ReplicateSyncFlow
+        : SyncFlow
     {
         #region Fields
         private IServiceProvider svc;
@@ -723,9 +724,11 @@ namespace Syncer.Flows
 
                 copyStudioToDictionary(studioModel, data);
                 data.Add("sosync_write_date", (studioModel.sosync_write_date ?? studioModel.write_date));
+                data.Add("frst_write_date", Treat2000DateAsNull(studioModel.write_date));
 
                 if (action == TransformType.CreateNew)
                 {
+                    data.Add("frst_create_date", Treat2000DateAsNull(studioModel.create_date));
                     data.Add("sosync_fs_id", getStudioIdentity(studioModel));
                     int odooModelID = 0;
                     try

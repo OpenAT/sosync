@@ -20,5 +20,6 @@ namespace Syncer.Models
         public dboPersonTelefon fax { get; set; }
         public DateTime? sosync_write_date { get; set; }
         public DateTime? write_date { get; set; }
+        public DateTime? create_date { get; set; }
     }
 }

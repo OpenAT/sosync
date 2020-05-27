@@ -74,6 +74,14 @@ namespace Syncer.Flows
         #endregion
 
         #region Methods
+        protected DateTime? Treat2000DateAsNull(DateTime? mssqlDate)
+        {
+            if (mssqlDate == new DateTime(2000, 1, 1))
+                return null;
+
+            return mssqlDate;
+        }
+
         public void LogMilliseconds(string operation, double ms)
         {
             _timeLog.AppendLine($"{operation}: {ms.ToString("0")} ms");
