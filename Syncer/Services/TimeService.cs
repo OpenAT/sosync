@@ -85,13 +85,20 @@ namespace Syncer.Services
 
         public TimeDrift GetTimeDrift()
         {
-            LastDriftCheck = DateTime.UtcNow;
+            try
+            {
+                LastDriftCheck = DateTime.UtcNow;
 
-            var ntpOffset = (int)Math.Abs(GetOffset());
-            var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
-            var fsOffset = (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
+                var ntpOffset = (int)Math.Abs(GetOffset());
+                var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
+                var fsOffset = (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
 
-            return new TimeDrift(ntpOffset, fsoOffset, fsOffset);
+                return new TimeDrift(ntpOffset, fsoOffset, fsOffset);
+            }
+            catch (Exception ex)
+            {
+                throw new TimeDriftException(ex.Message, ex);
+            }
         }
 
         public void ThrowOnTimeDrift()
