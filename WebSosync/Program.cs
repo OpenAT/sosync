@@ -14,6 +14,8 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Threading;
+using System.Threading.Tasks;
 using WebSosync.Common.Enumerations;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
@@ -178,28 +180,17 @@ namespace WebSosync
                 throw;
             }
 
-            TimeService timeSvc = null;
-            try
-            {
-                timeSvc = (TimeService)host.Services.GetService(typeof(TimeService));
-                timeSvc.ThrowOnTimeDrift();
-            }
-            catch (Exception ex)
-            {
-                log.LogWarning(ex.Message);
-            }
-            finally
-            {
-                if (timeSvc != null)
-                    timeSvc.LastDriftCheck = null; // Don't consider the initial time check
-            }
-
             SetSosyncDefaultConfig(sosyncConfig, log);
 
             try
             {
-                var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
-                jobWorker.Start();
+                Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+                    var jobWorker = (IBackgroundJob<SyncWorker>)host.Services.GetService(typeof(IBackgroundJob<SyncWorker>));
+                    jobWorker.Start();
+                });
+
                 host.Run();
             }
             catch (IOException ex)
