@@ -288,7 +288,7 @@ namespace Syncer.Workers
             }
             else
             {
-                _log.LogInformation($"Time drift was checked with last {reCheckTimeMin} minutes. Skipping check.");
+                _log.LogInformation($"Time drift was checked within last {reCheckTimeMin} minutes. Skipping check.");
             }
         }
 
