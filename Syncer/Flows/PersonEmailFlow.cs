@@ -34,28 +34,6 @@ namespace Syncer.Flows
             return GetDefaultStudioModelInfo<dboPersonEmail>(studioID);
         }
 
-        protected override int? MatchInOnlineViaData(int studioID)
-        {
-            int? onlineID = null;
-            string mail;
-            int? partnerID;
-
-            FetchStudioData(studioID, out mail, out partnerID);
-
-            if (string.IsNullOrEmpty(mail))
-                return null;
-
-            var searchArgs = new[] {
-                new OdooSearchArgument("partner_id", "=", partnerID.Value),
-                new OdooSearchArgument("email", "=ilike", mail)
-            };
-
-            onlineID = Svc.OdooService.Client.SearchBy(OnlineModelName, searchArgs)
-                .SingleOrDefault();
-
-            return onlineID;
-        }
-
         private void FetchStudioData(int studioID, out string mail, out int? partnerID)
         {
             mail = null;
@@ -83,43 +61,6 @@ namespace Syncer.Flows
                     throw new SyncerException($"Model {StudioModelName} ({studioID}) was not found in {SosyncSystem.FundraisingStudio.Value} while matching");
                 }
             }
-        }
-
-        protected override int? MatchInStudioViaData(int onlineID)
-        {
-            int? studioID = null;
-
-            var frstPersonemail = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new[] { "partner_id", "email" });
-
-            if (frstPersonemail.ContainsKey("email"))
-            {
-                var mail = (string)frstPersonemail["email"];
-                int partnerID = Convert.ToInt32(((List<object>)frstPersonemail["partner_id"])[0]);
-
-                var resPartner = Svc.OdooService.Client.GetDictionary("res.partner", partnerID, new[] { "sosync_fs_id" });
-                int? personID = null;
-
-                if (resPartner.ContainsKey("sosync_fs_id"))
-                    personID = Convert.ToInt32(resPartner["sosync_fs_id"]);
-
-                if (string.IsNullOrEmpty(mail) || !personID.HasValue)
-                    throw new SyncerException($"Cannot {nameof(MatchInStudioViaData)}: E-Mail = '{mail}', PersonID = {partnerID}");
-
-                using (var db = Svc.MdbService.GetDataService<dboTypen>())
-                {
-                    studioID = db.ExecuteQuery<int?>(
-                        $"SELECT {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} FROM {StudioModelName} " +
-                        "WHERE PersonID = @personID AND ISNULL(EmailVor, '') + '@' + ISNULL(EmailNach, '') = @mail",
-                        new { personID, mail })
-                        .SingleOrDefault();
-                }
-            }
-            else
-            {
-                throw new SyncerException($"Model {OnlineModelName} ({onlineID}) was not found in {SosyncSystem.FSOnline.Value} while matching");
-            }
-
-            return studioID;
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
