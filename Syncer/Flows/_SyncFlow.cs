@@ -440,7 +440,6 @@ namespace Syncer.Flows
                                 using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(Svc.FlowService.GetFlow(childJob.Job_Source_Type, childJob.Job_Source_Model), constructorParams))
                                 {
                                     flow.Start(flowService, childJob, DateTime.UtcNow, ref requireRestart, ref restartReason);
-
                                 }
 
                                 UpdateJobStart(childJob, DateTime.UtcNow);
