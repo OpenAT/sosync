@@ -434,19 +434,23 @@ namespace Syncer.Flows
                             if (childJob.Job_State == SosyncState.Error.Value)
                                 throw new SyncerException($"{childDescription} ({childJob.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}) failed.");
 
-                            UpdateJobStart(childJob, DateTime.UtcNow);
-
-                            var constructorParams = new object[] { Svc };
-                            using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(Svc.FlowService.GetFlow(childJob.Job_Source_Type, childJob.Job_Source_Model), constructorParams))
+                            if (childJob.Job_State == SosyncState.New.Value || childJob.Job_State == SosyncState.InProgress.Value)
                             {
-                                flow.Start(flowService, childJob, DateTime.UtcNow, ref requireRestart, ref restartReason);
+                                var constructorParams = new object[] { Svc };
+                                using (SyncFlow flow = (SyncFlow)Activator.CreateInstance(Svc.FlowService.GetFlow(childJob.Job_Source_Type, childJob.Job_Source_Model), constructorParams))
+                                {
+                                    flow.Start(flowService, childJob, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
-                                // Be sure to use logic & operator
-                                if (childJob.Job_State == SosyncState.Done.Value)
-                                    allChildJobsFinished &= true;
-                                else
-                                    allChildJobsFinished &= false;
+                                }
+
+                                UpdateJobStart(childJob, DateTime.UtcNow);
                             }
+
+                            // Be sure to use logic & operator
+                            if (childJob.Job_State == SosyncState.Done.Value)
+                                allChildJobsFinished &= true;
+                            else
+                                allChildJobsFinished &= false;
                         }
                     }
 
