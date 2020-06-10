@@ -56,6 +56,9 @@ namespace Syncer.Flows
                 ref requireRestart,
                 ref restartReason);
 
+            if (requireRestart)
+                return;
+
             var description = $"Merging [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} into {Job.Sync_Target_Merge_Into_Record_ID}";
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
