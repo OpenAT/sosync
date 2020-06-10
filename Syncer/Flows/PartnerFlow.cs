@@ -325,7 +325,7 @@ namespace Syncer.Flows
                     { "bpk_forced_zip", person.person.BPKErzwungenPLZ },
                     { "bpk_forced_street", person.person.BPKErzwungenStrasse },
                     { "sosync_write_date", sosync_write_date },
-                    { "frst_write_date", Treat2000DateAsNull(person.write_date) },
+                    //{ "frst_write_date", Treat2000DateAsNull(person.write_date) },
                     // Do NOT sync bpk_state back!
                 };
 
@@ -366,7 +366,7 @@ namespace Syncer.Flows
             
             if (action == TransformType.CreateNew)
             {
-                data.Add("frst_create_date", Treat2000DateAsNull(person.create_date));
+                //data.Add("frst_create_date", Treat2000DateAsNull(person.create_date));
                 data.Add("sosync_fs_id", person.person.PersonID);
 
                 int odooPartnerId = 0;
