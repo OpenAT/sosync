@@ -404,24 +404,29 @@ namespace Syncer.Workers
                 catch (SqlException ex)
                 {
                     _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
+                    UpdateJobError(dataService, job, SosyncError.Unknown, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
                 }
                 catch (ModelNotFoundException ex)
                 {
                     // Do not retry model not found errors
                     _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, ex.ToString(), useErrorRetry: false);
+                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
                 }
                 catch (JobDateMismatchException ex)
                 {
                     // Do not retry job date errors
                     _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, ex.ToString(), useErrorRetry: false);
+                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
+                }
+                catch (SyncCleanupException ex)
+                {
+                    UpdateJobError(dataService, job, SosyncError.Cleanup, $"Cleanup jobs:\n{ex.ToString()}", useErrorRetry: true);
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, ex.ToString());
+                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString());
                 }
             }
 
@@ -511,9 +516,9 @@ namespace Syncer.Workers
             db.UpdateJob(job);
         }
 
-        private void UpdateJobError(DataService db, SyncJob job, string message, bool useErrorRetry = true)
+        private void UpdateJobError(DataService db, SyncJob job, SosyncError sosyncError, string message, bool useErrorRetry = true)
         {
-            JobHelper.SetJobError(job, SosyncError.Unknown, message, useErrorRetry);
+            JobHelper.SetJobError(job, sosyncError, message, useErrorRetry);
             db.UpdateJob(job);
         }
         #endregion
