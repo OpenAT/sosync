@@ -82,6 +82,9 @@ namespace Syncer.Flows
             {
                 throw new SyncCleanupException(ex.Message, ex);
             }
+
+            // Done - update job success
+            UpdateJobSuccess(false);
         }
 
         private void SetDeleteInfos(string modelName, SyncJob job)

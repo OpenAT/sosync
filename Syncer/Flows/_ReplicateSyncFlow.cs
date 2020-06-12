@@ -229,6 +229,9 @@ namespace Syncer.Flows
                 {
                     throw new SyncCleanupException(ex.Message, ex);
                 }
+
+                // Done - update job success
+                UpdateJobSuccess(false);
             }
             finally
             {
