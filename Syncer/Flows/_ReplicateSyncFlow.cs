@@ -198,8 +198,9 @@ namespace Syncer.Flows
                 var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
                 HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
 
+                // Job clean-up
                 HandleChildJobs(
-                    "Post Transformation Child Job",
+                    "Post Transformation Cleanup Child Job",
                     RequiredPostTransformChildJobs,
                     null,
                     flowService,

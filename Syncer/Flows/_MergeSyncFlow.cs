@@ -62,8 +62,9 @@ namespace Syncer.Flows
             var description = $"Merging [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} into {Job.Sync_Target_Merge_Into_Record_ID}";
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
+            // Job clean-up
             HandleChildJobs(
-                "Post Transformation Child Job",
+                "Post Transformation Cleanup Child Job",
                 RequiredPostTransformChildJobs,
                 null,
                 flowService,
