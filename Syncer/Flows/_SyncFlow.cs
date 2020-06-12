@@ -576,8 +576,8 @@ namespace Syncer.Flows
                 }
             }
             catch (Exception ex)
-            {           
-                throw new ChildJobException($"Child jobs: {ex.Message}", ex);
+            {
+                throw;
             }
             s.Stop();
             LogMs(0, $"ChildJobs ({childDescription})", Job.ID, s.ElapsedMilliseconds);
