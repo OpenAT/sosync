@@ -364,10 +364,56 @@ namespace Syncer.Flows
 
             Job = job;
 
-            StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
-
-            Job.Job_Log += $"{(string.IsNullOrEmpty(job.Job_Log) ? "" : "\n\n")}{GetTimeLog()}\n";
-            UpdateJob(Job, "Saving job log after finished flow");
+            try
+            {
+                StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
+            }
+            catch (SqlException ex)
+            {
+                Svc.Log.LogError(ex.ToString());
+                UpdateJobError(SosyncError.Unknown, $"{ex}\nProcedure: {ex.Procedure}");
+                throw;
+            }
+            catch (ModelNotFoundException ex)
+            {
+                // Do not retry model not found errors
+                Svc.Log.LogError(ex.ToString());
+                UpdateJobError(SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
+                throw;
+            }
+            catch (JobDateMismatchException ex)
+            {
+                // Do not retry job date errors
+                Svc.Log.LogError(ex.ToString());
+                UpdateJobError(SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
+                throw;
+            }
+            catch (ChildJobException ex)
+            {
+                UpdateJobError(SosyncError.ChildJob, ex.ToString(), useErrorRetry: true);
+                throw;
+            }
+            catch (TransformationException ex)
+            {
+                UpdateJobError(SosyncError.Transformation, ex.ToString(), useErrorRetry: true);
+                throw;
+            }
+            catch (SyncCleanupException ex)
+            {
+                UpdateJobError(SosyncError.Cleanup, ex.ToString(), useErrorRetry: true);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Svc.Log.LogError(ex.ToString());
+                UpdateJobError(SosyncError.Unknown, ex.ToString());
+                throw;
+            }
+            finally
+            {
+                Job.Job_Log += $"{(string.IsNullOrEmpty(job.Job_Log) ? "" : "\n\n")}{GetTimeLog()}\n";
+                UpdateJob(Job, "Saving job log after finished flow");
+            }
         }
 
         protected abstract void StartFlow(FlowService flowService, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason);
@@ -625,9 +671,6 @@ namespace Syncer.Flows
                     // In any case, log the transformation/sync end at this point
                     UpdateJobSyncEnd();
                 }
-
-                // Done - update job success
-                UpdateJobSuccess(false);
             }
             catch (SqlException ex)
             {
@@ -1078,7 +1121,7 @@ namespace Syncer.Flows
         /// </summary>
         /// <param name="error">Use one of the values from <see cref="SosyncError"/>.</param>
         /// <param name="errorText">The custom error text.</param>
-        protected void UpdateJobError(SosyncError error, string errorText)
+        protected void UpdateJobError(SosyncError error, string errorText, bool useErrorRetry = false)
         {
             Svc.Log.LogInformation($"Updating job {Job.ID}: job error");
 

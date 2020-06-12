@@ -401,42 +401,9 @@ namespace Syncer.Workers
 
                     _log.LogInformation($"{nameof(ProcessJob)}: Success SyncFlow (id  {job.ID})");
                 }
-                catch (SqlException ex)
-                {
-                    _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, SosyncError.Unknown, $"{ex.ToString()}\nProcedure: {ex.Procedure}");
-                }
-                catch (ModelNotFoundException ex)
-                {
-                    // Do not retry model not found errors
-                    _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
-                }
-                catch (JobDateMismatchException ex)
-                {
-                    // Do not retry job date errors
-                    _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
-                }
-                catch (ChildJobException ex)
-                {
-                    UpdateJobError(dataService, job, SosyncError.ChildJob, ex.ToString(), useErrorRetry: true);
-                    throw;
-                }
-                catch (TransformationException ex)
-                {
-                    UpdateJobError(dataService, job, SosyncError.Transformation, ex.ToString(), useErrorRetry: true);
-                    throw;
-                }
-                catch (SyncCleanupException ex)
-                {
-                    UpdateJobError(dataService, job, SosyncError.Cleanup, ex.ToString(), useErrorRetry: true);
-                    throw;
-                }
                 catch (Exception ex)
                 {
-                    _log.LogError(ex.ToString());
-                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString());
+                    throw;
                 }
             }
 
