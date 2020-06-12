@@ -576,9 +576,8 @@ namespace Syncer.Flows
                 }
             }
             catch (Exception ex)
-            {
-                UpdateJobError(SosyncError.ChildJob, $"3) Child jobs:\n{ex.ToString()}");
-                throw;
+            {           
+                throw new ChildJobException($"Child jobs: {ex.Message}", ex);
             }
             s.Stop();
             LogMs(0, $"ChildJobs ({childDescription})", Job.ID, s.ElapsedMilliseconds);
