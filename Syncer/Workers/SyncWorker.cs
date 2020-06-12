@@ -418,9 +418,14 @@ namespace Syncer.Workers
                     _log.LogError(ex.ToString());
                     UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
                 }
+                catch (ChildJobException ex)
+                {
+                    UpdateJobError(dataService, job, SosyncError.ChildJob, ex.ToString(), useErrorRetry: true);
+                    throw;
+                }
                 catch (SyncCleanupException ex)
                 {
-                    UpdateJobError(dataService, job, SosyncError.Cleanup, $"Cleanup jobs:\n{ex.ToString()}", useErrorRetry: true);
+                    UpdateJobError(dataService, job, SosyncError.Cleanup, ex.ToString(), useErrorRetry: true);
                     throw;
                 }
                 catch (Exception ex)
