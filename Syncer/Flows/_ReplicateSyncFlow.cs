@@ -180,7 +180,7 @@ namespace Syncer.Flows
                 }
                 catch (Exception ex)
                 {
-                    new ChildJobException(ex.Message, ex);
+                    throw new ChildJobException(ex.Message, ex);
                 }
 
                 if (requireRestart)
@@ -201,9 +201,16 @@ namespace Syncer.Flows
                 LogMs(0, $"\nMatch end", Job.ID, (long)matchWatch.Elapsed.TotalMilliseconds);
                 // ------------------
 
-                var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
-                var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
-                HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+                try
+                {
+                    var targetIdText = Job.Sync_Target_Record_ID.HasValue ? Job.Sync_Target_Record_ID.Value.ToString() : "new";
+                    var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
+                    HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
+                }
+                catch (Exception ex)
+                {
+                    throw new TransformationException(ex.Message, ex);
+                }
 
                 // Job clean-up
                 try

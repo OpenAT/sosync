@@ -423,6 +423,11 @@ namespace Syncer.Workers
                     UpdateJobError(dataService, job, SosyncError.ChildJob, ex.ToString(), useErrorRetry: true);
                     throw;
                 }
+                catch (TransformationException ex)
+                {
+                    UpdateJobError(dataService, job, SosyncError.Transformation, ex.ToString(), useErrorRetry: true);
+                    throw;
+                }
                 catch (SyncCleanupException ex)
                 {
                     UpdateJobError(dataService, job, SosyncError.Cleanup, ex.ToString(), useErrorRetry: true);

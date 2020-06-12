@@ -577,6 +577,7 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
+                UpdateJobError(SosyncError.ChildJob, ex.ToString());
                 throw;
             }
             s.Stop();

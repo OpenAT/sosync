@@ -45,29 +45,43 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
-            try
+            if (Job.Job_Error_Code != SosyncError.Cleanup.Value)
             {
-                SetupChildJobRequests();
-                HandleChildJobs(
-                    "Child Job",
-                    RequiredChildJobs,
-                    Job.Children,
-                    flowService, 
-                    null, 
-                    consistencyWatch, 
-                    ref requireRestart,
-                    ref restartReason);
+                try
+                {
+                    SetupChildJobRequests();
+                    HandleChildJobs(
+                        "Child Job",
+                        RequiredChildJobs,
+                        Job.Children,
+                        flowService,
+                        null,
+                        consistencyWatch,
+                        ref requireRestart,
+                        ref restartReason);
+                }
+                catch (Exception ex)
+                {
+                    throw new ChildJobException(ex.Message, ex);
+                }
+
+                if (requireRestart)
+                    return;
+
+                try
+                {
+                    var description = $"Merging [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} into {Job.Sync_Target_Merge_Into_Record_ID}";
+                    HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
+                }
+                catch (Exception ex)
+                {
+                    throw new TransformationException(ex.Message, ex);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                new ChildJobException(ex.Message, ex);
+                Svc.Log.LogInformation($"Job error code was {SosyncError.Cleanup.Value}, only doing cleanup!");
             }
-
-            if (requireRestart)
-                return;
-
-            var description = $"Merging [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} into {Job.Sync_Target_Merge_Into_Record_ID}";
-            HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
             // Job clean-up
             try

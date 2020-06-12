@@ -50,14 +50,21 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
-                new ChildJobException(ex.Message, ex);
+                throw new ChildJobException(ex.Message, ex);
             }
 
             if (requireRestart)
                 return;
 
-            var description = $"Deleting [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} (Source: [{Job.Sync_Source_System}] {Job.Sync_Source_Model} {Job.Sync_Source_Record_ID})";
-            HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
+            try
+            {
+                var description = $"Deleting [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} (Source: [{Job.Sync_Source_System}] {Job.Sync_Source_Model} {Job.Sync_Source_Record_ID})";
+                HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
+            }
+            catch (Exception ex)
+            {
+                throw new TransformationException(ex.Message, ex);
+            }
 
             try
             {
