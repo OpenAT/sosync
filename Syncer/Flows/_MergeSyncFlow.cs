@@ -45,16 +45,23 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
-            SetupChildJobRequests();
-            HandleChildJobs(
-                "Child Job",
-                RequiredChildJobs,
-                Job.Children,
-                flowService, 
-                null, 
-                consistencyWatch, 
-                ref requireRestart,
-                ref restartReason);
+            try
+            {
+                SetupChildJobRequests();
+                HandleChildJobs(
+                    "Child Job",
+                    RequiredChildJobs,
+                    Job.Children,
+                    flowService, 
+                    null, 
+                    consistencyWatch, 
+                    ref requireRestart,
+                    ref restartReason);
+            }
+            catch (Exception ex)
+            {
+                new ChildJobException(ex.Message, ex);
+            }
 
             if (requireRestart)
                 return;
@@ -65,7 +72,6 @@ namespace Syncer.Flows
             // Job clean-up
             try
             {
-                throw new Exception("Dummy Exception MKA for testing.");
                 HandleChildJobs(
                     "Post Transformation Cleanup Child Job",
                     RequiredPostTransformChildJobs,
@@ -78,7 +84,7 @@ namespace Syncer.Flows
             }
             catch (Exception ex)
             {
-                throw new SyncCleanupException($"Cleanup: {ex.Message}", ex);
+                throw new SyncCleanupException(ex.Message, ex);
             }
         }
 

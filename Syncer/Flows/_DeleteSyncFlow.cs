@@ -35,29 +35,46 @@ namespace Syncer.Flows
 
             Stopwatch consistencyWatch = new Stopwatch();
 
-            SetupChildJobRequests();
-            HandleChildJobs(
-                "Child Job",
-                RequiredChildJobs,
-                Job.Children,
-                flowService, 
-                null, 
-                consistencyWatch,
-                ref requireRestart, 
-                ref restartReason);
+            try
+            {
+                SetupChildJobRequests();
+                HandleChildJobs(
+                    "Child Job",
+                    RequiredChildJobs,
+                    Job.Children,
+                    flowService,
+                    null,
+                    consistencyWatch,
+                    ref requireRestart,
+                    ref restartReason);
+            }
+            catch (Exception ex)
+            {
+                new ChildJobException(ex.Message, ex);
+            }
+
+            if (requireRestart)
+                return;
 
             var description = $"Deleting [{Job.Sync_Target_System}] {Job.Sync_Target_Model} {Job.Sync_Target_Record_ID} (Source: [{Job.Sync_Source_System}] {Job.Sync_Source_Model} {Job.Sync_Source_Record_ID})";
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
-            HandleChildJobs(
-                "Post Transformation Child Job",
-                RequiredPostTransformChildJobs,
-                null,
-                flowService,
-                null,
-                consistencyWatch,
-                ref requireRestart,
-                ref restartReason);
+            try
+            {
+                HandleChildJobs(
+                    "Post Transformation Cleanup Child Job",
+                    RequiredPostTransformChildJobs,
+                    null,
+                    flowService,
+                    null,
+                    consistencyWatch,
+                    ref requireRestart,
+                    ref restartReason);
+            }
+            catch (Exception ex)
+            {
+                throw new SyncCleanupException(ex.Message, ex);
+            }
         }
 
         private void SetDeleteInfos(string modelName, SyncJob job)

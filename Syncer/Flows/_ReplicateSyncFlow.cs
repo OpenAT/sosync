@@ -165,16 +165,23 @@ namespace Syncer.Flows
 
             try
             {
-                SetupChildJobRequests();
-                HandleChildJobs(
-                    "Child Job",
-                    RequiredChildJobs,
-                    Job.Children,
-                    flowService,
-                    initialWriteDate,
-                    consistencyWatch,
-                    ref requireRestart,
-                    ref restartReason);
+                try
+                { 
+                    SetupChildJobRequests();
+                    HandleChildJobs(
+                        "Child Job",
+                        RequiredChildJobs,
+                        Job.Children,
+                        flowService,
+                        initialWriteDate,
+                        consistencyWatch,
+                        ref requireRestart,
+                        ref restartReason);
+                }
+                catch (Exception ex)
+                {
+                    new ChildJobException(ex.Message, ex);
+                }
 
                 if (requireRestart)
                     return;
@@ -199,15 +206,22 @@ namespace Syncer.Flows
                 HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
 
                 // Job clean-up
-                HandleChildJobs(
-                    "Post Transformation Cleanup Child Job",
-                    RequiredPostTransformChildJobs,
-                    null,
-                    flowService,
-                    initialWriteDate,
-                    consistencyWatch,
-                    ref requireRestart,
-                    ref restartReason);
+                try
+                { 
+                    HandleChildJobs(
+                        "Post Transformation Cleanup Child Job",
+                        RequiredPostTransformChildJobs,
+                        null,
+                        flowService,
+                        initialWriteDate,
+                        consistencyWatch,
+                        ref requireRestart,
+                        ref restartReason);
+                }
+                catch (Exception ex)
+                {
+                    throw new SyncCleanupException(ex.Message, ex);
+                }
             }
             finally
             {
