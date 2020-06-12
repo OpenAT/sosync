@@ -42,6 +42,7 @@ namespace Syncer.Workers
         private static int _sleepCycle;
 
         private static bool _serviceDead = false;
+        private static bool _initialRun = true;
         #endregion
 
         #region Constructors
@@ -108,7 +109,11 @@ namespace Syncer.Workers
 
                     lastJobCount = jobs.Count;
 
-                    CheckInProgress(jobs);
+                    if (_initialRun)
+                    {
+                        CheckInProgress(jobs);
+                        _initialRun = false;
+                    }
 
                     var initialJobCount = jobs.Count;
 
@@ -160,7 +165,6 @@ namespace Syncer.Workers
                         s.Stop();
                         _log.LogInformation($"Loaded {jobs.Count} in {SpecialFormat.FromMilliseconds((int)s.Elapsed.TotalMilliseconds)}");
 
-                        CheckInProgress(jobs);
                         initialJobCount = jobs.Count;
                     }
 
