@@ -63,15 +63,23 @@ namespace Syncer.Flows
             HandleTransformation(description, null, consistencyWatch, ref requireRestart, ref restartReason);
 
             // Job clean-up
-            HandleChildJobs(
-                "Post Transformation Cleanup Child Job",
-                RequiredPostTransformChildJobs,
-                null,
-                flowService,
-                null,
-                consistencyWatch,
-                ref requireRestart,
-                ref restartReason);
+            try
+            {
+                throw new Exception("Dummy Exception MKA for testing.");
+                HandleChildJobs(
+                    "Post Transformation Cleanup Child Job",
+                    RequiredPostTransformChildJobs,
+                    null,
+                    flowService,
+                    null,
+                    consistencyWatch,
+                    ref requireRestart,
+                    ref restartReason);
+            }
+            catch (Exception ex)
+            {
+                throw new SyncCleanupException($"Cleanup: {ex.Message}", ex);
+            }
         }
 
         private void SetMergeInfos(string modelName, SyncJob job)
