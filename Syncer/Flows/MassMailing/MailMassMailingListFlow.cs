@@ -10,6 +10,10 @@ using WebSosync.Common;
 using WebSosync.Data.Models;
 using dadi_data.Models;
 using DaDi.Odoo.Models.MassMailing;
+using System.Linq;
+using WebSosync.Data;
+using WebSosync.Data.Constants;
+using DaDi.Odoo;
 
 namespace Syncer.Flows.MassMailing
 {
@@ -28,6 +32,30 @@ namespace Syncer.Flows.MassMailing
             return GetDefaultStudioModelInfo<fsonmail_mass_mailing_list>(studioID);
         }
 
+        protected override void SetupOnlineToStudioChildJobs(int onlineID)
+        {
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "zgruppedetail_id" });
+            var zgruppedetail_id = OdooConvert.ToInt32ForeignKey(odooModel["zgruppedetail_id"], allowNull: true);
+
+            if (zgruppedetail_id.HasValue)
+            {
+                RequestChildJob(SosyncSystem.FSOnline, "frst.zgruppedetail", zgruppedetail_id.Value, SosyncJobSourceType.Default);
+            }
+        }
+
+        protected override void SetupStudioToOnlineChildJobs(int studioID)
+        {
+            using (var db = Svc.MdbService.GetDataService<fsonmail_mass_mailing_list>())
+            {
+                var studioModel = db.Read(new { mail_mass_mailing_listID = studioID }).SingleOrDefault();
+
+                if (studioModel.zGruppeDetailID.HasValue)
+                {
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zGruppeDetail", studioModel.zGruppeDetailID.Value, SosyncJobSourceType.Default);
+                }
+            }
+        }
+
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             SimpleTransformToOnline<fsonmail_mass_mailing_list, mailMassMailingList>(
@@ -35,6 +63,17 @@ namespace Syncer.Flows.MassMailing
                 action,
                 x => x.mail_mass_mailing_listID,
                 (studio, online) => {
+                    int? zgruppedetail_id = null;
+
+                    if (studio.zGruppeDetailID.HasValue)
+                    {
+                        zgruppedetail_id = GetOnlineID<dbozGruppeDetail>(
+                            "dbo.zGruppeDetail",
+                            "frst.zgruppedetail",
+                            studio.zGruppeDetailID.Value);
+                    }
+
+                    online.Add("zgruppedetail_id", zgruppedetail_id);
                     online.Add("name", studio.name);
                     online.Add("list_type", Svc.TypeService.GetTypeValue(studio.ListtypID));
                     online.Add("partner_mandatory", studio.partner_mandatory);
@@ -54,6 +93,13 @@ namespace Syncer.Flows.MassMailing
                 action,
                 x => x.mail_mass_mailing_listID,
                 (online, studio) => {
+                    var zGruppeDetailID = GetStudioIDFromOnlineReference(
+                        "dbo.zGruppeDetail",
+                        online,
+                        x => x.zgruppedetail_id,
+                        false);
+
+                    studio.zGruppeDetailID = zGruppeDetailID;
                     studio.name = online.name;
                     studio.ListtypID = Svc.TypeService.GetTypeID("fsonmail_mass_mailing_list_ListtypID", online.list_type);
                     studio.partner_mandatory = online.partner_mandatory;
