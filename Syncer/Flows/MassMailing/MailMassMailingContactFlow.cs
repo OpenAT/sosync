@@ -44,15 +44,20 @@ namespace Syncer.Flows.MassMailing
                 // Optional child personemail
                 if (studioModel.PersonEmailID.HasValue && studioModel.PersonEmailID > 0)
                     RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID.Value, SosyncJobSourceType.Default);
+
+                // Optional child personemailgruppe
+                if (studioModel.PersonEmailGruppeID.HasValue && studioModel.PersonEmailGruppeID > 0)
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmailGruppe", studioModel.PersonEmailGruppeID.Value, SosyncJobSourceType.Default);
             }
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id", "personemailgruppe_id" });
             var partnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: true);
             var listID = OdooConvert.ToInt32ForeignKey(odooModel["list_id"], allowNull: false);
             var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
+            var personemailgruppeID = OdooConvert.ToInt32ForeignKey(odooModel["personemailgruppe_id"], allowNull: true);
 
             // Mandatory child list
             RequestChildJob(SosyncSystem.FSOnline, "mail.mass_mailing.list", listID.Value, SosyncJobSourceType.Default);
@@ -65,6 +70,9 @@ namespace Syncer.Flows.MassMailing
             if (personemailID.HasValue && personemailID.Value > 0)
                 RequestChildJob(SosyncSystem.FSOnline, "frst.personemail", personemailID.Value, SosyncJobSourceType.Default);
 
+            // Optional child email group
+            if (personemailgruppeID.HasValue && personemailgruppeID.Value > 0)
+                RequestChildJob(SosyncSystem.FSOnline, "frst.personemailgruppe", personemailgruppeID.Value, SosyncJobSourceType.Default);
         }
 
         protected override void TransformToOnline(int studioID, TransformType action)
@@ -85,6 +93,16 @@ namespace Syncer.Flows.MassMailing
                             studio.PersonEmailID.Value);
                     }
 
+                    int? personemailgruppeID = null;
+
+                    if (studio.PersonEmailGruppeID.HasValue)
+                    {
+                        personemailgruppeID = GetOnlineID<dboPersonEmailGruppe>(
+                            "dbo.PersonEmailGruppe",
+                            "frst.personemailgruppe",
+                            studio.PersonEmailGruppeID.Value);
+                    }
+
                     var listID = GetOnlineID<fsonmail_mass_mailing_list>(
                         "fson.mail_mass_mailing_list",
                         "mail.mass_mailing.list",
@@ -95,6 +113,7 @@ namespace Syncer.Flows.MassMailing
                     // Do not set "partner_id"!
                     online.Add("list_id", listID);
                     online.Add("personemail_id", personemailID);
+                    online.Add("personemailgruppe_id", personemailID);
 
                     online.Add("firstname", studio.firstname);
                     online.Add("lastname", studio.lastname);
@@ -183,12 +202,17 @@ namespace Syncer.Flows.MassMailing
                         x => x.personemail_id,
                         false);
 
+                    var personemailGruppeID = GetStudioIDFromOnlineReference(
+                        "dbo.PersonEmailGruppe",
+                        online,
+                        x => x.personemailgruppe_id,
+                        false);
+
                     var listID = GetStudioIDFromOnlineReference(
                         "fson.mail_mass_mailing_list",
                         online,
                         x => x.list_id,
-                        false);
-#warning muss listID nicht eigentlich required = true haben bei GetStudioIDFromOnlineReference?
+                        true);
 
                     var landID = GetLandIdForCountryId(
                         OdooConvert.ToInt32ForeignKey(online.country_id, allowNull: true));
@@ -196,6 +220,7 @@ namespace Syncer.Flows.MassMailing
                     studio.PersonID = personID;
                     studio.mail_mass_mailing_listID = listID.Value;
                     studio.PersonEmailID = personemailID;
+                    studio.PersonEmailGruppeID = personemailGruppeID;
 
                     studio.firstname = online.firstname;
                     studio.lastname = online.lastname;
