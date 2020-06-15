@@ -41,10 +41,6 @@ namespace Syncer.Flows.MassMailing
                 // Mandatory child list
                 RequestChildJob(SosyncSystem.FundraisingStudio, "fson.mail_mass_mailing_list", studioModel.mail_mass_mailing_listID, SosyncJobSourceType.Default);
 
-                // Optional child person
-                if (studioModel.PersonID.HasValue && studioModel.PersonID > 0)
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", studioModel.PersonID.Value, SosyncJobSourceType.Default);
-
                 // Optional child personemail
                 if (studioModel.PersonEmailID.HasValue && studioModel.PersonEmailID > 0)
                     RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.PersonEmail", studioModel.PersonEmailID.Value, SosyncJobSourceType.Default);
@@ -79,16 +75,6 @@ namespace Syncer.Flows.MassMailing
                 x => x.mail_mass_mailing_contactID,
                 (studio, online) =>
                 {
-                    int? partnerID = null;
-
-                    if (studio.PersonID.HasValue)
-                    {
-                        partnerID = GetOnlineID<dboPerson>(
-                            "dbo.Person",
-                            "res.partner",
-                            studio.PersonID.Value);
-                    }
-
                     int? personemailID = null;
 
                     if (studio.PersonEmailID.HasValue)
@@ -106,7 +92,7 @@ namespace Syncer.Flows.MassMailing
 
                     var countryID = GetCountryIdForLandId(studio.LandID);
 
-                    online.Add("partner_id", partnerID);
+                    // Do not set "partner_id"!
                     online.Add("list_id", listID);
                     online.Add("personemail_id", personemailID);
 
@@ -135,7 +121,7 @@ namespace Syncer.Flows.MassMailing
                     online.Add("opt_out", studio.opt_out);
                     online.Add("renewed_subscription_date", studio.renewed_subscription_date);
                     online.Add("renewed_subscription_log", studio.renewed_subscription_log);
-                    online.Add("state", studio.state);
+                    // Do not set "state"!
                     online.Add("origin", studio.origin);
 
                     online.Add("pf_mandatsid", studio.pf_mandatsid);
