@@ -326,7 +326,6 @@ namespace Syncer.Flows
                     { "bpk_forced_street", person.person.BPKErzwungenStrasse },
                     { "sosync_write_date", sosync_write_date },
                     //{ "frst_write_date", Treat2000DateAsNull(person.write_date) },
-                    // Do NOT sync bpk_state back!
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -865,7 +864,6 @@ namespace Syncer.Flows
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
             dest.BPKErzwungenPLZ = source.BPKForcedZip;
             dest.BPKErzwungenStrasse = source.BPKForcedStreet;
-            dest.fso_bpk_state = source.BPKState;
 
             int? zVerzeichnisID = null;
             if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
