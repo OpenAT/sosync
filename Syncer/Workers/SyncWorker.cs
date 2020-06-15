@@ -403,7 +403,7 @@ namespace Syncer.Workers
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    UpdateJobError(dataService, job, SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
                 }
             }
 
