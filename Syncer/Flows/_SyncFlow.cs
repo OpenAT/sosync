@@ -372,42 +372,35 @@ namespace Syncer.Flows
             {
                 Svc.Log.LogError(ex.ToString());
                 UpdateJobError(SosyncError.Unknown, $"{ex}\nProcedure: {ex.Procedure}");
-                throw;
             }
             catch (ModelNotFoundException ex)
             {
                 // Do not retry model not found errors
                 Svc.Log.LogError(ex.ToString());
                 UpdateJobError(SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
-                throw;
             }
             catch (JobDateMismatchException ex)
             {
                 // Do not retry job date errors
                 Svc.Log.LogError(ex.ToString());
                 UpdateJobError(SosyncError.Unknown, ex.ToString(), useErrorRetry: false);
-                throw;
             }
             catch (ChildJobException ex)
             {
                 UpdateJobError(SosyncError.ChildJob, ex.ToString(), useErrorRetry: true);
-                throw;
             }
             catch (TransformationException ex)
             {
                 UpdateJobError(SosyncError.Transformation, ex.ToString(), useErrorRetry: true);
-                throw;
             }
             catch (SyncCleanupException ex)
             {
                 UpdateJobError(SosyncError.Cleanup, ex.ToString(), useErrorRetry: true);
-                throw;
             }
             catch (Exception ex)
             {
                 Svc.Log.LogError(ex.ToString());
                 UpdateJobError(SosyncError.Unknown, ex.ToString());
-                throw;
             }
             finally
             {
