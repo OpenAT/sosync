@@ -110,7 +110,6 @@ namespace Syncer.Flows.MassMailing
 
                     var countryID = GetCountryIdForLandId(studio.LandID);
 
-                    // Do not set "partner_id"!
                     online.Add("list_id", listID);
                     online.Add("personemail_id", personemailID);
                     online.Add("personemailgruppe_id", personemailID);
@@ -190,12 +189,6 @@ namespace Syncer.Flows.MassMailing
                 x => x.mail_mass_mailing_contactID,
                 (online, studio) =>
                 {
-                    var personID = GetStudioIDFromOnlineReference(
-                        "dbo.Person",
-                        online,
-                        x => x.partner_id,
-                        false);
-
                     var personemailID = GetStudioIDFromOnlineReference(
                         "dbo.PersonEmail",
                         online,
@@ -217,7 +210,6 @@ namespace Syncer.Flows.MassMailing
                     var landID = GetLandIdForCountryId(
                         OdooConvert.ToInt32ForeignKey(online.country_id, allowNull: true));
 
-                    studio.PersonID = personID;
                     studio.mail_mass_mailing_listID = listID.Value;
                     studio.PersonEmailID = personemailID;
                     studio.PersonEmailGruppeID = personemailGruppeID;
