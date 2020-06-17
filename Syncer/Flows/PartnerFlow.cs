@@ -271,7 +271,8 @@ namespace Syncer.Flows
                     studioID,
                     person.person.sosync_fso_id,
                     GetPersonSosyncWriteDate(person),
-                    GetPersonWriteDate(person));
+                    GetPersonWriteDate(person),
+                    person.person.last_sync_version);
 
             return result;
         }

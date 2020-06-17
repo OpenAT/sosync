@@ -26,15 +26,21 @@ namespace Syncer.Models
         /// The last write date for the model.
         /// </summary>
         public DateTime? WriteDate { get; set; }
+
+        /// <summary>
+        /// The last version stamp sosync synchronized.
+        /// </summary>
+        public DateTime? SosyncSyncedVersion { get; set; }
         #endregion
 
         #region Constructor
-        public ModelInfo(int id, int? foreignID, DateTime? sosyncWriteDate, DateTime? writeDate)
+        public ModelInfo(int id, int? foreignID, DateTime? sosyncWriteDate, DateTime? writeDate, DateTime? sosyncSyncedVersion)
         {
             ID = id;
             ForeignID = foreignID;
             SosyncWriteDate = sosyncWriteDate;
             WriteDate = writeDate;
+            SosyncSyncedVersion = sosyncSyncedVersion;
         }
         #endregion
     }

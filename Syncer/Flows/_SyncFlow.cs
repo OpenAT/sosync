@@ -251,7 +251,7 @@ namespace Syncer.Flows
             var dicModel = Svc.OdooService.Client.GetDictionary(
                 model,
                 id,
-                new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date" });
+                new string[] { "id", "sosync_fs_id", "write_date", "sosync_write_date", "sosync_synced_version" });
 
             s.Stop();
             lock (_DebugOnlineStat)
@@ -272,9 +272,10 @@ namespace Syncer.Flows
                 fsID = null;
 
             var sosyncWriteDate = OdooConvert.ToDateTime((string)dicModel["sosync_write_date"], true);
+            var sosyncSyncedVersion = OdooConvert.ToDateTime((string)dicModel["sosync_synced_version"], true);
             var writeDate = OdooConvert.ToDateTime((string)dicModel["write_date"], true);
 
-            return new ModelInfo(id, fsID, sosyncWriteDate, writeDate);
+            return new ModelInfo(id, fsID, sosyncWriteDate, writeDate, sosyncSyncedVersion);
         }
 
         private static Dictionary<string, Tuple<double, int>> _DebugStudioStat = new Dictionary<string, Tuple<double, int>>();
@@ -303,7 +304,12 @@ namespace Syncer.Flows
 
                 if (studioModel != null)
                 {
-                    return new ModelInfo(studioID, studioModel.sosync_fso_id, studioModel.sosync_write_date, studioModel.write_date);
+                    return new ModelInfo(
+                        studioID,
+                        studioModel.sosync_fso_id,
+                        studioModel.sosync_write_date,
+                        studioModel.write_date,
+                        studioModel.last_sync_version);
                 }
             }
 
