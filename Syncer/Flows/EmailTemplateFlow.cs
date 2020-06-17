@@ -42,19 +42,7 @@ namespace Syncer.Flows
 
         protected override ModelInfo GetStudioInfo(int studioID)
         {
-            using (var db = Svc.MdbService.GetDataService<dboxTemplate>())
-            {
-                var emailTemplate = db.Read(new { xTemplateID = studioID }).SingleOrDefault();
-                if (emailTemplate != null)
-                {
-                    if (!emailTemplate.sosync_fso_id.HasValue)
-                        emailTemplate.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, emailTemplate.xTemplateID);
-
-                    return new ModelInfo(studioID, emailTemplate.sosync_fso_id, emailTemplate.sosync_write_date, emailTemplate.write_date);
-                }
-            }
-
-            return null;
+            return GetDefaultStudioModelInfo<dboxTemplate>(studioID);
         }
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
