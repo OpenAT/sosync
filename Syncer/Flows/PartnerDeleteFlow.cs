@@ -11,11 +11,11 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.Person")]
     [OnlineModel(Name = "res.partner")]
-    [StudioMultiModel]
     public class PartnerDeleteFlow
         : DeleteSyncFlow
     {
-        public PartnerDeleteFlow(SyncServiceCollection svc) : base(svc)
+        public PartnerDeleteFlow(SyncServiceCollection svc)
+            : base(svc)
         { }
 
         protected override void TransformToOnline(int studioID, TransformType action)
