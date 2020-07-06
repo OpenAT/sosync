@@ -67,6 +67,8 @@ namespace Syncer.Flows.Payments
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
+            int[] online_zgruppedetail_ids = null;
+
             SimpleTransformToStudio<productTemplate, fsonproduct_template>(
                 onlineID,
                 action,
@@ -78,10 +80,10 @@ namespace Syncer.Flows.Payments
                     var studioModel = "fson.product_payment_interval";
                     if (online.payment_interval_default != null)
                         product_payment_intervalID = GetStudioIDFromMssqlViaOnlineID(
-                            studioModel, 
+                            studioModel,
                             Svc.MdbService.GetStudioModelIdentity(studioModel),
                             Convert.ToInt32(online.payment_interval_default[0]));
-                   
+
                     studio.name = online.name;
                     studio.product_payment_intervalID__payment_interval_default = product_payment_intervalID;
                     studio.fs_product_type = online.fs_product_type;
@@ -99,8 +101,15 @@ namespace Syncer.Flows.Payments
                     studio.website_visible = online.website_visible;
                     studio.default_code = online.default_code;
 
-                    SaveDetails(studio.product_templateID, online.zgruppedetail_ids);
+                    online_zgruppedetail_ids = online.zgruppedetail_ids;
                 });
+
+            var productTemplateID = GetStudioIDFromMssqlViaOnlineID(
+                StudioModelName,
+                Svc.MdbService.GetStudioModelIdentity(StudioModelName),
+                onlineID);
+
+            SaveDetails(productTemplateID.Value, online_zgruppedetail_ids);
         }
 
         private void SaveDetails(int studioID, int[] onlineDetailIDs)
