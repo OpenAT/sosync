@@ -34,35 +34,6 @@ namespace Syncer.Flows
             return GetDefaultStudioModelInfo<dboPersonEmail>(studioID);
         }
 
-        private void FetchStudioData(int studioID, out string mail, out int? partnerID)
-        {
-            mail = null;
-            partnerID = null;
-
-            using (var db = Svc.MdbService.GetDataService<dboPersonEmail>())
-            {
-                var personEmail = db.Read(new { PersonEmailID = studioID })
-                    .SingleOrDefault();
-
-                if (personEmail != null)
-                {
-                    mail = EmailHelper.MergeEmail(personEmail.EmailVor, personEmail.EmailNach);
-
-                    partnerID = db.ExecuteQuery<int?>(
-                        "SELECT sosync_fso_id FROM dbo.Person WHERE PersonID = @id",
-                        new { id = personEmail.PersonID })
-                        .SingleOrDefault();
-
-                    if (string.IsNullOrEmpty(mail) || !partnerID.HasValue)
-                        throw new SyncerException($"Cannot {nameof(MatchInOnlineViaData)}: E-Mail = '{mail}', partner_id = {partnerID}");
-                }
-                else
-                {
-                    throw new SyncerException($"Model {StudioModelName} ({studioID}) was not found in {SosyncSystem.FundraisingStudio.Value} while matching");
-                }
-            }
-        }
-
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
             using (var db = Svc.MdbService.GetDataService<dboPersonEmail>())

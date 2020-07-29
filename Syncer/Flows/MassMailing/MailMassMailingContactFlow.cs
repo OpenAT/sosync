@@ -53,18 +53,13 @@ namespace Syncer.Flows.MassMailing
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "partner_id", "list_id", "personemail_id", "personemailgruppe_id" });
-            var partnerID = OdooConvert.ToInt32ForeignKey(odooModel["partner_id"], allowNull: true);
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "list_id", "personemail_id", "personemailgruppe_id" });
             var listID = OdooConvert.ToInt32ForeignKey(odooModel["list_id"], allowNull: false);
             var personemailID = OdooConvert.ToInt32ForeignKey(odooModel["personemail_id"], allowNull: true);
             var personemailgruppeID = OdooConvert.ToInt32ForeignKey(odooModel["personemailgruppe_id"], allowNull: true);
 
             // Mandatory child list
             RequestChildJob(SosyncSystem.FSOnline, "mail.mass_mailing.list", listID.Value, SosyncJobSourceType.Default);
-
-            // Optional child partner
-            if (partnerID.HasValue && partnerID.Value > 0)
-                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value, SosyncJobSourceType.Default);
 
             // Optional child email
             if (personemailID.HasValue && personemailID.Value > 0)

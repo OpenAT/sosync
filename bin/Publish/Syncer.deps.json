@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "cdc41a7e55fe8b4a3de76722df82dc75c0b1fc2a"
+    "signature": "0df0514de586f69bd6b8b43341947194fa4667be"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.8.4",
+          "DaDi.Odoo": "1.8.8",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.11.23",
           "Microsoft.Extensions.Configuration": "3.1.3",
@@ -20,13 +20,13 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.9.4"
+          "dadi-data": "1.9.5"
         },
         "runtime": {
           "Syncer.dll": {}
         }
       },
-      "dadi-data/1.9.4": {
+      "dadi-data/1.9.5": {
         "dependencies": {
           "Dapper": "2.0.35",
           "Microsoft.EntityFrameworkCore": "3.1.3",
@@ -59,15 +59,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.8.4": {
+      "DaDi.Odoo/1.8.8": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.8.4.0",
-            "fileVersion": "1.8.4.0"
+            "assemblyVersion": "1.8.8.0",
+            "fileVersion": "1.8.8.0"
           }
         }
       },
@@ -1556,7 +1556,7 @@
           "PostgreSQLCopyHelper": "2.6.3",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.9.4"
+          "dadi-data": "1.9.5"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -1570,12 +1570,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.9.4": {
+    "dadi-data/1.9.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bZiRdxcMbrSQ7NS3I6+ZCjFXpsELLPbY3C8ZfJD9EQNHeGd36JxBELvLBzktzOqcSQNg8ZhuGlZMgyD2lW2AkA==",
-      "path": "dadi-data/1.9.4",
-      "hashPath": "dadi-data.1.9.4.nupkg.sha512"
+      "sha512": "sha512-GGUwjbjmeV2dmJLFPSilXUHh6DzaAmPYmbbtxjLbKGAAsUeq1/Dsv7XIpPzGJdbsSEMiAUluiJGzOWBJSuzGqg==",
+      "path": "dadi-data/1.9.5",
+      "hashPath": "dadi-data.1.9.5.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
@@ -1584,12 +1584,12 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.8.4": {
+    "DaDi.Odoo/1.8.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ffvysEiiQluqobsU+fau99i6XODbTobDNFZDRHKZUj3FEet+qaYNDZcgl6gib5/PJVNQiiriZNmiDYLeZcEbmw==",
-      "path": "dadi.odoo/1.8.4",
-      "hashPath": "dadi.odoo.1.8.4.nupkg.sha512"
+      "sha512": "sha512-6tFGO2v9nrBpH5Gjojt86N4Mj/kg2QiMoZOWXUiupXbOV9CJs4bjZ6W3WdbwwJPIePudBxxVnVc7RiKBDAs8PQ==",
+      "path": "dadi.odoo/1.8.8",
+      "hashPath": "dadi.odoo.1.8.8.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.6": {
       "type": "package",
@@ -1748,7 +1748,7 @@
     "Microsoft.NETCore.Platforms/2.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VdLJOCXhZaEMY7Hm2GKiULmn7IEPFE4XC5LPSfBVCUIA8YLZVh846gtfBJalsPQF2PlzdD7ecX7DZEulJ402ZQ==",
+      "sha512": "sha512-5BdAWDgMNwf90L0J+C/eh6kfHDa37ViL1cBL1nv5zPA4TB2cGV51YiQyvzCEy9DBE0LwwMI4+PkUpIekKyocSA==",
       "path": "microsoft.netcore.platforms/2.0.0",
       "hashPath": "microsoft.netcore.platforms.2.0.0.nupkg.sha512"
     },
@@ -2504,7 +2504,7 @@
     "System.Xml.XPath/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-v1JQ5SETnQusqmS3RwStF7vwQ3L02imIzl++sewmt23VGygix04pEH+FCj1yWb+z4GDzKiljr1W7Wfvrx0YwgA==",
+      "sha512": "sha512-8Eo7vuasWRqXfiBRCIKz20Rq1h6n+NMp6nW2RmyUwF4VDekg8xbRZu8S3N21P5XGAhv+kaqUwI3xydEkcw+D5w==",
       "path": "system.xml.xpath/4.3.0",
       "hashPath": "system.xml.xpath.4.3.0.nupkg.sha512"
     },

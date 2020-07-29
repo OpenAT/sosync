@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dadi-data" Version="1.9.5" />
+    <PackageReference Include="dadi-data" Version="1.9.6" />
   </ItemGroup>
 
   <ItemGroup>
