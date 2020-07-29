@@ -288,7 +288,7 @@ namespace Syncer.Flows
                 s.Start();
 
                 var studioModel = db.Read(
-                    $"select write_date, sosync_write_date, sosync_fso_id from {Svc.MdbService.GetStudioModelReadView(StudioModelName)} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
+                    $"select write_date, sosync_write_date, sosync_fso_id, last_sync_version from {Svc.MdbService.GetStudioModelReadView(StudioModelName)} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @ID",
                     new { ID = studioID })
                     .SingleOrDefault();
 

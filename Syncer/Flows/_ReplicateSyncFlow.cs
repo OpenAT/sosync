@@ -517,6 +517,14 @@ namespace Syncer.Flows
             // use the write_date instead. If both are null, an exception
             // is thrown to abort the synchronization
 
+            if ((studioInfo.SosyncSyncedVersion.HasValue && !onlineInfo.SosyncSyncedVersion.HasValue)
+                || (!studioInfo.SosyncSyncedVersion.HasValue && onlineInfo.SosyncSyncedVersion.HasValue))
+            {
+                // If only one system has a sync version, throw an exception,
+                // it's an invalid state
+                throw new SyncerException($"Invalid state: Only one system has last_sync_version a.k.a. sosync_synced_version set.");
+            }
+
             if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
                 throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
 
@@ -566,6 +574,18 @@ namespace Syncer.Flows
             else if (diff.TotalMilliseconds < 0)
             {
                 // The studio model was newer
+
+                if (studioInfo.SosyncSyncedVersion.HasValue && onlineInfo.SosyncSyncedVersion.HasValue)
+                {
+                    var conflict = onlineInfo.SosyncWriteDate != studioInfo.SosyncSyncedVersion;
+
+                    if (conflict)
+                    {
+                        // Do nothing because studio wins
+                        Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FS won, doing nothing.");
+                    }
+                }
+
                 writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
 
                 UpdateJobSourceAndTarget(
@@ -581,6 +601,32 @@ namespace Syncer.Flows
             else
             {
                 // The online model was newer
+
+                if (studioInfo.SosyncSyncedVersion.HasValue && onlineInfo.SosyncSyncedVersion.HasValue)
+                {
+                    var conflict = studioInfo.SosyncWriteDate != onlineInfo.SosyncSyncedVersion;
+
+                    if (conflict)
+                    {
+                        // Force studio to online sync. Studio should always win
+                        Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FSO won, forcing FS -> FSO sync direction.");
+
+                        writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+
+                        UpdateJobSourceAndTarget(
+                            job,
+                            SosyncSystem.FundraisingStudio,
+                            StudioModelName,
+                            studioInfo.ID,
+                            SosyncSystem.FSOnline,
+                            OnlineModelName,
+                            studioInfo.ForeignID,
+                            null);
+
+                        return;
+                    }
+                }
+
                 writeDate = onlineInfo.SosyncWriteDate ?? onlineInfo.WriteDate;
 
                 UpdateJobSourceAndTarget(
@@ -739,6 +785,11 @@ namespace Syncer.Flows
                     new { ID = studioID })
                     .SingleOrDefault();
 
+                // Set the sync version
+                studioModel.last_sync_version = studioModel.sosync_write_date;
+                db.Update(studioModel);
+                //---
+
                 if (!studioModel.sosync_fso_id.HasValue)
                     studioModel.sosync_fso_id = GetOnlineIDFromOdooViaStudioID(OnlineModelName, getStudioIdentity(studioModel));
 
@@ -750,6 +801,7 @@ namespace Syncer.Flows
                 copyStudioToDictionary(studioModel, data);
                 data.Add("sosync_write_date", (studioModel.sosync_write_date ?? studioModel.write_date));
                 data.Add("frst_write_date", Treat2000DateAsNull(studioModel.write_date));
+                data.Add("sosync_synced_version", studioModel.last_sync_version);
 
                 if (action == TransformType.CreateNew)
                 {
@@ -805,6 +857,14 @@ namespace Syncer.Flows
                     Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
 
+            // Update sync version
+            onlineModel.Sosync_Synced_Version = onlineModel.Sosync_Write_Date;
+            Svc.OdooService.Client.UpdateModel(
+                OnlineModelName,
+                new { sosync_synced_version = onlineModel.Sosync_Synced_Version },
+                onlineID);
+            //---
+
             UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
             // List all dboAktion... Types, needed for log serialization
@@ -826,6 +886,8 @@ namespace Syncer.Flows
                     };
 
                     copyOdooToStudio(onlineModel, studioModel);
+
+                    studioModel.last_sync_version = onlineModel.Sosync_Synced_Version;
 
                     // If the model is an action, protocol both the Aktion and the Aktion*-Table
                     // Without an action, just protocol the model itself
@@ -888,6 +950,7 @@ namespace Syncer.Flows
                     // ---
 
                     copyOdooToStudio(onlineModel, studioModel);
+                    studioModel.last_sync_version = onlineModel.Sosync_Synced_Version;
 
                     studioModel.sosync_write_date = onlineModel.Sosync_Write_Date ?? onlineModel.Write_Date;
                     studioModel.noSyncJobSwitch = true;
