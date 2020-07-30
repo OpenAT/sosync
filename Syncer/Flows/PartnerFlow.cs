@@ -302,6 +302,14 @@ namespace Syncer.Flows
             var person = GetCurrentdboPersonStack(studioID);
             var sosync_write_date = (person.sosync_write_date ?? person.write_date);
 
+            // Set the sync version on the person and save it
+            person.person.last_sync_version = person.person.sosync_write_date;
+            using (var personDb = Svc.MdbService.GetDataService<dboPerson>())
+            {
+                personDb.Update(person.person);
+            }
+            //---
+
             int? frst_zverzeichnis_id = null;
             if (person.person.zMarketingID > 0)
             {
@@ -327,6 +335,7 @@ namespace Syncer.Flows
                     { "bpk_forced_street", person.person.BPKErzwungenStrasse },
                     { "sosync_write_date", sosync_write_date },
                     { "frst_write_date", Treat2000DateAsNull(person.write_date) },
+                    { "sosync_synced_version", person.person.last_sync_version },
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -487,6 +496,14 @@ namespace Syncer.Flows
 
             if (!IsValidFsID(partner.Sosync_FS_ID))
                 partner.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID("dbo.Person", "PersonID", onlineID);
+
+            // Update sync version
+            partner.Sosync_Synced_Version = partner.Sosync_Write_Date;
+            Svc.OdooService.Client.UpdateModel(
+                OnlineModelName,
+                new { sosync_synced_version = partner.Sosync_Synced_Version },
+                onlineID);
+            //---
 
             UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
@@ -865,6 +882,7 @@ namespace Syncer.Flows
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
             dest.BPKErzwungenPLZ = source.BPKForcedZip;
             dest.BPKErzwungenStrasse = source.BPKForcedStreet;
+            dest.last_sync_version = source.Sosync_Synced_Version;
 
             int? zVerzeichnisID = null;
             if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
