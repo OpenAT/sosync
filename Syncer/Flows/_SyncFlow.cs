@@ -280,7 +280,7 @@ namespace Syncer.Flows
 
         private static Dictionary<string, Tuple<double, int>> _DebugStudioStat = new Dictionary<string, Tuple<double, int>>();
         protected ModelInfo GetDefaultStudioModelInfo<TStudio>(int studioID)
-            where TStudio: MdbModelBase, ISosyncable, new()
+            where TStudio : MdbModelBase, ISosyncable, new()
         {
             using (var db = Svc.MdbService.GetDataService<TStudio>())
             {
@@ -293,7 +293,7 @@ namespace Syncer.Flows
                     .SingleOrDefault();
 
                 s.Stop();
-                lock(_DebugStudioStat)
+                lock (_DebugStudioStat)
                 {
                     if (!_DebugStudioStat.ContainsKey(typeof(TStudio).Name))
                         _DebugStudioStat.Add(typeof(TStudio).Name, new Tuple<double, int>(0, 0));
@@ -363,6 +363,15 @@ namespace Syncer.Flows
             return sosync_fs_id.HasValue && sosync_fs_id.Value > 0;
         }
 
+        
+        // These error types are instantly retried instead of going to error-retry immediately
+        private static Type[] RetryExceptionTypes = new[]
+        {
+            typeof(ChildJobException),
+            typeof(TransformationException),
+            typeof(SyncCleanupException)
+        };
+
         public void Start(FlowService flowService, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
             if (job == null)
@@ -372,7 +381,42 @@ namespace Syncer.Flows
 
             try
             {
-                StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
+                var done = false;
+                var maxErrorRetries = 3;
+                var errorRetries = maxErrorRetries;
+
+                while(!done)
+                {
+                    try
+                    {
+                        StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
+                        done = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (RetryExceptionTypes.Contains(ex.GetType()))
+                        {
+                            // Specific errors lead to a retry after a short delay
+                            errorRetries--;
+
+                            var usedTries = (maxErrorRetries - errorRetries);
+                            var pause = (int)Math.Round(100 * Math.Pow(usedTries, 3), 0);
+
+                            Svc.Log.LogWarning($"Intermittent error, sleeping {pause} ms and retrying.");
+                            Thread.Sleep(pause);
+
+                            if (errorRetries <= 0)
+                            {
+                                throw;
+                            }
+                        }
+                        else
+                        {
+                            // Any other error, rethrow
+                            throw;
+                        }
+                    }
+                }
             }
             catch (SqlException ex)
             {
