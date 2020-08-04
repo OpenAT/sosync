@@ -402,7 +402,7 @@ namespace Syncer.Flows
                             var usedTries = (maxErrorRetries - errorRetries);
                             var pause = (int)Math.Round(100 * Math.Pow(usedTries, 3), 0);
 
-                            Svc.Log.LogWarning($"Intermittent error, sleeping {pause} ms and retrying.");
+                            Svc.Log.LogWarning($"Intermittent error, job_id {job.ID} ({job.Job_Source_Model} {job.Job_Source_Record_ID}), sleeping {pause} ms and retrying.");
                             Thread.Sleep(pause);
 
                             if (errorRetries <= 0)
