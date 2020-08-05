@@ -522,8 +522,10 @@ namespace Syncer.Flows
             {
                 // If only one system has a sync version, throw an exception,
                 // it's an invalid state
-                throw new SyncerException($"Invalid state: Only one system has last_sync_version a.k.a. sosync_synced_version set." +
-                    $"{StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}.");
+                var versionFormat = "yyyy-MM-dd HH:mm:ss.fffffff";
+                throw new SyncerException($"Invalid state: Only one system has last_sync_version a.k.a. sosync_synced_version set. " +
+                    $"{StudioModelName} {studioInfo.ID} {(studioInfo.SosyncSyncedVersion?.ToString(versionFormat) ?? "<no_version>")} " +
+                    $"{OnlineModelName} {onlineInfo.ID} {(onlineInfo.SosyncSyncedVersion?.ToString(versionFormat) ?? "<no_version>")}.");
             }
 
             if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
