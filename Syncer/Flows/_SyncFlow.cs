@@ -372,19 +372,27 @@ namespace Syncer.Flows
             typeof(Win32Exception)
         };
 
-        private bool IsRetryRequired(Exception ex)
+        /// <summary>
+        /// Recursively checks and exception and its inner exceptions
+        /// for matching exception types. Returns true, if any exception
+        /// matches any of the specified types.
+        /// </summary>
+        /// <param name="ex">The exception to check.</param>
+        /// <param name="types">The exception types to compare against.</param>
+        /// <returns>True, if any exception matches any of the types.</returns>
+        private bool AnyExceptionOfType(Exception ex, Type[] types)
         {
             if (ex == null)
             {
                 return false;
             }    
 
-            if (IsRetryRequired(ex.InnerException))
+            if (AnyExceptionOfType(ex.InnerException, types))
             {
                 return true;
             }
 
-            if (RetryExceptionTypes.Contains(ex.GetType()))
+            if (types.Contains(ex.GetType()))
             {
                 return true;
             }
@@ -414,7 +422,7 @@ namespace Syncer.Flows
                     }
                     catch (Exception ex)
                     {
-                        if (IsRetryRequired(ex))
+                        if (AnyExceptionOfType(ex, RetryExceptionTypes))
                         {
                             // Specific errors lead to a retry after a short delay
                             errorRetries--;
