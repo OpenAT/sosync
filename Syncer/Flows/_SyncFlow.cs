@@ -1,6 +1,7 @@
 ﻿using DaDi.Odoo;
 using dadi_data.Interfaces;
 using dadi_data.Models;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Syncer.Attributes;
@@ -11,6 +12,7 @@ using Syncer.Models;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
@@ -367,10 +369,28 @@ namespace Syncer.Flows
         // These error types are instantly retried instead of going to error-retry immediately
         private static Type[] RetryExceptionTypes = new[]
         {
-            typeof(ChildJobException),
-            typeof(TransformationException),
-            typeof(SyncCleanupException)
+            typeof(Win32Exception)
         };
+
+        private bool IsRetryRequired(Exception ex)
+        {
+            if (ex == null)
+            {
+                return false;
+            }    
+
+            if (IsRetryRequired(ex.InnerException))
+            {
+                return true;
+            }
+
+            if (RetryExceptionTypes.Contains(ex.GetType()))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         public void Start(FlowService flowService, SyncJob job, DateTime loadTimeUTC, ref bool requireRestart, ref string restartReason)
         {
@@ -381,42 +401,42 @@ namespace Syncer.Flows
 
             try
             {
-                var done = false;
-                var maxErrorRetries = 3;
-                var errorRetries = maxErrorRetries;
+                //var done = false;
+                //var maxErrorRetries = 3;
+                //var errorRetries = maxErrorRetries;
 
-                while(!done)
-                {
-                    try
-                    {
-                        StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
-                        done = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (RetryExceptionTypes.Contains(ex.GetType()))
-                        {
-                            // Specific errors lead to a retry after a short delay
-                            errorRetries--;
+                //while(!done)
+                //{
+                //    try
+                //    {
+                StartFlow(flowService, loadTimeUTC, ref requireRestart, ref restartReason);
+                //        done = true;
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        if (IsRetryRequired(ex))
+                //        {
+                //            // Specific errors lead to a retry after a short delay
+                //            errorRetries--;
 
-                            var usedTries = (maxErrorRetries - errorRetries);
-                            var pause = (int)Math.Round(100 * Math.Pow(usedTries, 3), 0);
+                //            var usedTries = (maxErrorRetries - errorRetries);
+                //            var pause = (int)Math.Round(100 * Math.Pow(usedTries, 3), 0);
 
-                            Svc.Log.LogWarning($"Intermittent error, job_id {job.ID} ({job.Job_Source_Model} {job.Job_Source_Record_ID}), sleeping {pause} ms and retrying.");
-                            Thread.Sleep(pause);
+                //            Svc.Log.LogWarning($"Intermittent error, job_id {job.ID} ({job.Job_Source_Model} {job.Job_Source_Record_ID}), sleeping {pause} ms and retrying.");
+                //            Thread.Sleep(pause);
 
-                            if (errorRetries <= 0)
-                            {
-                                throw;
-                            }
-                        }
-                        else
-                        {
-                            // Any other error, rethrow
-                            throw;
-                        }
-                    }
-                }
+                //            if (errorRetries <= 0)
+                //            {
+                //                throw;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            // Any other error, rethrow
+                //            throw;
+                //        }
+                //    }
+                //}
             }
             catch (SqlException ex)
             {
