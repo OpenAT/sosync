@@ -58,6 +58,8 @@ namespace Syncer.Flows
         public string StudioModelName { get; set; }
         public string OnlineModelName { get; set; }
         public bool IsStudioMultiModel { get; set; }
+
+        public bool ConcurrencyStudioWins { get; set; }
         #endregion
 
         #region Constructors
@@ -71,6 +73,7 @@ namespace Syncer.Flows
             _requiredChildJobs = new List<ChildJobRequest>();
             _requiredPostChildJobs = new List<ChildJobRequest>();
 
+            ConcurrencyStudioWins = true;
             SetModelPropertiesFromAttributes();
         }
         #endregion
@@ -104,6 +107,7 @@ namespace Syncer.Flows
             var studioAtt = GetType().GetCustomAttribute<StudioModelAttribute>();
             var onlineAtt = GetType().GetCustomAttribute<OnlineModelAttribute>();
             var studioMultiAtt = GetType().GetCustomAttribute<StudioMultiModelAttribute>();
+            var concurrencyOnlineWinsAtt = GetType().GetCustomAttribute<ConcurrencyOnlineWinsAttribute>();
 
             if (studioAtt != null)
                 StudioModelName = studioAtt.Name;
@@ -113,6 +117,9 @@ namespace Syncer.Flows
 
             if (studioMultiAtt != null)
                 IsStudioMultiModel = true;
+
+            if (concurrencyOnlineWinsAtt != null)
+                ConcurrencyStudioWins = false;
         }
 
         /// <summary>

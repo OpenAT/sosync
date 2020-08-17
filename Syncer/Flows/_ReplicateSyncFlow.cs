@@ -573,8 +573,28 @@ namespace Syncer.Flows
 
                     if (conflict)
                     {
-                        // Do nothing because studio wins
-                        Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FS won, doing nothing.");
+                        if (ConcurrencyStudioWins)
+                        {
+                            // Do nothing because studio wins
+                            Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FS won, doing nothing.");
+                        }
+                        else
+                        {
+                            // Studio won, but online should win, force online -> studio
+                            Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FS won, forcing FSO -> FS sync direction.");
+
+                            UpdateJobSourceAndTarget(
+                                job,
+                                SosyncSystem.FSOnline,
+                                OnlineModelName,
+                                onlineInfo.ID,
+                                SosyncSystem.FundraisingStudio,
+                                StudioModelName,
+                                onlineInfo.ForeignID,
+                                null);
+
+                            return;
+                        }
                     }
                 }
 
@@ -600,22 +620,28 @@ namespace Syncer.Flows
 
                     if (conflict)
                     {
-                        // Force studio to online sync. Studio should always win
-                        Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FSO won, forcing FS -> FSO sync direction.");
+                        if (ConcurrencyStudioWins)
+                        {
+                            // Force studio to online sync. Studio should always win
+                            Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FSO won, forcing FS -> FSO sync direction.");
 
-                        writeDate = studioInfo.SosyncWriteDate ?? studioInfo.WriteDate;
+                            UpdateJobSourceAndTarget(
+                                job,
+                                SosyncSystem.FundraisingStudio,
+                                StudioModelName,
+                                studioInfo.ID,
+                                SosyncSystem.FSOnline,
+                                OnlineModelName,
+                                studioInfo.ForeignID,
+                                null);
 
-                        UpdateJobSourceAndTarget(
-                            job,
-                            SosyncSystem.FundraisingStudio,
-                            StudioModelName,
-                            studioInfo.ID,
-                            SosyncSystem.FSOnline,
-                            OnlineModelName,
-                            studioInfo.ForeignID,
-                            null);
-
-                        return;
+                            return;
+                        }
+                        else
+                        {
+                            // Do nothing because online wins
+                            Svc.Log.LogWarning($"Sync-Conflict for {StudioModelName} {studioInfo.ID} -- {OnlineModelName} {onlineInfo.ID}: FSO won, doing nothing.");
+                        }
                     }
                 }
 
