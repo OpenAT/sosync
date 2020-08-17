@@ -517,17 +517,6 @@ namespace Syncer.Flows
             // use the write_date instead. If both are null, an exception
             // is thrown to abort the synchronization
 
-            if ((studioInfo.SosyncSyncedVersion.HasValue && !onlineInfo.SosyncSyncedVersion.HasValue)
-                || (!studioInfo.SosyncSyncedVersion.HasValue && onlineInfo.SosyncSyncedVersion.HasValue))
-            {
-                // If only one system has a sync version, throw an exception,
-                // it's an invalid state
-                var versionFormat = "yyyy-MM-dd HH:mm:ss.fffffff";
-                throw new SyncerException($"Invalid state: Only one system has last_sync_version a.k.a. sosync_synced_version set. " +
-                    $"{StudioModelName} {studioInfo.ID} {(studioInfo.SosyncSyncedVersion?.ToString(versionFormat) ?? "<no_version>")} " +
-                    $"{OnlineModelName} {onlineInfo.ID} {(onlineInfo.SosyncSyncedVersion?.ToString(versionFormat) ?? "<no_version>")}.");
-            }
-
             if (!onlineInfo.SosyncWriteDate.HasValue && !onlineInfo.WriteDate.HasValue)
                 throw new SyncerException($"Model {job.Job_Source_Model} had neither sosync_write_date nor write_date in [fso]");
 
