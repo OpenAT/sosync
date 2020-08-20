@@ -1,14 +1,14 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "3308a8c4ec76968cc6b41e375f250188712437c3"
+    "signature": "96113f65be24983ea445afbe1af456203e93c226"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
-          "DaDi.Odoo": "1.9.2",
+          "DaDi.Odoo": "1.9.3",
           "DaDi.Saltstack": "1.0.2",
           "Dapper": "2.0.35",
           "Npgsql": "4.1.3.1",
@@ -38,15 +38,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.9.2": {
+      "DaDi.Odoo/1.9.3": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.6",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.9.2.0",
-            "fileVersion": "1.9.2.0"
+            "assemblyVersion": "1.9.3.0",
+            "fileVersion": "1.9.3.0"
           }
         }
       },
@@ -743,12 +743,12 @@
       "path": "dadi-data/1.9.9",
       "hashPath": "dadi-data.1.9.9.nupkg.sha512"
     },
-    "DaDi.Odoo/1.9.2": {
+    "DaDi.Odoo/1.9.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Nz+58v15oa2mfTYOe11SAlUKGi0r0ByPPRFt6kGay7eT61F3xSTU7kvyBqdfirkjLUNUe6pd6EeTU2Rm3b0FNQ==",
-      "path": "dadi.odoo/1.9.2",
-      "hashPath": "dadi.odoo.1.9.2.nupkg.sha512"
+      "sha512": "sha512-tSl8pJB89oGlC1z2QsAztM/OONUvZXmDAjXICxaEX1jWhBp58TyS0Akwx6FG/7d7g6dIeKrjZ52RpXFQ2jFriQ==",
+      "path": "dadi.odoo/1.9.3",
+      "hashPath": "dadi.odoo.1.9.3.nupkg.sha512"
     },
     "DaDi.Saltstack/1.0.2": {
       "type": "package",
