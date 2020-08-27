@@ -105,6 +105,7 @@ namespace Syncer.Flows
             using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>())
             using (var addressBlockSvc = Svc.MdbService.GetDataService<dboPersonAdresseBlock>())
             using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
+            using (var grTagPersonSvc = Svc.MdbService.GetDataService<fsongr_tag_Personen>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
@@ -147,6 +148,8 @@ namespace Syncer.Flows
                                 orderby string.IsNullOrEmpty(iterfax.GültigMonatArray) ? GültigMonatArray : iterfax.GültigMonatArray descending,
                                 iterfax.PersonTelefonID descending
                               select iterfax).FirstOrDefault();
+
+
             }
 
             result.create_date = GetPersonCreateDate(result);
@@ -512,22 +515,24 @@ namespace Syncer.Flows
             return combinedPhone;
         }
 
-        private int[] CopyGetResponseTagsFromPartner(DataService<dboPerson> personSvc, resPartner partner)
+        private List<IdentityModel> CopyGetResponseTagsFromPartner(DataService<fsongr_tag> grTagSvc, int personID, resPartner partner)
         {
-            var result = new int[0];
+            var result = new List<IdentityModel>();
 
             if (partner.GetResponseTags != null && partner.GetResponseTags.Length > 0)
             {
-                var tagIds = personSvc.ExecuteQuery<int>(
-                    $"SELECT gr_tagID FROM fson.gr_tag WHERE sosync_fso_id IN ({string.Join(",", partner.GetResponseTags)})")
-                    .ToArray();
+                var tags = grTagSvc.ExecuteQuery<fsongr_tag>(
+                    $"SELECT * FROM [orm].[fsongr_tag.read.view] WHERE sosync_fso_id IN ({string.Join(",", partner.GetResponseTags)})")
+                    .ToList();
 
-                if (tagIds.Length != partner.GetResponseTags.Length)
+                if (tags.Count != partner.GetResponseTags.Length)
                 {
-                    throw new Exception($"FSO sent {partner.GetResponseTags.Length} Tags, but FS found {tagIds.Length}.");
+                    throw new Exception($"FSO sent {partner.GetResponseTags.Length} Tags, but FS found {tags.Count}.");
                 }
 
-                result = tagIds;
+                result = tags
+                    .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id))
+                    .ToList();
             }
 
             return result;
@@ -535,9 +540,13 @@ namespace Syncer.Flows
 
         private void SaveGetresponseTags(DataService<dboPerson> personSvc, dboPersonStack person)
         {
+            var tagIds = person.gr_tags
+                .Select(t => t.StudioID.Value)
+                .ToArray();
+
             personSvc.MergePersonGetResponseTags(
                 person.person.PersonID,
-                person.gr_tags);
+                tagIds);
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
@@ -570,6 +579,7 @@ namespace Syncer.Flows
                 using (var addressSvc = Svc.MdbService.GetDataService<dboPersonAdresse>(con, transaction))
                 using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
                 using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>(con, transaction))
+                using (var grTagSvc = Svc.MdbService.GetDataService<fsongr_tag>(con, transaction))
                 {
                     var addressChanged = false;
 
@@ -622,7 +632,7 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                         }
 
-                        person.gr_tags = CopyGetResponseTagsFromPartner(personSvc, partner);
+                        person.gr_tags = CopyGetResponseTagsFromPartner(grTagSvc, person.person.PersonID, partner);
 
                         UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 
@@ -764,7 +774,7 @@ namespace Syncer.Flows
                             SetSyncFields(person.fax, onlineID, sosync_write_date);
                         }
 
-                        person.gr_tags = CopyGetResponseTagsFromPartner(personSvc, partner);
+                        person.gr_tags = CopyGetResponseTagsFromPartner(grTagSvc, person.person.PersonID, partner);
 
                         UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 

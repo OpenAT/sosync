@@ -21,6 +21,6 @@ namespace Syncer.Models
         public DateTime? sosync_write_date { get; set; }
         public DateTime? write_date { get; set; }
         public DateTime? create_date { get; set; }
-        public int[] gr_tags { get; set; }
+        public List<IdentityModel> gr_tags { get; set; } = new List<IdentityModel>();
     }
 }
