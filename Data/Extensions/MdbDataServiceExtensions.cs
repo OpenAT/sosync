@@ -59,15 +59,15 @@ namespace WebSosync.Data.Extensions
                 new { product_templateID = studioID });
         }
 
-        public static void MergePersonGetResponseTags<TStudio>(this DataService<TStudio> db, int personID, int[] fsonGrTagIds)
+        public static void MergePersonGetResponseTags<TStudio>(this DataService<TStudio> db, int personID, int[] studioGrTagIds)
             where TStudio : MdbModelBase, ISosyncable, new()
         {
             var query = Properties.Resources.MSSQL_Merge_PersonGrTags;
 
-            if (fsonGrTagIds.Length > 0)
+            if (studioGrTagIds.Length > 0)
             {
                 query = query
-                    .Replace("%TAGLIST%", string.Join(",", fsonGrTagIds));
+                    .Replace("%TAGLIST%", string.Join(",", studioGrTagIds));
             }
             else
             {
