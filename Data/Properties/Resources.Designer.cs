@@ -189,33 +189,6 @@ namespace WebSosync.Data.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to WITH target AS (
-        ///	SELECT * FROM fson.gr_tag_Personen
-        ///	WHERE gr_tagID = @gr_tagID
-        ///)
-        ///MERGE target
-        ///USING (
-        ///	SELECT PersonID
-        ///	FROM #temp_table_name
-        ///) AS source
-        ///ON
-        ///	(source.PersonID = target.PersonID)
-        ///
-        ///WHEN NOT MATCHED THEN
-        ///	INSERT (gr_tagID, PersonID)
-        ///	VALUES (@gr_tagID, source.PersonID)
-        ///
-        ///WHEN NOT MATCHED BY SOURCE THEN
-        ///	DELETE
-        ///;.
-        /// </summary>
-        internal static string MSSQL_Merge_GrTagPersons {
-            get {
-                return ResourceManager.GetString("MSSQL_Merge_GrTagPersons", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to WITH target AS (
         ///	SELECT * FROM fson.product_template_zGruppeDetail
         ///	WHERE product_templateID = @product_templateID
         ///)
