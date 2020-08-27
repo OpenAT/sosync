@@ -55,9 +55,9 @@ namespace Syncer.Flows.GetResponse
             var cdsId = OdooConvert.ToInt32ForeignKey(odooModel["cds_id"], allowNull: true);
             var partnerIds = new int[0];
             
-            if (odooModel["zgruppedetail_ids"] != null)
+            if (odooModel["partner_ids"] != null)
             {
-                partnerIds = ((List<object>)odooModel["zgruppedetail_ids"])
+                partnerIds = ((List<object>)odooModel["partner_ids"])
                     .Select(x => Convert.ToInt32(x))
                     .ToArray();
             }
@@ -113,7 +113,8 @@ namespace Syncer.Flows.GetResponse
 
                     // Normal fields
                     online.Add("name", studio.Name);
-                    online.Add("type", "system"); // Tags from FS are always "system"
+                    online.Add("type", studio.Typ);
+
                     // FS has no description
                     // FS has no origin
                 });
@@ -133,14 +134,15 @@ namespace Syncer.Flows.GetResponse
                     if (online.cds_id != null)
                     {
                         zVerzeichnisID = GetStudioID<dbozVerzeichnis>(
-                            OnlineModelName,
-                            StudioModelName,
+                            "frst.zverzeichnis",
+                            "dbo.zVerzeichnis",
                             Convert.ToInt32(online.cds_id[0]))
                             .Value;
                     }
                     studio.zVerzeichnisID = zVerzeichnisID;
 
                     studio.Name = online.name;
+                    studio.Typ = online.type;
 
                     online_partner_ids = online.partner_ids;
                 });
