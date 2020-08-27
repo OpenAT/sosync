@@ -189,7 +189,7 @@ namespace WebSosync.Data.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to WITH target AS (
-        ///	SELECT * FROM fson.gr_tag_person
+        ///	SELECT * FROM fson.gr_tag_Personen
         ///	WHERE gr_tagID = @gr_tagID
         ///)
         ///MERGE target

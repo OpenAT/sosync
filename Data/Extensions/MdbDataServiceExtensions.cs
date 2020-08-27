@@ -92,7 +92,7 @@ namespace WebSosync.Data.Extensions
 
             db.ExecuteNonQuery(
                 Properties.Resources.MSSQL_Merge_GrTagPersons.Replace("#temp_table_name", tempTableName),
-                new { product_templateID = studioID });
+                new { gr_tagID = studioID });
         }
     }
 }

@@ -445,7 +445,7 @@ select * from job order by job_priority desc, job_date asc;</value>
   </data>
   <data name="MSSQL_Merge_GrTagPersons" xml:space="preserve">
     <value>WITH target AS (
-	SELECT * FROM fson.gr_tag_person
+	SELECT * FROM fson.gr_tag_Personen
 	WHERE gr_tagID = @gr_tagID
 )
 MERGE target
