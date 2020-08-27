@@ -105,7 +105,7 @@ namespace Syncer.Flows
             using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>())
             using (var addressBlockSvc = Svc.MdbService.GetDataService<dboPersonAdresseBlock>())
             using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
-            using (var grTagPersonSvc = Svc.MdbService.GetDataService<fsongr_tag_Personen>())
+            using (var grTagSvc = Svc.MdbService.GetDataService<fsongr_tag>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
@@ -149,7 +149,7 @@ namespace Syncer.Flows
                                 iterfax.PersonTelefonID descending
                               select iterfax).FirstOrDefault();
 
-
+                result.gr_tags = LoadGetResponseTags(grTagSvc, result.person.PersonID);
             }
 
             result.create_date = GetPersonCreateDate(result);
@@ -162,6 +162,24 @@ namespace Syncer.Flows
             return result;
         }
         
+        private List<IdentityModel> LoadGetResponseTags(DataService<fsongr_tag> svc, int personID)
+        {
+            var query = @"
+                SELECT
+	                t.*
+                FROM
+	                orm.[fsongr_tag_Personen.read.view] tp
+	                INNER JOIN orm.[fsongr_tag.read.view] t
+		                ON tp.gr_tagID = t.gr_tagID
+                WHERE
+	                tp.PersonID = @PersonID
+                ";
+
+            return svc.ExecuteQuery<fsongr_tag>(query, new { PersonID = personID })
+                .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id))
+                .ToList();
+        }
+
         private void SetdboPersonStack_fso_ids(
             dboPersonStack person,
             int onlineID,
@@ -398,6 +416,20 @@ namespace Syncer.Flows
             SetDictionaryEntryForObject(data, person.phone, "phone", () => CombinePhone(person.phone), () => null);
             SetDictionaryEntryForObject(data, person.mobile, "mobile", () => CombinePhone(person.mobile), () => null);
             SetDictionaryEntryForObject(data, person.fax, "fax", () => CombinePhone(person.fax), () => null);
+
+            var onlineGrTagIds = person.gr_tags
+                .Where(t => t.OnlineID.HasValue)
+                .Select(t => t.OnlineID.Value)
+                .ToArray();
+
+            if (onlineGrTagIds.Length != person.gr_tags.Count)
+            {
+                throw new Exception($"FS sent {person.gr_tags.Count} Tags, but only {onlineGrTagIds.Length} Tags had a sosync_fso_id.");
+            }
+
+            var replaceIdListCommand = new object[] { 6, false, onlineGrTagIds };
+            var listCommands = new object[] { replaceIdListCommand };
+            data.Add("getresponse_tag_ids", listCommands);
 
             UpdateSyncSourceData(Svc.Serializer.ToXML(person));
             
