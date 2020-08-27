@@ -279,21 +279,45 @@ namespace Syncer.Flows
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "frst_zverzeichnis_id", "getresponse_tag_ids" });
             var odooVerzeichnisID = OdooConvert.ToInt32ForeignKey(odooModel["frst_zverzeichnis_id"], true);
 
             if (odooVerzeichnisID.HasValue && odooVerzeichnisID.Value > 0)
                 RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", odooVerzeichnisID.Value, SosyncJobSourceType.Default);
+
+            var grTagIds = new int[0];
+
+            if (odooModel["getresponse_tag_ids"] != null)
+            {
+                grTagIds = ((List<object>)odooModel["getresponse_tag_ids"])
+                    .Select(x => Convert.ToInt32(x))
+                    .ToArray();
+            }
+            
+            foreach (var grTagId in grTagIds)
+            {
+                RequestChildJob(SosyncSystem.FSOnline, "gr.tag", grTagId, SosyncJobSourceType.Default);
+            }
         }
 
         protected override void SetupStudioToOnlineChildJobs(int studioID)
         {
             using (var db = Svc.MdbService.GetDataService<dboPerson>())
+            using (var dbGrTags = Svc.MdbService.GetDataService<fsongr_tag_Personen>())
             {
                 var studioModel = db.Read(new { PersonID = studioID }).SingleOrDefault();
 
                 if (studioModel.zMarketingID > 0)
                     RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zMarketingID, SosyncJobSourceType.Default);
+
+                var studioTagIds = dbGrTags.Read(new { PersonID = studioID })
+                    .Select(grTag => grTag.gr_tagID)
+                    .ToList();
+
+                foreach (var grTagId in studioTagIds)
+                {
+                    RequestChildJob(SosyncSystem.FundraisingStudio, "fson.gr_tag", grTagId, SosyncJobSourceType.Default);
+                }
             }
         }
 
