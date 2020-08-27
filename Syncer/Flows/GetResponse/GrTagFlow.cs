@@ -51,25 +51,12 @@ namespace Syncer.Flows.GetResponse
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "cds_id", "partner_ids" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "cds_id" });
             var cdsId = OdooConvert.ToInt32ForeignKey(odooModel["cds_id"], allowNull: true);
-            var partnerIds = new int[0];
             
-            if (odooModel["partner_ids"] != null)
-            {
-                partnerIds = ((List<object>)odooModel["partner_ids"])
-                    .Select(x => Convert.ToInt32(x))
-                    .ToArray();
-            }
-
             if (cdsId.HasValue)
             {
                 RequestChildJob(SosyncSystem.FSOnline, "frst.zverzeichnis", cdsId.Value, SosyncJobSourceType.Default);
-            }
-
-            foreach (var partnerId in partnerIds)
-            {
-                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerId, SosyncJobSourceType.Default);
             }
         }
 
@@ -85,7 +72,7 @@ namespace Syncer.Flows.GetResponse
                     int? cdsId = null;
 
                     if (studio.zVerzeichnisID.HasValue)
-                        cdsId = GetOnlineID<dbozVerzeichnis>(StudioModelName, OnlineModelName, studio.zVerzeichnisID.Value);
+                        cdsId = GetOnlineID<dbozVerzeichnis>("dbo.zVerzeichnis", "frst.zverzeichnis", studio.zVerzeichnisID.Value);
 
                     online.Add("cds_id", (object)cdsId ?? false);
 
@@ -95,20 +82,6 @@ namespace Syncer.Flows.GetResponse
                         personIds = dbRel.Read(new { gr_tagID = studioID })
                             .Select(rel => rel.PersonID)
                             .ToArray();
-                    }
-
-                    // Partner relations
-                    var partnerIds = personIds
-                        .Select(personId => GetOnlineID<dboPerson>("dbo.Person", "res.partner", personId))
-                        .ToArray();
-
-                    if (partnerIds.Length > 0)
-                    {
-                        online.Add("partner_ids", partnerIds);
-                    }
-                    else
-                    {
-                        online.Add("partner_ids", false);
                     }
 
                     // Normal fields
@@ -122,8 +95,6 @@ namespace Syncer.Flows.GetResponse
 
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
-            int[] online_partner_ids = null;
-
             SimpleTransformToStudio<grTag, fsongr_tag>(
                 onlineID,
                 action,
@@ -143,24 +114,7 @@ namespace Syncer.Flows.GetResponse
 
                     studio.Name = online.name;
                     studio.Typ = online.type;
-
-                    online_partner_ids = online.partner_ids;
                 });
-
-            var grTagId = GetStudioIDFromMssqlViaOnlineID(
-                StudioModelName,
-                Svc.MdbService.GetStudioModelIdentity(StudioModelName),
-                onlineID);
-
-            SaveDetails(grTagId.Value, online_partner_ids);
-        }
-
-        private void SaveDetails(int studioID, int[] onlineDetailIDs)
-        {
-            using (var db = Svc.MdbService.GetDataService<fsongr_tag_Personen>())
-            {
-                db.MergeGrTagPersons(studioID, onlineDetailIDs);
-            }
         }
     }
 }
