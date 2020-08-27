@@ -58,5 +58,26 @@ namespace WebSosync.Data.Extensions
                 Properties.Resources.MSSQL_Merge_ProductTemplateGroups.Replace("#temp_table_name", tempTableName),
                 new { product_templateID = studioID });
         }
+
+        public static void MergePersonGetResponseTags<TStudio>(this DataService<TStudio> db, int personID, int[] fsonGrTagIds)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            var query = Properties.Resources.MSSQL_Merge_PersonGrTags;
+
+            if (fsonGrTagIds.Length > 0)
+            {
+                query = query
+                    .Replace("%TAGLIST%", string.Join(",", fsonGrTagIds));
+            }
+            else
+            {
+                query = query
+                    .Replace("%TAGLIST%", "NULL"); // SomeID IN (NULL) always results in zero rows
+            }
+
+            db.ExecuteNonQuery(
+                query,
+                new { PersonID = personID });
+        }
     }
 }

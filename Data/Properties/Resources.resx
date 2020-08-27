@@ -443,6 +443,28 @@ select count(*) affected_rows from updated_rows;</value>
 )
 select * from job order by job_priority desc, job_date asc;</value>
   </data>
+  <data name="MSSQL_Merge_PersonGrTags" xml:space="preserve">
+    <value>WITH target AS (
+	SELECT * FROM fson.gr_tag_Personen
+	WHERE PersonID = @PersonID
+)
+MERGE target
+USING (
+	SELECT gr_tagID
+	FROM fson.gr_tag
+	WHERE fson.gr_tag.gr_tagID IN (%TAGLIST%)
+) AS source
+ON
+	(source.gr_tagID = target.gr_tagID)
+
+WHEN NOT MATCHED THEN
+	INSERT (PersonID, gr_tagID)
+	VALUES (@PersonID, source.gr_tagID)
+
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+;</value>
+  </data>
   <data name="MSSQL_Merge_ProductTemplateGroups" xml:space="preserve">
     <value>WITH target AS (
 	SELECT * FROM fson.product_template_zGruppeDetail

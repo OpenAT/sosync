@@ -19,6 +19,7 @@ using System.Linq;
 using WebSosync.Common;
 using WebSosync.Data;
 using WebSosync.Data.Constants;
+using WebSosync.Data.Extensions;
 using WebSosync.Data.Models;
 
 namespace Syncer.Flows
@@ -511,6 +512,34 @@ namespace Syncer.Flows
             return combinedPhone;
         }
 
+        private int[] CopyGetResponseTagsFromPartner(DataService<dboPerson> personSvc, resPartner partner)
+        {
+            var result = new int[0];
+
+            if (partner.GetResponseTags != null && partner.GetResponseTags.Length > 0)
+            {
+                var tagIds = personSvc.ExecuteQuery<int>(
+                    $"SELECT gr_tagID FROM fson.gr_tag WHERE sosync_fso_id IN ({string.Join(",", partner.GetResponseTags)})")
+                    .ToArray();
+
+                if (tagIds.Length != partner.GetResponseTags.Length)
+                {
+                    throw new Exception($"FSO sent {partner.GetResponseTags.Length} Tags, but FS found {tagIds.Length}.");
+                }
+
+                result = tagIds;
+            }
+
+            return result;
+        }
+
+        private void SaveGetresponseTags(DataService<dboPerson> personSvc, dboPersonStack person)
+        {
+            personSvc.MergePersonGetResponseTags(
+                person.person.PersonID,
+                person.gr_tags);
+        }
+
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var partner = Svc.OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
@@ -593,6 +622,8 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                         }
 
+                        person.gr_tags = CopyGetResponseTagsFromPartner(personSvc, partner);
+
                         UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 
                         var PersonID = 0;
@@ -627,6 +658,8 @@ namespace Syncer.Flows
                                 person.fax.PersonID = PersonID;
                                 phoneSvc.Create(person.fax);
                             }
+
+                            SaveGetresponseTags(personSvc, person);
 
                             UpdateSyncTargetAnswer(MssqlTargetSuccessMessage, PersonID);
                         }
@@ -731,6 +764,8 @@ namespace Syncer.Flows
                             SetSyncFields(person.fax, onlineID, sosync_write_date);
                         }
 
+                        person.gr_tags = CopyGetResponseTagsFromPartner(personSvc, partner);
+
                         UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
 
                         try
@@ -741,6 +776,8 @@ namespace Syncer.Flows
                             CreateOrUpdate(phoneSvc, person.phone, person.phone != null ? person.phone.PersonTelefonID : 0, "(Festnetz)");
                             CreateOrUpdate(phoneSvc, person.mobile, person.mobile != null ? person.mobile.PersonTelefonID : 0, "(Mobil)");
                             CreateOrUpdate(phoneSvc, person.fax, person.fax != null ? person.fax.PersonTelefonID : 0, "(Fax)");
+
+                            SaveGetresponseTags(personSvc, person);
 
                             personSvc.Update(person.person);
                             LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
