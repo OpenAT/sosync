@@ -168,6 +168,7 @@ namespace Syncer.Flows.zGruppeSystem
 
                         online.Add("bestaetigung_text", studio.BestaetigungText);
                         online.Add("bestaetigung_thanks", studio.BestaetigungDanke);
+                        online.Add("sync_with_getresponse", studio.SyncMitGetresponse);
                     });
         }
 
@@ -236,6 +237,7 @@ namespace Syncer.Flows.zGruppeSystem
 
                     studio.BestaetigungText = online.bestaetigung_text;
                     studio.BestaetigungDanke = online.bestaetigung_thanks;
+                    studio.SyncMitGetresponse = online.sync_with_getresponse;
                 });
         }
     }
