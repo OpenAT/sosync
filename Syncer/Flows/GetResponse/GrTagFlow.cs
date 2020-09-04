@@ -87,9 +87,8 @@ namespace Syncer.Flows.GetResponse
                     // Normal fields
                     online.Add("name", studio.Name);
                     online.Add("type", studio.Typ);
-
-                    // FS has no description
-                    // FS has no origin
+                    online.Add("description", studio.Beschreibung);
+                    online.Add("origin", studio.Origin);
                 });
         }
 
@@ -114,6 +113,8 @@ namespace Syncer.Flows.GetResponse
 
                     studio.Name = online.name;
                     studio.Typ = online.type;
+                    studio.Beschreibung = online.description;
+                    studio.Origin = online.origin;
                 });
         }
     }
