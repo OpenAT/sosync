@@ -294,7 +294,7 @@ namespace Syncer.Flows
                         onlineInfo.ID,
                         SosyncSystem.FundraisingStudio,
                         StudioModelName,
-                        null,
+                        onlineInfo.ForeignID,
                         null);
                 }
                 else if (IsModelInStudioOnly(studioInfo, onlineInfo))
@@ -308,13 +308,13 @@ namespace Syncer.Flows
                         studioInfo.ID,
                         SosyncSystem.FSOnline,
                         OnlineModelName,
-                        null,
+                        studioInfo.ForeignID,
                         null);
                 }
                 else
                 {
                     throw new SyncerException(
-                        $"Invalid state, could find {nameof(ModelInfo)} for either system.");
+                        $"Invalid state, could not find {nameof(ModelInfo)} for either system.");
                 }
                 consistencyWatch.Start();
             }
@@ -741,6 +741,15 @@ namespace Syncer.Flows
                 Stopwatch s = new Stopwatch();
                 s.Start();
                 studioInfo = GetStudioInfo(onlineInfo.ForeignID.Value);
+
+                if (studioInfo == null)
+                {
+                    throw new ModelNotFoundException(
+                        SosyncSystem.FundraisingStudio,
+                        StudioModelName,
+                        onlineInfo.ForeignID.Value);
+                }
+
                 s.Stop();
                 LogMs(1, nameof(GetModelInfosViaOnline) + "-MSSQL", job.ID, s.ElapsedMilliseconds);
             }
