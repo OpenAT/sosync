@@ -113,12 +113,16 @@ namespace Syncer.Flows
                 odooPartnerID)
                 .Value;
 
+            dboPersonEmail studioMail = null;
+
             SimpleTransformToStudio<frstPersonemail, dboPersonEmail>(
                 onlineID,
                 action,
                 studioModel => studioModel.PersonEmailID,
                 (online, studio) =>
                 {
+                    studioMail = studio;
+
                     EmailHelper.SplitEmail(online.email, out var mailVor, out var mailNach);
 
                     studio.PersonID = PersonID;
@@ -136,6 +140,14 @@ namespace Syncer.Flows
                     studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
                     // studio.AnredeLang // Do not set
                 });
+
+            // Studio will calculate AnredeLang, so we always need that update back
+            RequestPostTransformChildJob(
+                SosyncSystem.FundraisingStudio,
+                StudioModelName,
+                studioMail.PersonEmailID,
+                false,
+                SosyncJobSourceType.Default);
         }
     }
 }
