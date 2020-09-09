@@ -606,7 +606,8 @@ namespace Syncer.Flows
                             Job_Source_Model = request.JobSourceModel,
                             Job_Source_Record_ID = request.JobSourceRecordID,
                             Write_Date = DateTime.UtcNow,
-                            Job_Source_Type = request.JobSourceType.Value
+                            Job_Source_Type = request.JobSourceType.Value,
+                            Create_Date = DateTime.UtcNow
                         };
 
                         if (request.ForceDirection)

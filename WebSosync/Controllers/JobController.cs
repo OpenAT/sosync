@@ -214,7 +214,8 @@ namespace WebSosync.Controllers
                 Job_Source_System = (string)data["job_source_system"],
                 Job_Source_Model = (string)data["job_source_model"],
                 Job_Source_Record_ID = Convert.ToInt32(data["job_source_record_id"]),
-                Write_Date = DateTime.UtcNow
+                Write_Date = DateTime.UtcNow,
+                Create_Date = DateTime.UtcNow
             };
 
             if (data.ContainsKey("job_source_type")
