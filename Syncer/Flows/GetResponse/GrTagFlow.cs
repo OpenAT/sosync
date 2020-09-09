@@ -39,14 +39,6 @@ namespace Syncer.Flows.GetResponse
 
                 if (studioModel.zVerzeichnisID.HasValue)
                     RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.zVerzeichnis", studioModel.zVerzeichnisID.Value, SosyncJobSourceType.Default);
-
-                var relModels = dbRel.Read(new { gr_tagID = studioID })
-                    .ToList();
-
-                foreach (var relation in relModels)
-                {
-                    RequestChildJob(SosyncSystem.FundraisingStudio, "dbo.Person", relation.PersonID, SosyncJobSourceType.Default);
-                }
             }
         }
 
