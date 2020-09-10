@@ -84,6 +84,7 @@ namespace Syncer.Flows
                 person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
                 person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
+                person.gr_tags.Max(t => t.SosyncWriteDate)
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -176,7 +177,7 @@ namespace Syncer.Flows
                 ";
 
             return svc.ExecuteQuery<fsongr_tag>(query, new { PersonID = personID })
-                .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id))
+                .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id, t.sosync_write_date ?? t.write_date))
                 .ToList();
         }
 
@@ -563,7 +564,7 @@ namespace Syncer.Flows
                 }
 
                 result = tags
-                    .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id))
+                    .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id, t.sosync_write_date ?? t.write_date))
                     .ToList();
             }
 
