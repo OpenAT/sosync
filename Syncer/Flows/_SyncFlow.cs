@@ -376,7 +376,8 @@ namespace Syncer.Flows
         // These error types are instantly retried instead of going to error-retry immediately
         private static Type[] RetryExceptionTypes = new[]
         {
-            typeof(Win32Exception)
+            typeof(Win32Exception),
+            typeof(ConsistencyException)
         };
 
         /// <summary>
@@ -588,7 +589,7 @@ namespace Syncer.Flows
                             UpdateJobInconsistent(Job, 1);
                             requireRestart = true;
                             restartReason = "Consistency check 1";
-                            return;
+                            throw new ConsistencyException(restartReason);
                         }
 
 #warning TODO: bubble up the hierarchy to check for circular references
@@ -692,7 +693,7 @@ namespace Syncer.Flows
                         UpdateJobInconsistent(Job, 2);
                         requireRestart = true;
                         restartReason = "Consistency check 2";
-                        return;
+                        throw new ConsistencyException(restartReason);
                     }
                 }
                 finally
@@ -727,7 +728,7 @@ namespace Syncer.Flows
                     UpdateJobInconsistent(Job, 3);
                     requireRestart = true;
                     restartReason = "Consistency check 3";
-                    return;
+                    throw new ConsistencyException(restartReason);
                 }
 
                 try
@@ -770,6 +771,13 @@ namespace Syncer.Flows
                 UpdateJobInconsistentBlock(Job);
                 requireRestart = true;
                 restartReason = "AddresseBlock not up to date, requesting restart.";
+            }
+            catch (ConsistencyException ex)
+            {
+                Svc.Log.LogWarning($"Job {Job.ID} threw a consistency exception: {ex.Message}");
+                requireRestart = true;
+                restartReason = ex.Message;
+                throw;
             }
             catch (Exception ex)
             {
