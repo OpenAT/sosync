@@ -350,7 +350,7 @@ namespace Syncer.Flows
             var sosync_write_date = (person.sosync_write_date ?? person.write_date);
 
             // Set the sync version on the person and save it
-            person.person.last_sync_version = person.person.sosync_write_date;
+            person.person.last_sync_version = GetPersonSosyncWriteDate(person);
             using (var personDb = Svc.MdbService.GetDataService<dboPerson>())
             {
                 personDb.Update(person.person);
