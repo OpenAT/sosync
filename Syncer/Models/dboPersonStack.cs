@@ -22,5 +22,6 @@ namespace Syncer.Models
         public DateTime? write_date { get; set; }
         public DateTime? create_date { get; set; }
         public List<IdentityModel> gr_tags { get; set; } = new List<IdentityModel>();
+        public DateTime? gr_tags_last_delete_date { get; set; }
     }
 }

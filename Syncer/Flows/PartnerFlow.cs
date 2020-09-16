@@ -84,7 +84,8 @@ namespace Syncer.Flows
                 person.phone != null ? person.phone.sosync_write_date : (DateTime?)null,
                 person.mobile != null ? person.mobile.sosync_write_date : (DateTime?)null,
                 person.fax != null ? person.fax.sosync_write_date : (DateTime?)null,
-                person.gr_tags.Max(t => t.SosyncWriteDate)
+                person.gr_tags.Max(t => t.SosyncWriteDate),
+                person.gr_tags_last_delete_date
             }.Where(x => x.HasValue);
 
             if (query.Any())
@@ -151,6 +152,7 @@ namespace Syncer.Flows
                               select iterfax).FirstOrDefault();
 
                 result.gr_tags = LoadGetResponseTags(grTagSvc, result.person.PersonID);
+                result.gr_tags_last_delete_date = LoadGetResponseDeletedTime(grTagSvc, result.person.PersonID);
             }
 
             result.create_date = GetPersonCreateDate(result);
@@ -167,7 +169,9 @@ namespace Syncer.Flows
         {
             var query = @"
                 SELECT
-	                t.*
+	                t.gr_tagID StudioID
+                    ,t.sosync_fso_id OnlineID
+                    ,ISNULL(tp.sosync_write_date, tp.write_date) SosyncWriteDate
                 FROM
 	                orm.[fsongr_tag_Personen.read.view] tp
 	                INNER JOIN orm.[fsongr_tag.read.view] t
@@ -176,9 +180,27 @@ namespace Syncer.Flows
 	                tp.PersonID = @PersonID
                 ";
 
-            return svc.ExecuteQuery<fsongr_tag>(query, new { PersonID = personID })
-                .Select(t => new IdentityModel(t.gr_tagID, t.sosync_fso_id, t.sosync_write_date ?? t.write_date))
+            return svc.ExecuteQuery<IdentityModel>(query, new { PersonID = personID })
                 .ToList();
+        }
+
+        private DateTime? LoadGetResponseDeletedTime(DataService<fsongr_tag> svc, int personID)
+        {
+            var query = @"
+                SELECT
+                    MAX(del.currentTime)
+				FROM
+	                hist.fsongr_tag_Personen_Deletes del
+					INNER JOIN hist.fsongr_tag_Personen_Versions v
+						ON del.versionKey = v.versionKey
+	                INNER JOIN orm.[fsongr_tag.read.view] t
+		                ON v.gr_tagID = t.gr_tagID
+				WHERE
+					v.PersonID = @PersonID
+                ";
+
+            return svc.ExecuteQuery<DateTime?>(query, new { PersonID = personID })
+                .SingleOrDefault();
         }
 
         private void SetdboPersonStack_fso_ids(
