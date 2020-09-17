@@ -607,6 +607,8 @@ namespace Syncer.Flows
         protected override void TransformToStudio(int onlineID, TransformType action)
         {
             var partner = Svc.OdooService.Client.GetModel<resPartner>("res.partner", onlineID);
+            var lastResponseRaw = Svc.OdooService.Client.LastResponseRaw;
+
             LogMilliseconds($"{nameof(TransformToStudio)} read res.partner", Svc.OdooService.Client.LastRpcTime);           
 
             var sosync_write_date = (partner.Sosync_Write_Date ?? partner.Write_Date).Value;
@@ -622,7 +624,7 @@ namespace Syncer.Flows
                 onlineID);
             //---
 
-            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
+            UpdateSyncSourceData(lastResponseRaw);
 
             dboPersonStack person = null;
 
