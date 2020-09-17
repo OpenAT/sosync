@@ -877,6 +877,7 @@ namespace Syncer.Flows
             where TStudio : MdbModelBase, ISosyncable, new()
         {
             var onlineModel = Svc.OdooService.Client.GetModel<TOdoo>(OnlineModelName, onlineID);
+            var lastResponseRaw = Svc.OdooService.Client.LastResponseRaw;
 
             if (!IsValidFsID(onlineModel.Sosync_FS_ID))
                 onlineModel.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
@@ -892,7 +893,7 @@ namespace Syncer.Flows
                 onlineID);
             //---
 
-            UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
+            UpdateSyncSourceData(lastResponseRaw);
 
             // List all dboAktion... Types, needed for log serialization
             var actionTypes = Assembly
