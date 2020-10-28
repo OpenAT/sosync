@@ -171,9 +171,9 @@ namespace Syncer.Flows
                 orgId,
                 referenceId,
                 "mail",
-                onlineTemplate.Subject,
-                onlineTemplate.EmailFrom,
-                onlineTemplate.ReplyTo,
+                onlineTemplate.Subject ?? "NO_SUB",
+                onlineTemplate.EmailFrom ?? "NO_FROM",
+                onlineTemplate.ReplyTo ?? "NO_REPLYTO",
                 null,
                 onlineTemplate.FsoEmailHtmlParsed);
 
