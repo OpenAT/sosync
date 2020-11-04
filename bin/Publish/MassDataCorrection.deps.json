@@ -1,14 +1,14 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "c942a53cb435cf12ed1d5bb54a7814c461168cf2"
+    "signature": "e79f07ebe0ce7abec38f5265d213c0de3b429299"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
-          "DaDi.Odoo": "1.9.9",
+          "DaDi.Odoo": "1.9.10",
           "DaDi.Saltstack": "1.0.2",
           "Dapper": "2.0.35",
           "Npgsql": "4.1.3.1",
@@ -38,15 +38,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.9.9": {
+      "DaDi.Odoo/1.9.10": {
         "dependencies": {
-          "DaDi.XmlRpc": "1.0.6",
+          "DaDi.XmlRpc": "1.0.9",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.9.9.0",
-            "fileVersion": "1.9.9.0"
+            "assemblyVersion": "1.9.10.0",
+            "fileVersion": "1.9.10.0"
           }
         }
       },
@@ -58,11 +58,11 @@
           }
         }
       },
-      "DaDi.XmlRpc/1.0.6": {
+      "DaDi.XmlRpc/1.0.9": {
         "runtime": {
           "lib/netstandard2.0/DaDi.XmlRpc.dll": {
-            "assemblyVersion": "1.0.6.0",
-            "fileVersion": "1.0.6.0"
+            "assemblyVersion": "1.0.9.0",
+            "fileVersion": "1.0.9.0"
           }
         }
       },
@@ -743,12 +743,12 @@
       "path": "dadi-data/1.10.4",
       "hashPath": "dadi-data.1.10.4.nupkg.sha512"
     },
-    "DaDi.Odoo/1.9.9": {
+    "DaDi.Odoo/1.9.10": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-jiJd3EHL7vCDa4KptDeBta0nKf1Q6UCfs1YGAFXX3kKyTHBnkmSyVVINJq1D+8aeczxvpnpJo7eVyclej+hTTg==",
-      "path": "dadi.odoo/1.9.9",
-      "hashPath": "dadi.odoo.1.9.9.nupkg.sha512"
+      "sha512": "sha512-EUn2Rrjk7ZyTffB7bg8923u6UbFhZQtfSvH/pWrylyqy1FM8CEGqQFhOH+SOUzaZjGHCEe0DiYLGkGNXFrEIRw==",
+      "path": "dadi.odoo/1.9.10",
+      "hashPath": "dadi.odoo.1.9.10.nupkg.sha512"
     },
     "DaDi.Saltstack/1.0.2": {
       "type": "package",
@@ -757,12 +757,12 @@
       "path": "dadi.saltstack/1.0.2",
       "hashPath": "dadi.saltstack.1.0.2.nupkg.sha512"
     },
-    "DaDi.XmlRpc/1.0.6": {
+    "DaDi.XmlRpc/1.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-6w0gjvgPJPGH2e6bThbHXaC4GSq5O+eVY+RSn42uwvNTdfp/6sZZmHbilxasrLnbjvKxA2eNEHXrCQTxnJAxXA==",
-      "path": "dadi.xmlrpc/1.0.6",
-      "hashPath": "dadi.xmlrpc.1.0.6.nupkg.sha512"
+      "sha512": "sha512-T3KR7kirh97ffNGRmSwoFJccc8r9kEq0Egpb9Se7RNlBhuiSPiVoHGEQEaVum8AHBUUA0XJ57cf3AaPJujqXXQ==",
+      "path": "dadi.xmlrpc/1.0.9",
+      "hashPath": "dadi.xmlrpc.1.0.9.nupkg.sha512"
     },
     "Dapper/2.0.35": {
       "type": "package",
