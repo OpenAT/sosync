@@ -136,6 +136,7 @@ namespace Syncer.Flows.MassMailing
                     online.Add("renewed_subscription_log", studio.renewed_subscription_log);
                     // Do not set "state"!
                     online.Add("origin", studio.origin);
+                    online.Add("gdpr_accpeted", studio.DSGVOZugestimmt);
 
                     online.Add("pf_mandatsid", studio.pf_mandatsid);
                     online.Add("pf_zahlungsreferenz", studio.pf_zahlungsreferenz);
@@ -235,6 +236,7 @@ namespace Syncer.Flows.MassMailing
                     studio.opt_out = online.opt_out;
                     studio.state = online.state;
                     studio.origin = online.origin;
+                    studio.DSGVOZugestimmt = online.gdpr_accepted;
 
                     studio.pf_mandatsid = online.pf_mandatsid;
                     studio.pf_zahlungsreferenz = online.pf_zahlungsreferenz;

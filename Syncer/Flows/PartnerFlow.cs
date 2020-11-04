@@ -404,6 +404,8 @@ namespace Syncer.Flows
                     { "bpk_forced_street", person.person.BPKErzwungenStrasse },
                     { "sosync_write_date", sosync_write_date },
                     { "frst_write_date", Treat2000DateAsNull(person.write_date) },
+                    { "gdpr_accepted", person.person.DSGVOZugestimmt },
+                    { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
                 };
 
@@ -1010,6 +1012,8 @@ namespace Syncer.Flows
             dest.BPKErzwungenGeburtsdatum = OdooConvert.ToDateTime(source.BPKForcedBirthdate);
             dest.BPKErzwungenPLZ = source.BPKForcedZip;
             dest.BPKErzwungenStrasse = source.BPKForcedStreet;
+            dest.DSGVOZugestimmt = source.GdprAccepted;
+            dest.SpendenmeldungUnterdrücken = source.PreventDonationDeduction;
             dest.last_sync_version = source.Sosync_Synced_Version;
 
             int? zVerzeichnisID = null;
