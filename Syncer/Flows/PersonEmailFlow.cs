@@ -92,6 +92,7 @@ namespace Syncer.Flows
                     online.Add("bestaetigt_am_um", DateTimeHelper.ToUtc(studio.BestaetigtAmUm));
                     online.Add("bestaetigt_herkunft", studio.BestaetigungsHerkunft);
                     online.Add("anrede_lang", studio.AnredeLang);
+                    online.Add("forced_main_address", studio.HauptAdresseErzwingen);
                 });
         }
 
@@ -135,6 +136,7 @@ namespace Syncer.Flows
                     studio.BestaetigtAmUm = DateTimeHelper.ToLocal(online.bestaetigt_am_um);
                     studio.BestaetigungsHerkunft = online.bestaetigt_herkunft;
                     // studio.AnredeLang // Do not set
+                    studio.HauptAdresseErzwingen = online.forced_main_address;
                 });
         }
     }
