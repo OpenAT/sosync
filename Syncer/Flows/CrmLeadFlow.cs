@@ -18,6 +18,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "fson.crm_lead")]
     [OnlineModel(Name = "crm.lead")]
+    [ModelPriority(1500)]
     public class CrmLeadFlow
         : ReplicateSyncFlow
     {
