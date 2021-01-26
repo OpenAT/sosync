@@ -210,6 +210,15 @@ namespace Syncer.Services
             return FlowTypes
                 .Where(ft => ft.BaseType == typeof(T));
         }
+
+        public int GetModelPriority(string model)
+        {
+            if (ModelPriorities.ContainsKey(model))
+                return ModelPriorities[model];
+            else
+                return 1000;
+
+        }
         #endregion
     }
 }

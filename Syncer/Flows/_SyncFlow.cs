@@ -606,6 +606,7 @@ namespace Syncer.Flows
                             Job_Source_System = request.JobSourceSystem,
                             Job_Source_Model = request.JobSourceModel,
                             Job_Source_Record_ID = request.JobSourceRecordID,
+                            Job_Priority = Svc.FlowService.GetModelPriority(request.JobSourceModel),
                             Write_Date = DateTime.UtcNow,
                             Job_Source_Type = request.JobSourceType.Value,
                             Create_Date = DateTime.UtcNow

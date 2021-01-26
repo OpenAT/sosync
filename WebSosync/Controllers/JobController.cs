@@ -152,10 +152,7 @@ namespace WebSosync.Controllers
 
                 if (job.JobPriority == null)
                 {
-                    if (_flowService.ModelPriorities.ContainsKey(job.JobSourceModel))
-                        job.JobPriority = _flowService.ModelPriorities[job.JobSourceModel];
-                    else
-                        job.JobPriority = 1000;
+                    job.JobPriority = _flowService.GetModelPriority(job.JobSourceModel);
                 }
             }
         }
@@ -290,10 +287,8 @@ namespace WebSosync.Controllers
 
             if (data.ContainsKey("job_priority") && data["job_priority"] != null)
                 return Convert.ToInt32(data["job_priority"]);
-            else if (flowService.ModelPriorities.ContainsKey(job.Job_Source_Model))
-                return flowService.ModelPriorities[job.Job_Source_Model];
             else
-                return 1000;
+                return flowService.GetModelPriority(job.Job_Source_Model);
         }
 
         private void StoreJob(IServiceProvider services, SyncJob job)
