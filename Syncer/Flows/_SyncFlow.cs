@@ -703,6 +703,10 @@ namespace Syncer.Flows
                     UpdateJobChildEnd();
                 }
             }
+            catch (ConsistencyException)
+            {
+                requireRestart = true;
+            }
             catch (Exception ex)
             {
                 UpdateJobError(SosyncError.ChildJob, ex.ToString());

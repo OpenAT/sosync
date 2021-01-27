@@ -60,6 +60,10 @@ namespace Syncer.Flows
                         ref requireRestart,
                         ref restartReason);
                 }
+                catch (ConsistencyException)
+                {
+                    requireRestart = true;
+                }
                 catch (Exception ex)
                 {
                     throw new ChildJobException(ex.Message, ex);
