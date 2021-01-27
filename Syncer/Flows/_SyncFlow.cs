@@ -560,7 +560,8 @@ namespace Syncer.Flows
                             if (childJob.Job_State == SosyncState.Error.Value || childJob.Job_State == SosyncState.ErrorRetry.Value)
                                 throw new SyncerException($"{childDescription} ({childJob.ID}) for [{childJob.Job_Source_System}] {childJob.Job_Source_Model} ({childJob.Job_Source_Record_ID}) failed.");
 
-                            if (childJob.Job_State == SosyncState.New.Value || childJob.Job_State == SosyncState.InProgress.Value)
+                            if (childJob.Job_State == SosyncState.New.Value
+                                || childJob.Job_State == SosyncState.InProgress.Value)
                             {
                                 UpdateJobStart(childJob, DateTime.UtcNow);
 
@@ -657,7 +658,8 @@ namespace Syncer.Flows
                             throw new SyncerException($"{childDescription} ({entry.ID}) for [{entry.Job_Source_System}] {entry.Job_Source_Model} ({entry.Job_Source_Record_ID}) failed.");
 
                         // If the job is new or marked as "in progress", run it
-                        if (entry.Job_State == SosyncState.New.Value || entry.Job_State == SosyncState.InProgress.Value)
+                        if (entry.Job_State == SosyncState.New.Value
+                            || entry.Job_State == SosyncState.InProgress.Value)
                         {
                             Svc.Log.LogInformation($"Executing {childDescription} ({entry.ID})");
 
