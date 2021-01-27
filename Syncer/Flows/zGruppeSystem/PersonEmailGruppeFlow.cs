@@ -19,7 +19,7 @@ namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.PersonEmailGruppe")]
     [OnlineModel(Name = "frst.personemailgruppe")]
-    [ModelPriority(1500)]
+    [ModelPriority(5000)]
     public class PersonEmailGruppeFlow
         : ReplicateSyncFlow
     {
