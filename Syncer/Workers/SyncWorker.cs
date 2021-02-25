@@ -37,6 +37,7 @@ namespace Syncer.Workers
         private OdooFormatService _odooFormatService;
         private SerializationService _serializationService;
         private IMailService _mail;
+        private IThreadSettings _threadSettings;
 
         private const int _sleepTime = 5500;
         private static int _sleepCycle;
@@ -59,7 +60,8 @@ namespace Syncer.Workers
             TimeService timeSvc,
             OdooFormatService odooFormatService,
             SerializationService serializationService,
-            IMailService mailService
+            IMailService mailService,
+            IThreadSettings threadSettings
             )
             : base(options)
         {
@@ -72,10 +74,26 @@ namespace Syncer.Workers
             _odooFormatService = odooFormatService;
             _serializationService = serializationService;
             _mail = mailService;
+            _threadSettings = threadSettings;
         }
         #endregion
 
         #region Methods
+        private void UpdateThreads(out int packageSize, out int maxThreads)
+        {
+            packageSize = _conf.Job_Package_Size.Value;
+            maxThreads = _conf.Max_Threads ?? 2;
+
+            if (_threadSettings.IsActive)
+            {
+                packageSize = _threadSettings.TargetPackageSize ?? 20;
+                maxThreads = _threadSettings.TargetMaxThreads ?? 2;
+            }
+
+            _threadSettings.CurrentPackageSize = packageSize;
+            _threadSettings.CurrentMaxThreads = maxThreads;
+        }
+
         /// <summary>
         /// Starts the syncer.
         /// </summary>
@@ -93,7 +111,10 @@ namespace Syncer.Workers
 
                 var lastJobCount = 0;
 
-                var jobLimit = _conf.Job_Package_Size.Value;
+                int jobLimit = 0;
+                int threadCount = 0;
+
+                UpdateThreads(out jobLimit, out threadCount);
 
                 using (var db = GetDb())
                 {
@@ -121,7 +142,8 @@ namespace Syncer.Workers
                     while (jobs.Count > 0 && !CancellationToken.IsCancellationRequested)
                     {
                         var tasks = new List<Task>();
-                        var threadCount = _conf.Max_Threads;
+
+                        UpdateThreads(out jobLimit, out threadCount);
 
                         threadWatch.Start();
 
