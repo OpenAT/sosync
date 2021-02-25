@@ -196,7 +196,7 @@ namespace WebSosync.Controllers
             // Force threads
 
             if (newSettings.ActiveSeconds > _maxActiveSeconds)
-                return BadRequest($"Maximum active seconds is {_maxActiveSeconds}.");
+                return BadRequest($"Max value for {newSettings.ActiveSeconds} is {_maxActiveSeconds}.");
 
             _threadSettings.TargetMaxThreads = newSettings.Threads;
             _threadSettings.TargetPackageSize = newSettings.PackageSize;
