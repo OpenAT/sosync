@@ -58,8 +58,17 @@ namespace WebSosync.Services
         {
             get
             {
-                return _targetMaxThreadsEnd.HasValue
+                var active = _targetMaxThreadsEnd.HasValue
                     && _targetMaxThreadsEnd >= DateTime.Now;
+
+                if (active == false)
+                {
+                    _targetMaxThreads = null;
+                    _targetPackageSize = null;
+                    _targetMaxThreadsEnd = null;
+                }
+
+                return active;
             }
         }
     }
