@@ -152,7 +152,7 @@ namespace WebSosync.Controllers
         }
 
         [HttpPost("threads")]
-        public IActionResult SetThreads([FromBody]ThreadSettingsDto newSettings)
+        public IActionResult SetThreads([FromServices] IBackgroundJob<SyncWorker> syncWorker, [FromBody]ThreadSettingsDto newSettings)
         {
             // Guards
 
@@ -176,6 +176,9 @@ namespace WebSosync.Controllers
                 _threadSettings.TargetMaxThreads = null;
                 _threadSettings.TargetPackageSize = null;
                 _threadSettings.TargetMaxThreadsEnd = null;
+
+                syncWorker.Start();
+
                 msg = "Threads reset to configuration.";
                 _log.LogInformation(msg);
                 return Ok(msg);
@@ -190,6 +193,8 @@ namespace WebSosync.Controllers
             _threadSettings.TargetPackageSize = newSettings.PackageSize;
             _threadSettings.TargetMaxThreadsEnd = DateTime.Now
                 + TimeSpan.FromSeconds(newSettings.ActiveSeconds.Value);
+
+            syncWorker.Start();
 
             msg = $"Forcing {_threadSettings.TargetMaxThreads} threads with package size {_threadSettings.TargetPackageSize} until {_threadSettings.TargetMaxThreadsEnd:yyyy-mm-dd HH:mm:ss}";
             _log.LogInformation(msg);
