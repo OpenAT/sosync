@@ -24,7 +24,7 @@ namespace WebSosync.Controllers
     public class ServiceController : Controller
     {
         #region Members
-        private const int _maxActiveSeconds = 7200; // 2h
+        private const int _maxActiveSeconds = 3600 * 3;
 
         private IBackgroundJob<SyncWorker> _syncWorkerJob;
         private ILogger<ServiceController> _log;
