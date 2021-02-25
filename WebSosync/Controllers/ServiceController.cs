@@ -171,6 +171,9 @@ namespace WebSosync.Controllers
             if (newSettings.Threads != null && (newSettings.PackageSize ?? 0) <= 0)
                 return BadRequest($"{nameof(newSettings.PackageSize)} is required and must be greater than zero.");
 
+            if (newSettings.Threads != null && (newSettings.PackageSize ?? 0) > 200)
+                return BadRequest($"Max value for {nameof(newSettings.PackageSize)} is 200.");
+
             if (newSettings.Threads is null && newSettings.ActiveSeconds != null)
                 return BadRequest($"Cannot set {nameof(newSettings.ActiveSeconds)} when resetting threads.");
 
