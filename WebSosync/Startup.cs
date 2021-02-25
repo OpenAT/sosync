@@ -68,6 +68,7 @@ namespace WebSosync
             // Register the SosyncOptions class as a singleton, configured with
             // the configuration section "sosync"
             services.ConfigurePoco<SosyncOptions>(Configuration.GetSection("sosync"));
+            services.AddSingleton<IThreadSettings, ThreadSettings>();
 
             // Add framework services.
             services.AddMvc(options =>
