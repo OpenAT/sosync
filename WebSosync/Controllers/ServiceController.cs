@@ -159,10 +159,10 @@ namespace WebSosync.Controllers
             if (newSettings is null)
                 return BadRequest("Missing settings.");
 
-            if (newSettings.Threads != null && (newSettings.ActiveSeconds ?? 0) == 0)
+            if (newSettings.Threads != null && (newSettings.ActiveSeconds ?? 0) <= 0)
                 return BadRequest($"{nameof(newSettings.ActiveSeconds)} is required and must be greater than zero.");
 
-            if (newSettings.Threads != null && (newSettings.PackageSize ?? 0) == 0)
+            if (newSettings.Threads != null && (newSettings.PackageSize ?? 0) <= 0)
                 return BadRequest($"{nameof(newSettings.PackageSize)} is required and must be greater than zero.");
 
             if (newSettings.Threads is null && newSettings.ActiveSeconds != null)
