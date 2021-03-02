@@ -106,6 +106,7 @@ namespace WebSosync
             services.AddTransient<DataService>();
             services.AddTransient<FlowCheckService>();
             services.AddTransient<MdbService>();
+            services.AddTransient<OdooDataService>();
             services.AddTransient<SyncServiceCollection>();
 
             // Db contexts

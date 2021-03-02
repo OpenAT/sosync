@@ -62,11 +62,6 @@
     <ProjectReference Include="..\Data\Data.csproj" />
     <ProjectReference Include="..\Syncer\Syncer.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <None Update="debug_linux_sosync.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
     <None Update="debug_linux_sosync.ini">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
