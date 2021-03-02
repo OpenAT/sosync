@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using WebSosync.Data.Models;
 
 namespace Syncer.Services
@@ -88,6 +89,39 @@ namespace Syncer.Services
             }
 
             return null;
+        }
+
+        public async Task<dynamic> GetAktionOnlineTokenAsync(int[] ids)
+        {
+            var query = @"
+                SELECT TOP 300000
+	                t.AktionsID
+	                -- Mapping as in sosync 2 -----
+	                ,t.Name
+	                ,p.sosync_fso_id partner_id
+	                ,t.Ablaufdatum expiration_date
+	                ,t.FsOrigin fs_origin
+	                ,t.LetzteBenutzungAmUm last_datetime_of_use
+	                ,t.ErsteBenutzungAmUm first_datetime_of_use
+	                ,t.AnzahlÜberprüfungen number_of_checks
+	                -------------------------------
+	                ,t.sosync_fso_id
+	                ,t.sosync_write_date
+	                ,t.last_sync_version
+                FROM
+	                dbo.Aktion a
+	                INNER JOIN dbo.AktionOnlineToken t
+		                ON a.AktionsID = t.AktionsID
+		                AND a.AktionstypID = 2005881
+	                INNER JOIN dbo.Person p
+		                ON a.PersonID = p.PersonID
+                "; // +
+                // $" WHERE t.AktionsID IN ({ string.Join(",", ids)});";
+
+            using (var db = GetDataService<dboTypen>())
+            {
+                return await db.ExecuteQueryAsync<dynamic>(query);
+            }
         }
         #endregion
     }

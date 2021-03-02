@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Syncer.Services;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,13 @@ namespace WebSosync.Controllers
     public class BatchController
         : ControllerBase
     {
+        private ILogger<BatchController> _log;
         private MdbService _mdb;
         private OdooDataService _odb;
 
-        public BatchController(MdbService mdb, OdooDataService odb)
+        public BatchController(ILogger<BatchController> logger, MdbService mdb, OdooDataService odb)
         {
+            _log = logger;
             _mdb = mdb;
             _odb = odb;
         }
@@ -26,8 +29,8 @@ namespace WebSosync.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> PostBatch(BatchRequest batch)
         {
-            await Task.Delay(1); // Dummy
-
+            _log.LogInformation($"Received {batch.Identities.Count} IDs in batch request.");
+            var data = await _mdb.GetAktionOnlineTokenAsync(batch.Identities.ToArray());
             return Ok();
         }
     }
