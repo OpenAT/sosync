@@ -111,6 +111,11 @@ namespace Syncer.Flows
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
+                result.IsSyncUser = personSvc.IsInPersonGroup(result.person.PersonID, 130045);
+                result.IsSystemUser = personSvc.IsInPersonGroup(result.person.PersonID, 130046);
+                result.IsAdminUser = personSvc.IsInPersonGroup(result.person.PersonID, 130047);
+                result.IsDonorUser = personSvc.IsInPersonGroup(result.person.PersonID, 130048);
+
                 if (result.person == null)
                     throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, StudioModelName, PersonID);
 
@@ -407,6 +412,10 @@ namespace Syncer.Flows
                     { "gdpr_accepted", person.person.DSGVOZugestimmt },
                     { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
+                    { "fson_sosync_user", person.IsSyncUser },
+                    { "fson_system_user", person.IsSystemUser },
+                    { "fson_admin_user", person.IsAdminUser },
+                    { "fson_donor_user", person.IsDonorUser }
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -651,7 +660,7 @@ namespace Syncer.Flows
                         person.person = InitDboPerson();
                         SetSyncFields(person.person, onlineID, sosync_write_date);
 
-                        CopyPartnerToPerson(partner, person.person);
+                        CopyPartnerToPersonStack(partner, person);
 
                         //create new dboPersonAddress if any associated field has a value
                         if (partner.HasAddress())
@@ -700,6 +709,15 @@ namespace Syncer.Flows
                         {
                             personSvc.Create(person.person);
                             PersonID = person.person.PersonID;
+
+                            SaveFsonUsers(
+                                personSvc,
+                                person.person.PersonID,
+                                person.IsSyncUser,
+                                person.IsSystemUser,
+                                person.IsAdminUser,
+                                person.IsDonorUser);
+
 
                             if (person.address != null)
                             {
@@ -757,7 +775,7 @@ namespace Syncer.Flows
 
                         UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(person));
 
-                        CopyPartnerToPerson(partner, person.person);
+                        CopyPartnerToPersonStack(partner, person);
 
                         SetSyncFields(person.person, onlineID, sosync_write_date);
 
@@ -849,6 +867,14 @@ namespace Syncer.Flows
                             SaveGetresponseTags(personSvc, person);
 
                             personSvc.Update(person.person);
+                            SaveFsonUsers(
+                                personSvc,
+                                person.person.PersonID,
+                                person.IsSyncUser,
+                                person.IsSystemUser,
+                                person.IsAdminUser,
+                                person.IsDonorUser);
+
                             LogMilliseconds($"{nameof(TransformToStudio)} update dbo.Person", personSvc.LastQueryExecutionTimeMS);
 
                             SetdboPersonStack_fso_ids(
@@ -894,6 +920,26 @@ namespace Syncer.Flows
                     }
                 }
             }
+        }
+
+        private void SaveFsonUsers(
+            DataService<dboPerson> personSvc,
+            int personID,
+            bool? syncUser,
+            bool? systemUser,
+            bool? adminUser,
+            bool? donorUser)
+        {
+            personSvc.ExecuteProcedure(
+                "orm.dboPerson_AfterSync",
+                new
+                {
+                    PersonID = personID,
+                    fson_sosync_user = syncUser,
+                    fson_system_user = systemUser,
+                    fson_admin_user = adminUser,
+                    fson_donor_user = donorUser
+                });
         }
 
         private void SetSyncFields(ISosyncable model, int? onlineID, DateTime? sosync_write_date)
@@ -1037,6 +1083,16 @@ namespace Syncer.Flows
             else if (string.IsNullOrEmpty(source.Gender))
                 dest.GeschlechttypID = 0;
 
+        }
+
+        private void CopyPartnerToPersonStack(resPartner source, dboPersonStack dest)
+        {
+            CopyPartnerToPerson(source, dest.person);
+
+            dest.IsSyncUser = source.FsonSosyncUser;
+            dest.IsSystemUser = source.FsonSystemUser;
+            dest.IsAdminUser = source.FsonAdminUser;
+            dest.IsDonorUser = source.FsonDonorUser;
         }
 
         private bool IsAddressFieldEqual(string src, string dst)

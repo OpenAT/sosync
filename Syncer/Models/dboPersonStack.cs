@@ -23,5 +23,9 @@ namespace Syncer.Models
         public DateTime? create_date { get; set; }
         public List<IdentityModel> gr_tags { get; set; } = new List<IdentityModel>();
         public DateTime? gr_tags_last_delete_date { get; set; }
+        public bool? IsSyncUser { get; set; }
+        public bool? IsSystemUser { get; set; }
+        public bool? IsAdminUser { get; set; }
+        public bool? IsDonorUser { get; set; }
     }
 }
