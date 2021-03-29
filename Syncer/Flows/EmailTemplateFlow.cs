@@ -92,6 +92,7 @@ namespace Syncer.Flows
                         EmailVon = onlineTemplate.EmailFrom,
                         EmailAntwortAn = onlineTemplate.ReplyTo,
                         EmailHTML = onlineTemplate.FsoEmailHtmlParsed,
+                        EmailText = onlineTemplate.FsoEmailText,
 
                         TemplateFürtypID = 109610, // Für Organisation
                         TemplatetypID = 2005837, // FS-Online Emailtemplate für MultiMail
@@ -141,6 +142,7 @@ namespace Syncer.Flows
                     studioTemplate.EmailVon = onlineTemplate.EmailFrom;
                     studioTemplate.EmailAntwortAn = onlineTemplate.ReplyTo;
                     studioTemplate.EmailHTML = onlineTemplate.FsoEmailHtmlParsed;
+                    studioTemplate.EmailText = onlineTemplate.FsoEmailText;
 
                     studioTemplate.sosync_write_date = (onlineTemplate.Sosync_Write_Date ?? onlineTemplate.Write_Date).Value;
                     studioTemplate.noSyncJobSwitch = true;
