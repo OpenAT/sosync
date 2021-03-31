@@ -412,6 +412,7 @@ namespace Syncer.Flows
                     { "gdpr_accepted", person.person.DSGVOZugestimmt },
                     { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
+                    { "comment", person.person.Notiz },
                     { "fson_sosync_user", person.IsSyncUser },
                     { "fson_system_user", person.IsSystemUser },
                     { "fson_admin_user", person.IsAdminUser },
@@ -1061,6 +1062,7 @@ namespace Syncer.Flows
             dest.DSGVOZugestimmt = source.GdprAccepted;
             dest.SpendenmeldungUnterdrücken = source.PreventDonationDeduction;
             dest.last_sync_version = source.Sosync_Synced_Version;
+            dest.Notiz = source.Comment;
 
             int? zVerzeichnisID = null;
             if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
