@@ -11,7 +11,6 @@ namespace MassDataCorrection
     public class PillarProcessor
     {
         private string _path;
-        private SosyncVersion _version;
 
         public PillarProcessor(string instancePath)
         {

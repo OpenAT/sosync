@@ -20,10 +20,6 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.company")]
     public class CompanyFlow : ReplicateSyncFlow
     {
-        #region Members
-        private ILogger<CompanyFlow> _log;
-        #endregion
-
         #region Constructors
         public CompanyFlow(SyncServiceCollection svc)
             : base(svc)

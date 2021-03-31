@@ -1352,7 +1352,7 @@ from
                         //submission_url = submissionUrl
                     });
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     debug += "," + dummy + Environment.NewLine;
                 }
@@ -1447,8 +1447,10 @@ from
 
         private struct ArchiveProgress
         {
+#pragma warning disable CS0649 // Field filled dynamically via dapper
             public double Jobs;
             public double Archive;
+#pragma warning restore CS0649 // Field filled dynamically via dapper
         }
 
         private static Dictionary<string, int> _jobCounts = new Dictionary<string, int>();

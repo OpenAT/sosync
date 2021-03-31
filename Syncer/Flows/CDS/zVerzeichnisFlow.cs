@@ -142,12 +142,13 @@ namespace Syncer.Flows.CDS
                     studio.xBankverbindungIDFürEinzugsverträge = online.xbankverbindungidfuereinzugsvertraege;
 
                     // Obsolete
-
+#pragma warning disable CS0612 // Disable to remove warning clutter, block will be removed once fields are actually removed
                     studio.ÜbersteigendeBeiträgeproJahraufSpendenzVerzeichnisID = online.uebersteigendebeitraegeprojahraufspendenzverzeichnisid;
                     studio.VerwendungAlszMarketingID = online.verwendungalszmarketingid;
                     studio.SorterinHierarchie = online.sorterinhierarchie;
                     studio.Organisationseinheit = online.organisationseinheit;
                 });
+#pragma warning restore CS0612 // Disable to remove warning clutter, block will be removed once fields are actually removed
         }
     }
 }

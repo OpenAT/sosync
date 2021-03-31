@@ -361,7 +361,7 @@ namespace Syncer.Flows
                     return foundStudioID;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

@@ -27,10 +27,6 @@ namespace Syncer.Flows
     public abstract class ReplicateSyncFlow
         : SyncFlow
     {
-        #region Fields
-        private IServiceProvider svc;
-        #endregion
-
         #region Constructors
         public ReplicateSyncFlow(SyncServiceCollection svc)
             : base(svc)
@@ -211,7 +207,7 @@ namespace Syncer.Flows
                     var description = $"Transforming [{Job.Sync_Source_System}] {Job.Sync_Source_Model} ({Job.Sync_Source_Record_ID}) to [{Job.Sync_Target_System}] {Job.Sync_Target_Model} ({targetIdText})";
                     HandleTransformation(description, initialWriteDate, consistencyWatch, ref requireRestart, ref restartReason);
                 }
-                catch (ConsistencyException ex)
+                catch (ConsistencyException)
                 {
                     throw;
                 }

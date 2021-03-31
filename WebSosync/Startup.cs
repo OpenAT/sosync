@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -74,7 +75,7 @@ namespace WebSosync
             services.AddMvc(options =>
             {
                 // Add input and output formatters
-                options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
+                options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(null));
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             });
 
