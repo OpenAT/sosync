@@ -42,6 +42,11 @@ namespace Syncer.Flows.Payments
 
             RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.partner_id[0]), SosyncJobSourceType.Default);
 
+            if (online.giftee_partner_id != null && online.giftee_partner_id.Length > 1)
+            {
+                RequestChildJob(SosyncSystem.FSOnline, "res.partner", Convert.ToInt32(online.giftee_partner_id[0]), SosyncJobSourceType.Default);
+            }
+
             if (online.payment_tx_id != null && online.payment_tx_id.Length > 1)
                 RequestChildJob(SosyncSystem.FSOnline, "payment.transaction", Convert.ToInt32(online.payment_tx_id[0]), SosyncJobSourceType.Default);
 
@@ -70,6 +75,12 @@ namespace Syncer.Flows.Payments
                         x => x.partner_id,
                         true);
 
+                    var personIDGiftee = GetStudioIDFromOnlineReference(
+                        "dbo.Person",
+                        online,
+                        x => x.giftee_partner_id,
+                        false);
+
                     var paymentTransactionID = GetStudioIDFromOnlineReference(
                         "fson.payment_transaction",
                         online,
@@ -83,6 +94,7 @@ namespace Syncer.Flows.Payments
                         false);
 
                     studio.PersonID = personID;
+                    studio.PersonIDBeschenkt = personIDGiftee;
                     studio.payment_transactionID = paymentTransactionID;
                     studio.payment_acquirerID = acquirerID;
 
