@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dadi-data" Version="1.10.6" />
+    <PackageReference Include="dadi-data" Version="1.10.7" />
     <PackageReference Include="DaDi.MultiMail" Version="1.0.0" />
     <PackageReference Include="DaDi.Odoo" Version="1.9.18" />
     <PackageReference Include="Daemaged.NTP" Version="0.6.6" />
