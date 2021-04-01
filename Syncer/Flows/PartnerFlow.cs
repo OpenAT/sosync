@@ -412,11 +412,7 @@ namespace Syncer.Flows
                     { "gdpr_accepted", person.person.DSGVOZugestimmt },
                     { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
-                    { "comment", person.person.Notiz },
-                    { "fson_sosync_user", person.IsSyncUser },
-                    { "fson_system_user", person.IsSystemUser },
-                    { "fson_admin_user", person.IsAdminUser },
-                    { "fson_donor_user", person.IsDonorUser }
+                    { "comment", person.person.Notiz }
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
