@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "82b3de839f06762a3febb5ee728642fae684d7d7"
+    "signature": "08f638f64c98d7773c79752f8a1416639b35d96d"
   },
   "compilationOptions": {
     "defines": [
@@ -38,7 +38,6 @@
           "Microsoft.Extensions.Logging.Debug": "3.1.3",
           "Microsoft.NETCore.App": "2.2.0",
           "Microsoft.VisualStudio.Web.BrowserLink": "2.2.0",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "3.1.2",
           "Serilog.Enrichers.Environment": "2.1.3",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Syncer": "1.0.0",
@@ -68,7 +67,7 @@
           "lib/netstandard2.0/AutoMapper.dll": {}
         }
       },
-      "dadi-data/1.10.4": {
+      "dadi-data/1.10.7": {
         "dependencies": {
           "Dapper": "2.0.35",
           "Microsoft.EntityFrameworkCore": "3.1.3",
@@ -107,15 +106,15 @@
           "lib/netstandard2.0/DaDi.MultiMail.dll": {}
         }
       },
-      "DaDi.Odoo/1.9.13": {
+      "DaDi.Odoo/1.9.18": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.9",
           "Microsoft.CSharp": "4.7.0"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.9.13.0",
-            "fileVersion": "1.9.13.0"
+            "assemblyVersion": "1.9.18.0",
+            "fileVersion": "1.9.18.0"
           }
         },
         "compile": {
@@ -2037,17 +2036,6 @@
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.BrowserLink.dll": {}
-        }
-      },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Design/3.1.2": {
-        "runtime": {
-          "lib/net461/dotnet-aspnet-codegenerator-design.exe": {
-            "assemblyVersion": "3.1.2.0",
-            "fileVersion": "3.100.220.17701"
-          }
-        },
-        "compile": {
-          "lib/net461/dotnet-aspnet-codegenerator-design.exe": {}
         }
       },
       "Microsoft.Win32.Primitives/4.3.0": {
@@ -3997,7 +3985,7 @@
       "Syncer/1.0.0": {
         "dependencies": {
           "DaDi.MultiMail": "1.0.0",
-          "DaDi.Odoo": "1.9.13",
+          "DaDi.Odoo": "1.9.18",
           "Daemaged.NTP": "0.6.6",
           "HtmlAgilityPack": "1.11.23",
           "Microsoft.Extensions.Configuration": "3.1.3",
@@ -4006,7 +3994,7 @@
           "System.Reflection": "4.3.0",
           "WebSosync.Common": "1.0.0",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.10.4"
+          "dadi-data": "1.10.7"
         },
         "runtime": {
           "Syncer.dll": {}
@@ -4035,7 +4023,7 @@
           "PostgreSQLCopyHelper": "2.6.3",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.10.4"
+          "dadi-data": "1.10.7"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -4235,12 +4223,12 @@
       "path": "automapper/9.0.0",
       "hashPath": "automapper.9.0.0.nupkg.sha512"
     },
-    "dadi-data/1.10.4": {
+    "dadi-data/1.10.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-b36dqfMR+xJXiA/SfsiydAuTmxTAXFDW1C4TMJktlYoPQyJZo4PyFs6TquipeJgVcOAlYPORvmv+dNyLXizD0Q==",
-      "path": "dadi-data/1.10.4",
-      "hashPath": "dadi-data.1.10.4.nupkg.sha512"
+      "sha512": "sha512-9TtPeWMl+gNS6dGvNO9CVGapYID0gqHms6Y3fJxDmcLbT2Z/GnQp7wGCw9ZTJaMRNEUMWlW3xkQPNXzTsJkpcA==",
+      "path": "dadi-data/1.10.7",
+      "hashPath": "dadi-data.1.10.7.nupkg.sha512"
     },
     "DaDi.MultiMail/1.0.0": {
       "type": "package",
@@ -4249,12 +4237,12 @@
       "path": "dadi.multimail/1.0.0",
       "hashPath": "dadi.multimail.1.0.0.nupkg.sha512"
     },
-    "DaDi.Odoo/1.9.13": {
+    "DaDi.Odoo/1.9.18": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3noN8KrzkYcSSw6SRSvUw09NAinp8p0rghegJndKUtih1C4Ey3g7tytuN0rPIOKIx+C+QQ0HC4RqSKm57hlGbw==",
-      "path": "dadi.odoo/1.9.13",
-      "hashPath": "dadi.odoo.1.9.13.nupkg.sha512"
+      "sha512": "sha512-MTpLUZwNIHBMOrdwvzRZTV4J1xzF0I4bKumJc5jxigYZL74ohfR3Y53yWorfGUk824XgxGg/0aCrPGu0qcKpsA==",
+      "path": "dadi.odoo/1.9.18",
+      "hashPath": "dadi.odoo.1.9.18.nupkg.sha512"
     },
     "DaDi.XmlRpc/1.0.9": {
       "type": "package",
@@ -5095,13 +5083,6 @@
       "sha512": "sha512-5iEvISSbDBmZFDwO9uz5xXt3gZTTTb/nL8GPwuyc2++h7GRSD1sHdmBIaRnZ6QSHeqQt5tcZtAmGByZpdg6+bw==",
       "path": "microsoft.visualstudio.web.browserlink/2.2.0",
       "hashPath": "microsoft.visualstudio.web.browserlink.2.2.0.nupkg.sha512"
-    },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Design/3.1.2": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-cXphrOlxlxxHnliO+IqeXi+nW86xFbnD8e+26qELx21LYE3Rw0NGvk9seKMMvWOyUsgGoQNAx8Yoo7rpj6Cptw==",
-      "path": "microsoft.visualstudio.web.codegeneration.design/3.1.2",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.design.3.1.2.nupkg.sha512"
     },
     "Microsoft.Win32.Primitives/4.3.0": {
       "type": "package",
