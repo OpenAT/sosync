@@ -45,7 +45,14 @@ namespace Syncer.Flows.zGruppeSystem
                     online.Add("ja_gui_anzeige", studio.JaGuianzeige);
                     online.Add("nein_gui_anzeige", studio.NeinGuianzeige);
                     online.Add("gui_gruppen_bearbeiten_moeglich", studio.GUIGruppenBearbeitenMöglich);
-                    online.Add("nur_eine_gruppe_anmelden", studio.MehrEinträgeInGruppeMöglich);
+
+                    /*
+                     * MehrEinträgeInGruppeMöglich --> nur_eine_gruppe_anmelden
+                     *      NULL --> True
+                     *      False --> True
+                     *      True --> False
+                     */
+                    online.Add("nur_eine_gruppe_anmelden", !(studio.MehrEinträgeInGruppeMöglich ?? false));
                 });
         }
 
@@ -64,7 +71,13 @@ namespace Syncer.Flows.zGruppeSystem
                     studio.JaGuianzeige = online.ja_gui_anzeige;
                     studio.NeinGuianzeige = online.nein_gui_anzeige;
                     studio.GUIGruppenBearbeitenMöglich = online.gui_gruppen_bearbeiten_moeglich;
-                    studio.MehrEinträgeInGruppeMöglich = online.nur_eine_gruppe_anmelden;
+
+                    /*
+                     *  nur_eine_gruppe_anmelden --> MehrEinträgeInGruppeMöglich
+                     *      False --> True
+                     *      True --> False
+                     */
+                    studio.MehrEinträgeInGruppeMöglich = !online.nur_eine_gruppe_anmelden;
                 });
         }
     }
