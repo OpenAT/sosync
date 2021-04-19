@@ -48,11 +48,11 @@ namespace Syncer.Flows.zGruppeSystem
 
                     /*
                      * MehrEinträgeInGruppeMöglich --> nur_eine_gruppe_anmelden
-                     *      NULL --> True
+                     *      NULL --> False
                      *      False --> True
                      *      True --> False
                      */
-                    online.Add("nur_eine_gruppe_anmelden", !(studio.MehrEinträgeInGruppeMöglich ?? false));
+                    online.Add("nur_eine_gruppe_anmelden", !(studio.MehrEinträgeInGruppeMöglich ?? true));
                 });
         }
 
