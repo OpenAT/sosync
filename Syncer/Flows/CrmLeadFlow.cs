@@ -156,6 +156,7 @@ namespace Syncer.Flows
                     studio.payment_mode = (string)online.payment_mode?[1];
 
                     studio.type = online.type;
+                    studio.frst_import_type = online.frst_import_type;
 
                     studio.fso_write_date = online.write_date;
                     studio.fso_create_date = online.create_date;
