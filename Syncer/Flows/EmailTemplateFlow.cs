@@ -102,7 +102,7 @@ namespace Syncer.Flows
                         Anlagedatum = DateTime.Now,
 
                         sosync_write_date = (onlineTemplate.Sosync_Write_Date ?? onlineTemplate.Write_Date).Value,
-                    sosync_fso_id = onlineID,
+                        sosync_fso_id = onlineID,
                         noSyncJobSwitch = true
                     };
 
