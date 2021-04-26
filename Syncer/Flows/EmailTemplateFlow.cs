@@ -96,7 +96,11 @@ namespace Syncer.Flows
 
                         TemplateFürtypID = 109610, // Für Organisation
                         TemplatetypID = 2005837, // FS-Online Emailtemplate für MultiMail
-                        GültigBis = new DateTime(2099, 12, 31),
+                        
+                        GültigBis = onlineTemplate.Active
+                            ? new DateTime(2099, 12, 31)
+                            : DateTime.Today.AddDays(-1),
+                        
                         xTemplatetypID = 0,
 
                         Anlagedatum = DateTime.Now,
@@ -143,6 +147,11 @@ namespace Syncer.Flows
                     studioTemplate.EmailAntwortAn = onlineTemplate.ReplyTo;
                     studioTemplate.EmailHTML = onlineTemplate.FsoEmailHtmlParsed;
                     studioTemplate.EmailText = onlineTemplate.FsoEmailText;
+
+                    if (onlineTemplate.Active == false)
+                    {
+                        studioTemplate.GültigBis = DateTime.Today.AddDays(-1);
+                    }
 
                     studioTemplate.sosync_write_date = (onlineTemplate.Sosync_Write_Date ?? onlineTemplate.Write_Date).Value;
                     studioTemplate.noSyncJobSwitch = true;
