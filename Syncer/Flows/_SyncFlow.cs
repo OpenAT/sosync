@@ -192,6 +192,39 @@ namespace Syncer.Flows
             return result;
         }
 
+        public int? GetStudioIDFromOnlineReference<T>(
+            string studioModelName,
+            T onlineModel,
+            Expression<Func<T, int?>> expression,
+            bool required)
+        {
+            var memberExpression = expression.Body as MemberExpression;
+
+            if (memberExpression == null)
+                throw new ArgumentException($"{nameof(expression)} is expected to be a property expression.");
+
+            int? result = null;
+            var value = (int?)onlineModel.GetType().GetProperty(memberExpression.Member.Name).GetValue(onlineModel);
+
+            if (value != null && value.Value > 0)
+            {
+                var odooID = Convert.ToInt32(value);
+
+                result = GetStudioIDFromMssqlViaOnlineID(
+                    studioModelName,
+                    Svc.MdbService.GetStudioModelIdentity(studioModelName),
+                    odooID);
+
+                if (odooID > 0 && !result.HasValue)
+                    throw new SyncerException($"{nameof(GetStudioIDFromOnlineReference)}: {studioModelName} not found via sosync_fso_id = {odooID}.");
+            }
+
+            if (required && result == null)
+                throw new MissingForeignKeyException($"Property {onlineModel.GetType().Name}.{memberExpression.Member.Name} is null, but was specified required.");
+
+            return result;
+        }
+
         protected int? GetCountryIdForLandId(int? landID)
         {
             string isoCode = Svc.MdbService.GetIsoCodeForLandID(landID);
