@@ -25,6 +25,8 @@ namespace Syncer.Services
         /// </summary>
         public ReadOnlyCollection<Type> FlowTypes { get; private set; }
         public ReadOnlyDictionary<string, int> ModelPriorities { get; private set; }
+        public ReadOnlyDictionary<string, string> FsModelMap { get; private set; }
+        public ReadOnlyDictionary<string, string> FsoModelMap { get; private set; }
         #endregion
 
         #region Constructors
@@ -46,6 +48,9 @@ namespace Syncer.Services
             types.AddRange(GetAllFlowTypes());
             FlowTypes = types.AsReadOnly();
 
+            var fsModelMap = new Dictionary<string, string>();
+            var fsoModelMap = new Dictionary<string, string>();
+
             var modelPriorities = new Dictionary<string, int>();
             foreach (var flowType in FlowTypes)
             {
@@ -55,6 +60,9 @@ namespace Syncer.Services
                 var studioModelAttribute = flowType.GetTypeInfo().GetCustomAttribute<StudioModelAttribute>();
                 var onlineModelAttribute = flowType.GetTypeInfo().GetCustomAttribute<OnlineModelAttribute>();
 
+                fsModelMap[studioModelAttribute.Name] = onlineModelAttribute.Name;
+                fsoModelMap[onlineModelAttribute.Name] = studioModelAttribute.Name;
+
                 if (priorityAttribute != null)
                 {
                     modelPriorities.Add(studioModelAttribute.Name, priorityAttribute.Priority);
@@ -63,6 +71,8 @@ namespace Syncer.Services
             }
 
             ModelPriorities = new ReadOnlyDictionary<string, int>(modelPriorities);
+            FsModelMap = new ReadOnlyDictionary<string, string>(fsModelMap);
+            FsoModelMap = new ReadOnlyDictionary<string, string>(fsoModelMap);
 
             _registered = true;
         }
