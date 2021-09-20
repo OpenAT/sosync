@@ -17,6 +17,7 @@ namespace Syncer.Services
         public SerializationService Serializer { get; private set; }
         public SosyncOptions Config { get; private set; }
         public FlowService FlowService { get; private set; }
+        public HtmlService HtmlService { get; private set; }
 
         public SyncServiceCollection(
             OdooService odooSvc,
@@ -25,7 +26,8 @@ namespace Syncer.Services
             OdooFormatService odooFormatService,
             SerializationService serializationService,
             MdbService mdbService,
-            TypeService typeService)
+            TypeService typeService,
+            HtmlService htmlService)
         {
             OdooService = odooSvc;
             Config = conf;
@@ -34,6 +36,7 @@ namespace Syncer.Services
             Serializer = serializationService;
             MdbService = mdbService;
             TypeService = typeService;
+            HtmlService = htmlService;
         }
     }
 }
