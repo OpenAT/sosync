@@ -35,10 +35,15 @@ namespace Syncer.Flows
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
             var mm = Svc.OdooService.Client.GetDictionary("mail.message", onlineID, new string[] { "model", "res_id" });
-            if ((string)mm["model"] == "res.partner")
+            var odooModel = (string)mm["model"];
+            var resId = OdooConvert.ToInt32((string)mm["res_id"]);
+
+            var modelIsInSync = Svc.FlowService.FsoModelMap.ContainsKey(odooModel);
+            var resIdPresent = resId != null && resId.Value > 0;
+
+            if (modelIsInSync && resIdPresent)
             {
-                var partnerID = OdooConvert.ToInt32((string)mm["res_id"]);
-                RequestChildJob(SosyncSystem.FSOnline, "res.partner", partnerID.Value, SosyncJobSourceType.Default);
+                RequestChildJob(SosyncSystem.FSOnline, odooModel, resId.Value, SosyncJobSourceType.Default);
             }
         }
 
@@ -50,17 +55,19 @@ namespace Syncer.Flows
                studioModel => studioModel.mail_messageID,
                (online, studio) =>
                {
-                   int? personID = null;
-                   if (online.Model == "res.partner")
+                   int? resFsID = null;
+
+                   if (Svc.FlowService.FsoModelMap.ContainsKey(online.Model))
                    {
-                       personID = GetStudioIDFromOnlineReference(
-                            "dbo.Person",
+                       var studioModelName = Svc.FlowService.FsoModelMap[online.Model];
+                       resFsID = GetStudioIDFromOnlineReference(
+                            studioModelName,
                             online,
                             x => x.ResId,
                             false);
                    }
 
-                   studio.PersonID = personID;
+                   studio.ResFsID = resFsID;
                    studio.subject = online.Subject;
                    studio.body = online.Body;
                    studio.model = online.Model;
@@ -68,6 +75,7 @@ namespace Syncer.Flows
                    studio.record_name = online.RecordName;
                    studio.subtype_xml_id = online.SubtypeXmlId;
                    studio.fso_create_date = online.CreateDate;
+                   studio.AnlageAmUm = studio.AnlageAmUm ?? DateTime.Now;
                });
         }
     }
