@@ -69,7 +69,10 @@ namespace Syncer.Flows
 
                    studio.ResFsID = resFsID;
                    studio.subject = online.Subject;
+
                    studio.body = online.Body;
+                   studio.bodyText = Svc.HtmlService.GetPlainTextFromPartialHtml(online.Body);
+
                    studio.model = online.Model;
                    studio.res_id = online.ResId;
                    studio.record_name = online.RecordName;
