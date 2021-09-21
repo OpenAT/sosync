@@ -93,6 +93,8 @@ namespace Syncer.Flows.Payments
                         x => x.payment_acquirer_id,
                         false);
 
+                    studio.name = online.name;
+
                     studio.PersonID = personID;
                     studio.PersonIDBeschenkt = personIDGiftee;
                     studio.payment_transactionID = paymentTransactionID;
