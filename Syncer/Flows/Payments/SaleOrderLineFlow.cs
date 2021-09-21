@@ -16,6 +16,7 @@ using WebSosync.Data;
 using WebSosync.Data.Models;
 using WebSosync.Data.Extensions;
 using WebSosync.Data.Constants;
+using DaDi.Odoo;
 
 namespace Syncer.Flows.Payments
 {
@@ -59,6 +60,24 @@ namespace Syncer.Flows.Payments
             base.SetupOnlineToStudioChildJobs(onlineID);
         }
 
+        private decimal? GetSingleOrDefaultTaxValue(int[] odooTaxIDs)
+        {
+            if (odooTaxIDs.Length > 1)
+            {
+                throw new NotSupportedException($"The sale.order.line has {odooTaxIDs.Length} taxes assigned. Only 1 is currently supported.");
+            }
+
+            decimal? result = null;
+
+            if (odooTaxIDs != null && odooTaxIDs.Length > 0)
+            {
+                var taxData = Svc.OdooService.Client.GetDictionary("account.tax", odooTaxIDs[0], new[] { "amount" });
+                result = OdooConvert.ParseStringDecimal((string)taxData["amount"]);
+            }
+
+            return result;
+        }
+
         protected override void TransformToOnline(int studioID, TransformType action)
         {
             throw new NotSupportedException($"{StudioModelName} cannot be synced to {SosyncSystem.FSOnline.Value}");
@@ -94,9 +113,13 @@ namespace Syncer.Flows.Payments
                     studio.product_productID = productID;
                     studio.product_payment_intervalID = intervalID;
 
+                    studio.price_subtotal = online.price_subtotal;
                     studio.price_donate = online.price_donate;
                     studio.price_unit = online.price_unit;
                     studio.product_uos_qty = online.product_uos_qty;
+
+                    studio.Steuer = GetSingleOrDefaultTaxValue(online.tax_id);
+                    
                     studio.state = online.state;
                     studio.fs_ptoken = online.fs_ptoken;
                     studio.fs_origin = online.fs_origin;
