@@ -1,26 +1,26 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "8222d9daf4d2d0be066e3e684f5b7fde863345dc"
+    "signature": "2e598412007dfffa51c05c9c05b737ff1a023eca"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "MassDataCorrection/1.0.0": {
         "dependencies": {
-          "DaDi.Odoo": "1.9.20",
+          "DaDi.Odoo": "1.9.25",
           "DaDi.Saltstack": "1.0.2",
           "Dapper": "2.0.35",
           "Npgsql": "4.1.3.1",
           "System.Data.SqlClient": "4.8.1",
           "WebSosync.Data": "1.0.0",
-          "dadi-data": "1.10.8"
+          "dadi-data": "1.10.14"
         },
         "runtime": {
           "MassDataCorrection.dll": {}
         }
       },
-      "dadi-data/1.10.8": {
+      "dadi-data/1.10.14": {
         "dependencies": {
           "Dapper": "2.0.35",
           "Microsoft.EntityFrameworkCore": "3.1.3",
@@ -38,15 +38,15 @@
           }
         }
       },
-      "DaDi.Odoo/1.9.20": {
+      "DaDi.Odoo/1.9.25": {
         "dependencies": {
           "DaDi.XmlRpc": "1.0.9",
           "Microsoft.CSharp": "4.4.1"
         },
         "runtime": {
           "lib/netstandard2.0/DaDi.Odoo.dll": {
-            "assemblyVersion": "1.9.20.0",
-            "fileVersion": "1.9.20.0"
+            "assemblyVersion": "1.9.25.0",
+            "fileVersion": "1.9.25.0"
           }
         }
       },
@@ -722,7 +722,7 @@
           "PostgreSQLCopyHelper": "2.6.3",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.10.8"
+          "dadi-data": "1.10.14"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
@@ -736,19 +736,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.10.8": {
+    "dadi-data/1.10.14": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-RzFD9XcR+W2parkHsUS+OdLhJUun/CJlDWS7Zxkh+8ShnSTQPoHwAvkTblHewblhcl95wHhihSEyyt1lKO8jZA==",
-      "path": "dadi-data/1.10.8",
-      "hashPath": "dadi-data.1.10.8.nupkg.sha512"
+      "sha512": "sha512-pL6Xt7VCKp/eL4HdHLLFejg4C6lkaqh4iYgP3CDIoQEqmbTO5kGMWSBRWhlTlVEooqNNwTWpbf2iumJV8RH+Ow==",
+      "path": "dadi-data/1.10.14",
+      "hashPath": "dadi-data.1.10.14.nupkg.sha512"
     },
-    "DaDi.Odoo/1.9.20": {
+    "DaDi.Odoo/1.9.25": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Xfh55h8NGUCGtKg7Tj7TYdmpaVvK8TMEvXtID1ap9ocBuZn+TTXWJhY4kK1M1YoC0uXgNvkuZDl4AKmXXABaMQ==",
-      "path": "dadi.odoo/1.9.20",
-      "hashPath": "dadi.odoo.1.9.20.nupkg.sha512"
+      "sha512": "sha512-2fN3Rz69IpbqtyH4LYoWa/TemsBSzTl+ukaQ7R2NcU5eXR6SxouwqEYih3ueR2FzSmNH/4OwxybxvM2YtG5VpA==",
+      "path": "dadi.odoo/1.9.25",
+      "hashPath": "dadi.odoo.1.9.25.nupkg.sha512"
     },
     "DaDi.Saltstack/1.0.2": {
       "type": "package",
@@ -1236,7 +1236,7 @@
     "System.ValueTuple/4.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
+      "sha512": "sha512-xZtSZNEHGa+tGsKuP4sh257vxJ/yemShz4EusmomkynMzuEDDjVaErBNewpzEF6swUgbcrSQAX3ELsEp1zCOwA==",
       "path": "system.valuetuple/4.5.0",
       "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
     },

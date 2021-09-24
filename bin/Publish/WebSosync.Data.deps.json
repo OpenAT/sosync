@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "8cecfeb88b25edd797d9c166a66b4429d769ba25"
+    "signature": "19264f2dc4abdf114828feb76d06c9a0942bac5a"
   },
   "compilationOptions": {},
   "targets": {
@@ -16,13 +16,13 @@
           "PostgreSQLCopyHelper": "2.6.3",
           "System.ComponentModel.TypeConverter": "4.3.0",
           "System.Runtime.Serialization.Primitives": "4.3.0",
-          "dadi-data": "1.10.8"
+          "dadi-data": "1.10.14"
         },
         "runtime": {
           "WebSosync.Data.dll": {}
         }
       },
-      "dadi-data/1.10.8": {
+      "dadi-data/1.10.14": {
         "dependencies": {
           "Dapper": "2.0.35",
           "Microsoft.EntityFrameworkCore": "3.1.3",
@@ -1254,12 +1254,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "dadi-data/1.10.8": {
+    "dadi-data/1.10.14": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-RzFD9XcR+W2parkHsUS+OdLhJUun/CJlDWS7Zxkh+8ShnSTQPoHwAvkTblHewblhcl95wHhihSEyyt1lKO8jZA==",
-      "path": "dadi-data/1.10.8",
-      "hashPath": "dadi-data.1.10.8.nupkg.sha512"
+      "sha512": "sha512-pL6Xt7VCKp/eL4HdHLLFejg4C6lkaqh4iYgP3CDIoQEqmbTO5kGMWSBRWhlTlVEooqNNwTWpbf2iumJV8RH+Ow==",
+      "path": "dadi-data/1.10.14",
+      "hashPath": "dadi-data.1.10.14.nupkg.sha512"
     },
     "Dapper/2.0.35": {
       "type": "package",
@@ -1390,7 +1390,7 @@
     "Microsoft.NETCore.Platforms/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A==",
+      "sha512": "sha512-bLpT1f/SFlO1CzqXG12KnJzpZs6lv24uX2Rzi4Fmm0noJpNlnWRVryuO3yK18Ca04t/YHcO1e1Z0WDfjseqNzw==",
       "path": "microsoft.netcore.platforms/1.1.0",
       "hashPath": "microsoft.netcore.platforms.1.1.0.nupkg.sha512"
     },
@@ -2041,7 +2041,7 @@
     "System.ValueTuple/4.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
+      "sha512": "sha512-xZtSZNEHGa+tGsKuP4sh257vxJ/yemShz4EusmomkynMzuEDDjVaErBNewpzEF6swUgbcrSQAX3ELsEp1zCOwA==",
       "path": "system.valuetuple/4.5.0",
       "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
     },
