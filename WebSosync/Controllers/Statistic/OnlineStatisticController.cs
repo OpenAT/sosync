@@ -53,16 +53,36 @@ namespace WebSosync.Controllers.Statistic
 
             var result = await Task.Run(() => {
                 var stat = new FlowStatistic();
-                var searchArgs = new List<OdooSearchArgument>();
-                searchArgs.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
 
-                var searchArgs2 = new List<OdooSearchArgument>();
-                searchArgs2.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+                var searchArgsFalse = new List<OdooSearchArgument>();
+                searchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
+
+                var searchArgsZero = new List<OdooSearchArgument>();
+                searchArgsZero.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+
+                var messageSearchArgsFalse = new List<OdooSearchArgument>();
+                messageSearchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
+                messageSearchArgsFalse.Add(new OdooSearchArgument("subtype_id", "=ilike", "fso_mail_message_subtypes%"));
+
+                var messageSearchArgsZero = new List<OdooSearchArgument>();
+                messageSearchArgsZero.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+                messageSearchArgsZero.Add(new OdooSearchArgument("subtype_id", "=ilike", "fso_mail_message_subtypes%"));
+
+                var searchArgs = searchArgsFalse;
+                var searchArgs2 = searchArgsZero;
 
                 foreach (var flowName in flowNames)
                 {
                     try
                     {
+                        if (flowName == "mail.message")
+                        {
+                            // Only specific mail.message sub types are synchronized, so a
+                            // different search domain is used to check for unsynchronized
+                            searchArgs = messageSearchArgsFalse;
+                            searchArgs2 = messageSearchArgsZero;
+                        }
+
                         stat.UnsynchronizedModelsCount.Add(
                             flowName,
                             _odoo.Client.SearchCount(flowName, searchArgs)
