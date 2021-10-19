@@ -62,11 +62,11 @@ namespace WebSosync.Controllers.Statistic
 
                 var messageSearchArgsFalse = new List<OdooSearchArgument>();
                 messageSearchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
-                messageSearchArgsFalse.Add(new OdooSearchArgument("subtype_id", "=ilike", "fso_mail_message_subtypes%"));
+                messageSearchArgsFalse.Add(new OdooSearchArgument("subtype_xml_id", "=ilike", "fso_mail_message_subtypes%"));
 
                 var messageSearchArgsZero = new List<OdooSearchArgument>();
                 messageSearchArgsZero.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
-                messageSearchArgsZero.Add(new OdooSearchArgument("subtype_id", "=ilike", "fso_mail_message_subtypes%"));
+                messageSearchArgsZero.Add(new OdooSearchArgument("subtype_xml_id", "=ilike", "fso_mail_message_subtypes%"));
 
                 var searchArgs = searchArgsFalse;
                 var searchArgs2 = searchArgsZero;
