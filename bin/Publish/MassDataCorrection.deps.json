@@ -739,7 +739,7 @@
     "dadi-data/1.10.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-RzFD9XcR+W2parkHsUS+OdLhJUun/CJlDWS7Zxkh+8ShnSTQPoHwAvkTblHewblhcl95wHhihSEyyt1lKO8jZA==",
+      "sha512": "sha512-dxO3dj95cmtrKCf01vtQ75qF/wmX7KxrVy9bADfNCLIDAwz2ZB6j1jm7BlTUQjEhLg7ZYDKxjEX48YoqZvLAtw==",
       "path": "dadi-data/1.10.8",
       "hashPath": "dadi-data.1.10.8.nupkg.sha512"
     },
@@ -1236,7 +1236,7 @@
     "System.ValueTuple/4.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
+      "sha512": "sha512-xZtSZNEHGa+tGsKuP4sh257vxJ/yemShz4EusmomkynMzuEDDjVaErBNewpzEF6swUgbcrSQAX3ELsEp1zCOwA==",
       "path": "system.valuetuple/4.5.0",
       "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
     },
