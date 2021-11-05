@@ -54,11 +54,14 @@ namespace WebSosync.Controllers.Statistic
             var result = await Task.Run(() => {
                 var stat = new FlowStatistic();
 
-                var searchArgsFalse = new List<OdooSearchArgument>();
-                searchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
+                var otherSearchArgsFalse = new List<OdooSearchArgument>();
+                otherSearchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
 
-                var searchArgsZero = new List<OdooSearchArgument>();
-                searchArgsZero.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+                var otherSearchArgsZero = new List<OdooSearchArgument>();
+                otherSearchArgsZero.Add(new OdooSearchArgument("sosync_fs_id", "=", 0));
+
+                var searchArgsFalse = otherSearchArgsFalse;
+                var searchArgsZero = otherSearchArgsZero;
 
                 var messageSearchArgsFalse = new List<OdooSearchArgument>();
                 messageSearchArgsFalse.Add(new OdooSearchArgument("sosync_fs_id", "=", false));
@@ -81,6 +84,11 @@ namespace WebSosync.Controllers.Statistic
                             // different search domain is used to check for unsynchronized
                             searchArgs = messageSearchArgsFalse;
                             searchArgs2 = messageSearchArgsZero;
+                        }
+                        else
+                        {
+                            searchArgs = otherSearchArgsFalse;
+                            searchArgs2 = otherSearchArgsZero;
                         }
 
                         stat.UnsynchronizedModelsCount.Add(
