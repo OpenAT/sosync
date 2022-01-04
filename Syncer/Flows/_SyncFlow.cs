@@ -605,8 +605,8 @@ namespace Syncer.Flows
                                 }
                             }
 
-                            // Be sure to use logic & operator
-                            if (childJob.Job_State == SosyncState.Done.Value)
+                            if (childJob.Job_State == SosyncState.Done.Value
+                                || childJob.Job_State == SosyncState.Skipped.Value)
                                 allChildJobsFinished &= true;
                             else
                                 allChildJobsFinished &= false;
@@ -709,8 +709,8 @@ namespace Syncer.Flows
 
                                 flow.Start(flowService, entry, DateTime.UtcNow, ref requireRestart, ref restartReason);
 
-                                // Be sure to use logic & operator
-                                if (entry.Job_State == SosyncState.Done.Value)
+                                if (childJob.Job_State == SosyncState.Done.Value
+                                    || childJob.Job_State == SosyncState.Skipped.Value)
                                     allChildJobsFinished &= true;
                                 else
                                     allChildJobsFinished &= false;
