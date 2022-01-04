@@ -111,13 +111,13 @@ namespace Syncer.Flows
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
+                if (result.person == null)
+                    throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, StudioModelName, PersonID);
+
                 result.IsSyncUser = personSvc.IsInPersonGroup(result.person.PersonID, 130045);
                 result.IsSystemUser = personSvc.IsInPersonGroup(result.person.PersonID, 130046);
                 result.IsAdminUser = personSvc.IsInPersonGroup(result.person.PersonID, 130047);
                 result.IsDonorUser = personSvc.IsInPersonGroup(result.person.PersonID, 130048);
-
-                if (result.person == null)
-                    throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, StudioModelName, PersonID);
 
                 result.address = (from iterAddress in addressSvc.Read(new { PersonID = PersonID })
                                   where iterAddress.GültigVon <= DateTime.Today &&
