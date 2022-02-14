@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using WebSosync.Converters;
 
 namespace WebSosync.Models
 {
     public class JobDto
     {
         [Required]
+        [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime job_date { get; set; }
         
         [Required]
@@ -33,6 +36,7 @@ namespace WebSosync.Models
         public int? job_source_target_record_id { get; set; }
 
         [Required]
+        [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime job_source_sosync_write_date { get; set; }
         
         public Dictionary<string, string> job_source_fields { get; set; }

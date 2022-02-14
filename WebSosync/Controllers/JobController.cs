@@ -85,7 +85,7 @@ namespace WebSosync.Controllers
 
             var job = ParseJob(services, data);
             // create_date wurde bisher bei dieser route nicht gesetz, jobs konnten nicht mehr verarbeitet werden, weil nciht mehr in dem new jobs select:
-            job.Create_Date = new DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Unspecified);
+            job.Create_Date = DateTime.UtcNow;
             StoreJob(services, job);
             result.ID = job.ID;
 
@@ -212,8 +212,8 @@ namespace WebSosync.Controllers
                 Job_Source_System = GetNodeValue<string>(data["job_source_system"]),
                 Job_Source_Model = GetNodeValue<string>(data["job_source_model"]),
                 Job_Source_Record_ID = GetNodeValue<Int32>(data["job_source_record_id"]),
-                Write_Date = new DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Unspecified),
-                Create_Date = new DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Unspecified)
+                Write_Date = DateTime.UtcNow,
+                Create_Date = DateTime.UtcNow
             };
 
             if (data.ContainsKey("job_source_type"))
@@ -312,7 +312,7 @@ namespace WebSosync.Controllers
         private void StoreJobs(IServiceProvider services, List<SyncJob> jobs)
         {
             var s = Stopwatch.StartNew();
-            var create_date = new DateTime(DateTime.UtcNow.Ticks, DateTimeKind.Unspecified);
+            var create_date = DateTime.UtcNow;
 
             // Only map relevant fields
             var bulk = new PostgreSQLCopyHelper<SyncJob>("public", "sosync_job")

@@ -66,6 +66,8 @@ namespace WebSosync
         /// <param name="services">The service collection used to add new services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             // Register the SosyncOptions class as a singleton, configured with
             // the configuration section "sosync"
             services.ConfigurePoco<SosyncOptions>(Configuration.GetSection("sosync"));
