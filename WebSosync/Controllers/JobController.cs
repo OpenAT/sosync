@@ -162,15 +162,6 @@ namespace WebSosync.Controllers
         [RequestSizeLimit(1073741824000)]
         public async Task<IActionResult> Post([FromBody]JobDto[] jobs)
         {
-            //// For debugging purposes
-            //Request.EnableBuffering();
-            //Request.Body.Seek(0, System.IO.SeekOrigin.Begin);
-            //var rawRequest = "";
-            //using (var sr = new System.IO.StreamReader(Request.Body))
-            //{
-            //    rawRequest = await sr.ReadToEndAsync();
-            //}
-
             if (ModelState.IsValid)
             {
                 var jobEntities = jobs
