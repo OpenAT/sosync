@@ -77,6 +77,7 @@ namespace WebSosync
                 // Add input and output formatters
                 options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(null));
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+                options.EnableEndpointRouting = false;
             });
 
             // Dependency Injection (DI) cheat list:
@@ -87,6 +88,7 @@ namespace WebSosync
             // What about disposing? DI container takes care of that.
 
             // Register singleton classes with DI container
+            services.AddLogging(opt => opt.AddConsole());
             services.AddSingleton<IServiceCollection>(services);
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<TimeService>();
@@ -145,10 +147,6 @@ namespace WebSosync
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider svc)
         {
             var sosyncConfig = svc.GetService<SosyncOptions>();
-
-            loggerFactory
-                .AddConsole(Configuration.GetSection("Logging"));
-
             var log = (Microsoft.Extensions.Logging.ILogger)loggerFactory.CreateLogger<Startup>();
             var logFile = Path.GetFullPath(sosyncConfig.Log_File);
 
