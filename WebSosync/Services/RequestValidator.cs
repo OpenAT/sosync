@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using WebSosync.Data.Constants;
 using WebSosync.Enumerations;
@@ -13,7 +14,7 @@ namespace WebSosync.Services
     {
         public static object SosyncJobState { get; private set; }
 
-        public static bool ValidateInterface(JobResultDto result, Dictionary<string, object> data)
+        public static bool ValidateInterface(JobResultDto result, JsonObject data)
         {
             var validationResult = true;
 
@@ -41,7 +42,7 @@ namespace WebSosync.Services
             return validationResult;
         }
 
-        public static bool ValidateData(JobResultDto result, Dictionary<string, object> data, string dateFormat)
+        public static bool ValidateData(JobResultDto result, JsonObject data, string dateFormat)
         {
             var dataErrors = new Dictionary<string, string>();
 
@@ -103,13 +104,13 @@ namespace WebSosync.Services
             }
         }
 
-        private static void CheckFieldExists(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList)
+        private static void CheckFieldExists(string fieldName, JsonObject data, Dictionary<string, string> errorList)
         {
             if (!data.ContainsKey(fieldName))
                 errorList.Add(fieldName, $"Field {fieldName} not specified.");
         }
 
-        private static void CheckDataEmpty(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList)
+        private static void CheckDataEmpty(string fieldName, JsonObject data, Dictionary<string, string> errorList)
         {
             if (data[fieldName] == null)
             {
@@ -124,7 +125,7 @@ namespace WebSosync.Services
             }
         }
 
-        private static void CheckTimeFormat(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList, string exactFormat)
+        private static void CheckTimeFormat(string fieldName, JsonObject data, Dictionary<string, string> errorList, string exactFormat)
         {
             var check = DateTime.TryParseExact(
                 (string)data[fieldName],
@@ -137,7 +138,7 @@ namespace WebSosync.Services
                 errorList.Add(fieldName, $"Field {fieldName} must have the format: {DateTime.Now.ToString(exactFormat, CultureInfo.InvariantCulture)}");
         }
 
-        private static void CheckInteger(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList, int? min, int? max)
+        private static void CheckInteger(string fieldName, JsonObject data, Dictionary<string, string> errorList, int? min, int? max)
         {
             bool check = false;
             long i = -1;
@@ -148,15 +149,8 @@ namespace WebSosync.Services
                 return;
             }
 
-            if (data[fieldName].GetType() == typeof(string))
-            {
-                check = long.TryParse((string)data[fieldName], out i);
-            }
-            else if (data[fieldName].GetType() == typeof(int) || data[fieldName].GetType() == typeof(long))
-            {
-                check = true;
-                i = (long)data[fieldName];
-            }
+            var fieldValue = data[fieldName].ToString();
+            check = long.TryParse(fieldValue, out i);
 
             if (!check)
             {
@@ -171,9 +165,9 @@ namespace WebSosync.Services
                 errorList.Add(fieldName, $"Field {fieldName} cannot be greater than {max.Value}.");
         }
 
-        private static void CheckList(string fieldName, Dictionary<string, object> data, Dictionary<string, string> errorList, IList<string> possibleValues)
+        private static void CheckList(string fieldName, JsonObject data, Dictionary<string, string> errorList, IList<string> possibleValues)
         {
-            if (!possibleValues.Contains(data[fieldName]))
+            if (!possibleValues.Contains(data[fieldName].ToString()))
                 errorList.Add(fieldName, $"Field {fieldName} must be one of the values [{string.Join(", ", possibleValues)}]");
         }
 
