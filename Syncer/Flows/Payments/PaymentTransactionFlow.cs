@@ -52,6 +52,17 @@ namespace Syncer.Flows.Payments
                     studio.reference = online.reference;
                     studio.fso_create_date = online.create_date.Value;
                     studio.amount = online.amount;
+
+                    studio.consale_provider_name = online.consale_provider_name;
+                    studio.consale_method = online.consale_method;
+                    studio.consale_method_other = online.consale_method_other;
+                    studio.consale_method_brand = online.consale_method_brand;
+                    studio.consale_method_directdebit_provider = online.consale_method_directdebit_provider;
+                    studio.consale_method_account_owner = online.consale_method_account_owner;
+                    studio.consale_method_account_iban = online.consale_method_account_iban;
+                    studio.consale_method_account_bic = online.consale_method_account_bic;
+                    studio.consale_method_account_bank = online.consale_method_account_bank;
+                    studio.consale_recurring_payment_provider = online.consale_recurring_payment_provider;
                 });
         }
     }
