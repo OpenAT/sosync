@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSosync", "WebSosync\WebSosync.csproj", "{4507CB8E-422F-4C4F-884C-2849A2209F64}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MassDataCorrection", "MassDataCorrection\MassDataCorrection.csproj", "{256ECA30-E839-41C0-B32D-03F1403CD245}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Common.Tests\Common.Tests.csproj", "{BCAB7251-4762-4696-B7D5-073AEC809E83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSosync.Tests", "WebSosync.Tests\WebSosync.Tests.csproj", "{2F4AADB5-2C3E-41DB-9A92-8C130FC96B67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{BCAB7251-4762-4696-B7D5-073AEC809E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCAB7251-4762-4696-B7D5-073AEC809E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCAB7251-4762-4696-B7D5-073AEC809E83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F4AADB5-2C3E-41DB-9A92-8C130FC96B67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F4AADB5-2C3E-41DB-9A92-8C130FC96B67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F4AADB5-2C3E-41DB-9A92-8C130FC96B67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F4AADB5-2C3E-41DB-9A92-8C130FC96B67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
