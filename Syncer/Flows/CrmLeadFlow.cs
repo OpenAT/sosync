@@ -118,6 +118,7 @@ namespace Syncer.Flows
                     studio.contact_birthdate_web = online.contact_birthdate_web;
                     studio.contact_newsletter_web = online.contact_newsletter_web;
                     studio.contact_title_web = online.contact_title_web;
+                    studio.contact_gender = online.contact_gender;
                     studio.title = (string)online.title?[1];
                     studio.title_action = online.title_action;
                     studio.function = online.function;
