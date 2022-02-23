@@ -13,31 +13,34 @@ namespace WebSosync.Converters
         {
             var result = new Dictionary<string, string>();
 
-            if (reader.TokenType != JsonTokenType.StartObject)
-                return result;
-
-            while (reader.Read())
+            if (reader.TokenType == JsonTokenType.StartObject)
             {
-                if (reader.TokenType == JsonTokenType.PropertyName)
+                while (reader.Read())
                 {
-                    var name = reader.GetString();
-                    reader.Read();
-
-                    var value = reader.TokenType switch
+                    if (reader.TokenType == JsonTokenType.PropertyName)
                     {
-                        JsonTokenType.String => reader.GetString(),
-                        JsonTokenType.Number => reader.GetInt32().ToString("0"),
-                        JsonTokenType.True => reader.GetBoolean().ToString(),
-                        JsonTokenType.False => reader.GetBoolean().ToString(),
-                        _ => (string)null
-                    };
+                        var name = reader.GetString();
+                        reader.Read();
 
-                    result.Add(name, value);
+                        var value = reader.TokenType switch
+                        {
+                            JsonTokenType.String => reader.GetString(),
+                            JsonTokenType.Number => reader.GetInt32().ToString("0"),
+                            JsonTokenType.True => reader.GetBoolean().ToString(),
+                            JsonTokenType.False => reader.GetBoolean().ToString(),
+                            _ => (string)null
+                        };
+
+                        result.Add(name, value);
+                    }
+
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                        break;
                 }
-
-                if (reader.TokenType == JsonTokenType.EndObject)
-                    break;
             }
+
+            if (result.Count == 0)
+                return null;
 
             return result;
         }
