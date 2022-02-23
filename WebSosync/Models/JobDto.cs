@@ -39,6 +39,7 @@ namespace WebSosync.Models
         [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime job_source_sosync_write_date { get; set; }
         
+        [JsonConverter(typeof(DictionaryConverter))]
         public Dictionary<string, string> job_source_fields { get; set; }
         
         [Range(0, int.MaxValue)]
