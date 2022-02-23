@@ -18,6 +18,7 @@ namespace Syncer.Models
         public dboPersonTelefon phone { get; set; }
         public dboPersonTelefon mobile { get; set; }
         public dboPersonTelefon fax { get; set; }
+        public fsonpartner_fields partner_fields { get; set; }
         public DateTime? sosync_write_date { get; set; }
         public DateTime? write_date { get; set; }
         public DateTime? create_date { get; set; }

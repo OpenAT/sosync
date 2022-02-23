@@ -108,12 +108,14 @@ namespace Syncer.Flows
             using (var addressBlockSvc = Svc.MdbService.GetDataService<dboPersonAdresseBlock>())
             using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>())
             using (var grTagSvc = Svc.MdbService.GetDataService<fsongr_tag>())
+            using (var partnerFieldsSvc = Svc.MdbService.GetDataService<fsonpartner_fields>())
             {
                 result.person = personSvc.Read(new { PersonID = PersonID }).FirstOrDefault();
 
                 if (result.person == null)
                     throw new ModelNotFoundException(SosyncSystem.FundraisingStudio, StudioModelName, PersonID);
 
+                result.partner_fields = partnerFieldsSvc.Read(new { PersonID }).SingleOrDefault();
                 result.IsSyncUser = personSvc.IsInPersonGroup(result.person.PersonID, 130045);
                 result.IsSystemUser = personSvc.IsInPersonGroup(result.person.PersonID, 130046);
                 result.IsAdminUser = personSvc.IsInPersonGroup(result.person.PersonID, 130047);
@@ -412,7 +414,8 @@ namespace Syncer.Flows
                     { "gdpr_accepted", person.person.DSGVOZugestimmt },
                     { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
-                    { "comment", person.person.Notiz }
+                    { "comment", person.person.Notiz },
+                    { "company_name_web", person.partner_fields?.company_name_web }
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -645,6 +648,7 @@ namespace Syncer.Flows
                 using (var addressAMSvc = Svc.MdbService.GetDataService<dboPersonAdresseAM>(con, transaction))
                 using (var phoneSvc = Svc.MdbService.GetDataService<dboPersonTelefon>(con, transaction))
                 using (var grTagSvc = Svc.MdbService.GetDataService<fsongr_tag>(con, transaction))
+                using (var partnerFieldsSvc = Svc.MdbService.GetDataService<fsonpartner_fields>(con, transaction))
                 {
                     var addressChanged = false;
 
@@ -715,6 +719,11 @@ namespace Syncer.Flows
                                 person.IsAdminUser,
                                 person.IsDonorUser);
 
+                            if (person.partner_fields != null)
+                            {
+                                person.partner_fields.PersonID = PersonID;
+                                partnerFieldsSvc.Create(person.partner_fields);
+                            }
 
                             if (person.address != null)
                             {
@@ -854,6 +863,13 @@ namespace Syncer.Flows
 
                         try
                         {
+                            CreateOrUpdate(
+                                partnerFieldsSvc,
+                                person.partner_fields,
+                                person.partner_fields != null ? person.partner_fields.PersonID : 0,
+                                "",
+                                model => model.PersonID = person.person.PersonID);
+
                             if (addressChanged)
                                 CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
 
@@ -975,7 +991,7 @@ namespace Syncer.Flows
             }
         }
 
-        private void CreateOrUpdate<TService, TModel>(TService svc, TModel model, int modelID, string customLog = "")
+        private void CreateOrUpdate<TService, TModel>(TService svc, TModel model, int modelID, string customLog = "", Action<TModel> createApplyId = null)
             where TModel : MdbModelBase, new()
             where TService : DataService<TModel>
         {
@@ -983,6 +999,10 @@ namespace Syncer.Flows
             {
                 if (modelID == 0)
                 {
+                    if (createApplyId != null)
+                    {
+                        createApplyId(model);
+                    }
                     svc.Create(model);
                     LogMilliseconds($"{nameof(TransformToStudio)} create {typeof(TModel).Name} {customLog}", svc.LastQueryExecutionTimeMS);
                 }
@@ -1087,10 +1107,33 @@ namespace Syncer.Flows
         {
             CopyPartnerToPerson(source, dest.person);
 
+            CopyPartnerFields(source, dest);
+
             dest.IsSyncUser = source.FsonSosyncUser;
             dest.IsSystemUser = source.FsonSystemUser;
             dest.IsAdminUser = source.FsonAdminUser;
             dest.IsDonorUser = source.FsonDonorUser;
+        }
+
+        private void CopyPartnerFields(resPartner source, dboPersonStack dest)
+        {
+            if (!string.IsNullOrWhiteSpace(source.Company_Name_Web))
+            {
+                if (dest.partner_fields == null)
+                    dest.partner_fields = new fsonpartner_fields() { PersonID = 0 };
+
+                dest.partner_fields.company_name_web = source.Company_Name_Web;
+            }
+            else
+            {
+                if (dest.partner_fields != null)
+                {
+                    dest.partner_fields.company_name_web = source.Company_Name_Web;
+                }
+            }
+
+            // The partner_fields row is never cleared/deleted, because there could be additional
+            // columns in the database table in the future, that soync has no knowledge of.
         }
 
         private bool IsAddressFieldEqual(string src, string dst)
