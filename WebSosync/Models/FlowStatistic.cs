@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace WebSosync.Models
@@ -12,6 +13,7 @@ namespace WebSosync.Models
             UnsynchronizedModelsCount = new Dictionary<string, int>();
         }
 
+        [JsonPropertyName("unsynchronizedModelsCount")]
         public Dictionary<string, int> UnsynchronizedModelsCount { get; set; }
     }
 }
