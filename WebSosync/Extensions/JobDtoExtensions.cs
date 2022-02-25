@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebSosync.Data.Models;
 using WebSosync.Models;
@@ -44,7 +44,7 @@ namespace WebSosync.Extensions
                 JobSourceTargetMergeIntoRecordId = job.job_source_target_merge_into_record_id,
                 JobSourceTargetRecordId = job.job_source_target_record_id,
                 JobSourceSosyncWriteDate = job.job_source_sosync_write_date,
-                JobSourceFields = JsonConvert.SerializeObject(job.job_source_fields),
+                JobSourceFields = JsonSerializer.Serialize(job.job_source_fields),
                 JobPriority = job.job_priority,
             };
             return result;
