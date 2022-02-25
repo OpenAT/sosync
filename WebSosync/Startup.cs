@@ -14,6 +14,7 @@ using Syncer.Services;
 using Syncer.Workers;
 using System;
 using System.IO;
+using System.Linq;
 using WebSosync.Common;
 using WebSosync.Common.Interfaces;
 using WebSosync.Data;
@@ -80,6 +81,16 @@ namespace WebSosync
                 options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(null));
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
                 options.EnableEndpointRouting = false;
+
+                var jsonOutputFormatter = options.OutputFormatters
+                    .Where(f => f is SystemTextJsonOutputFormatter)
+                    .Select(f => f as SystemTextJsonOutputFormatter)
+                    .SingleOrDefault();
+
+                if (jsonOutputFormatter != null)
+                {
+                    jsonOutputFormatter.SerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+                }
             });
 
             // Dependency Injection (DI) cheat list:
