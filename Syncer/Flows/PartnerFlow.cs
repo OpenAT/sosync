@@ -719,12 +719,6 @@ namespace Syncer.Flows
                                 person.IsAdminUser,
                                 person.IsDonorUser);
 
-                            if (person.partner_fields != null)
-                            {
-                                person.partner_fields.PersonID = PersonID;
-                                partnerFieldsSvc.Create(person.partner_fields);
-                            }
-
                             if (person.address != null)
                             {
                                 person.address.PersonID = PersonID;
@@ -750,6 +744,12 @@ namespace Syncer.Flows
                             {
                                 person.fax.PersonID = PersonID;
                                 phoneSvc.Create(person.fax);
+                            }
+
+                            if (person.partner_fields != null)
+                            {
+                                person.partner_fields.PersonID = PersonID;
+                                partnerFieldsSvc.Create(person.partner_fields);
                             }
 
                             SaveGetresponseTags(personSvc, person);
