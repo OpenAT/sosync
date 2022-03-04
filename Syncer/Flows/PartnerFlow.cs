@@ -701,6 +701,8 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                         }
 
+                        CopyPartnerFields(partner, person);
+
                         person.gr_tags = CopyGetResponseTagsFromPartner(grTagSvc, person.person.PersonID, partner);
 
                         UpdateSyncTargetRequest(Svc.Serializer.ToXML(person));
@@ -856,6 +858,8 @@ namespace Syncer.Flows
                             CopyPartnerPhoneToPersonTelefon(partner.Fax, person.fax, phoneSvc);
                             SetSyncFields(person.fax, onlineID, sosync_write_date);
                         }
+
+                        CopyPartnerFields(partner, person);
 
                         person.gr_tags = CopyGetResponseTagsFromPartner(grTagSvc, person.person.PersonID, partner);
 
@@ -1106,8 +1110,6 @@ namespace Syncer.Flows
         private void CopyPartnerToPersonStack(resPartner source, dboPersonStack dest)
         {
             CopyPartnerToPerson(source, dest.person);
-
-            CopyPartnerFields(source, dest);
 
             dest.IsSyncUser = source.FsonSosyncUser;
             dest.IsSystemUser = source.FsonSystemUser;
