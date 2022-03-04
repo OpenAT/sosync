@@ -867,19 +867,19 @@ namespace Syncer.Flows
 
                         try
                         {
-                            CreateOrUpdate(
-                                partnerFieldsSvc,
-                                person.partner_fields,
-                                person.partner_fields != null ? person.partner_fields.PersonID : 0,
-                                "",
-                                model => model.PersonID = person.person.PersonID);
-
                             if (addressChanged)
                                 CreateOrUpdateAddress(addressSvc, addressAMSvc, person.address, person.addressAM);
 
                             CreateOrUpdate(phoneSvc, person.phone, person.phone != null ? person.phone.PersonTelefonID : 0, "(Festnetz)");
                             CreateOrUpdate(phoneSvc, person.mobile, person.mobile != null ? person.mobile.PersonTelefonID : 0, "(Mobil)");
                             CreateOrUpdate(phoneSvc, person.fax, person.fax != null ? person.fax.PersonTelefonID : 0, "(Fax)");
+
+                            CreateOrUpdate(
+                                partnerFieldsSvc,
+                                person.partner_fields,
+                                person.partner_fields != null ? person.partner_fields.PersonID : 0,
+                                "",
+                                model => model.PersonID = person.person.PersonID);
 
                             SaveGetresponseTags(personSvc, person);
 
