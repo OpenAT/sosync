@@ -48,7 +48,7 @@ namespace Syncer.Flows.Surveys
                 (online, studio) =>
                 {
                     var questionID = GetStudioIDFromOnlineReference(
-                      "survey.question",
+                      "dbo.xFragebogenFrage",
                       online,
                       x => x.question_id,
                       true);

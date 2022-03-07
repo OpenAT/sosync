@@ -48,13 +48,13 @@ namespace Syncer.Flows.Payments
                 (online, studio) =>
                 {
                     var attributeID = GetStudioIDFromOnlineReference(
-                        "product.attribute",
+                        "fson.product_attribute",
                         online,
                         x => x.attribute_id,
                         true);
 
                     var templateID = GetStudioIDFromOnlineReference(
-                        "product.template",
+                        "fson.product_template",
                         online,
                         x => x.product_tmpl_id,
                         true);
