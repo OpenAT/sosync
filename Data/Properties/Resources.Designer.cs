@@ -19,7 +19,7 @@ namespace WebSosync.Data.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -212,6 +212,30 @@ namespace WebSosync.Data.Properties {
         internal static string MSSQL_Merge_PersonGrTags {
             get {
                 return ResourceManager.GetString("MSSQL_Merge_PersonGrTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WITH target AS (
+        ///	SELECT * FROM fson.product_attribute_value_product_product_rel
+        ///	WHERE product_productID = @product_productID
+        ///)
+        ///MERGE target
+        ///USING (
+        ///	SELECT product_attribute_valueID
+        ///	FROM fson.product_attribute_value
+        ///	WHERE fson.product_attribute_value.product_attribute_valueID IN (%VALUE-ID-LIST%)
+        ///) AS source
+        ///ON
+        ///	(source.product_attribute_valueID = target.product_attribute_valueID)
+        ///
+        ///WHEN NOT MATCHED THEN
+        ///	INSERT (product_productID, product_attribute_valueID)
+        ///	VALUES (@product_productID, so [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string MSSQL_Merge_ProductAttributeValueProductProductRel {
+            get {
+                return ResourceManager.GetString("MSSQL_Merge_ProductAttributeValueProductProductRel", resourceCulture);
             }
         }
         

@@ -79,5 +79,26 @@ namespace WebSosync.Data.Extensions
                 query,
                 new { PersonID = personID });
         }
+
+        public static void MergeProductAttributeValuesProductProductRel<TStudio>(this DataService<TStudio> db, int productProductID, int[] productAttributeValueIDs)
+            where TStudio : MdbModelBase, ISosyncable, new()
+        {
+            var query = Properties.Resources.MSSQL_Merge_PersonGrTags;
+
+            if (productAttributeValueIDs.Length > 0)
+            {
+                query = query
+                    .Replace("%VALUE-ID-LIST%", string.Join(",", productAttributeValueIDs));
+            }
+            else
+            {
+                query = query
+                    .Replace("%VALUE-ID-LIST%", "NULL"); // SomeID IN (NULL) always results in zero rows
+            }
+
+            db.ExecuteNonQuery(
+                query,
+                new { product_productID = productProductID });
+        }
     }
 }

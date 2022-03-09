@@ -465,6 +465,28 @@ WHEN NOT MATCHED BY SOURCE THEN
 	DELETE
 ;</value>
   </data>
+  <data name="MSSQL_Merge_ProductAttributeValueProductProductRel" xml:space="preserve">
+    <value>WITH target AS (
+	SELECT * FROM fson.product_attribute_value_product_product_rel
+	WHERE product_productID = @product_productID
+)
+MERGE target
+USING (
+	SELECT product_attribute_valueID
+	FROM fson.product_attribute_value
+	WHERE fson.product_attribute_value.product_attribute_valueID IN (%VALUE-ID-LIST%)
+) AS source
+ON
+	(source.product_attribute_valueID = target.product_attribute_valueID)
+
+WHEN NOT MATCHED THEN
+	INSERT (product_productID, product_attribute_valueID)
+	VALUES (@product_productID, source.product_attribute_valueID)
+
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+;</value>
+  </data>
   <data name="MSSQL_Merge_ProductTemplateGroups" xml:space="preserve">
     <value>WITH target AS (
 	SELECT * FROM fson.product_template_zGruppeDetail
