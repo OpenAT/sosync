@@ -17,7 +17,7 @@ namespace WebSosync.Converters
             {
                 s = s.Replace("T", " ").Replace("Z", "");
             }
-            return DateTime.ParseExact(s, Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            return DateTime.ParseExact(s, Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
