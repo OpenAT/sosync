@@ -208,7 +208,10 @@ namespace WebSosync.Controllers
         {
             var job = new SyncJob()
             {
-                Job_Date = DateTime.Parse(data["job_date"].ToString(), CultureInfo.InvariantCulture),
+                Job_Date = DateTime.Parse(
+                    data["job_date"].ToString(),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 Job_Source_System = GetNodeValue<string>(data["job_source_system"]),
                 Job_Source_Model = GetNodeValue<string>(data["job_source_model"]),
                 Job_Source_Record_ID = GetNodeValue<Int32>(data["job_source_record_id"]),
@@ -248,8 +251,8 @@ namespace WebSosync.Controllers
                     {
                         job.Job_Source_Sosync_Write_Date = DateTime.Parse(
                             val,
-                            CultureInfo.InvariantCulture);
-
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
                     }
                     catch (Exception)
                     {
