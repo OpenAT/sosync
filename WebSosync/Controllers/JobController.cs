@@ -284,6 +284,11 @@ namespace WebSosync.Controllers
 
         private TValue GetNodeValue<TValue>(JsonNode node)
         {
+            if (node == null)
+            {
+                return default;
+            }
+
             if (node.AsValue().TryGetValue<TValue>(out var value))
             {
                 return value;
