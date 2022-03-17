@@ -107,6 +107,7 @@ namespace WebSosync.Controllers
                         .SelectMany(x => x.Errors)
                         .Select(x => x.ErrorMessage));
 
+                _log.LogInformation(errorMsg);
                 return new BadRequestObjectResult(errorMsg);
             }
 
