@@ -100,7 +100,15 @@ namespace WebSosync.Controllers
         public IActionResult Post([FromServices]IServiceProvider services, [FromBody]JsonObject[] dictionaryList)
         {
             if (dictionaryList == null || dictionaryList.Length == 0)
-                return new BadRequestResult();
+            {
+                var errorMsg = string.Join(
+                    "\n",
+                    ModelState.Values
+                        .SelectMany(x => x.Errors)
+                        .Select(x => x.ErrorMessage));
+
+                return new BadRequestObjectResult(errorMsg);
+            }
 
             var isBadRequest = false;
 
