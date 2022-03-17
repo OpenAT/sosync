@@ -141,7 +141,9 @@ namespace WebSosync.Controllers
                 return new OkObjectResult("success");
             }
 
-            return new BadRequestObjectResult("error\n" + errorLog.ToString());
+            var errorMessage = "error\n" + errorLog.ToString();
+            _log.LogInformation(errorMessage);
+            return new BadRequestObjectResult(errorMessage);
         }
 
         private void SetJobEntityDefaults(IEnumerable<SosyncJobEntity> jobs)
