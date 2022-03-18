@@ -16,6 +16,7 @@ namespace WebSosync.Converters.Tests
                 yield return new object?[] { "{\"k\": 1}", new Dictionary<string, string>() { ["k"] = "1" } };
                 yield return new object?[] { "{\"k\": true}", new Dictionary<string, string>() { ["k"] = "True" } };
                 yield return new object?[] { "{\"k\": false}", new Dictionary<string, string>() { ["k"] = "False" } };
+                yield return new object?[] { "{}", new Dictionary<string, string>() };
             }
         }
 

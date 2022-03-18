@@ -185,7 +185,7 @@ namespace Syncer.Flows
                 onlineTemplate.Subject ?? "NO_SUB",
                 onlineTemplate.EmailFrom ?? "NO_FROM",
                 onlineTemplate.ReplyTo ?? "NO_REPLYTO",
-                null,
+                onlineTemplate.FsoEmailText,
                 onlineTemplate.FsoEmailHtmlParsed);
 
             referenceId = task.GetAwaiter().GetResult();

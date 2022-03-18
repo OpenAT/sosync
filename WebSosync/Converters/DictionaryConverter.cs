@@ -39,9 +39,6 @@ namespace WebSosync.Converters
                 }
             }
 
-            if (result.Count == 0)
-                return null;
-
             return result;
         }
 
