@@ -20,6 +20,7 @@ namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.product_template")]
     [OnlineModel(Name = "product.template")]
+    [ConcurrencyOnlineWins]
     public class ProductTemplateFlow
         : ReplicateSyncFlow
     {

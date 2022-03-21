@@ -17,6 +17,7 @@ namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.payment_transaction")]
     [OnlineModel(Name = "payment.transaction")]
+    [ConcurrencyOnlineWins]
     [ModelPriority(4000)]
     public class PaymentTransactionFlow
         : ReplicateSyncFlow
