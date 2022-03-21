@@ -83,7 +83,7 @@ namespace WebSosync.Data.Extensions
         public static void MergeProductAttributeValuesProductProductRel<TStudio>(this DataService<TStudio> db, int productProductID, int[] productAttributeValueIDs)
             where TStudio : MdbModelBase, ISosyncable, new()
         {
-            var query = Properties.Resources.MSSQL_Merge_PersonGrTags;
+            var query = Properties.Resources.MSSQL_Merge_ProductAttributeValueProductProductRel;
 
             if (productAttributeValueIDs.Length > 0)
             {
