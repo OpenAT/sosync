@@ -63,7 +63,8 @@ namespace Syncer.Services
 
         public string GetStudioModelIdentity(string studioModelName)
         {
-            if (studioModelName.ToLower().StartsWith("dbo.aktion"))
+            if (studioModelName.ToLower().StartsWith("dbo.aktion")
+                && (false == studioModelName.ToLower().EndsWith("detail")))
                 return "AktionsID";
 
             return $"{studioModelName.Split('.')[1]}ID";
