@@ -1,28 +1,28 @@
 ﻿using System;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WebSosync.Helpers;
 
 namespace WebSosync.Converters
 {
     public class CustomDateTimeConverter : JsonConverter<DateTime>
     {
-        private const string Format = "yyyy-MM-dd HH:mm:ss.fffffff";
-
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var s = reader.GetString();
+            var result = DateTimeHelper.ParseSyncerDate(s);
 
-            if (s.Contains("T") && s.Contains("Z"))
+            if (result is null)
             {
-                s = s.Replace("T", " ").Replace("Z", "");
+                throw new NullReferenceException("Date could not be parsed for a non-nullable DateTime field.");
             }
-            return DateTime.ParseExact(s, Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+            return result.Value;
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString(Format, CultureInfo.InvariantCulture));
+            writer.WriteStringValue(DateTimeHelper.GetSyncerDateString(value));
         }
     }
 }

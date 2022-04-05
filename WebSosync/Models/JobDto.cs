@@ -36,8 +36,8 @@ namespace WebSosync.Models
         public int? job_source_target_record_id { get; set; }
 
         [Required]
-        [JsonConverter(typeof(CustomDateTimeConverter))]
-        public DateTime job_source_sosync_write_date { get; set; }
+        [JsonConverter(typeof(CustomDateTimeNullConverter))]
+        public DateTime? job_source_sosync_write_date { get; set; }
         
         [JsonConverter(typeof(DictionaryConverter))]
         public Dictionary<string, string> job_source_fields { get; set; }
