@@ -256,7 +256,7 @@ namespace WebSosync.Controllers
             {
                 var val = data["job_source_sosync_write_date"].ToString();
 
-                if (!string.IsNullOrWhiteSpace(val))
+                if (!string.IsNullOrWhiteSpace(val) && val.ToLower() != "false")
                 {
                     try
                     {
