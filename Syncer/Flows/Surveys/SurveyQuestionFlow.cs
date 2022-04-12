@@ -57,6 +57,12 @@ namespace Syncer.Flows.Surveys
                     studio.xFragebogenID = surveyID.Value;
                     studio.Frage = online.question;
                     studio.FragetypID = Svc.TypeService.GetTypeID("xFragebogenFrage_FragetypID", online.type) ?? 0;
+
+                    if (action == TransformType.CreateNew)
+                    {
+                        studio.AnlageAmUm = DateTime.Now;
+                    }
+
                     studio.Reihenfolge = online.sequence;
 
                     int? pageSequence = null;

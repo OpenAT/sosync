@@ -58,6 +58,11 @@ namespace Syncer.Flows.Surveys
                     studio.Reihenfolge = online.sequence;
                     studio.Wert = online.value;
                     studio.QuizPunkte = online.quizz_mark;
+
+                    if (action == TransformType.CreateNew)
+                    {
+                        studio.AnlageAmUm = DateTime.Now;
+                    }
                 });
         }
     }

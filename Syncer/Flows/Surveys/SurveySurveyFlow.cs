@@ -39,6 +39,11 @@ namespace Syncer.Flows.Surveys
                 {
                     studio.Titel = online.title;
                     studio.Beschreibung = online.description;
+
+                    if (action == TransformType.CreateNew)
+                    {
+                        studio.AnlageAmUm = DateTime.Now;
+                    }
                 });
         }
     }
