@@ -63,7 +63,7 @@ namespace Syncer.Flows.Surveys
 
                     studio.AktionsID = aktionID.Value;
                     studio.xFragebogenFrageID = xFragebogenFrageID;
-                    studio.AntworttypID = Svc.TypeService.GetTypeID("AktionFragebogenDetail_AntworttypID", online.answer_type).Value;
+                    studio.AntworttypID = Svc.TypeService.GetTypeID("AktionFragebogenDetail_AntworttypID", online.answer_type);
                     studio.Übersprungen = online.skipped;
                     studio.QuizPunkte = online.quizz_mark;
 
