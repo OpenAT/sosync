@@ -41,11 +41,15 @@ namespace Syncer.Flows.Payments
 
         protected override void SetupOnlineToStudioChildJobs(int onlineID)
         {
-            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "payment_interval_default", "zgruppedetail_ids" });
+            var odooModel = Svc.OdooService.Client.GetDictionary(OnlineModelName, onlineID, new string[] { "payment_interval_default", "zgruppedetail_ids", "categ_id" });
             var paymentIntervalDefaultID = OdooConvert.ToInt32ForeignKey(odooModel["payment_interval_default"], allowNull: true);
+            var categoryID = OdooConvert.ToInt32ForeignKey(odooModel["categ_id"], allowNull: true);
 
             if (paymentIntervalDefaultID.HasValue)
                 RequestChildJob(SosyncSystem.FSOnline, "product.payment_interval", paymentIntervalDefaultID.Value, SosyncJobSourceType.Default);
+
+            if (categoryID.HasValue)
+                RequestChildJob(SosyncSystem.FSOnline, "product.category", categoryID.Value, SosyncJobSourceType.Default);
 
             if (odooModel["zgruppedetail_ids"] != null)
             {
@@ -85,6 +89,12 @@ namespace Syncer.Flows.Payments
                             Svc.MdbService.GetStudioModelIdentity(studioModel),
                             Convert.ToInt32(online.payment_interval_default[0]));
 
+                    var product_categoryID = GetStudioIDFromOnlineReference(
+                        "fson.product_category",
+                        online,
+                        x => x.categ_id,
+                        false);
+
                     studio.name = online.name;
                     studio.product_payment_intervalID__payment_interval_default = product_payment_intervalID;
                     studio.fs_product_type = online.fs_product_type;
@@ -101,7 +111,7 @@ namespace Syncer.Flows.Payments
                     studio.website_published_end = online.website_published_end;
                     studio.website_visible = online.website_visible;
                     studio.default_code = online.default_code;
-
+                    studio.product_categoryID = product_categoryID;
                     online_zgruppedetail_ids = online.zgruppedetail_ids;
                 });
 
