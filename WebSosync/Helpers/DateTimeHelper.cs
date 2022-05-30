@@ -15,6 +15,10 @@ namespace WebSosync.Helpers
             if (s.Contains("T") && s.Contains("Z"))
             {
                 s = s.Replace("T", " ").Replace("Z", "");
+                if (!s.Contains("."))
+                {
+                    s += ".0000000";
+                }
             }
             return DateTime.ParseExact(
                 s,
