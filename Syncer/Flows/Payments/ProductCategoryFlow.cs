@@ -11,6 +11,7 @@ namespace Syncer.Flows.Payments
 {
     [StudioModel(Name = "fson.product_category")]
     [OnlineModel(Name = "product.category")]
+    [SyncTargetStudio]
     public class ProductCategoryFlow
         : ReplicateSyncFlow
     {

@@ -18,6 +18,7 @@ namespace Syncer.Flows.GetResponse
     [StudioModel(Name = "fson.gr_tag")]
     [OnlineModel(Name = "gr.tag")]
     [ModelPriority(4000)]
+    [SyncTargetStudio, SyncTargetOnline]
     public class GrTagFlow
         : ReplicateSyncFlow
     {

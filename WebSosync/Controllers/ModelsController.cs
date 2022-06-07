@@ -23,6 +23,26 @@ namespace WebSosync.Controllers
 
         public IActionResult Index()
         {
+            Func<SyncTargetStudioAttribute, SyncTargetOnlineAttribute, string> getSyncDirection = (studioAtt, onlineAtt) =>
+            {
+                if (studioAtt != null && onlineAtt != null)
+                {
+                    return "both";
+                }
+
+                if (studioAtt is null && onlineAtt is null)
+                {
+                    throw new Exception("Sync target attributes missing completely");
+                }
+
+                if (studioAtt is null)
+                {
+                    return "to-online-only";
+                }
+
+                return "to-studio-only";
+            };
+
             var studioModels = _flows
                 .GetFlowTypes<ReplicateSyncFlow>()
                 .Select(f => new SyncModelDetailsDto
@@ -33,6 +53,10 @@ namespace WebSosync.Controllers
                     Priority = _flows.ModelPriorities.ContainsKey(f.GetCustomAttribute<StudioModelAttribute>().Name)
                         ? _flows.ModelPriorities[f.GetCustomAttribute<StudioModelAttribute>().Name]
                         : 1000,
+                    SyncDirection = getSyncDirection(
+                        f.GetCustomAttribute<SyncTargetStudioAttribute>(),
+                        f.GetCustomAttribute<SyncTargetOnlineAttribute>()
+                        ),
                 });
 
             var onlineModels = _flows
@@ -45,6 +69,10 @@ namespace WebSosync.Controllers
                     Priority = _flows.ModelPriorities.ContainsKey(f.GetCustomAttribute<StudioModelAttribute>().Name)
                         ? _flows.ModelPriorities[f.GetCustomAttribute<StudioModelAttribute>().Name]
                         : 1000,
+                    SyncDirection = getSyncDirection(
+                        f.GetCustomAttribute<SyncTargetStudioAttribute>(),
+                        f.GetCustomAttribute<SyncTargetOnlineAttribute>()
+                        ),
                 });
 
             return new OkObjectResult(new SyncModelsDto()

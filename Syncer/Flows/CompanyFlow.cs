@@ -18,6 +18,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.xBPKAccount")]
     [OnlineModel(Name = "res.company")]
+    [SyncTargetStudio, SyncTargetOnline]
     public class CompanyFlow : ReplicateSyncFlow
     {
         #region Constructors

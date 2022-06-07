@@ -21,6 +21,7 @@ namespace Syncer.Flows
     [OnlineModel(Name = "res.partner.donation_report")]
     [ConcurrencyOnlineWins]
     [ModelPriority(3000)]
+    [SyncTargetStudio, SyncTargetOnline]
     class PartnerDonationReportFlow : ReplicateSyncFlow
     {
         #region Constructors

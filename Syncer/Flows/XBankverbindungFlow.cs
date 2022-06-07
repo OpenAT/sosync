@@ -10,6 +10,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.xBankverbindung")]
     [OnlineModel(Name = "frst.xbankverbindung")]
+    [SyncTargetOnline]
     public class XBankverbindungFlow
         : ReplicateSyncFlow
     {

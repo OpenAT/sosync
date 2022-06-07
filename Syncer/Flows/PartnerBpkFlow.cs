@@ -20,6 +20,7 @@ namespace Syncer.Flows
     [StudioModel(Name = "dbo.PersonBPK")]
     [OnlineModel(Name = "res.partner.bpk")]
     [ModelPriority(2000)]
+    [SyncTargetStudio]
     public class PartnerBpkFlow : ReplicateSyncFlow
     {
         #region Constructors

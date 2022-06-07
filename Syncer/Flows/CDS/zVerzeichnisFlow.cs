@@ -20,6 +20,7 @@ namespace Syncer.Flows.CDS
     [StudioModel(Name = "dbo.zVerzeichnis")]
     [OnlineModel(Name = "frst.zverzeichnis")]
     [ModelPriority(5000)]
+    [SyncTargetStudio, SyncTargetOnline]
     public class zVerzeichnisFlow
         : ReplicateSyncFlow
     {

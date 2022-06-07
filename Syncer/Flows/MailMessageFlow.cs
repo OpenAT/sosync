@@ -14,6 +14,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "fson.mail_message")]
     [OnlineModel(Name = "mail.message")]
+    [SyncTargetStudio]
     public class MailMessageFlow
         : ReplicateSyncFlow
     {

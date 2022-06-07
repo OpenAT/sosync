@@ -27,6 +27,7 @@ namespace Syncer.Flows
     [StudioModel(Name = "dbo.Person")]
     [OnlineModel(Name = "res.partner")]
     [StudioMultiModel]
+    [SyncTargetStudio, SyncTargetOnline]
     public class PartnerFlow : ReplicateSyncFlow
     {
         #region Constants

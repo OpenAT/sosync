@@ -17,6 +17,7 @@ namespace Syncer.Flows.zGruppeSystem
 {
     [StudioModel(Name = "dbo.zGruppe")]
     [OnlineModel(Name = "frst.zgruppe")]
+    [SyncTargetStudio]
     public class zGruppeFlow
         : ReplicateSyncFlow
     {

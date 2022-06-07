@@ -12,6 +12,7 @@ namespace Syncer.Flows.Payments
     [StudioModel(Name = "fson.product_attribute_value")]
     [OnlineModel(Name = "product.attribute.value")]
     [ConcurrencyOnlineWins]
+    [SyncTargetStudio]
     public class ProductAttributeValueFlow
         : ReplicateSyncFlow
     {

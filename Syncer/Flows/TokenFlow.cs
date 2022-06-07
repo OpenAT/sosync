@@ -19,6 +19,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.AktionOnlineToken")]
     [OnlineModel(Name = "res.partner.fstoken")]
+    [SyncTargetStudio, SyncTargetOnline]
     public class TokenFlow
         : ReplicateSyncFlow
     {

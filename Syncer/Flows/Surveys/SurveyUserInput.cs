@@ -16,6 +16,7 @@ namespace Syncer.Flows.Surveys
     [StudioModel(Name = "dbo.AktionFragebogen")]
     [OnlineModel(Name = "survey.user_input")]
     [ConcurrencyOnlineWins]
+    [SyncTargetStudio]
     public class SurveyUserInput
         : ReplicateSyncFlow
     {

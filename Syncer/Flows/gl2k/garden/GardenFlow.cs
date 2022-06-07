@@ -20,6 +20,7 @@ namespace Syncer.Flows.gl2k.garden
 {
     [StudioModel(Name = "fson.garden")]
     [OnlineModel(Name = "gl2k.garden")]
+    [SyncTargetStudio, SyncTargetOnline]
     public class GardenFlow
         : ReplicateSyncFlow
     {

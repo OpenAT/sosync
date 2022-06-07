@@ -17,6 +17,7 @@ namespace Syncer.Flows.Payments
     [StudioModel(Name = "fson.product_payment_interval")]
     [OnlineModel(Name = "product.payment_interval")]
     [ConcurrencyOnlineWins]
+    [SyncTargetStudio]
     public class ProductPaymentIntervalFlow
         : ReplicateSyncFlow
     {

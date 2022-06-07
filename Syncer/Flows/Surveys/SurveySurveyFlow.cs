@@ -12,6 +12,7 @@ namespace Syncer.Flows.Surveys
     [StudioModel(Name = "dbo.xFragebogen")]
     [OnlineModel(Name = "survey.survey")]
     [ConcurrencyOnlineWins]
+    [SyncTargetStudio]
     public class SurveySurveyFlow
         : ReplicateSyncFlow
     {

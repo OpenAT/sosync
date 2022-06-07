@@ -19,6 +19,7 @@ namespace Syncer.Flows
 {
     [StudioModel(Name = "dbo.xBPKMeldespanne")]
     [OnlineModel(Name = "account.fiscalyear")]
+    [SyncTargetStudio, SyncTargetOnline]
     public class FiscalYearFlow : ReplicateSyncFlow
     {
         #region Constructors

@@ -20,6 +20,7 @@ namespace Syncer.Flows.Payments
     [StudioModel(Name = "fson.payment_acquirer")]
     [OnlineModel(Name = "payment.acquirer")]
     [ConcurrencyOnlineWins]
+    [SyncTargetStudio]
     public class PaymentAcquirerFlow
         : ReplicateSyncFlow
     {

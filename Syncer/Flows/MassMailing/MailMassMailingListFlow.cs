@@ -19,6 +19,7 @@ namespace Syncer.Flows.MassMailing
 {
     [StudioModel(Name = "fson.mail_mass_mailing_list")]
     [OnlineModel(Name = "mail.mass_mailing.list")]
+    [SyncTargetStudio, SyncTargetOnline]
     public class MailMassMailingListFlow
         : ReplicateSyncFlow
     {
