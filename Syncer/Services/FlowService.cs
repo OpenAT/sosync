@@ -102,6 +102,15 @@ namespace Syncer.Services
 
             if (attStudio == null)
                 throw new MissingAttributeException(flowType.Name, nameof(StudioModelAttribute));
+
+            if (flowType.BaseType == typeof(ReplicateSyncFlow))
+            {
+                var attDirectionStudio = flowType.GetTypeInfo().GetCustomAttribute<SyncTargetStudioAttribute>();
+                var attDirectionOnline = flowType.GetTypeInfo().GetCustomAttribute<SyncTargetOnlineAttribute>();
+
+                if (attDirectionStudio is null && attDirectionOnline is null)
+                    throw new MissingAttributeException(flowType.Name, $"{nameof(SyncTargetStudioAttribute)}, {nameof(SyncTargetOnlineAttribute)}, or both");
+            }
         }
 
         /// <summary>
