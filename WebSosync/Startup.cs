@@ -113,7 +113,7 @@ namespace WebSosync
             services.AddSingleton<TypeService>();
             services.AddSingleton<HtmlService>();
 
-            var mailService = new MailService("192.168.37.120", 0, "contact@datadialog.net");
+            var mailService = new MailService("smtpgateway.datadialog.net", 0, "contact@datadialog.net");
             services.AddSingleton<IMailService>(mailService);
 
             var flowService = new FlowService();
