@@ -25,7 +25,7 @@ namespace WebSosync.Converters
                         var value = reader.TokenType switch
                         {
                             JsonTokenType.String => reader.GetString(),
-                            JsonTokenType.Number => reader.GetInt32().ToString("0"),
+                            JsonTokenType.Number => reader.GetInt64().ToString("0"),
                             JsonTokenType.True => reader.GetBoolean().ToString(),
                             JsonTokenType.False => reader.GetBoolean().ToString(),
                             _ => (string)null
