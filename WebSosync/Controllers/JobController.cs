@@ -190,7 +190,7 @@ namespace WebSosync.Controllers
             }
             else
             {
-                var s = ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage)));
+                var s = string.Join("\n", ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage))));
                 return new BadRequestObjectResult(s);
             }
         }
