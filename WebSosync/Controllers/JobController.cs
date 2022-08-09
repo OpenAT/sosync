@@ -191,6 +191,7 @@ namespace WebSosync.Controllers
             else
             {
                 var s = string.Join("\n", ModelState.Select(x => x.Key + ": " + string.Join(" ", x.Value.Errors.Select(err => err.ErrorMessage))));
+                _log.LogInformation(s);
                 return new BadRequestObjectResult(s);
             }
         }
