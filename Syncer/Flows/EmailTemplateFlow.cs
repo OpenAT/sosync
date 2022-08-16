@@ -58,8 +58,9 @@ namespace Syncer.Flows
 
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            throw new NotSupportedException(
-                $"{StudioModelName} can only be synchronized from [FSO] -> [FS].");
+            // Templates can never be synchronized to FS-Online.
+            // But throw now exception either. Assume everything
+            // is fine when trying to update xTemplate in FSO.
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
