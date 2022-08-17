@@ -56,11 +56,29 @@ namespace Syncer.Flows
             // No child jobs
         }
 
+        private const string MssqlOnlyPrefix = "[MSSQL-Only]";
+
         protected override void TransformToOnline(int studioID, TransformType action)
         {
-            // Templates can never be synchronized to FS-Online.
-            // But throw now exception either. Assume everything
-            // is fine when trying to update xTemplate in FSO.
+            // Templates can generally not be synchronized to Odoo.
+            //
+            // Allow synchronization, but create empty entries in Odoo.
+            // This is only required, so template child jobs do not block
+            // any parent jobs.
+            //
+            // The TransformToStudio method must not synchronize such
+            // entries, or they would delete template data.
+
+            SimpleTransformToOnline<dboxTemplate, emailTemplate>(
+                studioID,
+                action,
+                s => s.xTemplateID,
+                (studio, online) =>
+                {
+                    online.Add("fso_email_template", true);
+                    online.Add("active", false); // Mark inactive, so they don't show up
+                    online.Add("name", $"{MssqlOnlyPrefix} {studio.Name}"); // Prefix so sosync2 knows not to sync those back
+                });
         }
 
         protected override void TransformToStudio(int onlineID, TransformType action)
@@ -72,6 +90,9 @@ namespace Syncer.Flows
                     StudioModelName,
                     Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
+
+            if (onlineTemplate.Name.StartsWith(MssqlOnlyPrefix))
+                throw new Exception($"Template is MSSQL-Only, must not synchronize!");
 
             UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
