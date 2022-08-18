@@ -78,7 +78,7 @@ namespace Syncer.Flows
                     online.Add("fso_email_template", true);
                     online.Add("active", false); // Mark inactive, so they don't show up
                     online.Add("name", $"{MssqlOnlyPrefix} {studio.Name}"); // Prefix so sosync2 knows not to sync those back
-                    online.Add("fso_email_html_parsed", studio.EmailHTML);
+                    online.Add("body_html", studio.EmailHTML);
                 });
         }
 
@@ -86,14 +86,19 @@ namespace Syncer.Flows
         {
             var onlineTemplate = Svc.OdooService.Client.GetModel<emailTemplate>(OnlineModelName, onlineID);
 
+            // If the template starts with a prefix defined in MssqlOnlyPrefix,
+            // stop transformation without any error. It is a template that
+            // is synchronized to Odoo to pass certain ORM checks, it cannot
+            // be synchronized to MSSQL, the Odoo version is basically empty!
+            if (onlineTemplate.Name.StartsWith(MssqlOnlyPrefix))
+                return;
+            // ---
+
             if (!IsValidFsID(onlineTemplate.Sosync_FS_ID))
                 onlineTemplate.Sosync_FS_ID = GetStudioIDFromMssqlViaOnlineID(
                     StudioModelName,
                     Svc.MdbService.GetStudioModelIdentity(StudioModelName),
                     onlineID);
-
-            if (onlineTemplate.Name.StartsWith(MssqlOnlyPrefix))
-                throw new Exception($"Template is MSSQL-Only, must not synchronize!");
 
             UpdateSyncSourceData(Svc.OdooService.Client.LastResponseRaw);
 
