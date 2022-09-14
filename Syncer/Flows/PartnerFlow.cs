@@ -1264,7 +1264,7 @@ namespace Syncer.Flows
                 {
                     PersontypID = 101,
                     NationalitätID = defaultLandID,
-                    GeschlechttypID = 0,
+                    GeschlechttypID = -1,
                     zMarketingID = 0,
                     Anlagedatum = DateTime.Now,
                     xIDA = 0,
