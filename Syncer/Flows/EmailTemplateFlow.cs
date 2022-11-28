@@ -79,6 +79,7 @@ namespace Syncer.Flows
                     online.Add("active", false); // Mark inactive, so they don't show up
                     online.Add("name", $"{MssqlOnlyPrefix} {studio.Name}"); // Prefix so sosync2 knows not to sync those back
                     online.Add("body_html", studio.EmailHTML);
+                    online.Add("fso_email_html_parsed", studio.EmailHTML);
                 });
         }
 
