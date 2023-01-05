@@ -108,7 +108,7 @@ namespace Syncer.Flows.MassMailing
 
                     online.Add("list_id", listID);
                     online.Add("personemail_id", personemailID);
-                    online.Add("personemailgruppe_id", personemailID);
+                    online.Add("personemailgruppe_id", personemailgruppeID);
 
                     online.Add("firstname", studio.firstname);
                     online.Add("lastname", studio.lastname);
