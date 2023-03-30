@@ -80,6 +80,20 @@ namespace Syncer.Flows.Surveys
                     studio.StatustypID = Svc.TypeService.GetTypeID("AktionFragebogen_StatustypID", online.state);
                     studio.TestEintrag = online.test_entry;
                     studio.QuizPunkte = online.quizz_score;
+
+                    if (action == TransformType.CreateNew && fragebogenAktion.zMarketingID == 0)
+                    {
+                        using (var db = Svc.MdbService.GetDataService<dboTypen>())
+                        {
+                            var zVerzeichnisID = db
+                                .ExecuteQuery<int>(
+                                    "SELECT zVerzeichnisID FROM dbo.zVerzeichnisBekannt vb WITH (NOLOCK) WHERE vb.xFragebogenID = @xFragebogenID",
+                                    new { studio.xFragebogenID })
+                                .SingleOrDefault();
+
+                            fragebogenAktion.zMarketingID = zVerzeichnisID;
+                        }
+                    }
                 },
                 fragebogenAktion,
                 (online, aktionsID, af) => af.AktionsID = aktionsID);
