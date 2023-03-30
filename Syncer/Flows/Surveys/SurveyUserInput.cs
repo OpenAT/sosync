@@ -61,7 +61,7 @@ namespace Syncer.Flows.Surveys
                 odooPartnerID)
                 .Value;
 
-            var fragebogenAktion = GetTokenAktionViaOnlineID(onlineID, action, odooCreate);
+            var fragebogenAktion = GetFragebogenAktionViaOnlineID(onlineID, action, odooCreate);
             fragebogenAktion.PersonID = PersonID;
 
             SimpleTransformToStudio<surveyUserInput, dboAktionFragebogen>(
@@ -85,7 +85,7 @@ namespace Syncer.Flows.Surveys
                 (online, aktionsID, af) => af.AktionsID = aktionsID);
         }
 
-        private dboAktion GetTokenAktionViaOnlineID(int onlineID, TransformType action, DateTime onlineCreate)
+        private dboAktion GetFragebogenAktionViaOnlineID(int onlineID, TransformType action, DateTime onlineCreate)
         {
             if (action == TransformType.CreateNew)
             {
