@@ -127,6 +127,12 @@ namespace Syncer.Flows.Payments
                     studio.fs_origin = online.fs_origin;
                     studio.fs_product_type = online.fs_product_type;
 
+                    var cat_root_id = Convert.ToInt32(online.cat_root_id?[0]);
+                    studio.cat_root_id = cat_root_id > 0 ? cat_root_id : null;
+
+                    var cat_id = Convert.ToInt32(online.cat_id?[0]);
+                    studio.cat_id = cat_id > 0 ? cat_id : null;
+
                     if (studio.sale_order_lineID != 0)
                         SaveDetails(studio.sale_order_lineID, online.zgruppedetail_ids);
                 },
