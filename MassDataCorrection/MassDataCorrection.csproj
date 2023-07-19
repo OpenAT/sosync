@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="dadi-data" Version="2.0.13" />
-    <PackageReference Include="DaDi.Odoo" Version="1.9.37" />
+    <PackageReference Include="DaDi.Odoo" Version="1.9.38" />
     <PackageReference Include="DaDi.Saltstack" Version="1.0.2" />
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Npgsql" Version="6.0.3" />
