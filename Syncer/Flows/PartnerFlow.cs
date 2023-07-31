@@ -416,7 +416,8 @@ namespace Syncer.Flows
                     { "prevent_donation_deduction", person.person.SpendenmeldungUnterdrücken },
                     { "sosync_synced_version", person.person.last_sync_version },
                     { "comment", person.person.Notiz },
-                    { "company_name_web", person.partner_fields?.company_name_web }
+                    { "company_name_web", person.partner_fields?.company_name_web },
+                    { "svuid_nummer", person.person.SVUIDNummer },
                 };
 
             if (new int[] { 290, 291 }.Contains(person.person.GeschlechttypID))
@@ -1080,6 +1081,7 @@ namespace Syncer.Flows
             dest.SpendenmeldungUnterdrücken = source.PreventDonationDeduction;
             dest.last_sync_version = source.Sosync_Synced_Version;
             dest.Notiz = source.Comment;
+            dest.SVUIDNummer = source.SvUidNummer;
 
             int? zVerzeichnisID = null;
             if (source.FrstzVerzeichnisId != null && Convert.ToInt32(source.FrstzVerzeichnisId[0]) > 0)
