@@ -20,16 +20,23 @@ public abstract class RepeatingBackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while(await _timer.WaitForNextTickAsync(stoppingToken))
+        await HandleWorkAssync(stoppingToken);
+
+        while (await _timer.WaitForNextTickAsync(stoppingToken))
         {
-            try
-            {
-                await WorkAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Repeating background work failed.");
-            }
+            await HandleWorkAssync(stoppingToken);
+        }
+    }
+
+    private async Task HandleWorkAssync(CancellationToken stoppingToken)
+    {
+        try
+        {
+            await WorkAsync(stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Repeating background work failed.");
         }
     }
 
