@@ -1,4 +1,5 @@
-﻿using dadi_data;
+﻿using DaDi.Odoo.Models;
+using dadi_data;
 using dadi_data.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
@@ -73,9 +74,12 @@ public class TokenBatchService
         
             MSSQL: sosync_fso_id
 
+
+         Check if token exists - by name!
          */
 
         var tokens = await mdb.GetUnsynchronizedOnlineTokensAsync(_options.Token_Batch_Size);
         var dummy = await fso.Connection.ExecuteScalarAsync<int>("select count(*) from res_partner;");
+
     }
 }
