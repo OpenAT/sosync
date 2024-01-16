@@ -44,12 +44,6 @@ public class TokenBatchService
             MSSQL: last_sync_version = sosync_write_date (if write_date is different)
             MSSQL: sosync_fso_id = OdooID (if fso_id is null)
 
-            if (studioModel.last_sync_version != studioModel.sosync_write_date)
-            {
-                studioModel.last_sync_version = studioModel.sosync_write_date;
-                db.Update(studioModel);
-            }
-
          Mapping
           
             // Token specific fields
