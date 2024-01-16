@@ -102,16 +102,27 @@ namespace WebSosync.Data.Extensions
                 new { product_productID = productProductID });
         }
 
-        public static async Task<dboAktionOnlineToken[]> GetUnsynchronizedOnlineTokensAsync<TStudio>(this DataService<TStudio> db)
+        public static async Task<dboAktionOnlineToken[]> GetUnsynchronizedOnlineTokensAsync<TStudio>(this DataService<TStudio> db, int topCount)
+            where TStudio : MdbModelBase, ISosyncable, new()
         {
             var data = await db.ExecuteQueryAsync<dboAktionOnlineToken>(@"
-            SELECT
+            SELECT TOP (@topCount)
 	            *
             FROM
-	            dbo.AktionOnlineToken at WITH (NOLOCK)
+	            dbo.Aktion a
+	            INNER JOIN dbo.AktionOnlineToken at
+                    ON a.AktionsID = at.AktionsID
+                INNER JOIN dbo.Person p
+                    ON a.PersonID = p.PersonID
+                INNER JOIN dbo.zVerzeichnis v
+                    ON p.zMarketingID = v.zVerzeichnisID
             WHERE
-	            at.sosync_fso_id IS NULL
-            ");
+                a.AktionstypID = 2005881 -- OnlineToken
+                AND p.sosync_fso_id IS NOT NULL
+                AND v.sosync_fso_id IS NOT NULL
+	            AND at.sosync_fso_id IS NULL
+            ",
+            new { topCount });
 
             return data.ToArray();
         }
