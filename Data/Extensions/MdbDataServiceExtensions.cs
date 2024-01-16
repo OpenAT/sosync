@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WebSosync.Data.Extensions
 {
@@ -99,6 +100,20 @@ namespace WebSosync.Data.Extensions
             db.ExecuteNonQuery(
                 query,
                 new { product_productID = productProductID });
+        }
+
+        public static async Task<dboAktionOnlineToken[]> GetUnsynchronizedOnlineTokensAsync<TStudio>(this DataService<TStudio> db)
+        {
+            var data = await db.ExecuteQueryAsync<dboAktionOnlineToken>(@"
+            SELECT
+	            *
+            FROM
+	            dbo.AktionOnlineToken at WITH (NOLOCK)
+            WHERE
+	            at.sosync_fso_id IS NULL
+            ");
+
+            return data.ToArray();
         }
     }
 }
