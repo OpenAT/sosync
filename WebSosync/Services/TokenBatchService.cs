@@ -51,7 +51,7 @@ public class TokenBatchService
             await Task.Delay(1000, stoppingToken);
 
             s.Stop();
-            _logger.LogInformation("Token batch done in {milliseconds}ms.", s.ElapsedMilliseconds);
+            _logger.LogInformation("Token batch for {tokenCount} done in {milliseconds}ms.", tokens.Length, s.ElapsedMilliseconds);
 
         } while (tokens.Length > 0 && !stoppingToken.IsCancellationRequested);
     }
