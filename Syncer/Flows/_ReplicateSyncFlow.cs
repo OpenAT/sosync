@@ -816,9 +816,12 @@ namespace Syncer.Flows
                     new { ID = studioID })
                     .SingleOrDefault();
 
-                // Set the sync version
-                studioModel.last_sync_version = studioModel.sosync_write_date;
-                db.Update(studioModel);
+                // Set the sync version, if different
+                if (studioModel.last_sync_version != studioModel.sosync_write_date)
+                {
+                    studioModel.last_sync_version = studioModel.sosync_write_date;
+                    db.Update(studioModel);
+                }
                 //---
 
                 if (!studioModel.sosync_fso_id.HasValue)

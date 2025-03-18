@@ -25,6 +25,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="debug_win_sosync.ini" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="debug_win_sosync.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
@@ -70,11 +80,6 @@
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
     <None Update="debug_linux_sosync.ini">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <None Update="debug_win_sosync.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">

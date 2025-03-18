@@ -201,7 +201,10 @@ namespace Syncer.Flows
                 UpdateSyncTargetDataBeforeUpdate(Svc.Serializer.ToXML(data));
 
                 var query = $"update {StudioModelName} set noSyncJobOnDeleteSwitch = 1 where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; "
-                    + $"delete from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; select @@ROWCOUNT;";
+                    + (StudioModelName.StartsWith("dbo.Aktion")
+                        ? $"delete from dbo.Aktion WHERE AktionsID = @id; "
+                        : $"delete from {StudioModelName} where {Svc.MdbService.GetStudioModelIdentity(StudioModelName)} = @id; ")
+                    + "select @@ROWCOUNT;";
 
                 UpdateSyncTargetRequest($"-- @id = {studioID}\n" + query);
 

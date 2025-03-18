@@ -16,6 +16,14 @@ namespace WebSosync.Data.Models
         public string DB_User { get; set; }
         public string DB_User_PW { get; set; }
 
+        public string Online_DB_Host { get; set; }
+        public int Online_DB_Port { get; set; }
+        public string Online_DB_Name { get; set; }
+        public string Online_DB_User { get; set; }
+        public string Online_DB_User_PW { get; set; }
+        
+        public int Token_Batch_Size{ get; set; }
+
         public string Log_File { get; set; }
         public string Log_Level { get; set; }
 

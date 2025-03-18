@@ -106,9 +106,6 @@ namespace Syncer.Workers
 
             try
             {
-                // Check server times
-                ThrowOnMismatchedServerTimes(reCheckTimeMin);
-
                 var lastJobCount = 0;
 
                 int jobLimit = 0;
@@ -146,9 +143,6 @@ namespace Syncer.Workers
                         UpdateThreads(out jobLimit, out threadCount);
 
                         threadWatch.Start();
-
-                        // Check server times
-                        ThrowOnMismatchedServerTimes(reCheckTimeMin);
 
                         // Spin up job threads
                         var threadStartWatch = Stopwatch.StartNew();

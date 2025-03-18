@@ -112,6 +112,10 @@ namespace WebSosync
             services.AddSingleton<StatisticService>();
             services.AddSingleton<TypeService>();
             services.AddSingleton<HtmlService>();
+            services.AddSingleton<FsoDataServiceFactory>();
+
+            // Add background services
+            services.AddHostedService<TokenBatchService>();
 
             var mailService = new MailService("smtpgateway.datadialog.net", 0, "contact@datadialog.net");
             services.AddSingleton<IMailService>(mailService);
@@ -121,6 +125,7 @@ namespace WebSosync
 
             // Transient services
             services.AddTransient<DataService>();
+            services.AddTransient<FsoDataService>();
             services.AddTransient<FlowCheckService>();
             services.AddTransient<MdbService>();
             services.AddTransient<SyncServiceCollection>();
