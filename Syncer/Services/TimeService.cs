@@ -91,7 +91,7 @@ namespace Syncer.Services
 
                 var ntpOffset = (int)Math.Abs(GetOffset());
                 var fsoOffset = (int)Math.Abs(GetOffset($"{_config.Instance}.datadialog.net"));
-                var fsOffset = (int)Math.Abs(GetOffset($"mssql.{_config.Instance}.datadialog.net"));
+                var fsOffset = (int)Math.Abs(GetOffset($"mdb_{_config.Instance}.db.datadialog.net"));
 
                 return new TimeDrift(ntpOffset, fsoOffset, fsOffset);
             }
